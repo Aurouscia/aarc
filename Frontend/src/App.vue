@@ -1,9 +1,9 @@
 <script setup lang="ts">
-
+import Cvs from './components/Cvs.vue';
 </script>
 
 <template>
-<h1>HelloWorld</h1>
+<Cvs></Cvs>
 </template>
 
 <style>
