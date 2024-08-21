@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { simpleGrid } from '@/utils/grid';
 import { Scaler } from '@/utils/scaler';
-import { onMounted, ref, nextTick, onUnmounted } from 'vue';
+import { onMounted, ref, nextTick } from 'vue';
 
 const cvsFrame = ref<HTMLDivElement>()
 const cvsCont = ref<HTMLDivElement>()

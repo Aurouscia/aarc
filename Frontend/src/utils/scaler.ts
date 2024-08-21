@@ -3,6 +3,8 @@ export class Scaler{
     private arena: HTMLDivElement;
     private callBack:()=>void;
     private touchHandlerBinded:(e:TouchEvent)=>void;
+    private keyHandlerBinded:(e:KeyboardEvent)=>void;
+    private wheelHandlerBinded:(e:WheelEvent)=>void;
     constructor(frame:HTMLDivElement,arena:HTMLDivElement,callBack:()=>void){
         this.frame = frame;
         this.arena = arena;
@@ -21,6 +23,8 @@ export class Scaler{
             }
         })
         this.touchHandlerBinded = this.touchHandler.bind(this)
+        this.wheelHandlerBinded = this.wheelHandler.bind(this)
+        this.keyHandlerBinded = this.keyHandler.bind(this)
 
         frame.addEventListener("touchmove",this.touchHandlerBinded)
         frame.addEventListener("touchend",()=>{
@@ -28,6 +32,8 @@ export class Scaler{
             this.touchCx=-1
             this.touchCy=-1
         })
+        frame.addEventListener("wheel", this.wheelHandlerBinded)
+        window.addEventListener("keypress", this.keyHandlerBinded)
     }
 
     touchDist=-1;
@@ -35,7 +41,7 @@ export class Scaler{
     touchCy=-1;
     lastTouchResponse = 0;
     touchTimeThrs = 20;
-    touchHandler(e:TouchEvent){
+    private touchHandler(e:TouchEvent){
         e.preventDefault()
         const time = +new Date();
         if(time - this.lastTouchResponse < this.touchTimeThrs)
@@ -47,8 +53,7 @@ export class Scaler{
         const {cx, cy} = info;
         if(!info.dist){
             if(this.touchCx >= 0 && this.touchCy >= 0){
-                this.frame.scrollLeft -= cx - this.touchCx
-                this.frame.scrollTop -= cy - this.touchCy
+                this.move(cx - this.touchCx, cy - this.touchCy)
             }
             this.touchCx = cx;
             this.touchCy = cy;
@@ -62,8 +67,7 @@ export class Scaler{
                 const ax = cx / fw;
                 const ay = cy / fh;
                 this.scale(ratio, { x: ax, y: ay })
-                this.frame.scrollLeft -= cx - this.touchCx
-                this.frame.scrollTop -= cy - this.touchCy
+                this.move(cx - this.touchCx, cy - this.touchCy)
             }
             this.touchDist = distNow;
             this.touchCx = cx;
@@ -91,6 +95,46 @@ export class Scaler{
             return{cx,cy,dist}
         }
     }
+
+    
+    moveBtns = ['w','a','s','d']
+    moveStepRatio = 0.05
+    private keyHandler(e:KeyboardEvent){
+        const key = e.key;
+        if(this.moveBtns.includes(key)){
+            e.preventDefault()
+            const fw = this.frame.clientWidth;
+            const fh = this.frame.clientHeight;
+            if(key=='a'){
+                this.move(fw*this.moveStepRatio, 0)
+            }else if(key=='d'){
+                this.move(-fw*this.moveStepRatio, 0)
+            }else if(key=='w'){
+                this.move(0, fh*this.moveStepRatio)
+            }else if(key=='s'){
+                this.move(0, -fh*this.moveStepRatio)
+            }
+        }
+    }
+    private wheelHandler(e:WheelEvent){
+        const anchor = this.getAnchorFromEvent(e)
+        e.preventDefault()
+        const ratio = 1-e.deltaY*0.001;
+        this.scale(ratio,anchor)
+    }
+
+
+    private getAnchorFromEvent(e:{clientX:number,clientY:number}){
+        const fx = e.clientX - this.frame.offsetLeft;
+        const fy = e.clientY - this.frame.offsetTop;
+        const fw = this.frame.clientWidth;
+        const fh = this.frame.clientHeight;
+        const x = fx/fw;
+        const y = fy/fh;
+        return{x,y}
+    }
+
+
     scale(ratio:number,anchor?:{x:number,y:number}){
         const ww = this.frame.clientWidth;
         const hh = this.frame.clientHeight;
@@ -122,6 +166,10 @@ export class Scaler{
         this.frame.scrollLeft += wGrowth*gx
         this.frame.scrollTop += hGrowth*gy
         this.callBack();
+    }
+    move(increX:number,increY:number){
+        this.frame.scrollLeft -= increX
+        this.frame.scrollTop -= increY
     }
     widthReset(mutiple?:number){
         mutiple = mutiple || 1;
