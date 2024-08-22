@@ -51,7 +51,7 @@ onUnmounted(()=>{
                     <input v-model="l.name"/>
                     <input v-model="l.nameSub"/>
                 </div>
-                <div class="sqrBtn moveBtn" @mousedown="e => mouseDownLineArrange(e, l.id)">
+                <div class="sqrBtn moveBtn" @mousedown="e => mouseDownLineArrange(e, l.id)" @touchstart="e => mouseDownLineArrange(e, l.id)">
                     ⇅
                 </div>
                 <div class="sqrBtn" @click="delLine(l)">

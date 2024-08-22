@@ -17,7 +17,7 @@ onMounted(()=>{
 
 <template>
     <div class="menu">
-        <div @click="fakeSave">存</div>
+        <div @click="fakeSave" class="sqrBtn withShadow">存</div>
         <div @click="lines?.comeOut" class="sqrBtn withShadow">线</div>
     </div>
     <Lines ref="lines"></Lines>
@@ -30,5 +30,6 @@ onMounted(()=>{
     right: 5px;
     display: flex;
     flex-direction: column;
+    gap: 10px
 }
 </style>
