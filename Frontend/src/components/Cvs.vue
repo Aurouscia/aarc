@@ -58,6 +58,7 @@ onMounted(async()=>{
     overflow: scroll;
 }
 .cvsCont{
+    transition: 0s;
     position: absolute;
     background-color: #ccc;
     width: 1000px;
