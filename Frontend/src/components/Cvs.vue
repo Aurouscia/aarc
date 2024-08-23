@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useBaseCvs } from '@/models/cvs/baseCvs';
+import { useLineCvs } from '@/models/cvs/lineCvs';
 import { simpleGrid } from '@/utils/grid';
 import { Scaler } from '@/utils/scaler';
 import { onMounted, ref, nextTick } from 'vue';
@@ -6,10 +8,8 @@ import { onMounted, ref, nextTick } from 'vue';
 const cvsFrame = ref<HTMLDivElement>()
 const cvsCont = ref<HTMLDivElement>()
 
-const baseCvs = ref<HTMLCanvasElement>()
-let baseCvsCtx:CanvasRenderingContext2D;
-const lineCvs = ref<HTMLCanvasElement>()
-let lineCvsCtx:CanvasRenderingContext2D;
+const { cvs:baseCvs } = useBaseCvs()
+const { cvs:lineCvs, renderAllLines } = useLineCvs()
 
 const cvsWidth = ref<number>()
 const cvsHeight = ref<number>()
@@ -17,7 +17,10 @@ const testWidth = 1000
 const testHeight = 1000
 
 function drawTestGrid(){
-    simpleGrid(baseCvsCtx)
+    const ctx = baseCvs.value?.getContext('2d')
+    if(!ctx)
+        return;
+    simpleGrid(ctx)
 }
 
 let scaler:Scaler;
@@ -31,12 +34,9 @@ onMounted(async()=>{
         scaler = new Scaler(cvsFrame.value, cvsCont.value, ()=>{})
         scaler.widthReset()
     }
-    if(baseCvs.value && lineCvs.value){
-        baseCvsCtx = baseCvs.value.getContext("2d")!
-        lineCvsCtx = lineCvs.value.getContext("2d")!
-    }
     await nextTick()
     drawTestGrid()
+    renderAllLines()
 })
 
 </script>

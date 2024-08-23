@@ -1,4 +1,4 @@
-import { Coord } from "./point";
+import { Coord } from "./coord";
 
 export interface Save{
     idIncre: number

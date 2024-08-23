@@ -11,7 +11,7 @@ function fakeSave(){
 }
 
 onMounted(()=>{
-    lines.value?.comeOut()
+    //lines.value?.comeOut()
 })
 </script>
 
