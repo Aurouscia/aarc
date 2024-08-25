@@ -6,18 +6,16 @@ import { lineWidth, turnRadius } from "@/utils/consts";
 import { Bias, applyBias } from "@/utils/coordBias";
 import { Coord } from "../coord";
 import { coordFill } from "@/utils/coordFill";
+import { useCvs } from "./cvs";
 
 export function useLineCvs(){
-    const cvs = ref<HTMLCanvasElement>()
     const saveStore = useSaveStore();
+    const { cvs, getCtx } = useCvs();
     function renderAllLines(){
         if(!saveStore.save){
             return
         }
-        const ctx = cvs.value?.getContext('2d')
-        if(!ctx){
-            return;
-        }
+        const ctx = getCtx()
         const lines = saveStore.save.lines;
         const allPts = saveStore.save.points;
         for(const line of lines){
@@ -30,10 +28,10 @@ export function useLineCvs(){
                 const b = pts[i+1]
                 formalPts.push(...formalizeSeg(a, b))
             }
-            console.log(formalPts)
+            ctx.lineCap = 'round'
             ctx.lineWidth = lineWidth
             ctx.strokeStyle = line.color
-            linkPts(formalPts, ctx)
+            linkPts(formalPts)
         }
     }
     function formalizeSeg(a:ControlPoint, b:ControlPoint):Coord[]{
@@ -71,11 +69,12 @@ export function useLineCvs(){
             }
         }
     }
-    function linkPts(pts:Coord[], ctx:CanvasRenderingContext2D){
+    function linkPts(pts:Coord[]){
         if(pts.length<=1){
             return;
         }
         const first = pts[0]
+        const ctx = getCtx()
         ctx.moveTo(first[0], first[1])
         let prevPt:Coord = first
         for(let i=1;i<pts.length;i++){

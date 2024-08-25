@@ -4,8 +4,8 @@ export function simpleGrid(ctx:CanvasRenderingContext2D){
     const h = ctx.canvas.height;
     const vertLineCount = w/simpleGridSpace+1;
     const horiLineCount = h/simpleGridSpace+1;
-    ctx.lineWidth = 3
-    ctx.strokeStyle = '#000'
+    ctx.lineWidth = 1
+    ctx.strokeStyle = '#999'
     ctx.beginPath()
     for(let i=0;i<vertLineCount;i++){
         const x = i*simpleGridSpace
