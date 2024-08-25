@@ -4,18 +4,16 @@ export class Scaler{
     private frame: HTMLDivElement;
     private arena: HTMLDivElement;
     private callBack:()=>void;
-    private touchHandlerBinded:(e:TouchEvent)=>void;
-    private keyHandlerBinded:(e:KeyboardEvent)=>void;
-    private wheelHandlerBinded:(e:WheelEvent)=>void;
     private moveSwitch:ComputedRef<boolean>
+    private mouseDown:boolean = false;
     constructor(frame:HTMLDivElement,arena:HTMLDivElement,callBack:()=>void,moveSwitch:ComputedRef<boolean>){
         this.frame = frame;
         this.arena = arena;
         this.callBack = callBack;
         this.moveSwitch = moveSwitch
         frame.addEventListener("click",(e)=>{
-            const x = e.clientX - this.frame.offsetLeft;
-            const y = e.clientY - this.frame.offsetTop;
+            const x = e.clientX
+            const y = e.clientY
             const fw = this.frame.clientWidth;
             const fh = this.frame.clientHeight;
             const ax = x/fw;
@@ -26,15 +24,15 @@ export class Scaler{
                 this.scale(0.8,{x:ax,y:ay});
             }
         })
-        this.touchHandlerBinded = this.touchHandler.bind(this)
-        this.wheelHandlerBinded = this.wheelHandler.bind(this)
-        this.keyHandlerBinded = this.keyHandler.bind(this)
 
-        frame.addEventListener("touchmove",this.touchHandlerBinded)
+        frame.addEventListener('mousedown',()=>this.mouseDown = true)
+        frame.addEventListener("touchmove",this.moveHandlerBinded)
+        frame.addEventListener("mousemove",this.moveHandlerBinded)
         frame.addEventListener("touchend",()=>{
-            this.touchDist=-1
-            this.touchCx=-1
-            this.touchCy=-1
+            this.touchDist=-1; this.touchCx=-1; this.touchCy=-1
+        })
+        frame.addEventListener("mouseup",(e)=>{
+            this.touchDist=-1; this.touchCx=-1; this.touchCy=-1; this.mouseDown = false
         })
         frame.addEventListener("wheel", this.wheelHandlerBinded)
         window.addEventListener("keypress", this.keyHandlerBinded)
@@ -45,13 +43,25 @@ export class Scaler{
     touchCy=-1;
     lastTouchResponse = 0;
     touchTimeThrs = 20;
-    private touchHandler(e:TouchEvent){
+
+    private moveHandlerBinded = this.moveHandler.bind(this)
+    private moveHandler(e:TouchEvent|MouseEvent){
         e.preventDefault()
         const time = +new Date();
         if(time - this.lastTouchResponse < this.touchTimeThrs)
             return;
         this.lastTouchResponse = time;
-        const info = this.touchInfo(e);
+        let info:TouchInfoRes
+        if('touches' in e)
+            info = this.touchInfo(e as TouchEvent);
+        else{
+            if(!this.mouseDown)
+                return;
+            info = {
+                cx: e.clientX,
+                cy: e.clientY
+            }
+        }
         if(!info || (!this.moveSwitch.value && !info.dist))
             return;
         const {cx, cy} = info;
@@ -79,11 +89,11 @@ export class Scaler{
         }
         this.callBack();
     }
-    private touchInfo(e:TouchEvent):{cx:number,cy:number,dist?:number}|undefined{
+    private touchInfo(e:TouchEvent):TouchInfoRes{
         if(e.touches.length<1)
             return;
-        const x0 = e.touches[0].clientX - this.frame.offsetLeft;
-        const y0 = e.touches[0].clientY - this.frame.offsetTop;
+        const x0 = e.touches[0].clientX;
+        const y0 = e.touches[0].clientY;
         if(e.touches.length==1){
             return{
                 cx:x0,
@@ -91,8 +101,8 @@ export class Scaler{
             }
         }
         if(e.touches.length==2){
-            const x1 = e.touches[1].clientX - this.frame.offsetLeft;
-            const y1 = e.touches[1].clientY - this.frame.offsetTop;
+            const x1 = e.touches[1].clientX;
+            const y1 = e.touches[1].clientY;
             const cx = (x0+x1)/2;
             const cy = (y0+y1)/2;
             const dist = Math.sqrt((x0-x1)**2 + (y0-y1)**2);
@@ -103,6 +113,7 @@ export class Scaler{
     
     moveBtns = ['w','a','s','d']
     moveStepRatio = 0.05
+    private keyHandlerBinded = this.keyHandler.bind(this)
     private keyHandler(e:KeyboardEvent){
         const key = e.key;
         if(this.moveBtns.includes(key)){
@@ -120,6 +131,7 @@ export class Scaler{
             }
         }
     }
+    private wheelHandlerBinded = this.wheelHandler.bind(this)
     private wheelHandler(e:WheelEvent){
         const anchor = this.getAnchorFromEvent(e)
         e.preventDefault()
@@ -129,8 +141,8 @@ export class Scaler{
 
 
     private getAnchorFromEvent(e:{clientX:number,clientY:number}){
-        const fx = e.clientX - this.frame.offsetLeft;
-        const fy = e.clientY - this.frame.offsetTop;
+        const fx = e.clientX;
+        const fy = e.clientY;
         const fw = this.frame.clientWidth;
         const fh = this.frame.clientHeight;
         const x = fx/fw;
@@ -205,3 +217,5 @@ export class Scaler{
         }
     }
 }
+
+type TouchInfoRes = {cx:number,cy:number,dist?:number}|undefined
