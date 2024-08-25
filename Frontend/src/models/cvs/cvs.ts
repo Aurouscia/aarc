@@ -12,5 +12,13 @@ export function useCvs(){
         ctx.value = res;
         return res;
     }
-    return { cvs, getCtx }
+    function getCtxWithClearing(clear = true){
+        const ctx = getCtx();
+        if(clear){
+            const cvs = ctx.canvas;
+            ctx.clearRect(0, 0, cvs.width, cvs.height);
+        }
+        return ctx
+    }
+    return { cvs, getCtx: getCtxWithClearing }
 }

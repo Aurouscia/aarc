@@ -1,16 +1,16 @@
-import { ComputedRef } from "vue";
+import { Ref } from "vue";
 
 export class Scaler{
     private frame: HTMLDivElement;
     private arena: HTMLDivElement;
     private callBack:()=>void;
-    private moveSwitch:ComputedRef<boolean>
+    private moveLocked:Ref<boolean>
     private mouseDown:boolean = false;
-    constructor(frame:HTMLDivElement,arena:HTMLDivElement,callBack:()=>void,moveSwitch:ComputedRef<boolean>){
+    constructor(frame:HTMLDivElement,arena:HTMLDivElement,callBack:()=>void,moveLocked:Ref<boolean>){
         this.frame = frame;
         this.arena = arena;
         this.callBack = callBack;
-        this.moveSwitch = moveSwitch
+        this.moveLocked = moveLocked
         frame.addEventListener("click",(e)=>{
             const x = e.clientX
             const y = e.clientY
@@ -31,7 +31,7 @@ export class Scaler{
         frame.addEventListener("touchend",()=>{
             this.touchDist=-1; this.touchCx=-1; this.touchCy=-1
         })
-        frame.addEventListener("mouseup",(e)=>{
+        frame.addEventListener("mouseup",()=>{
             this.touchDist=-1; this.touchCx=-1; this.touchCy=-1; this.mouseDown = false
         })
         frame.addEventListener("wheel", this.wheelHandlerBinded)
@@ -62,7 +62,7 @@ export class Scaler{
                 cy: e.clientY
             }
         }
-        if(!info || (!this.moveSwitch.value && !info.dist))
+        if(!info || (this.moveLocked.value && !info.dist))
             return;
         const {cx, cy} = info;
         if(!info.dist){

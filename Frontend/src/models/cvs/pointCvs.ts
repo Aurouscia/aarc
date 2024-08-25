@@ -10,13 +10,13 @@ export function usePointCvs(){
     function renderAllPoints(){
         if(!saveStore.save)
             return
+        const ctx = getCtx()
         const allPts = saveStore.save.points
         for(const pt of allPts){
-            drawPt(pt)
+            drawPt(pt, ctx)
         }
     }
-    function drawPt(pt:ControlPoint){
-        const ctx = getCtx()
+    function drawPt(pt:ControlPoint, ctx:CanvasRenderingContext2D){
         const pos = pt.pos
         let biasA1:Bias, biasA2:Bias, biasB1:Bias, biasB2:Bias;
         if(pt.dir === ControlPointDir.incline){

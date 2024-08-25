@@ -6,7 +6,7 @@ import { useEnvStore } from '@/models/stores/envStore';
 import { bgColor } from '@/utils/consts';
 import { simpleGrid } from '@/utils/grid';
 import { storeToRefs } from 'pinia';
-import { onMounted, ref, nextTick } from 'vue';
+import { onMounted, nextTick } from 'vue';
 
 const envStore = useEnvStore();
 const { cvsFrame, cvsCont, cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
@@ -36,6 +36,10 @@ onMounted(async()=>{
     drawTestGrid()
     renderAllLines()
     renderAllPoints()
+    setInterval(()=>{
+        renderAllLines()
+        renderAllPoints()
+    }, 100)
 })
 
 </script>

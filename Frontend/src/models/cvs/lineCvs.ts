@@ -30,7 +30,7 @@ export function useLineCvs(){
             ctx.lineCap = 'round'
             ctx.lineWidth = lineWidth
             ctx.strokeStyle = line.color
-            linkPts(formalPts)
+            linkPts(formalPts, ctx)
         }
     }
     function formalizeSeg(a:ControlPoint, b:ControlPoint):Coord[]{
@@ -68,12 +68,12 @@ export function useLineCvs(){
             }
         }
     }
-    function linkPts(pts:Coord[]){
+    function linkPts(pts:Coord[], ctx:CanvasRenderingContext2D){
         if(pts.length<=1){
             return;
         }
         const first = pts[0]
-        const ctx = getCtx()
+        ctx.beginPath()
         ctx.moveTo(first[0], first[1])
         let prevPt:Coord = first
         for(let i=1;i<pts.length;i++){

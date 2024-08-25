@@ -1,14 +1,16 @@
 import { defineStore } from "pinia";
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { Scaler } from "@/utils/scaler";
 import { Coord } from "../coord";
 import { coordDistSq } from "@/utils/coordDist";
 import { clickControlPointThrsSq } from "@/utils/consts";
+import { listenPureClick } from "@/utils/pureClick";
+import { eventClientCoord } from "@/utils/eventClientCoord";
 
 export const useEnvStore = defineStore('env', ()=>{
     const mode = ref<"none"|"pt">("none")
-    const moveSwitch = computed<boolean>(()=>mode.value=='none')
+    const movingPoint = ref<boolean>(false)
     const saveStore = useSaveStore();
     const activeId = ref<number>(-1)
     const cvsFrame = ref<HTMLDivElement>()
@@ -19,12 +21,20 @@ export const useEnvStore = defineStore('env', ()=>{
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
-        scaler = new Scaler(cvsFrame.value, cvsCont.value, ()=>{}, moveSwitch)
+        scaler = new Scaler(cvsFrame.value, cvsCont.value, ()=>{}, movingPoint)
         scaler.widthReset()
-        cvsCont.value.addEventListener('click', clickHandlerBinded)
+        listenPureClick(cvsCont.value, pureClickHandlerBinded)
+        cvsCont.value.addEventListener('mousedown', moveStartHandlerBinded)
+        cvsCont.value.addEventListener('touchstart', moveStartHandlerBinded)
+        cvsCont.value.addEventListener('mousemove', movingHandlerBinded)
+        cvsCont.value.addEventListener('touchmove', movingHandlerBinded)
+        cvsCont.value.addEventListener('mouseup', moveEndHandlerBinded)
+        cvsCont.value.addEventListener('touchend', moveEndHandlerBinded)
     }
-    function clickHandler(e:MouseEvent){
-        const coord = translate([e.offsetX, e.offsetY]);
+    
+    const pureClickHandlerBinded = pureClickHandler.bind(this) 
+    function pureClickHandler(clientCord:Coord){
+        const coord = translateFromClient(clientCord);
         if(!coord)
             return
         const pt = onPt(coord)
@@ -37,22 +47,63 @@ export const useEnvStore = defineStore('env', ()=>{
             mode.value = 'none'
         }
     }
-    const clickHandlerBinded = clickHandler.bind(this) 
+
+    const moveStartHandlerBinded = moveStartHandler.bind(this)
+    function moveStartHandler(e:MouseEvent|TouchEvent){
+        const clientCoord = eventClientCoord(e)
+        if(!clientCoord)
+            return;
+        const coord = translateFromClient(clientCoord);
+        console.log(coord)
+        if(!coord)
+            return;
+        const pt = onPt(coord)
+        if(pt && pt.id === activeId.value){
+            movingPoint.value = true
+        }
+    }
+
+    const movingHandlerBinded = movingHandler.bind(this)
+    function movingHandler(e:MouseEvent|TouchEvent){
+        if(movingPoint.value){
+            const clientCoord = eventClientCoord(e)
+            if(!clientCoord)
+                return;
+            const coord = translateFromClient(clientCoord);
+            const pt = saveStore.save?.points.find(x=>x.id == activeId.value)
+            if(pt && coord)
+                pt.pos = coord
+        }
+    }
+
+    const moveEndHandlerBinded = moveEndHandler.bind(this)
+    function moveEndHandler(){
+        //手指离开屏幕时，touches为空数组，无法获取位置
+        movingPoint.value = false
+    }
+
     function onPt(c:Coord){
         return saveStore.save?.points.find(p=>{
             const distSq = coordDistSq(p.pos, c)
             return distSq < clickControlPointThrsSq
         })
     }
-    function translate(coordDisplayed:Coord):Coord|undefined{
-        const [dx, dy] = coordDisplayed;
+    function translateFromOffset(coordOffset:Coord):Coord|undefined{
+        const [ox, oy] = coordOffset;
         const w = cvsCont.value?.offsetWidth;
         const h = cvsCont.value?.offsetHeight;
         if(!w || !h)
             return;
         const ratioX = cvsWidth.value/w
         const ratioY = cvsHeight.value/h
-        return [ratioX*dx, ratioY*dy]
+        return [ratioX*ox, ratioY*oy]
+    }
+    function translateFromClient(coordClient:Coord):Coord|undefined{
+        const sx = cvsFrame.value?.scrollLeft;
+        const sy = cvsFrame.value?.scrollTop;
+        if(sx===undefined || sy===undefined)
+            return;
+        return translateFromOffset([coordClient[0] + sx, coordClient[1] + sy])
     }
     return { init, cvsFrame, cvsCont, activeId, cvsWidth, cvsHeight }
 })
