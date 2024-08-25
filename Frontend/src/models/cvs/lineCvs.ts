@@ -1,4 +1,3 @@
-import { ref } from "vue";
 import { useSaveStore } from "../stores/saveStore";
 import { ControlPoint, ControlPointDir } from "../save";
 import { coordRelDiff } from "@/utils/coordRel";

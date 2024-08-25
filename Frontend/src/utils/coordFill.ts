@@ -13,7 +13,6 @@ function coordFillWhat(a:Coord, b:Coord, xDiff:number, yDiff:number,
     if(posRel=='l' || posRel=='u' || posRel=='lu' || posRel == 'ur'){
         return []
     }
-    console.log({xDiff,yDiff})
     if(posRel=='llu'){
         if(type=='top'){
             const bias = - xDiff + yDiff

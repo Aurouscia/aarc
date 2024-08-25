@@ -1,3 +1,5 @@
+import { ComputedRef } from "vue";
+
 export class Scaler{
     private frame: HTMLDivElement;
     private arena: HTMLDivElement;
@@ -5,10 +7,12 @@ export class Scaler{
     private touchHandlerBinded:(e:TouchEvent)=>void;
     private keyHandlerBinded:(e:KeyboardEvent)=>void;
     private wheelHandlerBinded:(e:WheelEvent)=>void;
-    constructor(frame:HTMLDivElement,arena:HTMLDivElement,callBack:()=>void){
+    private moveSwitch:ComputedRef<boolean>
+    constructor(frame:HTMLDivElement,arena:HTMLDivElement,callBack:()=>void,moveSwitch:ComputedRef<boolean>){
         this.frame = frame;
         this.arena = arena;
         this.callBack = callBack;
+        this.moveSwitch = moveSwitch
         frame.addEventListener("click",(e)=>{
             const x = e.clientX - this.frame.offsetLeft;
             const y = e.clientY - this.frame.offsetTop;
@@ -48,7 +52,7 @@ export class Scaler{
             return;
         this.lastTouchResponse = time;
         const info = this.touchInfo(e);
-        if(!info)
+        if(!info || (!this.moveSwitch.value && !info.dist))
             return;
         const {cx, cy} = info;
         if(!info.dist){

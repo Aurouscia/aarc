@@ -2,7 +2,7 @@ import { useSaveStore } from "../stores/saveStore";
 import { useCvs } from "./cvs";
 import { ControlPoint, ControlPointDir } from "../save";
 import { applyBias, Bias } from "@/utils/coordBias";
-import { bareControlPointLineWidth, bareControlPointSize, bgColor } from "@/utils/consts";
+import { bareControlPointLineWidth, bareControlPointSize } from "@/utils/consts";
 
 export function usePointCvs(){
     const saveStore = useSaveStore();
@@ -40,7 +40,7 @@ export function usePointCvs(){
         ctx.lineTo(a2[0], a2[1])
         ctx.moveTo(b1[0], b1[1])
         ctx.lineTo(b2[0], b2[1])
-        ctx.lineWidth = bareControlPointLineWidth*2;
+        ctx.lineWidth = bareControlPointLineWidth * 2;
         ctx.strokeStyle = 'white'
         ctx.stroke();
         ctx.lineWidth = bareControlPointLineWidth;
