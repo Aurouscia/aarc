@@ -2,14 +2,16 @@ import { Coord } from "@/models/coord";
 import { PosRel } from "./coordRel";
 
 export function coordFill(a:Coord, b:Coord, xDiff:number, yDiff:number,
-        posRel:PosRel, type:"top"|"bottom"|"midVert"|"midInc"):Coord[]
-    {
-        const fill = coordFillWhat(a,b,xDiff,yDiff,posRel,type);
-        return [a,...fill,b]
-    }
-function coordFillWhat(a:Coord, b:Coord, xDiff:number, yDiff:number,
-        posRel:PosRel, type:"top"|"bottom"|"midVert"|"midInc"):Coord[]
-    {
+    posRel:PosRel, reversed:boolean, type:"top"|"bottom"|"midVert"|"midInc"):Coord[]
+{
+    const res = coordFillUnordered(a, b, xDiff, yDiff, posRel, type);
+    if(reversed)
+        res.reverse()
+    return res
+}
+function coordFillUnordered(a:Coord, b:Coord, xDiff:number, yDiff:number,
+    posRel:PosRel, type:"top"|"bottom"|"midVert"|"midInc"):Coord[]
+{
     if(posRel=='l' || posRel=='u' || posRel=='lu' || posRel == 'ur'){
         return []
     }

@@ -6,6 +6,7 @@ import { Bias, applyBias } from "@/utils/coordBias";
 import { Coord } from "../coord";
 import { coordFill } from "@/utils/coordFill";
 import { useCvs } from "./cvs";
+import { sgn } from "@/utils/sgn";
 
 export function useLineCvs(){
     const saveStore = useSaveStore();
@@ -25,7 +26,9 @@ export function useLineCvs(){
             for(let i=0;i<pts.length-1;i++){
                 const a = pts[i]
                 const b = pts[i+1]
-                formalPts.push(...formalizeSeg(a, b))
+                if(i===0)
+                    formalPts.push(a.pos)
+                formalPts.push(...formalizeSeg(a, b), b.pos)
             }
             ctx.lineCap = 'round'
             ctx.lineWidth = lineWidth
@@ -38,6 +41,7 @@ export function useLineCvs(){
         let yDiff = a.pos[1] - b.pos[1]
         const rel = coordRelDiff(xDiff, yDiff)
         const pr = rel.posRel
+        const rv = rel.rev;
         if(pr == 's')
             return [a.pos];
         if(rel.rev){
@@ -49,22 +53,22 @@ export function useLineCvs(){
         }
         if(a.dir==b.dir){
             if(a.dir==ControlPointDir.incline){
-                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, 'midVert')
+                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'midVert')
             }else{
-                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, 'midInc')
+                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'midInc')
             }
         }
         if(a.dir==ControlPointDir.incline){
             if(pr == 'luu' || pr == 'uur'){
-                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, 'top')
+                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'top')
             }else{
-                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, 'bottom')
+                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'bottom')
             }
         }else{
             if(pr == 'luu' || pr == 'uur'){
-                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, 'bottom')
+                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'bottom')
             }else{
-                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, 'top')
+                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'top')
             }
         }
     }
@@ -84,13 +88,13 @@ export function useLineCvs(){
             }
             const nextPt = pts[i+1]
             const prevBias:Bias = {
-                x:Math.sign(prevPt[0] - nowPt[0]) as -1|0|1,
-                y:Math.sign(prevPt[1] - nowPt[1]) as -1|0|1,
+                x:sgn(prevPt[0] - nowPt[0]) as -1|0|1,
+                y:sgn(prevPt[1] - nowPt[1]) as -1|0|1,
             }
             const prevSok = applyBias(nowPt, prevBias, turnRadius)
             const nextBias:Bias = {
-                x:Math.sign(nextPt[0] - nowPt[0]) as -1|0|1,
-                y:Math.sign(nextPt[1] - nowPt[1]) as -1|0|1,
+                x:sgn(nextPt[0] - nowPt[0]) as -1|0|1,
+                y:sgn(nextPt[1] - nowPt[1]) as -1|0|1,
             }
             const nextSok = applyBias(nowPt, nextBias, turnRadius)
             ctx.lineTo(prevSok[0], prevSok[1])
