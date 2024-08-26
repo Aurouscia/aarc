@@ -1,4 +1,5 @@
 import { Coord } from "@/models/coord";
+import { isZero } from "./sgn";
 
 export type PosRel = 's'|'l'|'llu'|'lu'|'luu'|'u'|'uur'|'ur'|'urr'
 export function coordRel(a:Coord, b:Coord){
@@ -7,18 +8,18 @@ export function coordRel(a:Coord, b:Coord){
     return coordRelDiff(xDiff, yDiff)
 }
 export function coordRelDiff(xDiff:number, yDiff:number):{posRel:PosRel, rev:boolean}{
-    if(xDiff == 0){
-        if(yDiff == 0)
+    if(isZero(xDiff)){
+        if(isZero(yDiff))
             return {posRel:'s', rev:false}
         return {posRel:'u', rev:yDiff>0}
     }
-    if(yDiff == 0){
+    if(isZero(yDiff)){
         return {posRel:'l', rev:xDiff>0}
     }
-    if(xDiff == yDiff){
+    if(isZero(xDiff - yDiff)){
         return {posRel:'lu',rev:xDiff>0}
     }
-    if(xDiff==-yDiff){
+    if(isZero(xDiff + yDiff)){
         return {posRel:'ur',rev:yDiff>0}
     }
     if((yDiff>0 && xDiff>yDiff) || (yDiff<0 && xDiff<yDiff)){

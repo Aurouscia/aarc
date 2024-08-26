@@ -1,5 +1,5 @@
 export const bgColor = '#eee'
-export const turnRadius = 20
+export const turnAreaRadius = 20
 export const lineWidth = 12
 export const bareControlPointSize = 20
 export const bareControlPointLineWidth = 3

@@ -5,3 +5,6 @@ export function coordDistSq(a:Coord, b:Coord){
     const diffY = a[1] - b[1]
     return diffX**2 + diffY**2 
 }
+export function coordDist(a:Coord, b:Coord){
+    return Math.sqrt(coordDistSq(a,b))
+}

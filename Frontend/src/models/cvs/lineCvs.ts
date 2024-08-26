@@ -1,12 +1,13 @@
 import { useSaveStore } from "../stores/saveStore";
 import { ControlPoint, ControlPointDir } from "../save";
 import { coordRelDiff } from "@/utils/coordRel";
-import { lineWidth, turnRadius } from "@/utils/consts";
+import { lineWidth, turnAreaRadius } from "@/utils/consts";
 import { Bias, applyBias } from "@/utils/coordBias";
 import { Coord } from "../coord";
 import { coordFill } from "@/utils/coordFill";
 import { useCvs } from "./cvs";
 import { sgn } from "@/utils/sgn";
+import { coordDist } from "@/utils/coordDist";
 
 export function useLineCvs(){
     const saveStore = useSaveStore();
@@ -77,9 +78,11 @@ export function useLineCvs(){
             return;
         }
         const first = pts[0]
+        const second = pts[1]
         ctx.beginPath()
         ctx.moveTo(first[0], first[1])
         let prevPt:Coord = first
+        let prevDist:number = coordDist(first, second);
         for(let i=1;i<pts.length;i++){
             const nowPt = pts[i]
             if(i==pts.length-1){
@@ -87,18 +90,21 @@ export function useLineCvs(){
                 break;
             }
             const nextPt = pts[i+1]
+            const nextDist = coordDist(nowPt, nextPt)
+            const taRadius = Math.min(turnAreaRadius, prevDist/2, nextDist/2)
             const prevBias:Bias = {
                 x:sgn(prevPt[0] - nowPt[0]) as -1|0|1,
                 y:sgn(prevPt[1] - nowPt[1]) as -1|0|1,
             }
-            const prevSok = applyBias(nowPt, prevBias, turnRadius)
+            const prevSok = applyBias(nowPt, prevBias, taRadius)
             const nextBias:Bias = {
                 x:sgn(nextPt[0] - nowPt[0]) as -1|0|1,
                 y:sgn(nextPt[1] - nowPt[1]) as -1|0|1,
             }
-            const nextSok = applyBias(nowPt, nextBias, turnRadius)
+            const nextSok = applyBias(nowPt, nextBias, taRadius)
             ctx.lineTo(prevSok[0], prevSok[1])
             ctx.quadraticCurveTo(nowPt[0], nowPt[1], nextSok[0], nextSok[1])
+            prevDist = nextDist;
             prevPt = nowPt;
         }
         ctx.stroke()

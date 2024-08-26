@@ -1,7 +1,10 @@
 import { numberCmpEpsilon } from "./consts";
 
 export function sgn(num:number){
-    if(Math.abs(num) < numberCmpEpsilon)
+    if(isZero(num))
         return 0;
     return Math.sign(num);
+}
+export function isZero(num:number){
+    return Math.abs(num) < numberCmpEpsilon
 }
