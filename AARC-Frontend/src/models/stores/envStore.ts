@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, shallowRef } from "vue";
 import { useSaveStore } from "./saveStore";
 import { Scaler } from "@/utils/scaler";
 import { Coord } from "../coord";
@@ -12,12 +12,13 @@ export const useEnvStore = defineStore('env', ()=>{
     const mode = ref<"none"|"pt">("none")
     const movingPoint = ref<boolean>(false)
     const saveStore = useSaveStore();
-    const activeId = ref<number>(-1)
+    const activePtId = ref<number|undefined>()
     const cvsFrame = ref<HTMLDivElement>()
     const cvsCont = ref<HTMLDivElement>()
     const cvsWidth = ref<number>(1)
     const cvsHeight = ref<number>(1)
     let scaler:Scaler;
+    const renderMain = shallowRef<()=>void>(()=>{});
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -39,12 +40,12 @@ export const useEnvStore = defineStore('env', ()=>{
             return
         const pt = onPt(coord)
         if(pt){
-            activeId.value = pt.id
+            activePtId.value = pt.id
             mode.value = 'pt'
-            console.log(pt.id)
         }else{
-            activeId.value = 0
+            activePtId.value = undefined
             mode.value = 'none'
+            renderMain.value()
         }
     }
 
@@ -58,7 +59,7 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!coord)
             return;
         const pt = onPt(coord)
-        if(pt && pt.id === activeId.value){
+        if(pt && pt.id === activePtId.value){
             movingPoint.value = true
         }
     }
@@ -70,7 +71,7 @@ export const useEnvStore = defineStore('env', ()=>{
             if(!clientCoord)
                 return;
             const coord = translateFromClient(clientCoord);
-            const pt = saveStore.save?.points.find(x=>x.id == activeId.value)
+            const pt = saveStore.save?.points.find(x=>x.id === activePtId.value)
             if(pt && coord)
                 pt.pos = coord
         }
@@ -105,5 +106,5 @@ export const useEnvStore = defineStore('env', ()=>{
             return;
         return translateFromOffset([coordClient[0] + sx, coordClient[1] + sy])
     }
-    return { init, cvsFrame, cvsCont, activeId, cvsWidth, cvsHeight }
+    return { init, cvsFrame, cvsCont, activePtId, cvsWidth, cvsHeight, renderMain }
 })

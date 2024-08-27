@@ -1,4 +1,4 @@
-import { useSaveStore } from "../../stores/saveStore";
+import { LineSeg, useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir } from "../../save";
 import { coordRelDiff } from "@/utils/coordRel";
 import { lineWidth, turnAreaRadius } from "@/utils/consts";
@@ -7,32 +7,49 @@ import { Coord } from "../../coord";
 import { coordFill } from "@/utils/coordFill";
 import { sgn } from "@/utils/sgn";
 import { coordDist } from "@/utils/coordDist";
+import { useEnvStore } from "@/models/stores/envStore";
 
 export function useLineCvsWorker(){
     const saveStore = useSaveStore();
+    const envStore = useEnvStore();
     function renderAllLines(ctx:CanvasRenderingContext2D){
         if(!saveStore.save){
             return
         }
         const lines = saveStore.save.lines;
-        const allPts = saveStore.save.points;
         for(const line of lines){
-            const pts = allPts.filter(p => line.pts.includes(p.id));
-            const formalPts:Coord[] = []
+            const pts = saveStore.getPtsByIds(line.pts)
             if(pts.length<=1)
                 continue;
-            for(let i=0;i<pts.length-1;i++){
-                const a = pts[i]
-                const b = pts[i+1]
-                if(i===0)
-                    formalPts.push(a.pos)
-                formalPts.push(...formalizeSeg(a, b), b.pos)
-            }
+            const formalPts = formalize(pts)
             ctx.lineCap = 'round'
             ctx.lineWidth = lineWidth
             ctx.strokeStyle = line.color
             linkPts(formalPts, ctx)
         }
+    }
+    function renderSegsLine(ctx:CanvasRenderingContext2D, segs:LineSeg[]){
+        const activeId = envStore.activePtId;
+        if(activeId === undefined)
+            return;
+        segs.forEach(seg=>{
+            const formalPts = formalize(seg.pts)
+            ctx.lineCap = 'round'
+            ctx.lineWidth = lineWidth
+            ctx.strokeStyle = seg.line.color
+            linkPts(formalPts, ctx)
+        })
+    }
+    function formalize(pts:ControlPoint[]):Coord[]{
+        const formalPts:Coord[] = []
+        for(let i=0;i<pts.length-1;i++){
+            const a = pts[i]
+            const b = pts[i+1]
+            if(i===0)
+                formalPts.push(a.pos)
+            formalPts.push(...formalizeSeg(a, b), b.pos)
+        }
+        return formalPts
     }
     function formalizeSeg(a:ControlPoint, b:ControlPoint):Coord[]{
         let xDiff = a.pos[0] - b.pos[0]
@@ -106,5 +123,5 @@ export function useLineCvsWorker(){
         }
         ctx.stroke()
     }
-    return { renderAllLines }
+    return { renderAllLines, renderSegsLine }
 }

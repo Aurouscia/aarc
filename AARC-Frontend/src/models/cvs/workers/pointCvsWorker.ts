@@ -1,4 +1,4 @@
-import { useSaveStore } from "../../stores/saveStore";
+import { LineSeg, useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir } from "../../save";
 import { applyBias, Bias } from "@/utils/coordBias";
 import { bareControlPointLineWidth, bareControlPointSize } from "@/utils/consts";
@@ -10,10 +10,15 @@ export function usePointCvsWorker(){
             return
         const allPts = saveStore.save.points
         for(const pt of allPts){
-            drawPt(pt, ctx)
+            drawPt(ctx, pt)
         }
     }
-    function drawPt(pt:ControlPoint, ctx:CanvasRenderingContext2D){
+    function renderSegsPoints(ctx:CanvasRenderingContext2D, segs:LineSeg[], activeId:number){
+        segs.forEach(seg=>{
+            seg.pts.forEach(pt=>drawPt(ctx, pt, activeId == pt.id))
+        })
+    }
+    function drawPt(ctx:CanvasRenderingContext2D, pt:ControlPoint, active:boolean = false){
         const pos = pt.pos
         let biasA1:Bias, biasA2:Bias, biasB1:Bias, biasB2:Bias;
         if(pt.dir === ControlPointDir.incline){
@@ -37,6 +42,11 @@ export function usePointCvsWorker(){
         ctx.lineTo(a2[0], a2[1])
         ctx.moveTo(b1[0], b1[1])
         ctx.lineTo(b2[0], b2[1])
+        if(active){
+            const radius = bareControlPointSize*0.8
+            ctx.moveTo(pos[0]+radius, pos[1])
+            ctx.arc(pos[0], pos[1], radius, 0, 2*Math.PI)
+        }
         ctx.lineWidth = bareControlPointLineWidth * 2;
         ctx.strokeStyle = 'white'
         ctx.stroke();
@@ -44,5 +54,5 @@ export function usePointCvsWorker(){
         ctx.strokeStyle = 'black'
         ctx.stroke()
     }
-    return { renderAllPoints }
+    return { renderAllPoints, renderSegsPoints }
 }
