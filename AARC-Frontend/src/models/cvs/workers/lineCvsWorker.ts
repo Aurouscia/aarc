@@ -1,22 +1,19 @@
-import { useSaveStore } from "../stores/saveStore";
-import { ControlPoint, ControlPointDir } from "../save";
+import { useSaveStore } from "../../stores/saveStore";
+import { ControlPoint, ControlPointDir } from "../../save";
 import { coordRelDiff } from "@/utils/coordRel";
 import { lineWidth, turnAreaRadius } from "@/utils/consts";
 import { Bias, applyBias } from "@/utils/coordBias";
-import { Coord } from "../coord";
+import { Coord } from "../../coord";
 import { coordFill } from "@/utils/coordFill";
-import { useCvs } from "./cvs";
 import { sgn } from "@/utils/sgn";
 import { coordDist } from "@/utils/coordDist";
 
-export function useLineCvs(){
+export function useLineCvsWorker(){
     const saveStore = useSaveStore();
-    const { cvs, getCtx } = useCvs();
-    function renderAllLines(){
+    function renderAllLines(ctx:CanvasRenderingContext2D){
         if(!saveStore.save){
             return
         }
-        const ctx = getCtx()
         const lines = saveStore.save.lines;
         const allPts = saveStore.save.points;
         for(const line of lines){
@@ -109,5 +106,5 @@ export function useLineCvs(){
         }
         ctx.stroke()
     }
-    return { cvs, renderAllLines }
+    return { renderAllLines }
 }

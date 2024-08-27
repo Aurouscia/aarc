@@ -1,28 +1,18 @@
 <script setup lang="ts">
-import { useBaseCvs } from '@/models/cvs/baseCvs';
-import { useLineCvs } from '@/models/cvs/lineCvs';
-import { usePointCvs } from '@/models/cvs/pointCvs';
+import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher';
+import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useEnvStore } from '@/models/stores/envStore';
 import { bgColor } from '@/utils/consts';
-import { simpleGrid } from '@/utils/grid';
 import { storeToRefs } from 'pinia';
 import { onMounted, nextTick } from 'vue';
 
 const envStore = useEnvStore();
 const { cvsFrame, cvsCont, cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
-const { cvs:baseCvs } = useBaseCvs()
-const { cvs:lineCvs, renderAllLines } = useLineCvs()
-const { cvs:pointCvs, renderAllPoints } = usePointCvs()
+const { baseCvs, renderBaseCvs } = useBaseCvsDispatcher()
+const { mainCvs, renderMainCvs } = useMainCvsDispatcher()
 
 const testWidth = 1000
 const testHeight = 1000
-
-function drawTestGrid(){
-    const ctx = baseCvs.value?.getContext('2d')
-    if(!ctx)
-        return;
-    simpleGrid(ctx)
-}
 
 onMounted(async()=>{
     cvsWidth.value = testWidth
@@ -33,12 +23,10 @@ onMounted(async()=>{
     }
     await nextTick()
     envStore.init()
-    drawTestGrid()
-    renderAllLines()
-    renderAllPoints()
+    renderBaseCvs()
+    renderMainCvs()
     setInterval(()=>{
-        renderAllLines()
-        renderAllPoints()
+        renderMainCvs()
     }, 100)
 })
 
@@ -48,8 +36,7 @@ onMounted(async()=>{
     <div class="cvsFrame" ref="cvsFrame">
         <div class="cvsCont" ref="cvsCont" :style="{backgroundColor: bgColor}">
             <canvas ref="baseCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
-            <canvas ref="lineCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
-            <canvas ref="pointCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
+            <canvas ref="mainCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
         </div>
     </div>
 </template>

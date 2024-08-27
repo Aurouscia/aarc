@@ -1,16 +1,13 @@
-import { useSaveStore } from "../stores/saveStore";
-import { useCvs } from "./cvs";
-import { ControlPoint, ControlPointDir } from "../save";
+import { useSaveStore } from "../../stores/saveStore";
+import { ControlPoint, ControlPointDir } from "../../save";
 import { applyBias, Bias } from "@/utils/coordBias";
 import { bareControlPointLineWidth, bareControlPointSize } from "@/utils/consts";
 
-export function usePointCvs(){
+export function usePointCvsWorker(){
     const saveStore = useSaveStore();
-    const { cvs, getCtx } = useCvs();
-    function renderAllPoints(){
+    function renderAllPoints(ctx:CanvasRenderingContext2D){
         if(!saveStore.save)
             return
-        const ctx = getCtx()
         const allPts = saveStore.save.points
         for(const pt of allPts){
             drawPt(pt, ctx)
@@ -47,5 +44,5 @@ export function usePointCvs(){
         ctx.strokeStyle = 'black'
         ctx.stroke()
     }
-    return { cvs, renderAllPoints }
+    return { renderAllPoints }
 }
