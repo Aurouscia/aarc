@@ -8,3 +8,10 @@ export function coordDistSq(a:Coord, b:Coord){
 export function coordDist(a:Coord, b:Coord){
     return Math.sqrt(coordDistSq(a,b))
 }
+export function coordDistSqLessThan(a:Coord, b:Coord, cmp:number){
+    const diffXSq = (a[0] - b[0])**2
+    if(diffXSq > cmp)
+        return false;
+    const diffYSq = (a[1] - b[1])**2
+    return (diffXSq + diffYSq) < cmp
+}

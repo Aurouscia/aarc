@@ -7,18 +7,20 @@ import { coordDistSq } from "@/utils/coordDist";
 import { clickControlPointThrsSq } from "@/utils/consts";
 import { listenPureClick } from "@/utils/pureClick";
 import { eventClientCoord } from "@/utils/eventClientCoord";
+import { Line } from "../save";
+import { coordOnLineOfFormalPts } from "@/utils/coordOnLine";
 
 export const useEnvStore = defineStore('env', ()=>{
-    const mode = ref<"none"|"pt">("none")
     const movingPoint = ref<boolean>(false)
     const saveStore = useSaveStore();
-    const activePtId = ref<number|undefined>()
+    const activePtId = ref<number>(-1)
+    const activeLineId = ref<number>(-1)
     const cvsFrame = ref<HTMLDivElement>()
     const cvsCont = ref<HTMLDivElement>()
     const cvsWidth = ref<number>(1)
     const cvsHeight = ref<number>(1)
     let scaler:Scaler;
-    const renderMain = shallowRef<()=>void>(()=>{});
+    const renderMain = shallowRef<(changedLines:number[])=>void>(()=>{});
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -38,14 +40,29 @@ export const useEnvStore = defineStore('env', ()=>{
         const coord = translateFromClient(clientCord);
         if(!coord)
             return
+        //判断是否在点上
         const pt = onPt(coord)
         if(pt){
+            //点到点上了
             activePtId.value = pt.id
-            mode.value = 'pt'
+            activeLineId.value = -1
         }else{
-            activePtId.value = undefined
-            mode.value = 'none'
-            renderMain.value()
+            //判断是否在线上
+            const line = onLine(coord);
+            if(line){
+                //点到线上了
+                activeLineId.value = line
+                activePtId.value = -1
+            }
+            else{
+                let changedLines:number[] = []
+                if(activePtId.value){
+                    changedLines = saveStore.getLinesByPt(activePtId.value).map(x=>x.id)
+                }
+                activePtId.value = -1
+                activeLineId.value = -1
+                renderMain.value(changedLines)
+            }
         }
     }
 
@@ -55,7 +72,6 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!clientCoord)
             return;
         const coord = translateFromClient(clientCoord);
-        console.log(coord)
         if(!coord)
             return;
         const pt = onPt(coord)
@@ -89,6 +105,11 @@ export const useEnvStore = defineStore('env', ()=>{
             return distSq < clickControlPointThrsSq
         })
     }
+    function onLine(c:Coord){
+        return linesFormalPts.find(line=>{
+            return coordOnLineOfFormalPts(c, line.pts)
+        })?.lineId
+    }
     function translateFromOffset(coordOffset:Coord):Coord|undefined{
         const [ox, oy] = coordOffset;
         const w = cvsCont.value?.offsetWidth;
@@ -106,5 +127,27 @@ export const useEnvStore = defineStore('env', ()=>{
             return;
         return translateFromOffset([coordClient[0] + sx, coordClient[1] + sy])
     }
-    return { init, cvsFrame, cvsCont, activePtId, cvsWidth, cvsHeight, renderMain }
+
+    const linesFormalPts:{lineId:number, pts:Coord[]}[] = []
+    function setLinesFormalPts(lineId:number, pts:Coord[]){
+        let target = linesFormalPts.find(x=>x.lineId == lineId)
+        if(!target){
+            target = {lineId, pts}
+            linesFormalPts.push(target)
+        }
+        else{
+            target.pts = pts
+        }
+    }
+    
+    return { 
+        init, activePtId, activeLineId,
+        cvsFrame, cvsCont, cvsWidth, cvsHeight, 
+        renderMain, setLinesFormalPts
+    }
 })
+
+export interface LineTrace{
+    line:Line
+    coords:Coord[]
+}

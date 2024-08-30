@@ -1,7 +1,7 @@
 import { LineSeg, useSaveStore } from "../../stores/saveStore";
-import { ControlPoint, ControlPointDir } from "../../save";
+import { ControlPoint, ControlPointDir, Line } from "../../save";
 import { coordRelDiff } from "@/utils/coordRel";
-import { lineWidth, turnAreaRadius } from "@/utils/consts";
+import { lineWidthR, turnAreaRadius } from "@/utils/consts";
 import { Bias, applyBias } from "@/utils/coordBias";
 import { Coord } from "../../coord";
 import { coordFill } from "@/utils/coordFill";
@@ -12,21 +12,28 @@ import { useEnvStore } from "@/models/stores/envStore";
 export function useLineCvsWorker(){
     const saveStore = useSaveStore();
     const envStore = useEnvStore();
-    function renderAllLines(ctx:CanvasRenderingContext2D){
+    function renderAllLines(ctx:CanvasRenderingContext2D, needReportFormalPtsLines?:number[]){
         if(!saveStore.save){
             return
         }
         const lines = saveStore.save.lines;
         for(const line of lines){
-            const pts = saveStore.getPtsByIds(line.pts)
-            if(pts.length<=1)
-                continue;
-            const formalPts = formalize(pts)
-            ctx.lineCap = 'round'
-            ctx.lineWidth = lineWidth
-            ctx.strokeStyle = line.color
-            linkPts(formalPts, ctx)
+            const needReportFormalPts = !needReportFormalPtsLines || needReportFormalPtsLines.includes(line.id)
+            renderLine(ctx, line, needReportFormalPts)
         }
+    }
+    function renderLine(ctx:CanvasRenderingContext2D, line:Line, needReportFormalPts?:boolean){
+        const pts = saveStore.getPtsByIds(line.pts)
+        if(pts.length<=1)
+            return;
+        const formalPts = formalize(pts)
+        if(needReportFormalPts){
+            envStore.setLinesFormalPts(line.id, formalPts)
+        }
+        ctx.lineCap = 'round'
+        ctx.lineWidth = lineWidthR
+        ctx.strokeStyle = line.color
+        linkPts(formalPts, ctx)
     }
     function renderSegsLine(ctx:CanvasRenderingContext2D, segs:LineSeg[]){
         const activeId = envStore.activePtId;
@@ -35,7 +42,7 @@ export function useLineCvsWorker(){
         segs.forEach(seg=>{
             const formalPts = formalize(seg.pts)
             ctx.lineCap = 'round'
-            ctx.lineWidth = lineWidth
+            ctx.lineWidth = lineWidthR
             ctx.strokeStyle = seg.line.color
             linkPts(formalPts, ctx)
         })
@@ -123,5 +130,5 @@ export function useLineCvsWorker(){
         }
         ctx.stroke()
     }
-    return { renderAllLines, renderSegsLine }
+    return { renderAllLines, renderLine, renderSegsLine }
 }

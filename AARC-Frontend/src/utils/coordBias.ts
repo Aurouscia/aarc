@@ -1,11 +1,12 @@
 import { Coord } from "@/models/coord";
+import { sqrt2half } from "./consts";
 
 export type XBias = -1|0|1
 export type YBias = -1|0|1
 export type Bias = {x:XBias,y:YBias}
 export function applyBias(a:Coord, bias:Bias, dist:number):Coord{
     if(bias.x != 0 && bias.y != 0){
-        dist*=0.7071067811865475
+        dist*=sqrt2half
     }
     return [
         a[0] + bias.x * dist,

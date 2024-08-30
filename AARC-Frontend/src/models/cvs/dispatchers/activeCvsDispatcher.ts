@@ -8,16 +8,24 @@ export function useActiveCvsDispatcher(){
     const saveStore = useSaveStore()
     const envStore = useEnvStore()
     const { cvs: activeCvs, getCtx } = useCvs()
-    const { renderSegsLine } = useLineCvsWorker()
-    const { renderSegsPoints } = usePointCvsWorker()
+    const { renderSegsLine, renderLine } = useLineCvsWorker()
+    const { renderSegsPoints, renderLinePoints } = usePointCvsWorker()
     function renderActiveCvs(){
         const ctx = getCtx();
-        const activeId = envStore.activePtId;
-        if(activeId === undefined)
-            return;
-        const activeSegs = saveStore.adjacentSegs(activeId)
-        renderSegsLine(ctx, activeSegs)
-        renderSegsPoints(ctx, activeSegs, activeId)
+        const activePtId = envStore.activePtId;
+        if(activePtId >= 0){
+            const activeSegs = saveStore.adjacentSegs(activePtId)
+            renderSegsLine(ctx, activeSegs)
+            renderSegsPoints(ctx, activeSegs, activePtId)
+        }
+        const activeLineId = envStore.activeLineId
+        if(activeLineId >= 0){
+            const line = saveStore.save?.lines.find(x=>x.id == activeLineId)
+            if(line){
+                renderLine(ctx, line)
+                renderLinePoints(ctx, line)
+            }
+        }
     }
     return { activeCvs, renderActiveCvs }
 }

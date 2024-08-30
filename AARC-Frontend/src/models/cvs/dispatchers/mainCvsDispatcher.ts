@@ -9,9 +9,9 @@ export function useMainCvsDispatcher(){
     const { cvs: mainCvs, getCtx } = useCvs()
     const { renderAllLines } = useLineCvsWorker()
     const { renderAllPoints } = usePointCvsWorker()
-    function renderMainCvs(){
+    function renderMainCvs(changedLines?:number[]){
         const ctx = getCtx();
-        renderAllLines(ctx)
+        renderAllLines(ctx, changedLines)
         renderAllPoints(ctx)
     }
     return { mainCvs, renderMainCvs }

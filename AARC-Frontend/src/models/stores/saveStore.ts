@@ -42,8 +42,14 @@ export const useSaveStore = defineStore('save', () => {
         })
         return res;
     }
+    function getLinesByPt(ptId:number){
+        const lines = save.value?.lines
+        if(!lines)
+            return []
+        return lines.filter(line=>line.pts.includes(ptId))
+    }
 
-    return { save, getNewId, getPtsByIds, adjacentSegs }
+    return { save, getNewId, getPtsByIds, adjacentSegs, getLinesByPt }
 })
 
 export interface LineSeg{

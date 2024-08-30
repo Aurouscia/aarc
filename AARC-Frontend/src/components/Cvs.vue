@@ -5,13 +5,16 @@ import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher
 import { useEnvStore } from '@/models/stores/envStore';
 import { bgColor } from '@/utils/consts';
 import { storeToRefs } from 'pinia';
-import { onMounted, nextTick } from 'vue';
+import { onMounted, nextTick, computed } from 'vue';
 
 const envStore = useEnvStore();
 const { cvsFrame, cvsCont, cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
 const { baseCvs, renderBaseCvs } = useBaseCvsDispatcher()
 const { mainCvs, renderMainCvs } = useMainCvsDispatcher()
 const { activeCvs, renderActiveCvs } = useActiveCvsDispatcher()
+const mainCvsInsnif = computed<boolean>(()=>
+    envStore.activePtId >= 0 || envStore.activeLineId >= 0
+)
 
 const testWidth = 1000
 const testHeight = 1000
@@ -38,7 +41,7 @@ onMounted(async()=>{
     <div class="cvsFrame" ref="cvsFrame">
         <div class="cvsCont" ref="cvsCont" :style="{backgroundColor: bgColor}">
             <canvas ref="baseCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
-            <canvas ref="mainCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: envStore.activePtId}"></canvas>
+            <canvas ref="mainCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>
             <canvas ref="activeCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
         </div>
     </div>
