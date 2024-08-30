@@ -6,9 +6,10 @@ import { useEnvStore } from '@/models/stores/envStore';
 import { bgColor } from '@/utils/consts';
 import { storeToRefs } from 'pinia';
 import { onMounted, nextTick, computed } from 'vue';
+import Ops from './Ops.vue';
 
 const envStore = useEnvStore();
-const { cvsFrame, cvsCont, cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
+const { cvsFrame, cvsCont, cvsWidth, cvsHeight, opsProps } = storeToRefs(useEnvStore())
 const { baseCvs, renderBaseCvs } = useBaseCvsDispatcher()
 const { mainCvs, renderMainCvs } = useMainCvsDispatcher()
 const { activeCvs, renderActiveCvs } = useActiveCvsDispatcher()
@@ -45,6 +46,7 @@ onMounted(async()=>{
             <canvas ref="activeCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
         </div>
     </div>
+    <Ops :pos="opsProps"></Ops>
 </template>
 
 <style scoped lang="scss">

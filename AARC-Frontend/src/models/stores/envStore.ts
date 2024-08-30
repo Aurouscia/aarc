@@ -7,8 +7,8 @@ import { coordDistSq } from "@/utils/coordDist";
 import { clickControlPointThrsSq } from "@/utils/consts";
 import { listenPureClick } from "@/utils/pureClick";
 import { eventClientCoord } from "@/utils/eventClientCoord";
-import { Line } from "../save";
 import { coordOnLineOfFormalPts } from "@/utils/coordOnLine";
+import { OpsPosProps } from "@/components/Ops.vue";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
@@ -24,7 +24,9 @@ export const useEnvStore = defineStore('env', ()=>{
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
-        scaler = new Scaler(cvsFrame.value, cvsCont.value, ()=>{}, movingPoint)
+        scaler = new Scaler(cvsFrame.value, cvsCont.value, ()=>{
+            setOps(false)
+        }, movingPoint)
         scaler.widthReset()
         listenPureClick(cvsCont.value, pureClickHandlerBinded)
         cvsCont.value.addEventListener('mousedown', moveStartHandlerBinded)
@@ -46,6 +48,7 @@ export const useEnvStore = defineStore('env', ()=>{
             //点到点上了
             activePtId.value = pt.id
             activeLineId.value = -1
+            setOps(pt.pos)
         }else{
             //判断是否在线上
             const line = onLine(coord);
@@ -53,6 +56,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 //点到线上了
                 activeLineId.value = line
                 activePtId.value = -1
+                setOps(coord)
             }
             else{
                 let changedLines:number[] = []
@@ -61,6 +65,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 }
                 activePtId.value = -1
                 activeLineId.value = -1
+                setOps(false)
                 renderMain.value(changedLines)
             }
         }
@@ -68,6 +73,7 @@ export const useEnvStore = defineStore('env', ()=>{
 
     const moveStartHandlerBinded = moveStartHandler.bind(this)
     function moveStartHandler(e:MouseEvent|TouchEvent){
+        setOps(false)
         const clientCoord = eventClientCoord(e)
         if(!clientCoord)
             return;
@@ -127,6 +133,26 @@ export const useEnvStore = defineStore('env', ()=>{
             return;
         return translateFromOffset([coordClient[0] + sx, coordClient[1] + sy])
     }
+    function translateToOffset(coord:Coord):Coord|undefined{
+        const [cx, cy] = coord;
+        const w = cvsCont.value?.offsetWidth;
+        const h = cvsCont.value?.offsetHeight;
+        if(!w || !h)
+            return;
+        const ratioX = cvsWidth.value/w
+        const ratioY = cvsHeight.value/h
+        return [cx/ratioX, cy/ratioY]
+    }
+    function translateToClient(coord:Coord):Coord|undefined{
+        const offsetCoord = translateToOffset(coord)
+        if(!offsetCoord)
+            return
+        const sx = cvsFrame.value?.scrollLeft;
+        const sy = cvsFrame.value?.scrollTop;
+        if(sx===undefined || sy===undefined)
+            return;
+        return [offsetCoord[0] - sx, offsetCoord[1] - sy]
+    }
 
     const linesFormalPts:{lineId:number, pts:Coord[]}[] = []
     function setLinesFormalPts(lineId:number, pts:Coord[]){
@@ -139,15 +165,28 @@ export const useEnvStore = defineStore('env', ()=>{
             target.pts = pts
         }
     }
+
+    const opsProps = ref<OpsPosProps>({show:false, x:0, y:0, at:'rb'})
+    function setOps(coord:Coord|false){
+        if(!coord){
+            opsProps.value.show = false
+            return
+        }
+        const clientCoord = translateToClient(coord)
+        if(!clientCoord)
+            return
+        opsProps.value = {
+            show: true,
+            x:clientCoord[0],
+            y:clientCoord[1],
+            at: ['lt', 'rt', 'lb', 'rb'][Math.floor(Math.random()*3.99)] as any
+        }
+    }
     
     return { 
         init, activePtId, activeLineId,
         cvsFrame, cvsCont, cvsWidth, cvsHeight, 
-        renderMain, setLinesFormalPts
+        renderMain, setLinesFormalPts,
+        opsProps
     }
 })
-
-export interface LineTrace{
-    line:Line
-    coords:Coord[]
-}

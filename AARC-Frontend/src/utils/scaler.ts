@@ -87,7 +87,6 @@ export class Scaler{
             this.touchCx = cx;
             this.touchCy = cy;
         }
-        this.callBack();
     }
     private touchInfo(e:TouchEvent):TouchInfoRes{
         if(e.touches.length<1)
@@ -193,7 +192,6 @@ export class Scaler{
         const w = this.arena.clientWidth;
         const ratio = w/ww;
         this.scale(1/ratio*mutiple);
-        this.callBack();
     }
     heightReset(mutiple?:number){
         mutiple = mutiple || 1;
@@ -201,7 +199,6 @@ export class Scaler{
         const h = this.arena.clientHeight;
         const ratio = h/hh;
         this.scale(1/ratio*mutiple);
-        this.callBack();
     }
     autoMutiple(mutiple?:number, flag?:boolean){
         const frameWHRatio = this.frame.clientWidth / this.frame.clientHeight;
