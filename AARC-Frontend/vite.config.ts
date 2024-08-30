@@ -10,7 +10,7 @@ export default defineConfig({
   },
   build:{
     emptyOutDir:true,
-    outDir:"../AARC/wwwroot"
+    outDir:"../AARC-Backend/wwwroot"
   },
   resolve:{
     alias:{
