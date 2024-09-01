@@ -64,10 +64,10 @@ export const useEnvStore = defineStore('env', ()=>{
             const line = !movedPoint.value && onLine(coord);
             if(line){
                 //点到线上了
-                activeLineId.value = line
+                activeLineId.value = line.lineId
                 activePtId.value = -1
-                cursorPos.value = [...coord]
-                setOps(coord)
+                cursorPos.value = [...line.alignedPos]
+                setOps(line.alignedPos)
             }
             else{
                 let changedLines:number[] = []
@@ -126,10 +126,22 @@ export const useEnvStore = defineStore('env', ()=>{
             return distSq < clickControlPointThrsSq
         })
     }
-    function onLine(c:Coord){
-        return linesFormalPts.find(line=>{
-            return coordOnLineOfFormalPts(c, line.pts)
+    function onLine(c:Coord):{lineId:number, alignedPos:Coord}|undefined{
+        let alignedPos = [0,0] as Coord;
+        const lineId = linesFormalPts.find(line=>{
+            const aligned = coordOnLineOfFormalPts(c, line.pts)
+            console.log(aligned)
+            if(aligned){
+                alignedPos = aligned
+                return true
+            }
         })?.lineId
+        if(lineId){
+            return {
+                lineId,
+                alignedPos
+            }
+        }
     }
     function translateFromOffset(coordOffset:Coord):Coord|undefined{
         const [ox, oy] = coordOffset;

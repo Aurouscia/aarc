@@ -8,30 +8,43 @@ export function coordOnLineOfFormalPts(c:Coord, pts:Coord[]){
     for(let i=0;i<pts.length-1;i++){
         const a = pts[i]
         const b = pts[i+1]
-        if(coordBetweenFormalPts(c, a, b))
-            return true
+        const aligned = coordBetweenFormalPts(c, a, b)
+        if(aligned)
+            return aligned
     }
     return false
 }
-export function coordBetweenFormalPts(c:Coord, a:Coord, b:Coord){
+export function coordBetweenFormalPts(c:Coord, a:Coord, b:Coord):Coord|false{
     if(!coordBetweenBasicCheck(c,a,b))
         return false;
     const xDiff = a[0]-b[0]
     if(isZero(xDiff)){
-        return (c[0]-a[0])**2 < clickLineThrsSq
+        if((c[0]-a[0])**2 < clickLineThrsSq)
+            return [a[0], c[1]]
+        return false
     }
     const yDiff = a[1]-b[1]
     if(isZero(yDiff)){
-        return (c[1]-a[1])**2 < clickLineThrsSq
+        if((c[1]-a[1])**2 < clickLineThrsSq)
+            return [c[0], a[1]]
+        return false
     }
     if(xDiff * yDiff>0){
         //斜率为1
         const j = a[1]-a[0]
-        return (c[1]-c[0]-j)**2 < clickLineThrs_sqrt2_sq
+        if((c[1]-c[0]-j)**2 < clickLineThrs_sqrt2_sq){
+            const os = (c[1]-c[0]-j)/2
+            return [c[0]+os, c[1]-os]
+        }
+        return false
     }else{
         //斜率为-1
         const j = a[1]+a[0]
-        return (c[1]+c[0]-j)**2 < clickLineThrs_sqrt2_sq
+        if((c[1]+c[0]-j)**2 < clickLineThrs_sqrt2_sq){
+            const os = (c[1]+c[0]-j)/2
+            return [c[0]-os, c[1]-os]
+        }
+        return false
     }
 }
 function coordBetweenBasicCheck(c:Coord, a:Coord, b:Coord){
