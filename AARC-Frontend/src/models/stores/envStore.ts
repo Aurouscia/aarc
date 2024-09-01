@@ -12,21 +12,22 @@ import { OpsPosProps } from "@/components/Ops.vue";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
+    const movedPoint = ref<boolean>(false)
     const saveStore = useSaveStore();
     const activePtId = ref<number>(-1)
     const activeLineId = ref<number>(-1)
+    const cursorPos = ref<Coord>()
     const cvsFrame = ref<HTMLDivElement>()
     const cvsCont = ref<HTMLDivElement>()
     const cvsWidth = ref<number>(1)
     const cvsHeight = ref<number>(1)
     let scaler:Scaler;
-    const renderMain = shallowRef<(changedLines:number[])=>void>(()=>{});
+    const pointMoved = shallowRef<(changedLines:number[])=>void>(()=>{});
+    const rescaled = shallowRef<(()=>void)[]>([])
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
-        scaler = new Scaler(cvsFrame.value, cvsCont.value, ()=>{
-            setOps(false)
-        }, movingPoint)
+        scaler = new Scaler(cvsFrame.value, cvsCont.value, rescaleHandler, movingPoint)
         scaler.widthReset()
         listenPureClick(cvsCont.value, pureClickHandlerBinded)
         cvsCont.value.addEventListener('mousedown', moveStartHandlerBinded)
@@ -35,6 +36,14 @@ export const useEnvStore = defineStore('env', ()=>{
         cvsCont.value.addEventListener('touchmove', movingHandlerBinded)
         cvsCont.value.addEventListener('mouseup', moveEndHandlerBinded)
         cvsCont.value.addEventListener('touchend', moveEndHandlerBinded)
+    }
+    let rescaleDelayTimer = 0;
+    function rescaleHandler(){
+        setOps(false)
+        window.clearTimeout(rescaleDelayTimer)
+        rescaleDelayTimer = window.setTimeout(()=>{
+            rescaled.value.forEach(f=>f())
+        }, 200)
     }
     
     const pureClickHandlerBinded = pureClickHandler.bind(this) 
@@ -48,14 +57,16 @@ export const useEnvStore = defineStore('env', ()=>{
             //点到点上了
             activePtId.value = pt.id
             activeLineId.value = -1
+            cursorPos.value = [...pt.pos]
             setOps(pt.pos)
         }else{
             //判断是否在线上
-            const line = onLine(coord);
+            const line = !movedPoint.value && onLine(coord);
             if(line){
                 //点到线上了
                 activeLineId.value = line
                 activePtId.value = -1
+                cursorPos.value = [...coord]
                 setOps(coord)
             }
             else{
@@ -65,8 +76,10 @@ export const useEnvStore = defineStore('env', ()=>{
                 }
                 activePtId.value = -1
                 activeLineId.value = -1
+                cursorPos.value = undefined
                 setOps(false)
-                renderMain.value(changedLines)
+                pointMoved.value(changedLines)
+                movedPoint.value = false
             }
         }
     }
@@ -96,6 +109,8 @@ export const useEnvStore = defineStore('env', ()=>{
             const pt = saveStore.save?.points.find(x=>x.id === activePtId.value)
             if(pt && coord)
                 pt.pos = coord
+            cursorPos.value = coord
+            movedPoint.value = true
         }
     }
 
@@ -179,14 +194,22 @@ export const useEnvStore = defineStore('env', ()=>{
             show: true,
             x:clientCoord[0],
             y:clientCoord[1],
-            at: ['lt', 'rt', 'lb', 'rb'][Math.floor(Math.random()*3.99)] as any
+            at: 'rb'
         }
+    }
+
+    function getDisplayRatio(){
+        if(!cvsCont.value)
+            return 1;
+        const wr = cvsWidth.value / cvsCont.value.clientWidth
+        const hr = cvsHeight.value / cvsCont.value.clientHeight
+        return Math.max(wr, hr)
     }
     
     return { 
-        init, activePtId, activeLineId,
-        cvsFrame, cvsCont, cvsWidth, cvsHeight, 
-        renderMain, setLinesFormalPts,
+        init, activePtId, activeLineId, cursorPos,
+        cvsFrame, cvsCont, cvsWidth, cvsHeight, getDisplayRatio,
+        pointMoved, rescaled, setLinesFormalPts,
         opsProps
     }
 })

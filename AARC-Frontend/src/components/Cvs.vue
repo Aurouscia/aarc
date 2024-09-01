@@ -7,18 +7,20 @@ import { bgColor } from '@/utils/consts';
 import { storeToRefs } from 'pinia';
 import { onMounted, nextTick, computed } from 'vue';
 import Ops from './Ops.vue';
+import { useCursorCvsDispatcher } from '@/models/cvs/dispatchers/cursorCvsDispatcher';
 
 const envStore = useEnvStore();
 const { cvsFrame, cvsCont, cvsWidth, cvsHeight, opsProps } = storeToRefs(useEnvStore())
 const { baseCvs, renderBaseCvs } = useBaseCvsDispatcher()
-const { mainCvs, renderMainCvs } = useMainCvsDispatcher()
+const { mainLineCvs, mainPtCvs, renderMainCvs } = useMainCvsDispatcher()
 const { activeCvs, renderActiveCvs } = useActiveCvsDispatcher()
+const { cursorCvs, startRenderCursor } = useCursorCvsDispatcher()
 const mainCvsInsnif = computed<boolean>(()=>
     envStore.activePtId >= 0 || envStore.activeLineId >= 0
 )
 
-const testWidth = 1000
-const testHeight = 1000
+const testWidth = 3000
+const testHeight = 3000
 
 onMounted(async()=>{
     cvsWidth.value = testWidth
@@ -33,7 +35,8 @@ onMounted(async()=>{
     renderMainCvs()
     setInterval(()=>{
         renderActiveCvs()
-    }, 100)
+    }, 50)
+    startRenderCursor()
 })
 
 </script>
@@ -42,8 +45,10 @@ onMounted(async()=>{
     <div class="cvsFrame" ref="cvsFrame">
         <div class="cvsCont" ref="cvsCont" :style="{backgroundColor: bgColor}">
             <canvas ref="baseCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
-            <canvas ref="mainCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>
+            <canvas ref="mainLineCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>
+            <canvas ref="mainPtCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>
             <canvas ref="activeCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
+            <canvas ref="cursorCvs" :width="cvsWidth" :height="cvsWidth"></canvas>
         </div>
     </div>
     <Ops :pos="opsProps"></Ops>

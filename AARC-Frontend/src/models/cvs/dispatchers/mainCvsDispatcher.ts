@@ -5,14 +5,20 @@ import { usePointCvsWorker } from "../workers/pointCvsWorker";
 
 export function useMainCvsDispatcher(){
     const envStore = useEnvStore()
-    envStore.renderMain = renderMainCvs
-    const { cvs: mainCvs, getCtx } = useCvs()
+    envStore.pointMoved = renderMainCvs
+    envStore.rescaled.push(renderMainPts)
+    const { cvs: mainLineCvs, getCtx: getLineCtx } = useCvs()
+    const { cvs: mainPtCvs, getCtx: getPtCtx } = useCvs()
     const { renderAllLines } = useLineCvsWorker()
     const { renderAllPoints } = usePointCvsWorker()
     function renderMainCvs(changedLines?:number[]){
-        const ctx = getCtx();
+        const ctx = getLineCtx();
         renderAllLines(ctx, changedLines)
+        renderMainPts()
+    }
+    function renderMainPts(){
+        const ctx = getPtCtx();
         renderAllPoints(ctx)
     }
-    return { mainCvs, renderMainCvs }
+    return { mainLineCvs, mainPtCvs, renderMainCvs }
 }

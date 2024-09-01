@@ -10,6 +10,7 @@ export function useActiveCvsDispatcher(){
     const { cvs: activeCvs, getCtx } = useCvs()
     const { renderSegsLine, renderLine } = useLineCvsWorker()
     const { renderSegsPoints, renderLinePoints } = usePointCvsWorker()
+    envStore.rescaled.push(renderActiveCvs)
     function renderActiveCvs(){
         const ctx = getCtx();
         const activePtId = envStore.activePtId;
