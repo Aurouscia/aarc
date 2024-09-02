@@ -2,13 +2,14 @@ import { defineStore } from "pinia";
 import { ref, shallowRef } from "vue";
 import { useSaveStore } from "./saveStore";
 import { Scaler } from "@/utils/scaler";
-import { Coord } from "../coord";
+import { Coord, FormalPt } from "../coord";
 import { coordDistSq } from "@/utils/coordDist";
 import { clickControlPointThrsSq } from "@/utils/consts";
 import { listenPureClick } from "@/utils/pureClick";
 import { eventClientCoord } from "@/utils/eventClientCoord";
 import { coordOnLineOfFormalPts } from "@/utils/coordOnLine";
 import { useOpsStore } from "./opsStore";
+import { ControlPointDir } from "../save";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
@@ -18,6 +19,8 @@ export const useEnvStore = defineStore('env', ()=>{
     const activePtId = ref<number>(-1)
     const activeLineId = ref<number>(-1)
     const cursorPos = ref<Coord>()
+    const cursorDir = ref<ControlPointDir>(ControlPointDir.vertical)
+    const cursorOnLineAfterPtIdx = ref<number>(-1)
     const cvsFrame = ref<HTMLDivElement>()
     const cvsCont = ref<HTMLDivElement>()
     const cvsWidth = ref<number>(1)
@@ -63,12 +66,15 @@ export const useEnvStore = defineStore('env', ()=>{
             setOpsForPt()
         }else{
             //判断是否在线上
+            //如果已经移动过点，这时formalPts还未更新，不应该进行点击线路判断，直接视为点击空白处
             const line = !movedPoint.value && onLine(coord);
             if(line){
                 //点到线上了
                 activeLineId.value = line.lineId
                 activePtId.value = -1
                 cursorPos.value = [...line.alignedPos]
+                cursorOnLineAfterPtIdx.value = line.afterPtIdx
+                cursorDir.value = line.dir
                 setOpsPos(line.alignedPos)
                 setOpsForLine()
             }
@@ -129,20 +135,25 @@ export const useEnvStore = defineStore('env', ()=>{
             return distSq < clickControlPointThrsSq
         })
     }
-    function onLine(c:Coord):{lineId:number, alignedPos:Coord}|undefined{
+    function onLine(c:Coord):{lineId:number, alignedPos:Coord, afterPtIdx:number, dir:ControlPointDir}|undefined{
         let alignedPos = [0,0] as Coord;
+        let afterPtIdx = -1;
+        let dir = ControlPointDir.vertical
         const lineId = linesFormalPts.find(line=>{
-            const aligned = coordOnLineOfFormalPts(c, line.pts)
-            console.log(aligned)
-            if(aligned){
-                alignedPos = aligned
+            const onLineRes = coordOnLineOfFormalPts(c, line.pts)
+            if(onLineRes){
+                alignedPos = onLineRes.aligned
+                afterPtIdx = onLineRes.afterPt
+                dir = onLineRes.dir
                 return true
             }
         })?.lineId
         if(lineId){
             return {
                 lineId,
-                alignedPos
+                alignedPos,
+                afterPtIdx,
+                dir
             }
         }
     }
@@ -184,8 +195,8 @@ export const useEnvStore = defineStore('env', ()=>{
         return [offsetCoord[0] - sx, offsetCoord[1] - sy]
     }
 
-    const linesFormalPts:{lineId:number, pts:Coord[]}[] = []
-    function setLinesFormalPts(lineId:number, pts:Coord[]){
+    const linesFormalPts:{lineId:number, pts:FormalPt[]}[] = []
+    function setLinesFormalPts(lineId:number, pts:FormalPt[]){
         let target = linesFormalPts.find(x=>x.lineId == lineId)
         if(!target){
             target = {lineId, pts}
@@ -217,10 +228,18 @@ export const useEnvStore = defineStore('env', ()=>{
         ]
     }
     function setOpsForLine(){
+        const cb = ()=>{
+            if(cursorPos.value){
+                const id = saveStore.insertPtOnLine(activeLineId.value, cursorOnLineAfterPtIdx.value, cursorPos.value, cursorDir.value)
+                pointMoved.value([activeLineId.value])
+                if(id!==undefined)
+                    activePtId.value = id
+            }
+        }
         opsStore.btns = [
             {
                 type:'addPt',
-                cb:()=>window.alert('在此处添加点')
+                cb
             }
         ]
     }

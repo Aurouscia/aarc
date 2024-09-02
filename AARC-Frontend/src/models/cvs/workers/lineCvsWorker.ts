@@ -3,7 +3,7 @@ import { ControlPoint, ControlPointDir, Line } from "../../save";
 import { coordRelDiff } from "@/utils/coordRel";
 import { lineWidthR, turnAreaRadius } from "@/utils/consts";
 import { Bias, applyBias } from "@/utils/coordBias";
-import { Coord } from "../../coord";
+import { Coord, FormalPt } from "../../coord";
 import { coordFill } from "@/utils/coordFill";
 import { sgn } from "@/utils/sgn";
 import { coordDist } from "@/utils/coordDist";
@@ -47,14 +47,18 @@ export function useLineCvsWorker(){
             linkPts(formalPts, ctx)
         })
     }
-    function formalize(pts:ControlPoint[]):Coord[]{
-        const formalPts:Coord[] = []
+    function formalize(pts:ControlPoint[]):FormalPt[]{
+        const formalPts:FormalPt[] = []
         for(let i=0;i<pts.length-1;i++){
             const a = pts[i]
             const b = pts[i+1]
             if(i===0)
-                formalPts.push(a.pos)
-            formalPts.push(...formalizeSeg(a, b), b.pos)
+                formalPts.push({pos:a.pos, afterIdxEqv: i})
+            const insert = formalizeSeg(a, b)
+            insert.forEach((pos)=>{
+                formalPts.push({pos, afterIdxEqv: i})
+            })
+            formalPts.push({pos:b.pos, afterIdxEqv: i+1})
         }
         return formalPts
     }
@@ -94,10 +98,11 @@ export function useLineCvsWorker(){
             }
         }
     }
-    function linkPts(pts:Coord[], ctx:CanvasRenderingContext2D){
-        if(pts.length<=1){
+    function linkPts(formalPts:FormalPt[], ctx:CanvasRenderingContext2D){
+        if(formalPts.length<=1){
             return;
         }
+        const pts = formalPts.map(x=>x.pos)
         const first = pts[0]
         const second = pts[1]
         ctx.beginPath()

@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { ControlPoint, Line, Save } from "../save";
+import { ControlPoint, ControlPointDir, ControlPointSta, Line, Save } from "../save";
+import { Coord } from "../coord";
 
 export const useSaveStore = defineStore('save', () => {
     const save = ref<Save>()
@@ -48,8 +49,29 @@ export const useSaveStore = defineStore('save', () => {
             return []
         return lines.filter(line=>line.pts.includes(ptId))
     }
+    function insertPtOnLine(lineId:number, afterIdx:number, pos:Coord, dir:ControlPointDir){
+        if(!save.value)
+            return;
+        const line = save.value.lines.find(x=>x.id == lineId)
+        if(line){
+            const id = getNewId()
+            const newPt:ControlPoint = {
+                id,
+                pos,
+                dir,
+                sta: ControlPointSta.sta
+            }
+            save.value.points.push(newPt)
+            line.pts.splice(afterIdx+1, 0, id)
+            return id;
+        }
+    }
 
-    return { save, getNewId, getPtsByIds, adjacentSegs, getLinesByPt }
+    return { 
+        save, getNewId,
+        getPtsByIds, adjacentSegs, getLinesByPt,
+        insertPtOnLine
+    }
 })
 
 export interface LineSeg{

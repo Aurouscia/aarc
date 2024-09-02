@@ -1,51 +1,62 @@
-import { Coord } from "@/models/coord";
+import { Coord, FormalPt } from "@/models/coord";
 import { clickLineThrs, clickLineThrs_sqrt2_sq, clickLineThrsSq } from "./consts";
 import { isZero } from "./sgn";
+import { ControlPointDir } from "@/models/save";
 
-export function coordOnLineOfFormalPts(c:Coord, pts:Coord[]){
+export function coordOnLineOfFormalPts(c:Coord, pts:FormalPt[]){
     if(pts.length<=1)
         return false;
     for(let i=0;i<pts.length-1;i++){
         const a = pts[i]
         const b = pts[i+1]
-        const aligned = coordBetweenFormalPts(c, a, b)
-        if(aligned)
-            return aligned
+        const betweenRes = coordBetweenFormalPts(c, a.pos, b.pos)
+        if(betweenRes)
+            return {
+                aligned: betweenRes.aligned,
+                afterPt: a.afterIdxEqv,
+                dir: betweenRes.dir
+            }
     }
     return false
 }
-export function coordBetweenFormalPts(c:Coord, a:Coord, b:Coord):Coord|false{
+export function coordBetweenFormalPts(c:Coord, a:Coord, b:Coord):{aligned:Coord, dir:ControlPointDir}|false{
     if(!coordBetweenBasicCheck(c,a,b))
         return false;
     const xDiff = a[0]-b[0]
+    const yDiff = a[1]-b[1]
+    let aligned:Coord|undefined = undefined;
+    let dir:ControlPointDir = ControlPointDir.vertical
     if(isZero(xDiff)){
         if((c[0]-a[0])**2 < clickLineThrsSq)
-            return [a[0], c[1]]
-        return false
+            aligned = [a[0], c[1]]
     }
-    const yDiff = a[1]-b[1]
-    if(isZero(yDiff)){
+    else if(isZero(yDiff)){
         if((c[1]-a[1])**2 < clickLineThrsSq)
-            return [c[0], a[1]]
-        return false
+            aligned = [c[0], a[1]]
     }
-    if(xDiff * yDiff>0){
+    else if(xDiff * yDiff>0){
         //斜率为1
         const j = a[1]-a[0]
         if((c[1]-c[0]-j)**2 < clickLineThrs_sqrt2_sq){
             const os = (c[1]-c[0]-j)/2
-            return [c[0]+os, c[1]-os]
+            aligned = [c[0]+os, c[1]-os]
+            dir = ControlPointDir.incline
         }
-        return false
     }else{
         //斜率为-1
         const j = a[1]+a[0]
         if((c[1]+c[0]-j)**2 < clickLineThrs_sqrt2_sq){
             const os = (c[1]+c[0]-j)/2
-            return [c[0]-os, c[1]-os]
+            aligned = [c[0]-os, c[1]-os]
+            dir = ControlPointDir.incline
         }
-        return false
     }
+    if(aligned)
+        return{
+            aligned,
+            dir
+        }
+    return false
 }
 function coordBetweenBasicCheck(c:Coord, a:Coord, b:Coord){
     let smallerX;
