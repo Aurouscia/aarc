@@ -220,26 +220,37 @@ export const useEnvStore = defineStore('env', ()=>{
         opsStore.show = true
     }
     function setOpsForPt(){
+        const rmPtCb = ()=>{
+            const relatedLines = saveStore.removePt(activePtId.value);
+            const relatedLineIds = relatedLines?.map(line=>line.id) || []
+            activePtId.value = -1
+            activeLineId.value = -1
+            cursorPos.value = undefined
+            setOpsPos(false)
+            pointMoved.value(relatedLineIds)
+        }
         opsStore.btns = [
             {
                 type:'rmPt',
-                cb:()=>window.alert('移除该点')
+                cb:rmPtCb
             }
         ]
     }
     function setOpsForLine(){
-        const cb = ()=>{
+        const insertPtCb = ()=>{
             if(cursorPos.value){
                 const id = saveStore.insertPtOnLine(activeLineId.value, cursorOnLineAfterPtIdx.value, cursorPos.value, cursorDir.value)
                 pointMoved.value([activeLineId.value])
-                if(id!==undefined)
+                if(id!==undefined){
                     activePtId.value = id
+                    setOpsForPt()
+                }
             }
         }
         opsStore.btns = [
             {
                 type:'addPt',
-                cb
+                cb: insertPtCb
             }
         ]
     }

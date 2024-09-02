@@ -10,7 +10,7 @@ import Ops from './Ops.vue';
 import { useCursorCvsDispatcher } from '@/models/cvs/dispatchers/cursorCvsDispatcher';
 
 const envStore = useEnvStore();
-const { cvsFrame, cvsCont, cvsWidth, cvsHeight, opsProps } = storeToRefs(useEnvStore())
+const { cvsFrame, cvsCont, cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
 const { baseCvs, renderBaseCvs } = useBaseCvsDispatcher()
 const { mainLineCvs, mainPtCvs, renderMainCvs } = useMainCvsDispatcher()
 const { activeCvs, renderActiveCvs } = useActiveCvsDispatcher()
@@ -51,7 +51,7 @@ onMounted(async()=>{
             <canvas ref="cursorCvs" :width="cvsWidth" :height="cvsWidth"></canvas>
         </div>
     </div>
-    <Ops :pos="opsProps"></Ops>
+    <Ops></Ops>
 </template>
 
 <style scoped lang="scss">

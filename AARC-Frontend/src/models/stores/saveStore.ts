@@ -66,11 +66,24 @@ export const useSaveStore = defineStore('save', () => {
             return id;
         }
     }
+    function removePt(ptId:number){
+        if(!save.value)
+            return;
+        const relatedLines = getLinesByPt(ptId);
+        relatedLines.forEach(line=>{
+            line.pts = line.pts.filter(pt=>pt!==ptId)
+        })
+        const idx = save.value.points.findIndex(x=>x.id == ptId)
+        if(idx >= 0){
+            save.value.points.splice(idx, 1)
+        }
+        return relatedLines
+    }
 
     return { 
         save, getNewId,
         getPtsByIds, adjacentSegs, getLinesByPt,
-        insertPtOnLine
+        insertPtOnLine, removePt
     }
 })
 
