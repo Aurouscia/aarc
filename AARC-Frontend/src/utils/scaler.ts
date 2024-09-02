@@ -155,6 +155,8 @@ export class Scaler{
         const hh = this.frame.clientHeight;
         const w = this.arena.clientWidth;
         const h = this.arena.clientHeight
+        const wr = w/ww;
+        const hr = w/hh;
         var x:number;
         var y:number;
         if(anchor){
@@ -164,10 +166,10 @@ export class Scaler{
             x = (this.frame.scrollLeft+ww/2)/w;
             y = (this.frame.scrollTop+hh/2)/h;
         }
-        if(w<ww && ratio<1){
+        if(Math.max(hr, wr) < 1 && ratio<1){
             return;
         }
-        if(w>ww*10 && ratio>1){
+        if(Math.min(hr, wr) > 10 && ratio>1){
             return;
         }
         const arx = this.frame.scrollLeft + ww*x;

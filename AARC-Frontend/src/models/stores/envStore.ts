@@ -8,12 +8,13 @@ import { clickControlPointThrsSq } from "@/utils/consts";
 import { listenPureClick } from "@/utils/pureClick";
 import { eventClientCoord } from "@/utils/eventClientCoord";
 import { coordOnLineOfFormalPts } from "@/utils/coordOnLine";
-import { OpsPosProps } from "@/components/Ops.vue";
+import { useOpsStore } from "./opsStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
     const movedPoint = ref<boolean>(false)
     const saveStore = useSaveStore();
+    const opsStore = useOpsStore();
     const activePtId = ref<number>(-1)
     const activeLineId = ref<number>(-1)
     const cursorPos = ref<Coord>()
@@ -39,7 +40,7 @@ export const useEnvStore = defineStore('env', ()=>{
     }
     let rescaleDelayTimer = 0;
     function rescaleHandler(){
-        setOps(false)
+        setOpsPos(false)
         window.clearTimeout(rescaleDelayTimer)
         rescaleDelayTimer = window.setTimeout(()=>{
             rescaled.value.forEach(f=>f())
@@ -58,7 +59,8 @@ export const useEnvStore = defineStore('env', ()=>{
             activePtId.value = pt.id
             activeLineId.value = -1
             cursorPos.value = [...pt.pos]
-            setOps(pt.pos)
+            setOpsPos(pt.pos)
+            setOpsForPt()
         }else{
             //判断是否在线上
             const line = !movedPoint.value && onLine(coord);
@@ -67,7 +69,8 @@ export const useEnvStore = defineStore('env', ()=>{
                 activeLineId.value = line.lineId
                 activePtId.value = -1
                 cursorPos.value = [...line.alignedPos]
-                setOps(line.alignedPos)
+                setOpsPos(line.alignedPos)
+                setOpsForLine()
             }
             else{
                 let changedLines:number[] = []
@@ -77,7 +80,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 activePtId.value = -1
                 activeLineId.value = -1
                 cursorPos.value = undefined
-                setOps(false)
+                setOpsPos(false)
                 pointMoved.value(changedLines)
                 movedPoint.value = false
             }
@@ -86,7 +89,7 @@ export const useEnvStore = defineStore('env', ()=>{
 
     const moveStartHandlerBinded = moveStartHandler.bind(this)
     function moveStartHandler(e:MouseEvent|TouchEvent){
-        setOps(false)
+        setOpsPos(false)
         const clientCoord = eventClientCoord(e)
         if(!clientCoord)
             return;
@@ -193,21 +196,33 @@ export const useEnvStore = defineStore('env', ()=>{
         }
     }
 
-    const opsProps = ref<OpsPosProps>({show:false, x:0, y:0, at:'rb'})
-    function setOps(coord:Coord|false){
+    function setOpsPos(coord:Coord|false){
         if(!coord){
-            opsProps.value.show = false
+            opsStore.show = false;
+            opsStore.btns = []
             return
         }
         const clientCoord = translateToClient(coord)
         if(!clientCoord)
             return
-        opsProps.value = {
-            show: true,
-            x:clientCoord[0],
-            y:clientCoord[1],
-            at: 'rb'
-        }
+        opsStore.clientPos = clientCoord
+        opsStore.show = true
+    }
+    function setOpsForPt(){
+        opsStore.btns = [
+            {
+                type:'rmPt',
+                cb:()=>window.alert('移除该点')
+            }
+        ]
+    }
+    function setOpsForLine(){
+        opsStore.btns = [
+            {
+                type:'addPt',
+                cb:()=>window.alert('在此处添加点')
+            }
+        ]
     }
 
     function getDisplayRatio(){
@@ -221,7 +236,6 @@ export const useEnvStore = defineStore('env', ()=>{
     return { 
         init, activePtId, activeLineId, cursorPos,
         cvsFrame, cvsCont, cvsWidth, cvsHeight, getDisplayRatio,
-        pointMoved, rescaled, setLinesFormalPts,
-        opsProps
+        pointMoved, rescaled, setLinesFormalPts
     }
 })

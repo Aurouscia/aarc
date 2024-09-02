@@ -1,15 +1,10 @@
 <script setup lang="ts">
+import { useOpsStore } from '@/models/stores/opsStore';
+import { storeToRefs } from 'pinia';
 import { computed, CSSProperties, ref } from 'vue';
 
-export interface OpsPosProps{
-    show?:boolean
-    x:number, y:number,
-    at: 'lt'|'lb'|'rt'|'rb'
-}
-const props = defineProps<{
-    pos?: OpsPosProps
-}>()
-const height = 200
+const opsStore = useOpsStore()
+const { show, clientPos, at, btns } = storeToRefs(opsStore)
 const width = 50
 const dist = 10
 const sunken = ref<boolean>(true);
@@ -17,25 +12,24 @@ let sinkTimer = 0
 const opsStyle = computed<CSSProperties>(()=>{
     window.clearTimeout(sinkTimer)
     sunken.value = false
-    if(!props.pos)
-        return { }
     let opacity = 1;
-    if(!props.pos.show){
+    if(!show.value || btns.value.length==0){
         opacity = 0;
         sinkTimer = window.setTimeout(()=>{
             sunken.value = true
-        }, 200)
+        }, 100)
     }
+    let height = 7+btns.value.length*42
     let top:number, left:number;
-    if(props.pos.at == 'lb' || props.pos.at == 'lt'){
-        left = props.pos.x - width - dist
+    if(at.value == 'lb' || at.value == 'lt'){
+        left = clientPos.value[0] - width - dist
     }else{
-        left = props.pos.x + dist
+        left = clientPos.value[0] + dist
     }
-    if(props.pos.at == 'lt' || props.pos.at == 'rt'){
-        top = props.pos.y - height - dist
+    if(at.value == 'lt' || at.value == 'rt'){
+        top = clientPos.value[1] - height - dist
     }else{
-        top = props.pos.y + dist
+        top = clientPos.value[1] + dist
     }
     return {
         opacity,
@@ -47,10 +41,7 @@ const opsStyle = computed<CSSProperties>(()=>{
 
 <template>
 <div class="ops" :class="{sunken}" :style="opsStyle">
-    <div>1</div>
-    <div>2</div>
-    <div>3</div>
-    <div>4</div>
+    <div v-for="b in btns" @click="b.cb">{{ b.type }}</div>
 </div>
 </template>
 
@@ -71,6 +62,8 @@ const opsStyle = computed<CSSProperties>(()=>{
         background-color: #ccc;
         border-radius: 5px;
         user-select: none;
+        line-height: 40px;
+        text-align: center;
     }
 }
 .sunken{
