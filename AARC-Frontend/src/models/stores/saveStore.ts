@@ -66,6 +66,17 @@ export const useSaveStore = defineStore('save', () => {
             return id;
         }
     }
+    function insertPtToLine(ptId:number, lineId:number, afterIdx:number, pos:Coord, dir:ControlPointDir){
+        if(!save.value)
+            return;
+        const line = save.value.lines.find(x=>x.id == lineId)
+        const pt = save.value.points.find(x=>x.id == ptId)
+        if(line && pt){
+            pt.pos = pos
+            pt.dir = dir
+            line.pts.splice(afterIdx+1, 0, ptId)
+        }
+    }
     function removePt(ptId:number){
         if(!save.value)
             return;
@@ -79,11 +90,17 @@ export const useSaveStore = defineStore('save', () => {
         }
         return relatedLines
     }
-
+    function removePtFromLine(ptId:number, lineId:number){
+        if(!save.value)
+            return;
+        const line = save.value.lines.find(x=>x.id == lineId)
+        if(line)
+            line.pts = line.pts.filter(pt=>pt!==ptId)
+    }
     return { 
         save, getNewId,
         getPtsByIds, adjacentSegs, getLinesByPt,
-        insertPtOnLine, removePt
+        insertPtOnLine, insertPtToLine, removePt, removePtFromLine
     }
 })
 

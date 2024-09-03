@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref, shallowRef } from "vue";
+import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { Scaler } from "@/utils/scaler";
 import { Coord, FormalPt } from "../coord";
@@ -8,7 +8,7 @@ import { clickControlPointThrsSq } from "@/utils/consts";
 import { listenPureClick } from "@/utils/pureClick";
 import { eventClientCoord } from "@/utils/eventClientCoord";
 import { coordOnLineOfFormalPts } from "@/utils/coordOnLine";
-import { useOpsStore } from "./opsStore";
+import { OpsBtn, OpsBtnType, useOpsStore } from "./opsStore";
 import { ControlPointDir } from "../save";
 
 export const useEnvStore = defineStore('env', ()=>{
@@ -68,14 +68,15 @@ export const useEnvStore = defineStore('env', ()=>{
             //判断是否在线上
             //如果已经移动过点，这时formalPts还未更新，不应该进行点击线路判断，直接视为点击空白处
             const line = !movedPoint.value && onLine(coord);
-            if(line){
+            if(line && line.length>0){
                 //点到线上了
-                activeLineId.value = line.lineId
+                let line0 = line[0]
+                activeLineId.value = line0.lineId
                 activePtId.value = -1
-                cursorPos.value = [...line.alignedPos]
-                cursorOnLineAfterPtIdx.value = line.afterPtIdx
-                cursorDir.value = line.dir
-                setOpsPos(line.alignedPos)
+                cursorPos.value = [...line0.alignedPos]
+                cursorOnLineAfterPtIdx.value = line0.afterPtIdx
+                cursorDir.value = line0.dir
+                setOpsPos(line0.alignedPos)
                 setOpsForLine()
             }
             else{
@@ -135,27 +136,22 @@ export const useEnvStore = defineStore('env', ()=>{
             return distSq < clickControlPointThrsSq
         })
     }
-    function onLine(c:Coord):{lineId:number, alignedPos:Coord, afterPtIdx:number, dir:ControlPointDir}|undefined{
-        let alignedPos = [0,0] as Coord;
-        let afterPtIdx = -1;
-        let dir = ControlPointDir.vertical
-        const lineId = linesFormalPts.find(line=>{
+    function onLine(c:Coord, exceptLines:number[] = []){
+        const res:{lineId:number, alignedPos:Coord, afterPtIdx:number, dir:ControlPointDir}[] = []
+        linesFormalPts.forEach(line=>{
+            if(exceptLines.includes(line.lineId))
+                return;
             const onLineRes = coordOnLineOfFormalPts(c, line.pts)
             if(onLineRes){
-                alignedPos = onLineRes.aligned
-                afterPtIdx = onLineRes.afterPt
-                dir = onLineRes.dir
-                return true
+                res.push({
+                    lineId: line.lineId,
+                    alignedPos: onLineRes.aligned,
+                    afterPtIdx: onLineRes.afterPt,
+                    dir: onLineRes.dir
+                })
             }
-        })?.lineId
-        if(lineId){
-            return {
-                lineId,
-                alignedPos,
-                afterPtIdx,
-                dir
-            }
-        }
+        })
+        return res
     }
     function translateFromOffset(coordOffset:Coord):Coord|undefined{
         const [ox, oy] = coordOffset;
@@ -220,9 +216,38 @@ export const useEnvStore = defineStore('env', ()=>{
         opsStore.show = true
     }
     function setOpsForPt(){
+        const ptId = activePtId.value;
+        const pt = saveStore.save?.points.find(x=>x.id==ptId)
+        if(!pt){
+            opsStore.btns = []
+            return;
+        }
+        const relatedLines = saveStore.getLinesByPt(ptId)
+        const relatedLineIds = relatedLines.map(line=>line.id)
+        const onLineRes = onLine(pt.pos, relatedLineIds)
+        const addToLines = onLineRes.map<OpsBtn>(l=>{
+            const color = saveStore.save?.lines.find(x=>x.id==l.lineId)?.color
+            return{
+                type:'addPtTL' as OpsBtnType,
+                cb:()=>{
+                    saveStore.insertPtToLine(ptId, l.lineId, l.afterPtIdx, l.alignedPos, l.dir);
+                    pointMoved.value([l.lineId, ...relatedLineIds])
+                },
+                color
+            }
+        })
+        const rmFromLines = relatedLines.map(l=>{
+            return{
+                type:'rmPtFL' as OpsBtnType,
+                cb:()=>{
+                    saveStore.removePtFromLine(ptId, l.id);
+                    pointMoved.value([l.id, ...relatedLineIds])
+                },
+                color: l.color
+            }
+        })
         const rmPtCb = ()=>{
-            const relatedLines = saveStore.removePt(activePtId.value);
-            const relatedLineIds = relatedLines?.map(line=>line.id) || []
+            saveStore.removePt(activePtId.value);
             activePtId.value = -1
             activeLineId.value = -1
             cursorPos.value = undefined
@@ -230,14 +255,11 @@ export const useEnvStore = defineStore('env', ()=>{
             pointMoved.value(relatedLineIds)
         }
         const swDirCb = ()=>{
-            const ptId = activePtId.value
-            const pt = saveStore.save?.points.find(x=>x.id==ptId)
             if(pt){
                 if(pt.dir == ControlPointDir.incline)
                     pt.dir = ControlPointDir.vertical
                 else
                     pt.dir = ControlPointDir.incline
-                const relatedLineIds = saveStore.getLinesByPt(ptId).map(x=>x.id)
                 pointMoved.value(relatedLineIds)
             }
         }
@@ -249,7 +271,9 @@ export const useEnvStore = defineStore('env', ()=>{
             {
                 type:'rmPt',
                 cb:rmPtCb
-            }
+            },
+            ...addToLines,
+            ...rmFromLines
         ]
     }
     function setOpsForLine(){

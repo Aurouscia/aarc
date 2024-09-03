@@ -3,10 +3,11 @@ import { ref } from "vue"
 import { Coord } from "../coord"
 
 export type OpsAt = 'lt'|'lb'|'rt'|'rb'
-export type OpsBtnType = 'addPt'|'rmPt'|'swPtDir'
+export type OpsBtnType = 'addPt'|'rmPt'|'addPtTL'|'rmPtFL'|'swPtDir'
 export interface OpsBtn{
     type:OpsBtnType,
-    cb:()=>void
+    cb:()=>void,
+    color?:string
 }
 export const useOpsStore = defineStore('ops', ()=>{
     const show = ref<boolean>()

@@ -68,7 +68,7 @@ watch(btns, ()=>{
 
 <template>
 <div class="ops" :class="{sunken}" :style="opsStyle">
-    <div v-for="b in btns" @click="b.cb">{{ b.type }}</div>
+    <div v-for="b in btns" @click="b.cb" :style="{backgroundColor: b.color}">{{ b.type }}</div>
 </div>
 </template>
 
