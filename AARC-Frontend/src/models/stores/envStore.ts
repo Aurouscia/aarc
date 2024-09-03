@@ -95,7 +95,6 @@ export const useEnvStore = defineStore('env', ()=>{
 
     const moveStartHandlerBinded = moveStartHandler.bind(this)
     function moveStartHandler(e:MouseEvent|TouchEvent){
-        setOpsPos(false)
         const clientCoord = eventClientCoord(e)
         if(!clientCoord)
             return;
@@ -111,6 +110,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const movingHandlerBinded = movingHandler.bind(this)
     function movingHandler(e:MouseEvent|TouchEvent){
         if(movingPoint.value){
+            setOpsPos(false)
             const clientCoord = eventClientCoord(e)
             if(!clientCoord)
                 return;
