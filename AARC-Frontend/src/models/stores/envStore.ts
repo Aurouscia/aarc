@@ -26,8 +26,8 @@ export const useEnvStore = defineStore('env', ()=>{
     const cvsWidth = ref<number>(1)
     const cvsHeight = ref<number>(1)
     let scaler:Scaler;
-    const pointMoved = shallowRef<(changedLines:number[])=>void>(()=>{});
-    const rescaled = shallowRef<(()=>void)[]>([])
+    const pointMoved = ref<(changedLines:number[])=>void>(()=>{});
+    const rescaled = ref<(()=>void)[]>([])
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -229,7 +229,23 @@ export const useEnvStore = defineStore('env', ()=>{
             setOpsPos(false)
             pointMoved.value(relatedLineIds)
         }
+        const swDirCb = ()=>{
+            const ptId = activePtId.value
+            const pt = saveStore.save?.points.find(x=>x.id==ptId)
+            if(pt){
+                if(pt.dir == ControlPointDir.incline)
+                    pt.dir = ControlPointDir.vertical
+                else
+                    pt.dir = ControlPointDir.incline
+                const relatedLineIds = saveStore.getLinesByPt(ptId).map(x=>x.id)
+                pointMoved.value(relatedLineIds)
+            }
+        }
         opsStore.btns = [
+            {
+                type:'swPtDir',
+                cb:swDirCb
+            },
             {
                 type:'rmPt',
                 cb:rmPtCb
@@ -259,8 +275,7 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!cvsCont.value)
             return 1;
         const wr = cvsWidth.value / cvsCont.value.clientWidth
-        const hr = cvsHeight.value / cvsCont.value.clientHeight
-        return Math.max(wr, hr)
+        return wr
     }
     
     return { 

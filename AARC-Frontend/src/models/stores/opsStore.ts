@@ -3,7 +3,7 @@ import { ref } from "vue"
 import { Coord } from "../coord"
 
 export type OpsAt = 'lt'|'lb'|'rt'|'rb'
-export type OpsBtnType = 'addPt'|'rmPt'
+export type OpsBtnType = 'addPt'|'rmPt'|'swPtDir'
 export interface OpsBtn{
     type:OpsBtnType,
     cb:()=>void
