@@ -9,7 +9,7 @@ import { listenPureClick } from "@/utils/pureClick";
 import { eventClientCoord } from "@/utils/eventClientCoord";
 import { coordOnLineOfFormalPts } from "@/utils/coordOnLine";
 import { OpsBtn, OpsBtnType, useOpsStore } from "./opsStore";
-import { ControlPointDir } from "../save";
+import { ControlPointDir, ControlPointSta } from "../save";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
@@ -263,10 +263,23 @@ export const useEnvStore = defineStore('env', ()=>{
                 pointMoved.value(relatedLineIds)
             }
         }
+        const swSta = ()=>{
+            if(pt){
+                if(pt.sta == ControlPointSta.plain)
+                    pt.sta = ControlPointSta.sta
+                else
+                    pt.sta = ControlPointSta.plain
+                pointMoved.value([])
+            }
+        }
         opsStore.btns = [
             {
                 type:'swPtDir',
                 cb:swDirCb
+            },
+            {
+                type:'swPtSta',
+                cb:swSta
             },
             {
                 type:'rmPt',
@@ -295,10 +308,13 @@ export const useEnvStore = defineStore('env', ()=>{
         ]
     }
 
-    function getDisplayRatio(){
+    function getDisplayRatio(soften = 0.5){
         if(!cvsCont.value)
             return 1;
         const wr = cvsWidth.value / cvsCont.value.clientWidth
+        if(soften){
+            return 1+(wr-1)*soften
+        }
         return wr
     }
     

@@ -8,25 +8,25 @@ export const devSave:Save = {
             id: 1,
             pos: [200, 200],
             dir: ControlPointDir.incline,
-            sta: ControlPointSta.plain
+            sta: ControlPointSta.sta
         },
         {
             id: 2,
             pos: [550, 300],
             dir: ControlPointDir.incline,
-            sta: ControlPointSta.plain
+            sta: ControlPointSta.sta
         },
         {
             id: 3,
             pos: [700, 700],
             dir: ControlPointDir.vertical,
-            sta: ControlPointSta.plain
+            sta: ControlPointSta.sta
         },
         {
             id: 4,
             pos: [300, 800],
             dir: ControlPointDir.vertical,
-            sta: ControlPointSta.plain
+            sta: ControlPointSta.sta
         },
         {
             id: 5,
