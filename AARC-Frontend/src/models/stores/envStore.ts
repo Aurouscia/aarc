@@ -33,13 +33,13 @@ export const useEnvStore = defineStore('env', ()=>{
             return
         scaler = new Scaler(cvsFrame.value, cvsCont.value, rescaleHandler, movingPoint)
         scaler.widthReset()
-        listenPureClick(cvsCont.value, pureClickHandlerBinded)
-        cvsCont.value.addEventListener('mousedown', moveStartHandlerBinded)
-        cvsCont.value.addEventListener('touchstart', moveStartHandlerBinded)
-        cvsCont.value.addEventListener('mousemove', movingHandlerBinded)
-        cvsCont.value.addEventListener('touchmove', movingHandlerBinded)
-        cvsCont.value.addEventListener('mouseup', moveEndHandlerBinded)
-        cvsCont.value.addEventListener('touchend', moveEndHandlerBinded)
+        listenPureClick(cvsCont.value, pureClickHandler)
+        cvsCont.value.addEventListener('mousedown', moveStartHandler)
+        cvsCont.value.addEventListener('touchstart', moveStartHandler)
+        cvsCont.value.addEventListener('mousemove', movingHandler)
+        cvsCont.value.addEventListener('touchmove', movingHandler)
+        cvsCont.value.addEventListener('mouseup', moveEndHandler)
+        cvsCont.value.addEventListener('touchend', moveEndHandler)
     }
     let rescaleDelayTimer = 0;
     function rescaleHandler(){
@@ -50,7 +50,6 @@ export const useEnvStore = defineStore('env', ()=>{
         }, 200)
     }
     
-    const pureClickHandlerBinded = pureClickHandler.bind(this) 
     function pureClickHandler(clientCord:Coord){
         const coord = translateFromClient(clientCord);
         if(!coord)
@@ -93,8 +92,6 @@ export const useEnvStore = defineStore('env', ()=>{
             }
         }
     }
-
-    const moveStartHandlerBinded = moveStartHandler.bind(this)
     function moveStartHandler(e:MouseEvent|TouchEvent){
         const clientCoord = eventClientCoord(e)
         if(!clientCoord)
@@ -107,8 +104,6 @@ export const useEnvStore = defineStore('env', ()=>{
             movingPoint.value = true
         }
     }
-
-    const movingHandlerBinded = movingHandler.bind(this)
     function movingHandler(e:MouseEvent|TouchEvent){
         if(movingPoint.value){
             setOpsPos(false)
@@ -123,8 +118,6 @@ export const useEnvStore = defineStore('env', ()=>{
             movedPoint.value = true
         }
     }
-
-    const moveEndHandlerBinded = moveEndHandler.bind(this)
     function moveEndHandler(){
         //手指离开屏幕时，touches为空数组，无法获取位置
         movingPoint.value = false
