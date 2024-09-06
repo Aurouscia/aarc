@@ -23,3 +23,5 @@ export const clickLineThrs_sqrt2_sq = (clickLineThrs*sqrt2)**2
 
 export const cursorRadius = 14
 export const cursorLineWidthR = 4
+
+export const snapThrs = 12

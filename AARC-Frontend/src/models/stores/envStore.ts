@@ -10,6 +10,7 @@ import { eventClientCoord } from "@/utils/eventClientCoord";
 import { coordOnLineOfFormalPts } from "@/utils/coordOnLine";
 import { OpsBtn, OpsBtnType, useOpsStore } from "./opsStore";
 import { ControlPointDir, ControlPointSta } from "../save";
+import { useSnapStore } from "./snapStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
@@ -28,6 +29,7 @@ export const useEnvStore = defineStore('env', ()=>{
     let scaler:Scaler;
     const pointMoved = ref<(changedLines:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])
+    const { snap } = useSnapStore()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -112,8 +114,12 @@ export const useEnvStore = defineStore('env', ()=>{
                 return;
             const coord = translateFromClient(clientCoord);
             const pt = saveStore.save?.points.find(x=>x.id === activePtId.value)
-            if(pt && coord)
-                pt.pos = coord
+            if(pt && coord){
+                pt.pos = coord;
+                const snapRes = snap(pt)
+                if(snapRes)
+                    pt.pos = snapRes
+            }
             cursorPos.value = coord
             movedPoint.value = true
         }
@@ -312,7 +318,7 @@ export const useEnvStore = defineStore('env', ()=>{
     }
     
     return { 
-        init, activePtId, activeLineId, cursorPos,
+        init, activePtId, activeLineId, cursorPos, movingPoint,
         cvsFrame, cvsCont, cvsWidth, cvsHeight, getDisplayRatio,
         pointMoved, rescaled, setLinesFormalPts
     }

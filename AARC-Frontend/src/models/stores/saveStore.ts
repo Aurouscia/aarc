@@ -49,6 +49,34 @@ export const useSaveStore = defineStore('save', () => {
             return []
         return lines.filter(line=>line.pts.includes(ptId))
     }
+    function getNeighborByPt(ptId:number){
+        const lines = save.value?.lines
+        const points = save.value?.points
+        if(!lines)
+            return []
+        if(!points)
+            return []
+        const resIds:number[] = []
+        lines.forEach(line=>{
+            const idx = line.pts.indexOf(ptId)
+            if(idx==-1)
+                return
+            if(idx>0){
+                resIds.push(line.pts[idx-1])
+            }
+            if(idx<line.pts.length-1){
+                resIds.push(line.pts[idx+1])
+            }
+        })
+        const res:ControlPoint[] = []
+        resIds.forEach(id=>{
+            const pt = points.find(pt=>pt.id == id)
+            if(pt){
+                res.push(pt)
+            }
+        })
+        return res
+    }
     function insertPtOnLine(lineId:number, afterIdx:number, pos:Coord, dir:ControlPointDir){
         if(!save.value)
             return;
@@ -99,7 +127,7 @@ export const useSaveStore = defineStore('save', () => {
     }
     return { 
         save, getNewId,
-        getPtsByIds, adjacentSegs, getLinesByPt,
+        getPtsByIds, getNeighborByPt, adjacentSegs, getLinesByPt,
         insertPtOnLine, insertPtToLine, removePt, removePtFromLine
     }
 })
