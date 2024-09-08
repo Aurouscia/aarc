@@ -1,10 +1,10 @@
-import { Coord } from "@/models/coord";
+import { Coord, SgnNumber } from "@/models/coord";
 import { numberCmpEpsilon } from "./consts";
 
-export function sgn(num:number){
+export function sgn(num:number):SgnNumber{
     if(isZero(num))
         return 0;
-    return Math.sign(num);
+    return Math.sign(num) as 1|-1;
 }
 export function isZero(num:number){
     return Math.abs(num) < numberCmpEpsilon

@@ -1,4 +1,6 @@
 export type Coord = [number, number]
+export type SgnNumber = -1 | 0 | 1
+export type SgnCoord = [SgnNumber, SgnNumber]
 
 // x--x-----x-----x--x   pts
 // 0--1-----2-----3--4   ptIdx
@@ -7,4 +9,9 @@ export type Coord = [number, number]
 export interface FormalPt{
     pos:Coord,
     afterIdxEqv:number
+}
+
+export interface FormalRay{
+    source:Coord,
+    way:SgnCoord
 }

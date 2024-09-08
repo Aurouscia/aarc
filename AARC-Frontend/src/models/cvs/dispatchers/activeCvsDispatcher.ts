@@ -31,9 +31,11 @@ export function useActiveCvsDispatcher(){
             renderSegsLine(ctx, activeSegs)
             renderSegsPoints(ctx, activeSegs, activePtId)
         }
-        if(envStore.movingPoint && snapStore.snapLine){
-            const l = snapStore.snapLine
-            renderRay(ctx, l.from, l.way)
+        if(envStore.movingPoint && snapStore.snapLines){
+            const ls = snapStore.snapLines
+            ls.forEach(l=>{
+                renderRay(ctx, l.source, l.way)
+            })
         }
     }
     return { activeCvs, renderActiveCvs }
