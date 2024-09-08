@@ -2,8 +2,8 @@ import { LineSeg, useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, Line } from "../../save";
 import { coordRelDiff } from "@/utils/coordRel";
 import { lineWidthR, turnAreaRadius } from "@/utils/consts";
-import { Bias, applyBias } from "@/utils/coordBias";
-import { Coord, FormalPt } from "../../coord";
+import { applyBias } from "@/utils/coordBias";
+import { Coord, FormalPt, SgnCoord } from "../../coord";
 import { coordFill } from "@/utils/coordFill";
 import { sgn } from "@/utils/sgn";
 import { coordDist } from "@/utils/coordDist";
@@ -118,15 +118,15 @@ export function useLineCvsWorker(){
             const nextPt = pts[i+1]
             const nextDist = coordDist(nowPt, nextPt)
             const taRadius = Math.min(turnAreaRadius, prevDist/2, nextDist/2)
-            const prevBias:Bias = {
-                x:sgn(prevPt[0] - nowPt[0]) as -1|0|1,
-                y:sgn(prevPt[1] - nowPt[1]) as -1|0|1,
-            }
+            const prevBias:SgnCoord = [
+                sgn(prevPt[0] - nowPt[0]) as -1|0|1,
+                sgn(prevPt[1] - nowPt[1]) as -1|0|1,
+            ]
             const prevSok = applyBias(nowPt, prevBias, taRadius)
-            const nextBias:Bias = {
-                x:sgn(nextPt[0] - nowPt[0]) as -1|0|1,
-                y:sgn(nextPt[1] - nowPt[1]) as -1|0|1,
-            }
+            const nextBias:SgnCoord = [
+                sgn(nextPt[0] - nowPt[0]) as -1|0|1,
+                sgn(nextPt[1] - nowPt[1]) as -1|0|1,
+            ]
             const nextSok = applyBias(nowPt, nextBias, taRadius)
             ctx.lineTo(prevSok[0], prevSok[1])
             ctx.quadraticCurveTo(nowPt[0], nowPt[1], nextSok[0], nextSok[1])

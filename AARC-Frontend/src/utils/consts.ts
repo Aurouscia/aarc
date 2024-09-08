@@ -21,7 +21,8 @@ export const clickLineThrs = bareControlPointSizeR*0.6
 export const clickLineThrsSq = clickLineThrs**2
 export const clickLineThrs_sqrt2_sq = (clickLineThrs*sqrt2)**2
 
-export const cursorRadius = 14
+export const cursorRadiusR = 14
 export const cursorLineWidthR = 4
 
-export const snapThrs = 12
+export const snapThrs = 16
+export const snapInterPtsDist = 24

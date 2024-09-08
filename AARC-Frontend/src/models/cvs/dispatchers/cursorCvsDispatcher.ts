@@ -1,7 +1,7 @@
 import { useEnvStore } from "@/models/stores/envStore";
 import { useCvs } from "../common/cvs";
 import { storeToRefs } from "pinia";
-import { cursorLineWidthR, cursorRadius } from "@/utils/consts";
+import { cursorLineWidthR, cursorRadiusR } from "@/utils/consts";
 
 export function useCursorCvsDispatcher(){
     const { cvs: cursorCvs, getCtx } = useCvs()
@@ -28,10 +28,10 @@ export function useCursorCvsDispatcher(){
         ctx.strokeStyle = style
         ctx.lineWidth = lineWidth*r
         ctx.beginPath()
-        ctx.arc(x, y, cursorRadius*r, angle, angle+pi/2)
+        ctx.arc(x, y, cursorRadiusR*r, angle, angle+pi/2)
         ctx.stroke()
         ctx.beginPath()
-        ctx.arc(x, y, cursorRadius*r, angle + pi, angle+pi*3/2)
+        ctx.arc(x, y, cursorRadiusR*r, angle + pi, angle+pi*3/2)
         ctx.stroke()
     }
     return { cursorCvs, startRenderCursor }

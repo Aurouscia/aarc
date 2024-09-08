@@ -1,16 +1,29 @@
-import { Coord, FormalRay } from "@/models/coord";
+import { Coord, FormalRay, SgnCoord } from "@/models/coord";
 import { useSaveStore } from "./saveStore";
 import { ControlPoint, ControlPointDir } from "@/models/save";
-import { snapThrs, sqrt2half } from "@/utils/consts";
+import { snapInterPtsDist, snapThrs, sqrt2half } from "@/utils/consts";
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { sgn } from "@/utils/sgn";
+import { isSameCoord, sgn } from "@/utils/sgn";
 import { findIntersect } from "@/utils/rayIntersection";
+import { applyBias } from "@/utils/coordBias";
+import { coordDistSq } from "@/utils/coordDist";
 
 export const useSnapStore = defineStore('snap',()=>{
     const saveStore = useSaveStore()
     const snapLines = ref<FormalRay[]>([])
     function snap(pt:ControlPoint){
+        snapLines.value = []
+        const interPtRes = snapInterPt(pt)
+        if(interPtRes){
+            return interPtRes
+        }
+        const neibRes = snapNeighborExtends(pt)
+        if(neibRes){
+            return neibRes
+        }
+    }
+    function snapNeighborExtends(pt:ControlPoint){
         const pos = pt.pos
         const dir = pt.dir
         const neibs = saveStore.getNeighborByPt(pt.id)
@@ -41,6 +54,8 @@ export const useSnapStore = defineStore('snap',()=>{
         neibs.forEach(n=>{
             const xDiff = n.pos[0] - pos[0]
             const yDiff = n.pos[1] - pos[1]
+            if(xDiff**2 + yDiff**2 < snapThrs**2*2)
+                return
             if(dir === ControlPointDir.vertical || n.dir === ControlPointDir.vertical){
                 const xDiffAbs = Math.abs(xDiff)
                 const yDiffAbs = Math.abs(yDiff)
@@ -74,7 +89,6 @@ export const useSnapStore = defineStore('snap',()=>{
                 }
             }
         })
-        snapLines.value = []
         if(cands.length>0){
             cands.forEach(c=>{
                 const xDiff = c.snapTo[0] - c.source[0]
@@ -96,6 +110,32 @@ export const useSnapStore = defineStore('snap',()=>{
                 return cands[0].snapTo
             }
         }
+    }
+    function snapInterPt(pt:ControlPoint){
+        const pts = saveStore.getPtsInRange(pt.pos, snapInterPtsDist+snapThrs, pt.id)
+        if(pts.length==0){
+            return undefined
+        }
+        let target:Coord|undefined = undefined
+        let minDistSq = 10000000;
+        pts.forEach(opt=>{
+            const biases:SgnCoord[] = []
+            if(pt.dir == ControlPointDir.incline || opt.dir == ControlPointDir.incline){
+                biases.push([-1,-1],[-1,1],[1,-1],[1,1])
+            }
+            if(pt.dir == ControlPointDir.vertical || opt.dir == ControlPointDir.vertical){
+                biases.push([0,-1],[0,1],[1,0],[-1,0])
+            }
+            biases.forEach(b=>{
+                const biased = applyBias(opt.pos, b, snapInterPtsDist)
+                const distSq = coordDistSq(pt.pos, biased)
+                if(distSq<snapThrs**2 && distSq<minDistSq){
+                    target = biased;
+                    minDistSq = distSq
+                }
+            })
+        })
+        return target
     }
     return { snap, snapLines }
 })

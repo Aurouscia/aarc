@@ -77,6 +77,23 @@ export const useSaveStore = defineStore('save', () => {
         })
         return res
     }
+    function getPtsInRange(center:Coord, offset:number, exceptId?:number){
+        if(!save.value)
+            return []
+        const left = center[0]-offset
+        const right = center[0]+offset
+        const top = center[1]-offset
+        const bottom = center[1]+offset
+        return save.value.points.filter(pt=>{
+            const px = pt.pos[0];
+            if(px<left || px>right)
+                return false;
+            const py = pt.pos[1];
+            if(py<top || py>bottom)
+                return false;
+            return pt.id != exceptId
+        })
+    }
     function insertPtOnLine(lineId:number, afterIdx:number, pos:Coord, dir:ControlPointDir){
         if(!save.value)
             return;
@@ -127,7 +144,7 @@ export const useSaveStore = defineStore('save', () => {
     }
     return { 
         save, getNewId,
-        getPtsByIds, getNeighborByPt, adjacentSegs, getLinesByPt,
+        getPtsByIds, getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt,
         insertPtOnLine, insertPtToLine, removePt, removePtFromLine
     }
 })

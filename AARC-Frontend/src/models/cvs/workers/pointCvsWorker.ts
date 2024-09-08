@@ -1,8 +1,9 @@
 import { LineSeg, useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, ControlPointSta, Line } from "../../save";
-import { applyBias, Bias } from "@/utils/coordBias";
+import { applyBias } from "@/utils/coordBias";
 import { bareControlPointLineWidthR, bareControlPointSizeR, bgColor, staFillColor, staLineWidthR, staSizeR } from "@/utils/consts";
 import { useEnvStore } from "@/models/stores/envStore";
+import { SgnCoord } from "@/models/coord";
 
 export function usePointCvsWorker(){
     const saveStore = useSaveStore();
@@ -35,17 +36,17 @@ export function usePointCvsWorker(){
         let markColor = '#999'
         if(pt.sta == ControlPointSta.plain || active){
             ctx.lineCap = 'round'
-            let biasA1:Bias, biasA2:Bias, biasB1:Bias, biasB2:Bias;
+            let biasA1:SgnCoord, biasA2:SgnCoord, biasB1:SgnCoord, biasB2:SgnCoord;
             if(pt.dir === ControlPointDir.incline){
-                biasA1 = {x:-1, y:-1}
-                biasA2 = {x:1, y:1}
-                biasB1 = {x:-1, y:1}
-                biasB2 = {x:1, y:-1}
+                biasA1 = [-1, -1]
+                biasA2 = [1, 1]
+                biasB1 = [-1, 1]
+                biasB2 = [1, -1]
             }else{
-                biasA1 = {x:-1, y:0}
-                biasA2 = {x:1, y:0}
-                biasB1 = {x:0, y:-1}
-                biasB2 = {x:0, y:1}
+                biasA1 = [-1, 0]
+                biasA2 = [1, 0]
+                biasB1 = [0, -1]
+                biasB2 = [0, 1]
             }
             let markSize = bareControlPointSizeR * r;
             let markWidth = bareControlPointLineWidthR * r;
