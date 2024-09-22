@@ -1,4 +1,7 @@
 export type Coord = [number, number]
+
+export type RectCoord = [Coord, Coord]
+
 export type SgnNumber = -1 | 0 | 1
 export type SgnCoord = [SgnNumber, SgnNumber]
 

@@ -37,6 +37,9 @@ onMounted(async()=>{
         renderActiveCvs()
     }, 50)
     startRenderCursor()
+    document.oncontextmenu = function(e){
+        e.preventDefault()
+    }
 })
 
 </script>

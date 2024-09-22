@@ -13,22 +13,27 @@ export function usePointCvsWorker(){
             return
         const allPts = saveStore.save.points
         for(const pt of allPts){
-            drawPt(ctx, pt)
+            renderPoint(ctx, pt)
         }
     }
     function renderLinePoints(ctx:CanvasRenderingContext2D, line:Line){
         const ptIds = line.pts
         if(ptIds && ptIds.length>0){
             const pts = saveStore.save?.points.filter(p=>ptIds.includes(p.id))
-            pts?.forEach(p=>drawPt(ctx, p))
+            pts?.forEach(p=>renderPoint(ctx, p))
         }
     }
     function renderSegsPoints(ctx:CanvasRenderingContext2D, segs:LineSeg[], activeId:number){
         segs.forEach(seg=>{
-            seg.pts.forEach(pt=>drawPt(ctx, pt, activeId == pt.id))
+            seg.pts.forEach(pt=>renderPoint(ctx, pt, activeId == pt.id))
         })
     }
-    function drawPt(ctx:CanvasRenderingContext2D, pt:ControlPoint, active:boolean = false){
+    function renderPointById(ctx:CanvasRenderingContext2D, ptId:number, active:boolean = false){
+        const pt = saveStore.getPtById(ptId)
+        if(pt)
+            renderPoint(ctx, pt, active)
+    }
+    function renderPoint(ctx:CanvasRenderingContext2D, pt:ControlPoint, active:boolean = false){
         let r = getDisplayRatio()
         if(r>1.6)
             return
@@ -90,5 +95,5 @@ export function usePointCvsWorker(){
             ctx.stroke()
         }
     }
-    return { renderAllPoints, renderLinePoints, renderSegsPoints }
+    return { renderAllPoints, renderLinePoints, renderSegsPoints, renderPoint, renderPointById }
 }

@@ -1,7 +1,7 @@
 import { Coord, FormalRay, SgnCoord } from "@/models/coord";
 import { useSaveStore } from "./saveStore";
 import { ControlPoint, ControlPointDir } from "@/models/save";
-import { snapInterPtsDist, snapThrs, sqrt2half } from "@/utils/consts";
+import { snapInterPtsDist, snapNameThrs, snapThrs, sqrt2half } from "@/utils/consts";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { sgn } from "@/utils/sgn";
@@ -22,6 +22,23 @@ export const useSnapStore = defineStore('snap',()=>{
         if(neibRes){
             return neibRes
         }
+    }
+    function snapName(pt:ControlPoint){
+        if(!pt.nameP){
+            return;
+        }
+        let [x, y] = pt.nameP
+        let snaped = false;
+        if(Math.abs(x) < snapNameThrs){
+            x = 0
+            snaped = true
+        }
+        if(Math.abs(y) < snapNameThrs){
+            y = 0
+            snaped = true
+        }
+        if(snaped)
+            return [x, y] as Coord
     }
     function snapNeighborExtends(pt:ControlPoint){
         const pos = pt.pos
@@ -137,5 +154,5 @@ export const useSnapStore = defineStore('snap',()=>{
         })
         return target
     }
-    return { snap, snapLines }
+    return { snap, snapName, snapLines }
 })

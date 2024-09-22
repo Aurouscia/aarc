@@ -12,6 +12,9 @@ export const useSaveStore = defineStore('save', () => {
         save.value.idIncre += 1
         return current
     }
+    function getPtById(id:number){
+        return save.value?.points.find(x=>x.id==id);
+    }
     function getPtsByIds(ids:number[]){
         const res:ControlPoint[] = [];
         ids.forEach(id=>{
@@ -144,7 +147,7 @@ export const useSaveStore = defineStore('save', () => {
     }
     return { 
         save, getNewId,
-        getPtsByIds, getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt,
+        getPtById, getPtsByIds, getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt,
         insertPtOnLine, insertPtToLine, removePt, removePtFromLine
     }
 })

@@ -6,7 +6,7 @@ import { useTextCvsWorker } from "../workers/textCvsWorker";
 
 export function useMainCvsDispatcher(){
     const envStore = useEnvStore()
-    envStore.pointMoved = renderMainCvs
+    envStore.pointMutated = renderMainCvs
     envStore.rescaled.push(renderMainPts)
     const { cvs: mainLineCvs, getCtx: getLineCtx } = useCvs()
     const { cvs: mainPtCvs, getCtx: getPtCtx } = useCvs()
@@ -14,19 +14,19 @@ export function useMainCvsDispatcher(){
     const { renderAllLines } = useLineCvsWorker()
     const { renderAllPoints } = usePointCvsWorker()
     const { renderAllPtName } = useTextCvsWorker()
-    function renderMainCvs(changedLines?:number[]){
+    function renderMainCvs(changedLines?:number[], movedStaNames?:number[]){
         const ctx = getLineCtx();
         renderAllLines(ctx, changedLines)
         renderMainPts()
-        renderMainPtNames()
+        renderMainPtNames(movedStaNames)
     }
     function renderMainPts(){
         const ctx = getPtCtx();
         renderAllPoints(ctx)
     }
-    function renderMainPtNames(){
+    function renderMainPtNames(movedStaNames?:number[]){
         const ctx = getPtNameCtx();
-        renderAllPtName(ctx)
+        renderAllPtName(ctx, movedStaNames)
     }
     return { mainLineCvs, mainPtCvs, mainPtNameCvs, renderMainCvs }
 }

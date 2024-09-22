@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { Scaler } from "@/utils/scaler";
-import { Coord, FormalPt } from "../coord";
+import { Coord, FormalPt, RectCoord } from "../coord";
 import { coordDistSq } from "@/utils/coordDist";
 import { clickControlPointThrsSq } from "@/utils/consts";
 import { listenPureClick } from "@/utils/pureClick";
@@ -11,6 +11,7 @@ import { coordOnLineOfFormalPts } from "@/utils/coordOnLine";
 import { OpsBtn, OpsBtnType, useOpsStore } from "./opsStore";
 import { ControlPointDir, ControlPointSta } from "../save";
 import { useSnapStore } from "./snapStore";
+import { rectInside } from "@/utils/rectInside";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
@@ -18,6 +19,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const saveStore = useSaveStore();
     const opsStore = useOpsStore();
     const activePtId = ref<number>(-1)
+    const activePtType = ref<'body'|'name'>('body')
     const activeLineId = ref<number>(-1)
     const cursorPos = ref<Coord>()
     const cursorDir = ref<ControlPointDir>(ControlPointDir.vertical)
@@ -27,9 +29,9 @@ export const useEnvStore = defineStore('env', ()=>{
     const cvsWidth = ref<number>(1)
     const cvsHeight = ref<number>(1)
     let scaler:Scaler;
-    const pointMoved = ref<(changedLines:number[])=>void>(()=>{});
+    const pointMutated = ref<(changedLines:number[], staNameMoved:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])
-    const { snap } = useSnapStore()
+    const { snap, snapName } = useSnapStore()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -61,38 +63,51 @@ export const useEnvStore = defineStore('env', ()=>{
         if(pt){
             //点到点上了
             activePtId.value = pt.id
+            activePtType.value = 'body'
             activeLineId.value = -1
             cursorPos.value = [...pt.pos]
             setOpsPos(pt.pos)
             setOpsForPt()
-        }else{
-            //判断是否在线上
-            //如果已经移动过点，这时formalPts还未更新，不应该进行点击线路判断，直接视为点击空白处
-            const line = !movedPoint.value && onLine(coord);
-            if(line && line.length>0){
-                //点到线上了
-                let line0 = line[0]
-                activeLineId.value = line0.lineId
-                activePtId.value = -1
-                cursorPos.value = [...line0.alignedPos]
-                cursorOnLineAfterPtIdx.value = line0.afterPtIdx
-                cursorDir.value = line0.dir
-                setOpsPos(line0.alignedPos)
-                setOpsForLine()
-            }
-            else{
-                let changedLines:number[] = []
-                if(activePtId.value){
-                    changedLines = saveStore.getLinesByPt(activePtId.value).map(x=>x.id)
-                }
-                activePtId.value = -1
-                activeLineId.value = -1
-                cursorPos.value = undefined
-                setOpsPos(false)
-                pointMoved.value(changedLines)
-                movedPoint.value = false
-            }
+            return
         }
+        //判断是否在站名上
+        const staName = !movedPoint.value && onStaName(coord)
+        if(staName){
+            //点到站名上了
+            activePtId.value = staName.id
+            activePtType.value = 'name'
+            activeLineId.value = -1
+            setOpsPos(false)
+            return
+        }
+        //判断是否在线上
+        //如果已经移动过点，这时formalPts还未更新，不应该进行点击线路判断，直接视为点击空白处
+        const line = !movedPoint.value && onLine(coord);
+        if(line && line.length>0){
+            //点到线上了
+            let line0 = line[0]
+            activeLineId.value = line0.lineId
+            activePtId.value = -1
+            cursorPos.value = [...line0.alignedPos]
+            cursorOnLineAfterPtIdx.value = line0.afterPtIdx
+            cursorDir.value = line0.dir
+            setOpsPos(line0.alignedPos)
+            setOpsForLine()
+            return
+        }
+        //点击空白位置
+        let changedLines:number[] = []
+        let movedStaNames:number[] = []
+        if(activePtId.value > 0){
+            changedLines = saveStore.getLinesByPt(activePtId.value).map(x=>x.id)
+            movedStaNames.push(activePtId.value)
+        }
+        activePtId.value = -1
+        activeLineId.value = -1
+        cursorPos.value = undefined
+        setOpsPos(false)
+        pointMutated.value(changedLines, movedStaNames)
+        movedPoint.value = false
     }
     function moveStartHandler(e:MouseEvent|TouchEvent){
         const clientCoord = eventClientCoord(e)
@@ -101,9 +116,18 @@ export const useEnvStore = defineStore('env', ()=>{
         const coord = translateFromClient(clientCoord);
         if(!coord)
             return;
-        const pt = onPt(coord)
-        if(pt && pt.id === activePtId.value){
-            movingPoint.value = true
+        if(activePtId.value > 0){
+            if(activePtType.value == 'body'){
+                const pt = onPt(coord)
+                if(pt && pt.id === activePtId.value){
+                    movingPoint.value = true
+                }
+            }else if(activePtType.value == 'name'){
+                const pt = onStaName(coord)
+                if(pt && pt.id === activePtId.value){
+                    movingPoint.value = true
+                }
+            }
         }
     }
     function movingHandler(e:MouseEvent|TouchEvent){
@@ -115,13 +139,20 @@ export const useEnvStore = defineStore('env', ()=>{
             const coord = translateFromClient(clientCoord);
             const pt = saveStore.save?.points.find(x=>x.id === activePtId.value)
             if(pt && coord){
-                pt.pos = coord;
-                const snapRes = snap(pt)
-                if(snapRes)
-                    pt.pos = snapRes
+                if(activePtType.value=='body'){
+                    pt.pos = coord;
+                    const snapRes = snap(pt)
+                    if(snapRes)
+                        pt.pos = snapRes
+                    cursorPos.value = coord
+                }else if(activePtType.value=='name'){
+                    pt.nameP = [coord[0]-pt.pos[0], coord[1]-pt.pos[1]]
+                    const snapRes = snapName(pt)
+                    if(snapRes)
+                        pt.nameP = snapRes
+                }
+                movedPoint.value = true
             }
-            cursorPos.value = coord
-            movedPoint.value = true
         }
     }
     function moveEndHandler(){
@@ -151,6 +182,14 @@ export const useEnvStore = defineStore('env', ()=>{
             }
         })
         return res
+    }
+    function onStaName(c:Coord){
+        for(const rect of staNameRects){
+            if(rectInside(rect.rect, c)){
+                const pt = saveStore.save?.points.find(pt => pt.id == rect.ptId)
+                return pt
+            }
+        }
     }
     function translateFromOffset(coordOffset:Coord):Coord|undefined{
         const [ox, oy] = coordOffset;
@@ -201,6 +240,17 @@ export const useEnvStore = defineStore('env', ()=>{
             target.pts = pts
         }
     }
+    const staNameRects:{ptId:number, rect:RectCoord}[] = []
+    function setStaNameRects(ptId:number, rect:RectCoord){
+        let target = staNameRects.find(x=>x.ptId == ptId)
+        if(!target){
+            target = {ptId, rect}
+            staNameRects.push(target)
+        }
+        else{
+            target.rect = rect
+        }
+    }
 
     function setOpsPos(coord:Coord|false){
         if(!coord){
@@ -230,7 +280,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 type:'addPtTL' as OpsBtnType,
                 cb:()=>{
                     saveStore.insertPtToLine(ptId, l.lineId, l.afterPtIdx, l.alignedPos, l.dir);
-                    pointMoved.value([l.lineId, ...relatedLineIds])
+                    pointMutated.value([l.lineId, ...relatedLineIds], [ptId])
                 },
                 color
             }
@@ -240,7 +290,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 type:'rmPtFL' as OpsBtnType,
                 cb:()=>{
                     saveStore.removePtFromLine(ptId, l.id);
-                    pointMoved.value([l.id, ...relatedLineIds])
+                    pointMutated.value([l.id, ...relatedLineIds], [])
                 },
                 color: l.color
             }
@@ -251,7 +301,7 @@ export const useEnvStore = defineStore('env', ()=>{
             activeLineId.value = -1
             cursorPos.value = undefined
             setOpsPos(false)
-            pointMoved.value(relatedLineIds)
+            pointMutated.value(relatedLineIds, [])
         }
         const swDirCb = ()=>{
             if(pt){
@@ -259,7 +309,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     pt.dir = ControlPointDir.vertical
                 else
                     pt.dir = ControlPointDir.incline
-                pointMoved.value(relatedLineIds)
+                pointMutated.value(relatedLineIds, [])
             }
         }
         const swSta = ()=>{
@@ -268,7 +318,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     pt.sta = ControlPointSta.sta
                 else
                     pt.sta = ControlPointSta.plain
-                pointMoved.value([])
+                pointMutated.value([], [])
             }
         }
         opsStore.btns = [
@@ -292,7 +342,7 @@ export const useEnvStore = defineStore('env', ()=>{
         const insertPtCb = ()=>{
             if(cursorPos.value){
                 const id = saveStore.insertPtOnLine(activeLineId.value, cursorOnLineAfterPtIdx.value, cursorPos.value, cursorDir.value)
-                pointMoved.value([activeLineId.value])
+                pointMutated.value([activeLineId.value], [])
                 if(id!==undefined){
                     activePtId.value = id
                     setOpsForPt()
@@ -318,8 +368,8 @@ export const useEnvStore = defineStore('env', ()=>{
     }
     
     return { 
-        init, activePtId, activeLineId, cursorPos, movingPoint,
+        init, activePtId, activePtType, activeLineId, cursorPos, movingPoint,
         cvsFrame, cvsCont, cvsWidth, cvsHeight, getDisplayRatio,
-        pointMoved, rescaled, setLinesFormalPts
+        pointMutated, rescaled, setLinesFormalPts, setStaNameRects
     }
 })

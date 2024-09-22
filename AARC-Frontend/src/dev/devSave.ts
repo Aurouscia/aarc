@@ -8,7 +8,10 @@ export const devSave:Save = {
             id: 1,
             pos: [200, 200],
             dir: ControlPointDir.incline,
-            sta: ControlPointSta.sta
+            sta: ControlPointSta.sta,
+            name: '三阳路',
+            nameS: 'sanyang Rd.',
+            nameP: [0,20]
         },
         {
             id: 2,
