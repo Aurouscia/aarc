@@ -1,4 +1,4 @@
-import { Coord, FormalRay, SgnCoord } from "@/models/coord";
+import { Coord, FormalRay } from "@/models/coord";
 import { rayToCoordDist } from "./rayToCoordDist";
 import { sqrt2, sqrt2half } from "./consts";
 import { isZero } from "./sgn";

@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { useActiveCvsDispatcher } from '@/models/cvs/dispatchers/activeCvsDispatcher';
-import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher';
-import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useEnvStore } from '@/models/stores/envStore';
 import { bgColor } from '@/utils/consts';
 import { storeToRefs } from 'pinia';
 import { onMounted, nextTick, computed } from 'vue';
 import Ops from './Ops.vue';
+import { useActiveCvsDispatcher } from '@/models/cvs/dispatchers/activeCvsDispatcher';
+import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher';
+import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useCursorCvsDispatcher } from '@/models/cvs/dispatchers/cursorCvsDispatcher';
 
 const envStore = useEnvStore();
 const { cvsFrame, cvsCont, cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
 const { baseCvs, renderBaseCvs } = useBaseCvsDispatcher()
-const { mainLineCvs, mainPtCvs, renderMainCvs } = useMainCvsDispatcher()
+const { mainLineCvs, mainPtCvs, mainPtNameCvs, renderMainCvs } = useMainCvsDispatcher()
 const { activeCvs, renderActiveCvs } = useActiveCvsDispatcher()
 const { cursorCvs, startRenderCursor } = useCursorCvsDispatcher()
 const mainCvsInsnif = computed<boolean>(()=>
     envStore.activePtId >= 0 || envStore.activeLineId >= 0
 )
 
-const testWidth = 3000
-const testHeight = 3000
+const testWidth = 2000
+const testHeight = 2000
 
 onMounted(async()=>{
     cvsWidth.value = testWidth
@@ -47,6 +47,7 @@ onMounted(async()=>{
             <canvas ref="baseCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
             <canvas ref="mainLineCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>
             <canvas ref="mainPtCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>
+            <canvas ref="mainPtNameCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>
             <canvas ref="activeCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
             <canvas ref="cursorCvs" :width="cvsWidth" :height="cvsWidth"></canvas>
         </div>

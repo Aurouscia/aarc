@@ -39,6 +39,42 @@ export const devSave:Save = {
             pos: [200, 400],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.plain
+        },
+        {
+            id: 7,
+            pos: [300, 1100],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.sta,
+            name: '火车北站\n西广场(假日酒店)',
+            nameS: 'Northern Railway Station\nSouth Square (Holiday Inn)',
+            nameP: [-15, 15]
+        },
+        {
+            id: 8,
+            pos: [450, 1100],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.sta,
+            name: '火车北站\n西广场(假日酒店)',
+            nameS: 'Northern Railway Station\nSouth Square (Holiday Inn)',
+            nameP: [0, 20]
+        },
+        {
+            id: 9,
+            pos: [600, 1100],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.sta,
+            name: '火车北站\n西广场(假日酒店)',
+            nameS: 'Northern Railway Station\nSouth Square (Holiday Inn)',
+            nameP: [0, -20]
+        },
+        {
+            id: 10,
+            pos: [750, 1100],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.sta,
+            name: '火车北站\n西广场(假日酒店)',
+            nameS: 'Northern Railway Station\nSouth Square (Holiday Inn)',
+            nameP: [15, -15]
         }
     ],
     lines: [

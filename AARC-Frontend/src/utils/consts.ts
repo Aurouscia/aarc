@@ -14,9 +14,17 @@ export const staSizeR = 10
 export const staLineWidthR = 4
 export const staFillColor = '#fff'
 
+export const staNameFontSizeR = 26
+export const staNameSubFontSizeR = 18
+export const staNameFontR = `${staNameFontSizeR}px "microsoft YaHei"`
+export const staNameSubFontR = `${staNameSubFontSizeR}px "microsoft YaHei"`
+export const staNameLineHeightR = 30
+export const staNameSubLineHeightR = 20
+export const staNameColor = 'black'
+export const staNameSubColor = 'gray'
+
 export const clickControlPointThrs = bareControlPointSizeR*1
 export const clickControlPointThrsSq = clickControlPointThrs**2
-
 export const clickLineThrs = bareControlPointSizeR*0.6
 export const clickLineThrsSq = clickLineThrs**2
 export const clickLineThrs_sqrt2_sq = (clickLineThrs*sqrt2)**2

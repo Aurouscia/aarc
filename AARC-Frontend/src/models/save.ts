@@ -20,6 +20,9 @@ export interface ControlPoint{
     pos:Coord
     dir:ControlPointDir
     sta:ControlPointSta
+    name?:string
+    nameS?:string
+    nameP?:Coord
 }
 
 

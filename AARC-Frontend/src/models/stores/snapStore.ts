@@ -4,7 +4,7 @@ import { ControlPoint, ControlPointDir } from "@/models/save";
 import { snapInterPtsDist, snapThrs, sqrt2half } from "@/utils/consts";
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { isSameCoord, sgn } from "@/utils/sgn";
+import { sgn } from "@/utils/sgn";
 import { findIntersect } from "@/utils/rayIntersection";
 import { applyBias } from "@/utils/coordBias";
 import { coordDistSq } from "@/utils/coordDist";
