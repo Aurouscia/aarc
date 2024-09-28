@@ -2,12 +2,10 @@ import { LineSeg, useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, ControlPointSta, Line } from "../../save";
 import { applyBias } from "@/utils/coordBias";
 import { bareControlPointLineWidthR, bareControlPointSizeR, bgColor, staFillColor, staLineWidthR, staSizeR } from "@/utils/consts";
-import { useEnvStore } from "@/models/stores/envStore";
 import { SgnCoord } from "@/models/coord";
 
 export function usePointCvsWorker(){
     const saveStore = useSaveStore();
-    const { getDisplayRatio } = useEnvStore()
     function renderAllPoints(ctx:CanvasRenderingContext2D){
         if(!saveStore.save)
             return
@@ -34,9 +32,6 @@ export function usePointCvsWorker(){
             renderPoint(ctx, pt, active)
     }
     function renderPoint(ctx:CanvasRenderingContext2D, pt:ControlPoint, active:boolean = false){
-        let r = getDisplayRatio()
-        if(r>1.6)
-            return
         const pos = pt.pos;
         let markColor = '#999'
         if(pt.sta == ControlPointSta.plain || active){
@@ -53,8 +48,8 @@ export function usePointCvsWorker(){
                 biasB1 = [0, -1]
                 biasB2 = [0, 1]
             }
-            let markSize = bareControlPointSizeR * r;
-            let markWidth = bareControlPointLineWidthR * r;
+            let markSize = bareControlPointSizeR;
+            let markWidth = bareControlPointLineWidthR;
             if(active){
                 markSize *= 1.5
                 markColor = '#000'

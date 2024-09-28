@@ -7,7 +7,6 @@ import { useTextCvsWorker } from "../workers/textCvsWorker";
 export function useMainCvsDispatcher(){
     const envStore = useEnvStore()
     envStore.pointMutated = renderMainCvs
-    envStore.rescaled.push(renderMainPts)
     const { cvs: mainLineCvs, getCtx: getLineCtx } = useCvs()
     const { cvs: mainPtCvs, getCtx: getPtCtx } = useCvs()
     const { cvs: mainPtNameCvs, getCtx: getPtNameCtx } = useCvs()

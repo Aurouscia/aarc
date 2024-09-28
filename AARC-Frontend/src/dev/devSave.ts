@@ -21,7 +21,7 @@ export const devSave:Save = {
         },
         {
             id: 3,
-            pos: [700, 700],
+            pos: [700, 550],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta
         },
@@ -29,6 +29,12 @@ export const devSave:Save = {
             id: 4,
             pos: [300, 800],
             dir: ControlPointDir.vertical,
+            sta: ControlPointSta.sta
+        },
+        {
+            id: 11,
+            pos: [650, 700],
+            dir: ControlPointDir.incline,
             sta: ControlPointSta.sta
         },
         {
@@ -83,7 +89,7 @@ export const devSave:Save = {
     lines: [
         {
             id: 101,
-            pts: [1, 2, 3, 4],
+            pts: [1, 2, 3, 11, 4],
             name: "一号线",
             nameSub: "Line 1",
             color: "#44cef6"
