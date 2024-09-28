@@ -12,6 +12,7 @@ import { OpsBtn, OpsBtnType, useOpsStore } from "./opsStore";
 import { ControlPointDir, ControlPointSta } from "../save";
 import { useSnapStore } from "./snapStore";
 import { rectInside } from "@/utils/rectInside";
+import { coordAdd, coordSub } from "@/utils/coordMath";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
@@ -20,6 +21,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const opsStore = useOpsStore();
     const activePtId = ref<number>(-1)
     const activePtType = ref<'body'|'name'>('body')
+    const activePtNameGrabbedAt = ref<Coord>([0,0])
     const activeLineId = ref<number>(-1)
     const cursorPos = ref<Coord>()
     const cursorDir = ref<ControlPointDir>(ControlPointDir.vertical)
@@ -126,6 +128,8 @@ export const useEnvStore = defineStore('env', ()=>{
                 const pt = onStaName(coord)
                 if(pt && pt.id === activePtId.value){
                     movingPoint.value = true
+                    const nameGlobalPos = coordAdd(pt.nameP || [0,0], pt.pos)
+                    activePtNameGrabbedAt.value = coordSub(coord, nameGlobalPos)
                 }
             }
         }
@@ -146,7 +150,8 @@ export const useEnvStore = defineStore('env', ()=>{
                         pt.pos = snapRes
                     cursorPos.value = coord
                 }else if(activePtType.value=='name'){
-                    pt.nameP = [coord[0]-pt.pos[0], coord[1]-pt.pos[1]]
+                    const nameGlobalPos = coordSub(coord, activePtNameGrabbedAt.value)
+                    pt.nameP = coordSub(nameGlobalPos, pt.pos)
                     const snapRes = snapName(pt)
                     if(snapRes)
                         pt.nameP = snapRes
@@ -158,6 +163,7 @@ export const useEnvStore = defineStore('env', ()=>{
     function moveEndHandler(){
         //手指离开屏幕时，touches为空数组，无法获取位置
         movingPoint.value = false
+        activePtNameGrabbedAt.value = [0,0]
     }
 
     function onPt(c:Coord){

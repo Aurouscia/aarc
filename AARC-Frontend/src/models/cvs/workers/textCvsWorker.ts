@@ -17,18 +17,26 @@ export function useTextCvsWorker(){
             renderPtName(ctx, pt, needReportRect)
         })
     }
-    function renderPtNameById(ctx:CanvasRenderingContext2D, ptId:number, needReportRect?:boolean){
+    function renderPtNameById(ctx:CanvasRenderingContext2D, ptId:number, needReportRect?:boolean, markRoot?:boolean){
         const pt = saveStore.getPtById(ptId);
         if(pt)
-            return renderPtName(ctx, pt, needReportRect)
+            return renderPtName(ctx, pt, needReportRect, markRoot)
     }
-    function renderPtName(ctx:CanvasRenderingContext2D, pt:ControlPoint, needReportRect?:boolean){
+    function renderPtName(ctx:CanvasRenderingContext2D, pt:ControlPoint, needReportRect?:boolean, markRoot?:boolean){
         if(!pt.nameP)
             return;
         const x = pt.pos[0]+pt.nameP[0]
         const y = pt.pos[1]+pt.nameP[1]
         const xSgn = sgn(pt.nameP[0])
         const ySgn = sgn(pt.nameP[1])
+
+        if(markRoot){
+            ctx.beginPath()
+            ctx.fillStyle = 'green'
+            ctx.arc(x, y, 3, 0, 2*Math.PI)
+            ctx.fill()
+        }
+
         if(xSgn==-1)
             ctx.textAlign = 'right'
         else if(xSgn==0)

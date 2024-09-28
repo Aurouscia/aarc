@@ -40,7 +40,7 @@ export function useActiveCvsDispatcher(){
                 renderPtNameById(ctx, activePtId)
             }else if(envStore.activePtType=='name'){
                 renderPointById(ctx, activePtId, false)
-                renderPtNameById(ctx, activePtId, true)
+                renderPtNameById(ctx, activePtId, true, true)
             }
         }
         if(envStore.movingPoint && envStore.activePtType=='body' && snapStore.snapLines){
