@@ -363,7 +363,7 @@ export const useEnvStore = defineStore('env', ()=>{
         ]
     }
 
-    function getDisplayRatio(soften = 0.5){
+    function getDisplayRatio(soften = 1){
         if(!cvsCont.value)
             return 1;
         const wr = cvsWidth.value / cvsCont.value.clientWidth

@@ -11,7 +11,7 @@ import { useCursorCvsDispatcher } from '@/models/cvs/dispatchers/cursorCvsDispat
 
 const envStore = useEnvStore();
 const { cvsFrame, cvsCont, cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
-const { baseCvs, renderBaseCvs } = useBaseCvsDispatcher()
+const { baseCvs } = useBaseCvsDispatcher()
 const { mainLineCvs, mainPtCvs, mainPtNameCvs, renderMainCvs } = useMainCvsDispatcher()
 const { activeCvs, renderActiveCvs } = useActiveCvsDispatcher()
 const { cursorCvs, startRenderCursor } = useCursorCvsDispatcher()
@@ -31,7 +31,6 @@ onMounted(async()=>{
     }
     await nextTick()
     envStore.init()
-    renderBaseCvs()
     renderMainCvs()
     setInterval(()=>{
         renderActiveCvs()

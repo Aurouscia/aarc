@@ -23,6 +23,9 @@ export const staNameSubLineHeightR = 20
 export const staNameColor = 'black'
 export const staNameSubColor = 'gray'
 
+export const gridMainColor = '#999'
+export const gridSubColor = '#aaa'
+
 export const clickControlPointThrs = bareControlPointSizeR*1
 export const clickControlPointThrsSq = clickControlPointThrs**2
 export const clickLineThrs = bareControlPointSizeR*0.6
