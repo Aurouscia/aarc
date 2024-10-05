@@ -18,3 +18,23 @@ export interface FormalRay{
     source:Coord,
     way:SgnCoord
 }
+
+export function collapseWay(way?:SgnCoord):'vert'|'hori'|'rise'|'fall'|'none'{
+    if(!way)
+        return 'none'
+    const [x, y] = way
+    if(x === 0){
+        if(y === 0){
+            return 'none'
+        }else{
+            return 'vert'
+        }
+    }else if(y === 0){
+        return 'hori'
+    }
+    else if(x === y){
+        return 'fall'
+    }else{
+        return 'rise'
+    }
+}

@@ -1,4 +1,4 @@
-import { defineStore } from "pinia";
+import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { Scaler } from "@/utils/scaler";
@@ -18,6 +18,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
     const movedPoint = ref<boolean>(false)
     const saveStore = useSaveStore();
+    const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const opsStore = useOpsStore();
     const activePtId = ref<number>(-1)
     const activePtType = ref<'body'|'name'>('body')
@@ -28,8 +29,6 @@ export const useEnvStore = defineStore('env', ()=>{
     const cursorOnLineAfterPtIdx = ref<number>(-1)
     const cvsFrame = ref<HTMLDivElement>()
     const cvsCont = ref<HTMLDivElement>()
-    const cvsWidth = ref<number>(1)
-    const cvsHeight = ref<number>(1)
     let scaler:Scaler;
     const pointMutated = ref<(changedLines:number[], staNameMoved:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])

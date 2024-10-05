@@ -19,12 +19,7 @@ const mainCvsInsnif = computed<boolean>(()=>
     envStore.activePtId >= 0 || envStore.activeLineId >= 0
 )
 
-const testWidth = 2000
-const testHeight = 2000
-
 onMounted(async()=>{
-    cvsWidth.value = testWidth
-    cvsHeight.value = testHeight
     if(cvsCont.value && cvsFrame.value){
         cvsCont.value.style.width = cvsWidth.value+'px'
         cvsCont.value.style.height = cvsHeight.value+'px'

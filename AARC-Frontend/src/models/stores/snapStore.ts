@@ -1,29 +1,35 @@
-import { Coord, FormalRay, SgnCoord } from "@/models/coord";
+import { collapseWay, Coord, FormalRay, SgnCoord } from "@/models/coord";
 import { useSaveStore } from "./saveStore";
 import { ControlPoint, ControlPointDir } from "@/models/save";
-import { snapInterPtsDist, snapNameThrs, snapThrs, sqrt2half } from "@/utils/consts";
-import { defineStore } from "pinia";
+import { snapGridThrs, snapInterPtsDist, snapNameThrs, snapThrs, sqrt2half } from "@/utils/consts";
+import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
-import { sgn } from "@/utils/sgn";
+import { isZero, sgn } from "@/utils/sgn";
 import { findIntersect } from "@/utils/rayIntersection";
 import { applyBias } from "@/utils/coordBias";
 import { coordDistSq } from "@/utils/coordDist";
 
 export const useSnapStore = defineStore('snap',()=>{
     const saveStore = useSaveStore()
+    const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const snapLines = ref<FormalRay[]>([])
-    function snap(pt:ControlPoint){
+    const snapGridIntv = ref<number>()
+    function snap(pt:ControlPoint):Coord|undefined{
         snapLines.value = []
         const interPtRes = snapInterPt(pt)
         if(interPtRes){
             return interPtRes
         }
-        const neibRes = snapNeighborExtends(pt)
-        if(neibRes){
+        const { snapRes:neibRes, freeAxis } = snapNeighborExtends(pt)
+        if(neibRes && !freeAxis){
             return neibRes
         }
+        const gridRes = snapGrid(neibRes || pt.pos, freeAxis)
+        if(gridRes){
+            return gridRes
+        }
     }
-    function snapName(pt:ControlPoint){
+    function snapName(pt:ControlPoint):Coord|undefined{
         if(!pt.nameP){
             return;
         }
@@ -40,12 +46,12 @@ export const useSnapStore = defineStore('snap',()=>{
         if(snaped)
             return [x, y] as Coord
     }
-    function snapNeighborExtends(pt:ControlPoint){
+    function snapNeighborExtends(pt:ControlPoint):{snapRes?:Coord, freeAxis?:SgnCoord}{
         const pos = pt.pos
         const dir = pt.dir
         const neibs = saveStore.getNeighborByPt(pt.id)
-        const cands:{dist:number, snapTo:Coord, source:Coord}[] = []
-        const tryCand = (dist:number, snapTo:Coord, source:Coord)=>{
+        const cands:{dist:number, snapTo:Coord, source:ControlPoint}[] = []
+        const tryCand = (dist:number, snapTo:Coord, source:ControlPoint)=>{
             if(cands.length<2)
             {
                 if(cands.length==0 || cands[0].dist<dist){
@@ -79,7 +85,7 @@ export const useSnapStore = defineStore('snap',()=>{
                 const dist = Math.min(xDiffAbs, yDiffAbs)
                 if(dist<snapThrs){
                     let snapTo:Coord = [...pos];
-                    if(tryCand(dist, snapTo, n.pos)){
+                    if(tryCand(dist, snapTo, n)){
                         if(xDiffAbs < yDiffAbs){
                             snapTo[0] = n.pos[0]
                         }else{
@@ -93,7 +99,7 @@ export const useSnapStore = defineStore('snap',()=>{
                 const dist = Math.abs(diffdiff) * sqrt2half
                 if(dist<snapThrs){
                     let snapTo:Coord = [0,0];
-                    if(tryCand(dist, snapTo, n.pos)){
+                    if(tryCand(dist, snapTo, n)){
                         if(xDiff*yDiff>0){
                             snapTo[0] = pos[0]-diffdiff/2;
                             snapTo[1] = pos[1]+diffdiff/2
@@ -108,27 +114,29 @@ export const useSnapStore = defineStore('snap',()=>{
         })
         if(cands.length>0){
             cands.forEach(c=>{
-                const xDiff = c.snapTo[0] - c.source[0]
-                const yDiff = c.snapTo[1] - c.source[1] 
+                const xDiff = c.snapTo[0] - c.source.pos[0]
+                const yDiff = c.snapTo[1] - c.source.pos[1] 
                 snapLines.value.push({
-                    source: c.source,
+                    source: c.source.pos,
                     way:[
                         sgn(xDiff),
                         sgn(yDiff)
                     ]
                 })
             })
+            const firstCandWay = snapLines.value[0].way
             if(cands.length == 1)
-                return cands[0].snapTo
+                return {snapRes:cands[0].snapTo, freeAxis:firstCandWay}
             else{
                 const intersection = findIntersect(snapLines.value[0], snapLines.value[1], cands[0].snapTo)
                 if(intersection)
-                    return intersection
-                return cands[0].snapTo
+                    return {snapRes: intersection}
+                return {snapRes: cands[0].snapTo, freeAxis:firstCandWay}
             }
         }
+        return {}
     }
-    function snapInterPt(pt:ControlPoint){
+    function snapInterPt(pt:ControlPoint):Coord|undefined{
         const pts = saveStore.getPtsInRange(pt.pos, snapInterPtsDist+snapThrs, pt.id)
         if(pts.length==0){
             return undefined
@@ -154,5 +162,99 @@ export const useSnapStore = defineStore('snap',()=>{
         })
         return target
     }
-    return { snap, snapName, snapLines }
+    function snapGrid(ptPos:Coord, freeAxis?:SgnCoord):Coord|undefined{
+        const intv = snapGridIntv.value
+        if(!intv)
+            return;
+        let xDiff = 0;
+        let yDiff = 0;
+        const freeWay = collapseWay(freeAxis)
+        if(freeWay !== 'vert'){
+            let cursor = intv;
+            while(cursor < cvsWidth.value){
+                const xDiffHere = ptPos[0] - cursor
+                const xDiffHereAbs = Math.abs(xDiffHere)
+                if(xDiffHereAbs < snapGridThrs){
+                    xDiff = xDiffHere
+                    break;
+                }
+                cursor += intv
+            }
+        }
+        if(freeWay !== 'hori'){
+            let cursor = intv;
+            while(cursor < cvsHeight.value){
+                const yDiffHere = ptPos[1] - cursor
+                const yDiffHereAbs = Math.abs(yDiffHere)
+                if(yDiffHereAbs < snapGridThrs){
+                    yDiff = yDiffHere
+                    break
+                }
+                cursor += intv
+            }
+        }
+        const pos = [...ptPos] as Coord
+        let snapX = false
+        let snapY = false
+        if(freeWay === 'vert'){
+            pos[1] -= yDiff;
+            snapY = true
+        }else if(freeWay === 'hori'){
+            pos[0] -= xDiff;
+            snapX = true
+        }else if(freeWay === 'fall' || freeWay === 'rise'){
+            let diff = 0;
+            if(!isZero(xDiff)){
+                if(isZero(yDiff)){
+                    diff = xDiff
+                    snapX = true
+                }
+                else{
+                    const xDiffSmaller = Math.abs(xDiff) < Math.abs(yDiff)
+                    if(xDiffSmaller){
+                        diff = xDiff
+                        snapX = true
+                    }else{
+                        diff = yDiff
+                        snapY = true
+                    }
+                }
+            }
+            else if(!isZero(yDiff)){
+                diff = yDiff
+                snapY = true
+            }
+            if(freeWay === 'fall'){
+                pos[0] -= diff;
+                pos[1] -= diff;
+            }else{
+                if(snapY){
+                    pos[0] += diff
+                    pos[1] -= diff
+                }else{
+                    pos[0] -= diff
+                    pos[1] += diff
+                }
+            }
+        }else{
+            pos[0] -= xDiff;
+            pos[1] -= yDiff;
+            snapX = !isZero(xDiff);
+            snapY = !isZero(yDiff)
+        }
+        if(snapX){
+            snapLines.value.push(
+                {source:[...pos], way:[0, -1]},
+                {source:[...pos], way:[0, 1]}
+            )
+        }
+        if(snapY){
+            snapLines.value.push(
+                {source:[...pos], way:[1, 0]},
+                {source:[...pos], way:[-1, 0]}
+            )
+        }
+        return pos
+    }
+    return { snap, snapName, snapLines, snapGridIntv }
 })

@@ -1,4 +1,5 @@
 import { useEnvStore } from "@/models/stores/envStore";
+import { useSnapStore } from "@/models/stores/snapStore";
 import { gridMainColor, gridSubColor } from "@/utils/consts";
 import { storeToRefs } from "pinia";
 
@@ -6,20 +7,20 @@ export function useGridCvsWorker(){
     const envStore = useEnvStore();
     const { getDisplayRatio } = envStore;
     const { cvsWidth, cvsHeight } = storeToRefs(envStore)
+    const { snapGridIntv } = storeToRefs(useSnapStore())
     function renderGrid(ctx:CanvasRenderingContext2D){
         let ratio = getDisplayRatio()
         const linesInfo = gridLinesInfo(ratio)
-        ctx.lineWidth = linesInfo.mainWidth
-        ctx.strokeStyle = gridMainColor
-        drawGrid(ctx, linesInfo.mainIntv)
+        snapGridIntv.value = linesInfo.subIntv
+
         ctx.lineWidth = linesInfo.subWidth
         ctx.strokeStyle = gridSubColor
         drawGrid(ctx, linesInfo.subIntv)
+        ctx.lineWidth = linesInfo.mainWidth
+        ctx.strokeStyle = gridMainColor
+        drawGrid(ctx, linesInfo.mainIntv)
     }
     function drawGrid(ctx:CanvasRenderingContext2D, intv:number){
-        if(intv <= 1){
-            return
-        }
         let x = intv;
         ctx.beginPath()
         while(x < cvsWidth.value){
@@ -41,12 +42,12 @@ export function useGridCvsWorker(){
         let subIntv:number
         let mainWidth:number = 2
         let subWidth:number = 1
-        if(xpx > 1200){
+        if(xpx > 1500){
             mainIntv = 500
             subIntv = 100
             mainWidth = 4
             subWidth = 2
-        }else if(xpx > 500){
+        }else if(xpx > 800){
             mainIntv = 100
             subIntv = 50
         }else{

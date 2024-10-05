@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { ControlPoint, ControlPointDir, ControlPointSta, Line, Save } from "../save";
 import { Coord } from "../coord";
 
@@ -145,8 +145,10 @@ export const useSaveStore = defineStore('save', () => {
         if(line)
             line.pts = line.pts.filter(pt=>pt!==ptId)
     }
+    const cvsWidth = computed<number>(()=>save.value?.cvsSize[0] || 1)
+    const cvsHeight = computed<number>(()=>save.value?.cvsSize[1] || 1)
     return { 
-        save, getNewId,
+        save, getNewId, cvsWidth, cvsHeight,
         getPtById, getPtsByIds, getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt,
         insertPtOnLine, insertPtToLine, removePt, removePtFromLine
     }
