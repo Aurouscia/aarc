@@ -3,6 +3,7 @@ import { ControlPoint } from "@/models/save";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { staNameColor, staNameFontR, staNameLineHeightR, staNameSubColor, staNameSubFontR, staNameSubLineHeightR } from "@/utils/consts";
+import { coordTwinShrink } from "@/utils/coordMath";
 import { sgn } from "@/utils/sgn";
 
 export function useTextCvsWorker(){
@@ -29,6 +30,17 @@ export function useTextCvsWorker(){
         const y = pt.pos[1]+pt.nameP[1]
         const xSgn = sgn(pt.nameP[0])
         const ySgn = sgn(pt.nameP[1])
+
+        const distSq = pt.nameP[0] ** 2 + pt.nameP[1] ** 2
+        if(distSq > 800){
+            ctx.beginPath()
+            ctx.lineWidth = 2
+            ctx.strokeStyle = "#999"
+            const linkStart = coordTwinShrink([x, y], pt.pos, 18)
+            ctx.moveTo(linkStart[0], linkStart[1])
+            ctx.lineTo(x, y)
+            ctx.stroke()
+        }
 
         if(markRoot){
             ctx.beginPath()
