@@ -40,7 +40,12 @@ export function useActiveCvsDispatcher(){
                 renderPtNameById(ctx, activePtId)
             }else if(envStore.activePtType=='name'){
                 renderPointById(ctx, activePtId, false)
-                renderPtNameById(ctx, activePtId, true, true)
+                let markRoot:'free'|'snapVague'|'snapAccu' = 'free'
+                if(envStore.activePtNameSnapped == 'accu')
+                    markRoot = 'snapAccu'
+                else if(envStore.activePtNameSnapped == 'vague')
+                    markRoot = 'snapVague'
+                renderPtNameById(ctx, activePtId, true, markRoot)
             }
         }
         if(envStore.movingPoint && envStore.activePtType=='body' && snapStore.snapLines){

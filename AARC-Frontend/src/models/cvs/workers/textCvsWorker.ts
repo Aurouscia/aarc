@@ -17,12 +17,12 @@ export function useTextCvsWorker(){
             renderPtName(ctx, pt, needReportRect)
         })
     }
-    function renderPtNameById(ctx:CanvasRenderingContext2D, ptId:number, needReportRect?:boolean, markRoot?:boolean){
+    function renderPtNameById(ctx:CanvasRenderingContext2D, ptId:number, needReportRect?:boolean, markRoot?:'free'|'snapVague'|'snapAccu'){
         const pt = saveStore.getPtById(ptId);
         if(pt)
             return renderPtName(ctx, pt, needReportRect, markRoot)
     }
-    function renderPtName(ctx:CanvasRenderingContext2D, pt:ControlPoint, needReportRect?:boolean, markRoot?:boolean){
+    function renderPtName(ctx:CanvasRenderingContext2D, pt:ControlPoint, needReportRect?:boolean, markRoot?:'free'|'snapVague'|'snapAccu'){
         if(!pt.nameP)
             return;
         const x = pt.pos[0]+pt.nameP[0]
@@ -32,8 +32,13 @@ export function useTextCvsWorker(){
 
         if(markRoot){
             ctx.beginPath()
-            ctx.fillStyle = 'green'
-            ctx.arc(x, y, 3, 0, 2*Math.PI)
+            if(markRoot == 'snapAccu')
+                ctx.fillStyle = 'green'
+            else if(markRoot == 'snapVague')
+                ctx.fillStyle = 'orange'
+            else
+                ctx.fillStyle = 'red'
+            ctx.arc(x, y, 4, 0, 2*Math.PI)
             ctx.fill()
         }
 

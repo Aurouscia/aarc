@@ -1,19 +1,24 @@
 import { collapseWay, Coord, FormalRay, SgnCoord } from "@/models/coord";
 import { useSaveStore } from "./saveStore";
 import { ControlPoint, ControlPointDir } from "@/models/save";
-import { snapGridThrs, snapInterPtsDist, snapNameThrs, snapThrs, sqrt2half } from "@/utils/consts";
+import { snapGridThrs, snapInterPtsDist, snapNameThrs, snapThrs, sqrt2half,
+    snapNameFromStaDist as snd, snapNameFromStaDistDiag as sndd} from "@/utils/consts";
 import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { isZero, sgn } from "@/utils/sgn";
 import { findIntersect } from "@/utils/rayIntersection";
 import { applyBias } from "@/utils/coordBias";
-import { coordDistSq } from "@/utils/coordDist";
+import { coordDistSq, coordDistSqLessThan } from "@/utils/coordDist";
 
 export const useSnapStore = defineStore('snap',()=>{
     const saveStore = useSaveStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const snapLines = ref<FormalRay[]>([])
     const snapGridIntv = ref<number>()
+    const snapStaNameTo:Coord[] = [
+        [snd,0],[-snd,0],[0,snd],[0,-snd],
+        [sndd,sndd],[sndd,-sndd],[-sndd,sndd],[-sndd,-sndd]
+    ]
     function snap(pt:ControlPoint):Coord|undefined{
         snapLines.value = []
         const interPtRes = snapInterPt(pt)
@@ -29,11 +34,21 @@ export const useSnapStore = defineStore('snap',()=>{
             return gridRes
         }
     }
-    function snapName(pt:ControlPoint):Coord|undefined{
+    function snapName(pt:ControlPoint):{to:Coord,type:'vague'|'accu'}|undefined{
         if(!pt.nameP){
             return;
         }
         let [x, y] = pt.nameP
+        const to = snapStaNameTo.find(t=>{
+            return coordDistSqLessThan(pt.nameP!, t, snapNameThrs**2)
+        })
+        if(to){
+            return {
+                to:[...to] as Coord,
+                type:'accu'
+            }
+        }
+
         let snaped = false;
         if(Math.abs(x) < snapNameThrs){
             x = 0
@@ -44,7 +59,10 @@ export const useSnapStore = defineStore('snap',()=>{
             snaped = true
         }
         if(snaped)
-            return [x, y] as Coord
+            return {
+                to: [x, y] as Coord,
+                type: 'vague'
+            }
     }
     function snapNeighborExtends(pt:ControlPoint):{snapRes?:Coord, freeAxis?:SgnCoord}{
         const pos = pt.pos

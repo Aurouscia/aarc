@@ -23,6 +23,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const activePtId = ref<number>(-1)
     const activePtType = ref<'body'|'name'>('body')
     const activePtNameGrabbedAt = ref<Coord>([0,0])
+    const activePtNameSnapped = ref<'no'|'vague'|'accu'>('no')
     const activeLineId = ref<number>(-1)
     const cursorPos = ref<Coord>()
     const cursorDir = ref<ControlPointDir>(ControlPointDir.vertical)
@@ -152,8 +153,12 @@ export const useEnvStore = defineStore('env', ()=>{
                     const nameGlobalPos = coordSub(coord, activePtNameGrabbedAt.value)
                     pt.nameP = coordSub(nameGlobalPos, pt.pos)
                     const snapRes = snapName(pt)
-                    if(snapRes)
-                        pt.nameP = snapRes
+                    if(snapRes){
+                        pt.nameP = snapRes.to
+                        activePtNameSnapped.value = snapRes.type
+                    }else{
+                        activePtNameSnapped.value = 'no'
+                    }
                 }
                 movedPoint.value = true
             }
@@ -373,7 +378,8 @@ export const useEnvStore = defineStore('env', ()=>{
     }
     
     return { 
-        init, activePtId, activePtType, activeLineId, cursorPos, movingPoint,
+        init, activePtId, activePtType, activePtNameSnapped,
+        activeLineId, cursorPos, movingPoint,
         cvsFrame, cvsCont, cvsWidth, cvsHeight, getDisplayRatio,
         pointMutated, rescaled, setLinesFormalPts, setStaNameRects
     }

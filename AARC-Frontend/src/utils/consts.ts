@@ -38,4 +38,6 @@ export const cursorLineWidthR = 4
 export const snapThrs = 16
 export const snapInterPtsDist = 24
 export const snapNameThrs = 4
+export const snapNameFromStaDist = 16
+export const snapNameFromStaDistDiag = snapNameFromStaDist * sqrt2half
 export const snapGridThrs = 6
