@@ -14,6 +14,7 @@ export const useSnapStore = defineStore('snap',()=>{
     const saveStore = useSaveStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const snapLines = ref<FormalRay[]>([])
+    const snapLinesForPt = ref<number>()
     const snapGridIntv = ref<number>()
     const snapStaNameTo:Coord[] = [
         [snd,0],[-snd,0],[0,snd],[0,-snd],
@@ -21,6 +22,7 @@ export const useSnapStore = defineStore('snap',()=>{
     ]
     function snap(pt:ControlPoint):Coord|undefined{
         snapLines.value = []
+        snapLinesForPt.value = pt.id
         const interPtRes = snapInterPt(pt)
         if(interPtRes){
             return interPtRes
@@ -274,5 +276,5 @@ export const useSnapStore = defineStore('snap',()=>{
         }
         return pos
     }
-    return { snap, snapName, snapLines, snapGridIntv }
+    return { snap, snapName, snapLines, snapLinesForPt, snapGridIntv }
 })

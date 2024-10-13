@@ -48,7 +48,9 @@ export function useActiveCvsDispatcher(){
                 renderPtNameById(ctx, activePtId, true, markRoot)
             }
         }
-        if(envStore.movingPoint && envStore.activePtType=='body' && snapStore.snapLines){
+        if(envStore.movingPoint && envStore.activePtType=='body' 
+            && snapStore.snapLines && snapStore.snapLinesForPt == activePtId)
+        {
             const ls = snapStore.snapLines
             ls.forEach(l=>{
                 renderRay(ctx, l.source, l.way)
