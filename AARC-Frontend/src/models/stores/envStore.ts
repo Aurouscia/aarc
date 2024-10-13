@@ -13,6 +13,7 @@ import { ControlPointDir, ControlPointSta } from "../save";
 import { useSnapStore } from "./snapStore";
 import { rectInside } from "@/utils/rectInside";
 import { coordAdd, coordSub } from "@/utils/coordMath";
+import { useNameEditStore } from "./nameEditStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
@@ -24,6 +25,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const activePtType = ref<'body'|'name'>('body')
     const activePtNameGrabbedAt = ref<Coord>([0,0])
     const activePtNameSnapped = ref<'no'|'vague'|'accu'>('no')
+    const nameEditStore = useNameEditStore()
     const activeLineId = ref<number>(-1)
     const cursorPos = ref<Coord>()
     const cursorDir = ref<ControlPointDir>(ControlPointDir.vertical)
@@ -70,6 +72,7 @@ export const useEnvStore = defineStore('env', ()=>{
             cursorPos.value = [...pt.pos]
             setOpsPos(pt.pos)
             setOpsForPt()
+            nameEditStore.endEditing()
             return
         }
         //判断是否在站名上
@@ -79,8 +82,11 @@ export const useEnvStore = defineStore('env', ()=>{
             activePtId.value = staName.id
             activePtType.value = 'name'
             activeLineId.value = -1
+            nameEditStore.startEditing(staName.id)
             setOpsPos(false)
             return
+        }else{
+            nameEditStore.endEditing()
         }
         //判断是否在线上
         //如果已经移动过点，这时formalPts还未更新，不应该进行点击线路判断，直接视为点击空白处

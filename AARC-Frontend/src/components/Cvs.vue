@@ -4,6 +4,7 @@ import { bgColor } from '@/utils/consts';
 import { storeToRefs } from 'pinia';
 import { onMounted, nextTick, computed } from 'vue';
 import Ops from './Ops.vue';
+import Name from './NameEdit.vue';
 import { useActiveCvsDispatcher } from '@/models/cvs/dispatchers/activeCvsDispatcher';
 import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
@@ -50,6 +51,7 @@ onMounted(async()=>{
         </div>
     </div>
     <Ops></Ops>
+    <Name></Name>
 </template>
 
 <style scoped lang="scss">
