@@ -195,9 +195,13 @@ export const useSnapStore = defineStore('snap',()=>{
         const intv = snapGridIntv.value
         if(!intv)
             return;
-        let xDiff = 0;
-        let yDiff = 0;
+        let xDiff = 0;//与足够近的竖线（如果有）的x之差
+        let yDiff = 0;//与足够近的横线（如果有）的y之差
+        let xMatched = false;//是否距离竖线足够近
+        let yMatched = false;//是否距离横线足够近
         const freeWay = collapseWay(freeAxis)
+
+        //寻找是否有足够近的竖线，如果自由度只有上下就不找
         if(freeWay !== 'vert'){
             let cursor = intv;
             while(cursor < cvsWidth.value){
@@ -205,11 +209,13 @@ export const useSnapStore = defineStore('snap',()=>{
                 const xDiffHereAbs = Math.abs(xDiffHere)
                 if(xDiffHereAbs < cs.config.snapGridThrs){
                     xDiff = xDiffHere
+                    xMatched = true
                     break;
                 }
                 cursor += intv
             }
         }
+        //寻找是否有足够近的横线，如果自由度只有左右就不找
         if(freeWay !== 'hori'){
             let cursor = intv;
             while(cursor < cvsHeight.value){
@@ -217,6 +223,7 @@ export const useSnapStore = defineStore('snap',()=>{
                 const yDiffHereAbs = Math.abs(yDiffHere)
                 if(yDiffHereAbs < cs.config.snapGridThrs){
                     yDiff = yDiffHere
+                    yMatched = true
                     break
                 }
                 cursor += intv
@@ -227,32 +234,47 @@ export const useSnapStore = defineStore('snap',()=>{
         let snapY = false
         if(freeWay === 'vert'){
             pos[1] -= yDiff;
-            snapY = true
+            snapY = yMatched
         }else if(freeWay === 'hori'){
             pos[0] -= xDiff;
-            snapX = true
+            snapX = xMatched
         }else if(freeWay === 'fall' || freeWay === 'rise'){
             let diff = 0;
-            if(!isZero(xDiff)){
-                if(isZero(yDiff)){
+            if(xMatched){
+                if(!yMatched){
+                    //有足够近竖线，但没有足够近横线
                     diff = xDiff
                     snapX = true
                 }
                 else{
-                    const xDiffSmaller = Math.abs(xDiff) < Math.abs(yDiff)
-                    if(xDiffSmaller){
-                        diff = xDiff
+                    //横竖都有足够近的
+                    const diffSame = freeWay === 'fall' ? (isZero(xDiff - yDiff)):(isZero(xDiff + yDiff))
+                    if(diffSame){
+                        //正好横、竖、延长线都能匹配
                         snapX = true
-                    }else{
-                        diff = yDiff
                         snapY = true
+                        diff = yDiff
+                    }else{
+                        //没有那么巧
+                        const xDiffSmaller = Math.abs(xDiff) < Math.abs(yDiff)
+                        if(xDiffSmaller){
+                            diff = xDiff
+                            snapX = true
+                        }else{
+                            diff = yDiff
+                            snapY = true
+                        }
                     }
                 }
             }
-            else if(!isZero(yDiff)){
+            else if(yMatched){
+                //有足够近横线，但没有足够近竖线
                 diff = yDiff
                 snapY = true
             }
+            //都没有（什么都不做）
+
+            //应用坐标差，修正位置
             if(freeWay === 'fall'){
                 pos[0] -= diff;
                 pos[1] -= diff;
@@ -268,9 +290,10 @@ export const useSnapStore = defineStore('snap',()=>{
         }else{
             pos[0] -= xDiff;
             pos[1] -= yDiff;
-            snapX = !isZero(xDiff);
-            snapY = !isZero(yDiff)
+            snapX = xMatched
+            snapY = yMatched
         }
+        //画吸附线
         if(snapX){
             snapLines.value.push(
                 {source:[...pos], way:[0, -1]},
