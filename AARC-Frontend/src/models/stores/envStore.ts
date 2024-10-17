@@ -66,8 +66,11 @@ export const useEnvStore = defineStore('env', ()=>{
         const coord = translateFromClient(clientCord);
         if(!coord)
             return
+        //判断是否处于某种需要退出的状态（点击任何东西都算点击空白处（退出状态））
+        const doingSth = movedPoint.value || nameEditStore.editing
+        
         //判断是否在点上
-        const pt = onPt(coord)
+        const pt = !doingSth && onPt(coord)
         if(pt){
             //点到点上了
             activePtId.value = pt.id
@@ -80,7 +83,7 @@ export const useEnvStore = defineStore('env', ()=>{
             return
         }
         //判断是否在站名上
-        const staName = !movedPoint.value && onStaName(coord)
+        const staName = !doingSth && onStaName(coord)
         if(staName){
             //点到站名上了
             activePtId.value = staName.id
@@ -94,7 +97,7 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         //判断是否在线上
         //如果已经移动过点，这时formalPts还未更新，不应该进行点击线路判断，直接视为点击空白处
-        const line = !movedPoint.value && onLine(coord);
+        const line = !doingSth && onLine(coord);
         if(line && line.length>0){
             //点到线上了
             let line0 = line[0]

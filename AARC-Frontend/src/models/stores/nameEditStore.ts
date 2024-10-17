@@ -9,6 +9,7 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
     const nameSub = ref<string>()
     const editing = ref(false)
     function startEditing(ptId:number){
+        endEditing()
         if(editing.value && targetPtId.value == ptId){
             return
         }
