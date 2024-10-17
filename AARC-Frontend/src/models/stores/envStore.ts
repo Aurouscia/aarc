@@ -40,7 +40,7 @@ export const useEnvStore = defineStore('env', ()=>{
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
-        scaler = new Scaler(cvsFrame.value, cvsCont.value, rescaleHandler, movingPoint)
+        scaler = new Scaler(cvsFrame.value, cvsCont.value, viewRescaleHandler, viewMoveHandler, movingPoint)
         scaler.widthReset()
         listenPureClick(cvsCont.value, pureClickHandler)
         cvsCont.value.addEventListener('mousedown', moveStartHandler)
@@ -51,12 +51,15 @@ export const useEnvStore = defineStore('env', ()=>{
         cvsCont.value.addEventListener('touchend', moveEndHandler)
     }
     let rescaleDelayTimer = 0;
-    function rescaleHandler(){
+    function viewRescaleHandler(){
         setOpsPos(false)
         window.clearTimeout(rescaleDelayTimer)
         rescaleDelayTimer = window.setTimeout(()=>{
             rescaled.value.forEach(f=>f())
         }, 200)
+    }
+    function viewMoveHandler(){
+        setOpsPos(false)
     }
     
     function pureClickHandler(clientCord:Coord){

@@ -3,13 +3,17 @@ import { Ref } from "vue";
 export class Scaler{
     private frame: HTMLDivElement;
     private arena: HTMLDivElement;
-    private callBack:()=>void;
+    private scaleCallback: ()=>void;
+    private moveCallback: ()=>void;
     private moveLocked:Ref<boolean>
     private mouseDown:boolean = false;
-    constructor(frame:HTMLDivElement,arena:HTMLDivElement,callBack:()=>void,moveLocked:Ref<boolean>){
+    constructor(frame:HTMLDivElement, arena:HTMLDivElement,
+        scaleCallback:()=>void, moveCallback:()=>void, moveLocked:Ref<boolean>)
+    {
         this.frame = frame;
         this.arena = arena;
-        this.callBack = callBack;
+        this.scaleCallback = scaleCallback;
+        this.moveCallback = moveCallback;
         this.moveLocked = moveLocked
         frame.addEventListener("click",(e)=>{
             const x = e.clientX
@@ -182,11 +186,12 @@ export class Scaler{
         const hGrowth = h*(ratio-1);
         this.frame.scrollLeft += wGrowth*gx
         this.frame.scrollTop += hGrowth*gy
-        this.callBack();
+        this.scaleCallback();
     }
     move(increX:number,increY:number){
         this.frame.scrollLeft -= increX
         this.frame.scrollTop -= increY
+        this.moveCallback();
     }
     widthReset(mutiple?:number){
         mutiple = mutiple || 1;
