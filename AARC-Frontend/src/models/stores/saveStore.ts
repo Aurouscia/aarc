@@ -145,12 +145,17 @@ export const useSaveStore = defineStore('save', () => {
         if(line)
             line.pts = line.pts.filter(pt=>pt!==ptId)
     }
+
+    function isNamedPt(pt:ControlPoint){
+        return !!pt.name?.trim()
+    }
     const cvsWidth = computed<number>(()=>save.value?.cvsSize[0] || 1)
     const cvsHeight = computed<number>(()=>save.value?.cvsSize[1] || 1)
     return { 
         save, getNewId, cvsWidth, cvsHeight,
         getPtById, getPtsByIds, getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt,
-        insertPtOnLine, insertPtToLine, removePt, removePtFromLine
+        insertPtOnLine, insertPtToLine, removePt, removePtFromLine,
+        isNamedPt
     }
 })
 

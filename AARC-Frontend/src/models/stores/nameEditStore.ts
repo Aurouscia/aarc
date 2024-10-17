@@ -1,8 +1,10 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
+import { useConfigStore } from "./configStore";
 
 export const useNameEditStore = defineStore('nameEdit', ()=>{
+    const cs = useConfigStore()
     const saveStore = useSaveStore()
     const targetPtId = ref<number>()
     const nameMain = ref<string>()
@@ -26,6 +28,10 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
         if(pt){
             pt.name = nameMain.value
             pt.nameS = nameSub.value
+            if(saveStore.isNamedPt(pt) && !pt.nameP){
+                const dist = cs.config.snapOctaClingPtNameDist
+                pt.nameP = [dist, 0]
+            }
         }
     }
     function endEditing(){

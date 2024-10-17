@@ -68,7 +68,7 @@ export const useEnvStore = defineStore('env', ()=>{
             return
         //判断是否处于某种需要退出的状态（点击任何东西都算点击空白处（退出状态））
         const doingSth = movedPoint.value || nameEditStore.editing
-        
+
         //判断是否在点上
         const pt = !doingSth && onPt(coord)
         if(pt){
@@ -79,7 +79,7 @@ export const useEnvStore = defineStore('env', ()=>{
             cursorPos.value = [...pt.pos]
             setOpsPos(pt.pos)
             setOpsForPt()
-            nameEditStore.endEditing()
+            nameEditStore.startEditing(pt.id)
             return
         }
         //判断是否在站名上
