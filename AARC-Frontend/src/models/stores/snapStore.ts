@@ -1,25 +1,30 @@
 import { collapseWay, Coord, FormalRay, SgnCoord } from "@/models/coord";
 import { useSaveStore } from "./saveStore";
 import { ControlPoint, ControlPointDir } from "@/models/save";
-import { snapGridThrs, snapInterPtsDist, snapNameThrs, snapThrs, sqrt2half,
-    snapNameFromStaDist as snd, snapNameFromStaDistDiag as sndd} from "@/utils/consts";
 import { defineStore, storeToRefs } from "pinia";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { isZero, sgn } from "@/utils/sgn";
 import { findIntersect } from "@/utils/rayIntersection";
 import { applyBias } from "@/utils/coordBias";
 import { coordDistSq, coordDistSqLessThan } from "@/utils/coordDist";
+import { useConfigStore } from "./configStore";
+import { sqrt2half } from "@/utils/consts";
 
 export const useSnapStore = defineStore('snap',()=>{
+    const cs = useConfigStore()
     const saveStore = useSaveStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const snapLines = ref<FormalRay[]>([])
     const snapLinesForPt = ref<number>()
     const snapGridIntv = ref<number>()
-    const snapStaNameTo:Coord[] = [
-        [snd,0],[-snd,0],[0,snd],[0,-snd],
-        [sndd,sndd],[sndd,-sndd],[-sndd,sndd],[-sndd,-sndd]
-    ]
+    const snapStaNameTo = computed<Coord[]>(()=>{
+        const snd = cs.config.snapOctaClingPtNameDist;
+        const sndd = snd * sqrt2half;
+        return [
+            [snd,0],[-snd,0],[0,snd],[0,-snd],
+            [sndd,sndd],[sndd,-sndd],[-sndd,sndd],[-sndd,-sndd]
+        ]
+    })
     function snap(pt:ControlPoint):Coord|undefined{
         snapLines.value = []
         snapLinesForPt.value = pt.id
@@ -40,9 +45,11 @@ export const useSnapStore = defineStore('snap',()=>{
         if(!pt.nameP){
             return;
         }
+        const snapClingThrsSq = cs.snapOctaClingPtNameThrsSq
+        const snapRayThrs = cs.config.snapOctaRayPtNameThrs
         let [x, y] = pt.nameP
-        const to = snapStaNameTo.find(t=>{
-            return coordDistSqLessThan(pt.nameP!, t, snapNameThrs**2)
+        const to = snapStaNameTo.value.find(t=>{
+            return coordDistSqLessThan(pt.nameP!, t, snapClingThrsSq)
         })
         if(to){
             return {
@@ -52,11 +59,11 @@ export const useSnapStore = defineStore('snap',()=>{
         }
 
         let snaped = false;
-        if(Math.abs(x) < snapNameThrs){
+        if(Math.abs(x) < snapRayThrs){
             x = 0
             snaped = true
         }
-        if(Math.abs(y) < snapNameThrs){
+        if(Math.abs(y) < snapRayThrs){
             y = 0
             snaped = true
         }
@@ -94,16 +101,15 @@ export const useSnapStore = defineStore('snap',()=>{
             }
             return false
         }
+
         neibs.forEach(n=>{
             const xDiff = n.pos[0] - pos[0]
             const yDiff = n.pos[1] - pos[1]
-            if(xDiff**2 + yDiff**2 < snapThrs**2*2)
-                return
             if(dir === ControlPointDir.vertical || n.dir === ControlPointDir.vertical){
                 const xDiffAbs = Math.abs(xDiff)
                 const yDiffAbs = Math.abs(yDiff)
                 const dist = Math.min(xDiffAbs, yDiffAbs)
-                if(dist<snapThrs){
+                if(dist<cs.config.snapOctaRayPtPtThrs){
                     let snapTo:Coord = [...pos];
                     if(tryCand(dist, snapTo, n)){
                         if(xDiffAbs < yDiffAbs){
@@ -117,7 +123,7 @@ export const useSnapStore = defineStore('snap',()=>{
             if(dir === ControlPointDir.incline || n.dir === ControlPointDir.incline){
                 const diffdiff = xDiff*yDiff>0 ? (yDiff-xDiff) : (yDiff+xDiff)
                 const dist = Math.abs(diffdiff) * sqrt2half
-                if(dist<snapThrs){
+                if(dist<cs.config.snapOctaRayPtPtThrs){
                     let snapTo:Coord = [0,0];
                     if(tryCand(dist, snapTo, n)){
                         if(xDiff*yDiff>0){
@@ -157,7 +163,10 @@ export const useSnapStore = defineStore('snap',()=>{
         return {}
     }
     function snapInterPt(pt:ControlPoint):Coord|undefined{
-        const pts = saveStore.getPtsInRange(pt.pos, snapInterPtsDist+snapThrs, pt.id)
+        const snapDist = cs.config.snapOctaClingPtPtDist;
+        const snapThrs = cs.config.snapOctaClingPtPtThrs;
+        const snapThrsSq = cs.snapOctaClingPtPtThrsSq
+        const pts = saveStore.getPtsInRange(pt.pos, snapDist + snapThrs, pt.id)
         if(pts.length==0){
             return undefined
         }
@@ -172,9 +181,9 @@ export const useSnapStore = defineStore('snap',()=>{
                 biases.push([0,-1],[0,1],[1,0],[-1,0])
             }
             biases.forEach(b=>{
-                const biased = applyBias(opt.pos, b, snapInterPtsDist)
+                const biased = applyBias(opt.pos, b, snapDist)
                 const distSq = coordDistSq(pt.pos, biased)
-                if(distSq<snapThrs**2 && distSq<minDistSq){
+                if(distSq<snapThrsSq && distSq<minDistSq){
                     target = biased;
                     minDistSq = distSq
                 }
@@ -194,7 +203,7 @@ export const useSnapStore = defineStore('snap',()=>{
             while(cursor < cvsWidth.value){
                 const xDiffHere = ptPos[0] - cursor
                 const xDiffHereAbs = Math.abs(xDiffHere)
-                if(xDiffHereAbs < snapGridThrs){
+                if(xDiffHereAbs < cs.config.snapGridThrs){
                     xDiff = xDiffHere
                     break;
                 }
@@ -206,7 +215,7 @@ export const useSnapStore = defineStore('snap',()=>{
             while(cursor < cvsHeight.value){
                 const yDiffHere = ptPos[1] - cursor
                 const yDiffHereAbs = Math.abs(yDiffHere)
-                if(yDiffHereAbs < snapGridThrs){
+                if(yDiffHereAbs < cs.config.snapGridThrs){
                     yDiff = yDiffHere
                     break
                 }

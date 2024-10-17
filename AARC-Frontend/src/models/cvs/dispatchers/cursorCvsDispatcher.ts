@@ -1,9 +1,10 @@
 import { useEnvStore } from "@/models/stores/envStore";
 import { useCvs } from "../common/cvs";
 import { storeToRefs } from "pinia";
-import { cursorLineWidthR, cursorRadiusR } from "@/utils/consts";
+import { useConfigStore } from "@/models/stores/configStore";
 
 export function useCursorCvsDispatcher(){
+    const cs = useConfigStore()
     const { cvs: cursorCvs, getCtx } = useCvs()
     const envStore = useEnvStore()
     const { cursorPos } = storeToRefs(envStore)
@@ -18,8 +19,8 @@ export function useCursorCvsDispatcher(){
             ctx.lineCap = 'round'
             if(!cursorPos.value)
                 return;
-            renderCursor(ctx, cursorPos.value[0], cursorPos.value[1], angleNow, 'white', cursorLineWidthR*2)
-            renderCursor(ctx, cursorPos.value[0], cursorPos.value[1], angleNow, 'black', cursorLineWidthR)
+            renderCursor(ctx, cursorPos.value[0], cursorPos.value[1], angleNow, 'white', cs.config.cursorLineWidth*2)
+            renderCursor(ctx, cursorPos.value[0], cursorPos.value[1], angleNow, 'black', cs.config.cursorLineWidth)
             angleNow+=0.1
         },50)
     }
@@ -28,10 +29,10 @@ export function useCursorCvsDispatcher(){
         ctx.strokeStyle = style
         ctx.lineWidth = lineWidth*r
         ctx.beginPath()
-        ctx.arc(x, y, cursorRadiusR*r, angle, angle+pi/2)
+        ctx.arc(x, y, cs.config.cursorSize*r, angle, angle+pi/2)
         ctx.stroke()
         ctx.beginPath()
-        ctx.arc(x, y, cursorRadiusR*r, angle + pi, angle+pi*3/2)
+        ctx.arc(x, y, cs.config.cursorSize*r, angle + pi, angle+pi*3/2)
         ctx.stroke()
     }
     return { cursorCvs, startRenderCursor }

@@ -1,14 +1,15 @@
 import { Coord, RectCoord } from "@/models/coord";
 import { ControlPoint } from "@/models/save";
+import { useConfigStore } from "@/models/stores/configStore";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useSaveStore } from "@/models/stores/saveStore";
-import { staNameColor, staNameFontR, staNameLineHeightR, staNameSubColor, staNameSubFontR, staNameSubLineHeightR } from "@/utils/consts";
 import { coordTwinShrink } from "@/utils/coordMath";
 import { sgn } from "@/utils/sgn";
 
 export function useTextCvsWorker(){
     const saveStore = useSaveStore()
     const envStore = useEnvStore()
+    const cs = useConfigStore()
     function renderAllPtName(ctx:CanvasRenderingContext2D, needReportRectPts?:number[]){
         if(!saveStore.save)
             return;
@@ -62,9 +63,9 @@ export function useTextCvsWorker(){
             ctx.textAlign = 'left'
 
         const nameLines = pt.name?.split('\n') || []
-        const nameHeight = nameLines.length * staNameLineHeightR
+        const nameHeight = nameLines.length * cs.config.staNameRowHeight
         const nameSubLines = pt.nameS?.split('\n') || []
-        const nameSubHeight = nameSubLines.length * staNameSubLineHeightR
+        const nameSubHeight = nameSubLines.length * cs.config.staNameSubRowHeight
         const totalHeight = nameHeight+nameSubHeight
         let yTop = y;
         if(ySgn == -1){
@@ -74,10 +75,10 @@ export function useTextCvsWorker(){
         }
         let biggestWidth = 0;
         ctx.textBaseline = 'middle'
-        ctx.fillStyle = staNameColor
-        ctx.font = staNameFontR;
+        ctx.fillStyle = cs.config.staNameColor
+        ctx.font = cs.staNameFontStr
         for(let i=0; i<nameLines.length; i++){
-            const yFromTop = (i + 0.5) * staNameLineHeightR
+            const yFromTop = (i + 0.5) * cs.config.staNameRowHeight
             let ty = yTop + yFromTop
             ctx.fillText(nameLines[i], x, ty)
             if(needReportRect){
@@ -87,10 +88,10 @@ export function useTextCvsWorker(){
                 }
             }
         }
-        ctx.fillStyle = staNameSubColor
-        ctx.font = staNameSubFontR
+        ctx.fillStyle = cs.config.staNameSubColor
+        ctx.font = cs.staNameFontSubStr
         for(let i=0; i<nameSubLines.length; i++){
-            const yFromTop = (i + 0.5) * staNameSubLineHeightR + nameHeight
+            const yFromTop = (i + 0.5) * cs.config.staNameSubRowHeight + nameHeight
             let ty = yTop + yFromTop
             ctx.fillText(nameSubLines[i], x, ty)
             if(needReportRect){

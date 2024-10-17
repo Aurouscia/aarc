@@ -1,11 +1,12 @@
 import { LineSeg, useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, ControlPointSta, Line } from "../../save";
 import { applyBias } from "@/utils/coordBias";
-import { bareControlPointLineWidthR, bareControlPointSizeR, bgColor, staFillColor, staLineWidthR, staSizeR } from "@/utils/consts";
 import { SgnCoord } from "@/models/coord";
+import { useConfigStore } from "@/models/stores/configStore";
 
 export function usePointCvsWorker(){
     const saveStore = useSaveStore();
+    const cs = useConfigStore();
     function renderAllPoints(ctx:CanvasRenderingContext2D){
         if(!saveStore.save)
             return
@@ -48,8 +49,8 @@ export function usePointCvsWorker(){
                 biasB1 = [0, -1]
                 biasB2 = [0, 1]
             }
-            let markSize = bareControlPointSizeR;
-            let markWidth = bareControlPointLineWidthR;
+            let markSize = cs.config.ptBareSize;
+            let markWidth = cs.config.ptBareLineWidth;
             if(active){
                 markSize *= 1.5
                 markColor = '#000'
@@ -78,14 +79,14 @@ export function usePointCvsWorker(){
                 ctx.strokeStyle = markColor
 
                 ctx.beginPath()
-                ctx.fillStyle = bgColor
-                ctx.arc(pos[0], pos[1], staSizeR+staLineWidthR, 0, 2*Math.PI)
+                ctx.fillStyle = cs.config.bgColor
+                ctx.arc(pos[0], pos[1], cs.config.ptStaSize + cs.config.ptStaLineWidth, 0, 2*Math.PI)
                 ctx.fill()
             }
             ctx.beginPath()
-            ctx.lineWidth = staLineWidthR
-            ctx.fillStyle = staFillColor
-            ctx.arc(pos[0], pos[1], staSizeR, 0, 2*Math.PI)
+            ctx.lineWidth = cs.config.ptStaLineWidth
+            ctx.fillStyle = cs.config.ptStaFillColor
+            ctx.arc(pos[0], pos[1], cs.config.ptStaSize, 0, 2*Math.PI)
             ctx.fill()
             ctx.stroke()
         }

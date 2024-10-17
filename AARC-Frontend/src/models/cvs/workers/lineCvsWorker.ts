@@ -1,17 +1,18 @@
 import { LineSeg, useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, Line } from "../../save";
 import { coordRelDiff } from "@/utils/coordRel";
-import { lineWidthR, turnAreaRadius } from "@/utils/consts";
 import { applyBias } from "@/utils/coordBias";
 import { Coord, FormalPt, SgnCoord } from "../../coord";
 import { coordFill } from "@/utils/coordFill";
 import { sgn } from "@/utils/sgn";
 import { coordDist } from "@/utils/coordDist";
 import { useEnvStore } from "@/models/stores/envStore";
+import { useConfigStore } from "@/models/stores/configStore";
 
 export function useLineCvsWorker(){
     const saveStore = useSaveStore();
     const envStore = useEnvStore();
+    const cs = useConfigStore();
     function renderAllLines(ctx:CanvasRenderingContext2D, needReportFormalPtsLines?:number[]){
         if(!saveStore.save){
             return
@@ -31,7 +32,7 @@ export function useLineCvsWorker(){
             envStore.setLinesFormalPts(line.id, formalPts)
         }
         ctx.lineCap = 'round'
-        ctx.lineWidth = lineWidthR
+        ctx.lineWidth = cs.config.lineWidth
         ctx.strokeStyle = line.color
         linkPts(formalPts, ctx)
     }
@@ -42,7 +43,7 @@ export function useLineCvsWorker(){
         segs.forEach(seg=>{
             const formalPts = formalize(seg.pts)
             ctx.lineCap = 'round'
-            ctx.lineWidth = lineWidthR
+            ctx.lineWidth = cs.config.lineWidth
             ctx.strokeStyle = seg.line.color
             linkPts(formalPts, ctx)
         })
@@ -117,7 +118,7 @@ export function useLineCvsWorker(){
             }
             const nextPt = pts[i+1]
             const nextDist = coordDist(nowPt, nextPt)
-            const taRadius = Math.min(turnAreaRadius, prevDist/2, nextDist/2)
+            const taRadius = Math.min(cs.config.lineTurnAreaRadius, prevDist/2, nextDist/2)
             const prevBias:SgnCoord = [
                 sgn(prevPt[0] - nowPt[0]) as -1|0|1,
                 sgn(prevPt[1] - nowPt[1]) as -1|0|1,

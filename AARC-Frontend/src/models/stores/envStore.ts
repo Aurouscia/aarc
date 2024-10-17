@@ -4,7 +4,6 @@ import { useSaveStore } from "./saveStore";
 import { Scaler } from "@/utils/scaler";
 import { Coord, FormalPt, RectCoord } from "../coord";
 import { coordDistSq } from "@/utils/coordDist";
-import { clickControlPointThrsSq } from "@/utils/consts";
 import { listenPureClick } from "@/utils/pureClick";
 import { eventClientCoord } from "@/utils/eventClientCoord";
 import { coordOnLineOfFormalPts } from "@/utils/coordOnLine";
@@ -14,12 +13,14 @@ import { useSnapStore } from "./snapStore";
 import { rectInside } from "@/utils/rectInside";
 import { coordAdd, coordSub } from "@/utils/coordMath";
 import { useNameEditStore } from "./nameEditStore";
+import { useConfigStore } from "./configStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
     const movedPoint = ref<boolean>(false)
     const saveStore = useSaveStore();
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
+    const cs = useConfigStore()
     const opsStore = useOpsStore();
     const activePtId = ref<number>(-1)
     const activePtType = ref<'body'|'name'>('body')
@@ -179,7 +180,7 @@ export const useEnvStore = defineStore('env', ()=>{
     function onPt(c:Coord){
         return saveStore.save?.points.find(p=>{
             const distSq = coordDistSq(p.pos, c)
-            return distSq < clickControlPointThrsSq
+            return distSq < cs.clickPtThrsSq
         })
     }
     function onLine(c:Coord, exceptLines:number[] = []){
@@ -187,7 +188,11 @@ export const useEnvStore = defineStore('env', ()=>{
         linesFormalPts.forEach(line=>{
             if(exceptLines.includes(line.lineId))
                 return;
-            const onLineRes = coordOnLineOfFormalPts(c, line.pts)
+            const onLineRes = coordOnLineOfFormalPts(c, line.pts, {
+                clickLineThrs: cs.config.clickLineThrs,
+                clickLineThrsSq: cs.clickLineThrsSq,
+                clickLineThrs_sqrt2_sq: cs.clickLineThrs_sqrt2_sq
+            })
             if(onLineRes){
                 res.push({
                     lineId: line.lineId,

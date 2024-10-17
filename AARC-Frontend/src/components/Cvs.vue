@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useEnvStore } from '@/models/stores/envStore';
-import { bgColor } from '@/utils/consts';
 import { storeToRefs } from 'pinia';
 import { onMounted, nextTick, computed } from 'vue';
 import Ops from './Ops.vue';
@@ -9,8 +8,10 @@ import { useActiveCvsDispatcher } from '@/models/cvs/dispatchers/activeCvsDispat
 import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useCursorCvsDispatcher } from '@/models/cvs/dispatchers/cursorCvsDispatcher';
+import { useConfigStore } from '@/models/stores/configStore';
 
 const envStore = useEnvStore();
+const cs = useConfigStore();
 const { cvsFrame, cvsCont, cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
 const { baseCvs } = useBaseCvsDispatcher()
 const { mainLineCvs, mainPtCvs, mainPtNameCvs, renderMainCvs } = useMainCvsDispatcher()
@@ -41,7 +42,7 @@ onMounted(async()=>{
 
 <template>
     <div class="cvsFrame" ref="cvsFrame">
-        <div class="cvsCont" ref="cvsCont" :style="{backgroundColor: bgColor}">
+        <div class="cvsCont" ref="cvsCont" :style="{backgroundColor: cs.config.bgColor}">
             <canvas ref="baseCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
             <canvas ref="mainLineCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>
             <canvas ref="mainPtCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>

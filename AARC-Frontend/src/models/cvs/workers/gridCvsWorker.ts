@@ -1,6 +1,6 @@
+import { useConfigStore } from "@/models/stores/configStore";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useSnapStore } from "@/models/stores/snapStore";
-import { gridMainColor, gridSubColor } from "@/utils/consts";
 import { storeToRefs } from "pinia";
 
 export function useGridCvsWorker(){
@@ -8,16 +8,17 @@ export function useGridCvsWorker(){
     const { getDisplayRatio } = envStore;
     const { cvsWidth, cvsHeight } = storeToRefs(envStore)
     const { snapGridIntv } = storeToRefs(useSnapStore())
+    const cs = useConfigStore()
     function renderGrid(ctx:CanvasRenderingContext2D){
         let ratio = getDisplayRatio()
         const linesInfo = gridLinesInfo(ratio)
         snapGridIntv.value = linesInfo.subIntv
 
         ctx.lineWidth = linesInfo.subWidth
-        ctx.strokeStyle = gridSubColor
+        ctx.strokeStyle = cs.config.gridSubLineColor
         drawGrid(ctx, linesInfo.subIntv)
         ctx.lineWidth = linesInfo.mainWidth
-        ctx.strokeStyle = gridMainColor
+        ctx.strokeStyle = cs.config.gridMainLineColor
         drawGrid(ctx, linesInfo.mainIntv)
     }
     function drawGrid(ctx:CanvasRenderingContext2D, intv:number){
