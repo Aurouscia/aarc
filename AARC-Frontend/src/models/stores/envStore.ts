@@ -42,6 +42,7 @@ export const useEnvStore = defineStore('env', ()=>{
             return
         scaler = new Scaler(cvsFrame.value, cvsCont.value, viewRescaleHandler, viewMoveHandler, movingPoint)
         scaler.widthReset()
+        nameEditStore.nameInputFocusHandler = ()=>{setOpsPos(false)}
         listenPureClick(cvsCont.value, pureClickHandler)
         cvsCont.value.addEventListener('mousedown', moveStartHandler)
         cvsCont.value.addEventListener('touchstart', moveStartHandler)
@@ -67,7 +68,7 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!coord)
             return
         //判断是否处于某种需要退出的状态（点击任何东西都算点击空白处（退出状态））
-        const doingSth = movedPoint.value || nameEditStore.editing
+        const doingSth = movedPoint.value || nameEditStore.edited
 
         //判断是否在点上
         const pt = !doingSth && onPt(coord)

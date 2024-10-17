@@ -9,12 +9,11 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
     const targetPtId = ref<number>()
     const nameMain = ref<string>()
     const nameSub = ref<string>()
+    const edited = ref(false)
     const editing = ref(false)
+    const nameInputFocusHandler = ref<()=>void>()
     function startEditing(ptId:number){
         endEditing()
-        if(editing.value && targetPtId.value == ptId){
-            return
-        }
         const pt = saveStore.getPtById(ptId)
         if(pt){
             targetPtId.value = ptId
@@ -26,6 +25,9 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
     function applyName(){
         const pt = saveStore.getPtById(targetPtId.value || -1)
         if(pt){
+            if(!edited.value){
+                edited.value = nameMain.value !== pt.name || nameSub.value !== pt.nameS
+            }
             pt.name = nameMain.value
             pt.nameS = nameSub.value
             if(saveStore.isNamedPt(pt) && !pt.nameP){
@@ -40,8 +42,10 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
         }
         applyName()
         editing.value = false;
+        edited.value = false;
     }
-    return { nameMain, nameSub, editing,
-        startEditing, endEditing, applyName
+    return { nameMain, nameSub, editing, edited,
+        startEditing, endEditing, applyName,
+        nameInputFocusHandler
     }
 })

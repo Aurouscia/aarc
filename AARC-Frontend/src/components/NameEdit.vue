@@ -54,8 +54,10 @@ function inputHandler(type:'main'|'sub'){
 
 <template>
     <div class="nameEditor" :class="{hidden:!editing}">
-        <textarea v-model="nameMain" :rows="nameMainRows" @input="inputHandler('main')" spellcheck="false"></textarea>
-        <textarea v-model="nameSub" :rows="nameSubRows" @input="inputHandler('sub')" class="subName" spellcheck="false"></textarea>
+        <textarea v-model="nameMain" :rows="nameMainRows" @input="inputHandler('main')"
+            @focus="nameEditStore.nameInputFocusHandler" spellcheck="false"></textarea>
+        <textarea v-model="nameSub" :rows="nameSubRows" @input="inputHandler('sub')"
+            @focus="nameEditStore.nameInputFocusHandler" class="subName" spellcheck="false"></textarea>
     </div>
 </template>
 
