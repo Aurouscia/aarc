@@ -39,7 +39,7 @@ export class Scaler{
             this.touchDist=-1; this.touchCx=-1; this.touchCy=-1; this.mouseDown = false
         })
         frame.addEventListener("wheel", this.wheelHandlerBinded)
-        window.addEventListener("keypress", this.keyHandlerBinded)
+        //window.addEventListener("keypress", this.keyHandlerBinded)
     }
 
     touchDist=-1;
@@ -114,26 +114,26 @@ export class Scaler{
     }
 
     
-    moveBtns = ['w','a','s','d']
-    moveStepRatio = 0.05
-    private keyHandlerBinded = this.keyHandler.bind(this)
-    private keyHandler(e:KeyboardEvent){
-        const key = e.key;
-        if(this.moveBtns.includes(key)){
-            e.preventDefault()
-            const fw = this.frame.clientWidth;
-            const fh = this.frame.clientHeight;
-            if(key=='a'){
-                this.move(fw*this.moveStepRatio, 0)
-            }else if(key=='d'){
-                this.move(-fw*this.moveStepRatio, 0)
-            }else if(key=='w'){
-                this.move(0, fh*this.moveStepRatio)
-            }else if(key=='s'){
-                this.move(0, -fh*this.moveStepRatio)
-            }
-        }
-    }
+    //moveBtns = ['w','a','s','d']
+    //moveStepRatio = 0.05
+    //private keyHandlerBinded = this.keyHandler.bind(this)
+    // private keyHandler(e:KeyboardEvent){
+    //     const key = e.key;
+    //     if(this.moveBtns.includes(key)){
+    //         e.preventDefault()
+    //         const fw = this.frame.clientWidth;
+    //         const fh = this.frame.clientHeight;
+    //         if(key=='a'){
+    //             this.move(fw*this.moveStepRatio, 0)
+    //         }else if(key=='d'){
+    //             this.move(-fw*this.moveStepRatio, 0)
+    //         }else if(key=='w'){
+    //             this.move(0, fh*this.moveStepRatio)
+    //         }else if(key=='s'){
+    //             this.move(0, -fh*this.moveStepRatio)
+    //         }
+    //     }
+    // }
     private wheelHandlerBinded = this.wheelHandler.bind(this)
     private wheelHandler(e:WheelEvent){
         const anchor = this.getAnchorFromEvent(e)
