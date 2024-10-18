@@ -43,18 +43,6 @@ export function useTextCvsWorker(){
             ctx.stroke()
         }
 
-        if(markRoot){
-            ctx.beginPath()
-            if(markRoot == 'snapAccu')
-                ctx.fillStyle = 'green'
-            else if(markRoot == 'snapVague')
-                ctx.fillStyle = 'orange'
-            else
-                ctx.fillStyle = 'red'
-            ctx.arc(x, y, 4, 0, 2*Math.PI)
-            ctx.fill()
-        }
-
         if(xSgn==-1)
             ctx.textAlign = 'right'
         else if(xSgn==0)
@@ -75,32 +63,54 @@ export function useTextCvsWorker(){
         }
         let biggestWidth = 0;
         ctx.textBaseline = 'middle'
-        ctx.fillStyle = cs.config.staNameColor
-        ctx.font = cs.staNameFontStr
-        for(let i=0; i<nameLines.length; i++){
-            const yFromTop = (i + 0.5) * cs.config.staNameRowHeight
-            let ty = yTop + yFromTop
-            ctx.fillText(nameLines[i], x, ty)
-            if(needReportRect){
-                const width = ctx.measureText(nameLines[i]).width
-                if(width > biggestWidth){
-                    biggestWidth = width
+        const render = (as:'fill'|'stroke', measure?:boolean)=>{
+            ctx.fillStyle = cs.config.staNameColor
+            ctx.font = cs.staNameFontStr
+            for(let i=0; i<nameLines.length; i++){
+                const yFromTop = (i + 0.5) * cs.config.staNameRowHeight
+                let ty = yTop + yFromTop
+                if(as=='stroke')
+                    ctx.strokeText(nameLines[i], x, ty)
+                else
+                    ctx.fillText(nameLines[i], x, ty)
+                if(measure){
+                    const width = ctx.measureText(nameLines[i]).width
+                    if(width > biggestWidth){
+                        biggestWidth = width
+                    }
                 }
             }
-        }
-        ctx.fillStyle = cs.config.staNameSubColor
-        ctx.font = cs.staNameFontSubStr
-        for(let i=0; i<nameSubLines.length; i++){
-            const yFromTop = (i + 0.5) * cs.config.staNameSubRowHeight + nameHeight
-            let ty = yTop + yFromTop
-            ctx.fillText(nameSubLines[i], x, ty)
-            if(needReportRect){
-                const width = ctx.measureText(nameLines[i]).width
-                if(width > biggestWidth){
-                    biggestWidth = width
-                }
+            ctx.fillStyle = cs.config.staNameSubColor
+            ctx.font = cs.staNameFontSubStr
+            for(let i=0; i<nameSubLines.length; i++){
+                const yFromTop = (i + 0.5) * cs.config.staNameSubRowHeight + nameHeight
+                let ty = yTop + yFromTop
+                if(as=='stroke')
+                    ctx.strokeText(nameSubLines[i], x, ty)
+                else
+                    ctx.fillText(nameSubLines[i], x, ty)
+                //判定框宽度只取决于主站名，副站名无视
             }
         }
+        ctx.strokeStyle = cs.config.bgColor
+        ctx.globalAlpha = 0.8
+        ctx.lineWidth = cs.config.staNameFontSize/4
+        render('stroke', needReportRect)
+        ctx.globalAlpha = 1
+        render('fill')
+
+        if(markRoot){
+            ctx.beginPath()
+            if(markRoot == 'snapAccu')
+                ctx.fillStyle = 'green'
+            else if(markRoot == 'snapVague')
+                ctx.fillStyle = 'orange'
+            else
+                ctx.fillStyle = 'red'
+            ctx.arc(x, y, 4, 0, 2*Math.PI)
+            ctx.fill()
+        }
+
         if(needReportRect){
             let leftMost = x;
             let rightMost = x;
