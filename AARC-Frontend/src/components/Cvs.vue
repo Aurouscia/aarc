@@ -11,7 +11,7 @@ import { useCursorCvsDispatcher } from '@/models/cvs/dispatchers/cursorCvsDispat
 import { useConfigStore } from '@/models/stores/configStore';
 
 const envStore = useEnvStore();
-const cs = useConfigStore();
+const configStore = useConfigStore();
 const { cvsFrame, cvsCont, cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
 const { baseCvs } = useBaseCvsDispatcher()
 const { mainLineCvs, mainPtCvs, mainPtNameCvs, renderMainCvs } = useMainCvsDispatcher()
@@ -28,6 +28,7 @@ onMounted(async()=>{
     }
     await nextTick()
     envStore.init()
+    configStore.readConfigFromSave()
     renderMainCvs()
     setInterval(()=>{
         renderActiveCvs()
@@ -42,7 +43,7 @@ onMounted(async()=>{
 
 <template>
     <div class="cvsFrame" ref="cvsFrame">
-        <div class="cvsCont" ref="cvsCont" :style="{backgroundColor: cs.config.bgColor}">
+        <div class="cvsCont" ref="cvsCont" :style="{backgroundColor: configStore.config.bgColor}">
             <canvas ref="baseCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
             <canvas ref="mainLineCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>
             <canvas ref="mainPtCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>

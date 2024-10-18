@@ -1,8 +1,10 @@
 import { sqrt2 } from "@/utils/consts"
 import { defineStore } from "pinia"
 import { computed, ref } from "vue"
+import { Config } from "../config"
+import { useSaveStore } from "./saveStore"
 
-export const configDefault = {
+export const configDefault:Config = {
     mr: 1.5,
     bgColor: '#eeeeee',
 
@@ -44,10 +46,16 @@ export const configDefault = {
     snapOctaRayPtNameThrs: 6,
     snapGridThrs: 6
 }
-export type Config = typeof configDefault
 
 export const useConfigStore = defineStore('config', ()=>{
     const config = ref<Config>(configDefault)
+    const saveStore = useSaveStore()
+    function readConfigFromSave(){
+        if(!saveStore.save?.config)
+            return;
+        const sc = saveStore.save.config;
+        Object.assign(config.value, sc)
+    }
 
     const staNameFontStr = computed<string>(()=>
         `${config.value.staNameFontSize}px ${config.value.staNameFont}`)
@@ -65,7 +73,7 @@ export const useConfigStore = defineStore('config', ()=>{
         config.value.snapOctaClingPtNameThrs ** 2)
     
     return { 
-        config,
+        config, readConfigFromSave,
         staNameFontStr, staNameFontSubStr,
         clickPtThrsSq, clickLineThrsSq, clickLineThrs_sqrt2_sq, 
         snapOctaClingPtPtThrsSq, snapOctaClingPtNameThrsSq

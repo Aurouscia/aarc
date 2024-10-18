@@ -1,3 +1,4 @@
+import { ConfigInSave } from "./config";
 import { Coord } from "./coord";
 
 export interface Save{
@@ -5,6 +6,7 @@ export interface Save{
     points: ControlPoint[]
     lines: Line[]
     cvsSize: Coord
+    config: ConfigInSave
 }
 
 

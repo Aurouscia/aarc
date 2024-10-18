@@ -112,5 +112,6 @@ export const devSave:Save = {
             nameSub: "Line 3",
             color: "#0000ff"
         }
-    ]
+    ],
+    config:{}
 }
