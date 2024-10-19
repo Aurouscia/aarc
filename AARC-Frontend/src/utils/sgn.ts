@@ -12,3 +12,6 @@ export function isZero(num:number){
 export function isSameCoord(a:Coord, b:Coord){
     return isZero(a[0]-b[0]) && isZero(a[1]-b[1])
 }
+export function lessThanOrEqualTo(a:number, b:number){
+    return a < b + numberCmpEpsilon
+}

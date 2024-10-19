@@ -8,7 +8,7 @@ export const configDefault:Config = {
     mr: 1.5,
     bgColor: '#eeeeee',
 
-    lineWidth: 12,
+    lineWidth: 14,
     lineTurnAreaRadius: 20,
 
     ptBareSize: 16,
@@ -38,7 +38,7 @@ export const configDefault:Config = {
     cursorSize: 14,
     cursorLineWidth: 4,
 
-    snapOctaClingPtPtDist: 24,
+    snapOctaClingPtPtDist: 25,
     snapOctaClingPtNameDist: 16,
     snapOctaRayPtPtThrs: 16,
     snapOctaClingPtPtThrs: 10,
