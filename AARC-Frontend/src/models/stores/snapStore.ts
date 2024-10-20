@@ -171,7 +171,7 @@ export const useSnapStore = defineStore('snap',()=>{
         let target:Coord|undefined = undefined
         let minDistSq = 10000000;
         pts.forEach(opt=>{
-            const biases:SgnCoord[] = []
+            const biases:SgnCoord[] = [[0,0]]
             if(pt.dir == ControlPointDir.incline || opt.dir == ControlPointDir.incline){
                 biases.push([-1,-1],[-1,1],[1,-1],[1,1])
             }

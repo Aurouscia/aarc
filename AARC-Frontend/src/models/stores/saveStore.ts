@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { ControlPoint, ControlPointDir, ControlPointSta, Line, Save } from "../save";
 import { Coord } from "../coord";
+import { isSameCoord } from "@/utils/sgn";
 
 export const useSaveStore = defineStore('save', () => {
     const save = ref<Save>()
@@ -148,6 +149,42 @@ export const useSaveStore = defineStore('save', () => {
         if(line)
             line.pts = line.pts.filter(pt=>pt!==ptId)
     }
+    function tryMergePt(ptId:number){
+        const thisPt = getPtById(ptId)
+        if(!thisPt || !save.value){
+            return;
+        }
+        const thatPt = save.value?.points.find(p => p.id!=thisPt.id && isSameCoord(thisPt.pos, p.pos))
+        if(!thatPt){
+            return
+        }
+        const thisLines = getLinesByPt(thisPt.id)
+        const thatLines = getLinesByPt(thatPt.id)
+        let keepThis = true
+        if(thisLines.length == thatLines.length){
+            keepThis = (thisPt.name?.length || 0) > (thatPt?.name?.length || 0)
+        }else{
+            keepThis = thisLines.length > thatLines.length
+        }
+        let keepPt = keepThis ? thisPt : thatPt
+        let delPt = keepThis ? thatPt : thisPt
+        let delFromLines = keepThis ? thatLines : thisLines
+        delFromLines.forEach(line=>{
+            for(let i=0; i<line.pts.length; i++){
+                if(line.pts[i] === delPt.id){
+                    line.pts[i] = keepPt.id
+                }
+            }
+        })
+        const delIdx = save.value.points.findIndex(x=>x.id == delPt.id)
+        if(delIdx >= 0){
+            save.value.points.splice(delIdx, 1)
+        }
+        return {
+            mutatedLines:delFromLines,
+            mergedByPt:keepPt
+        }
+    }
 
     function isNamedPt(pt:ControlPoint){
         return !!pt.name?.trim()
@@ -157,7 +194,7 @@ export const useSaveStore = defineStore('save', () => {
     return { 
         save, getNewId, cvsWidth, cvsHeight,
         getPtById, getPtsByIds, getLineById, getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt,
-        insertPtOnLine, insertPtToLine, removePt, removePtFromLine,
+        insertPtOnLine, insertPtToLine, removePt, removePtFromLine, tryMergePt,
         isNamedPt
     }
 })

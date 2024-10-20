@@ -115,8 +115,14 @@ export const useEnvStore = defineStore('env', ()=>{
         let changedLines:number[] = []
         let movedStaNames:number[] = []
         if(activePt.value){
-            changedLines = saveStore.getLinesByPt(activePt.value.id).map(x=>x.id)
-            movedStaNames.push(activePt.value.id)
+            const tryMergeRes = saveStore.tryMergePt(activePt.value?.id)
+            if(tryMergeRes){
+                changedLines.push(...tryMergeRes.mutatedLines.map(x=>x.id))
+                movedStaNames.push(tryMergeRes.mergedByPt.id, activePt.value.id)
+            }else{
+                changedLines.push(...saveStore.getLinesByPt(activePt.value.id).map(x=>x.id))
+                movedStaNames.push(activePt.value.id)
+            }
         }
         activePt.value = undefined
         activeLine.value = undefined
