@@ -3,7 +3,7 @@ import { useConfigStore } from "@/models/stores/configStore";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { isZero, lessThanOrEqualTo } from "@/utils/sgn";
 import { numberCmpEpsilon } from '@/utils/consts'
-import { coordDistSqLessThan } from "@/utils/coordDist";
+import { coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { Coord } from "@/models/coord";
 
 export function useClusterCvsWorker(){

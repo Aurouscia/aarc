@@ -3,7 +3,7 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import SideBar from './common/SideBar.vue';
 import { storeToRefs } from 'pinia';
 import { onMounted, onUnmounted, ref } from 'vue';
-import { useLinesArrange } from '@/utils/linesArrange';
+import { useLinesArrange } from '@/utils/eventUtils/linesArrange';
 import { Line } from '@/models/save';
 
 const saveStore = useSaveStore()

@@ -1,5 +1,5 @@
 import { FormalRay } from "@/models/coord";
-import { isZero } from "./sgn";
+import { isZero } from "@/utils/sgn";
 
 export function rayParallel(a:FormalRay, b:FormalRay){
     const [a1, a2] = a.way;

@@ -1,6 +1,6 @@
 import { LineSeg, useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, ControlPointSta, Line } from "../../save";
-import { applyBias } from "@/utils/coordBias";
+import { applyBias } from "@/utils/coordUtils/coordBias";
 import { SgnCoord } from "@/models/coord";
 import { useConfigStore } from "@/models/stores/configStore";
 

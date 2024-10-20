@@ -4,9 +4,9 @@ import { ControlPoint, ControlPointDir } from "@/models/save";
 import { defineStore, storeToRefs } from "pinia";
 import { computed, ref } from "vue";
 import { isZero, sgn } from "@/utils/sgn";
-import { findIntersect } from "@/utils/rayIntersection";
-import { applyBias } from "@/utils/coordBias";
-import { coordDistSq, coordDistSqLessThan } from "@/utils/coordDist";
+import { rayIntersect } from "@/utils/rayUtils/rayIntersection";
+import { applyBias } from "@/utils/coordUtils/coordBias";
+import { coordDistSq, coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { useConfigStore } from "./configStore";
 import { sqrt2half } from "@/utils/consts";
 
@@ -152,7 +152,7 @@ export const useSnapStore = defineStore('snap',()=>{
             })
             const firstCandWay = snapLines.value[0].way
             if(cands.length > 1){
-                const intersection = findIntersect(snapLines.value[0], snapLines.value[1], cands[0].snapTo)
+                const intersection = rayIntersect(snapLines.value[0], snapLines.value[1], cands[0].snapTo)
                 if(intersection)
                     return {snapRes: intersection}
             }

@@ -1,5 +1,5 @@
 import { Coord, SgnCoord, SgnNumber } from "@/models/coord";
-import { sqrt2half } from "./consts";
+import { sqrt2half } from "../consts";
 
 export function applyBias(a:Coord, bias:SgnCoord, dist:number):Coord{
     if(bias[0] != 0 && bias[1] != 0){

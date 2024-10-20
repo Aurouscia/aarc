@@ -1,10 +1,10 @@
 import { Coord, FormalRay } from "@/models/coord";
 import { rayToCoordDist } from "./rayToCoordDist";
-import { sqrt2, sqrt2half } from "./consts";
-import { isZero } from "./sgn";
+import { sqrt2, sqrt2half } from "@/utils/consts";
+import { isZero } from "@/utils/sgn";
 import { rayParallel } from "./rayParallel";
 
-export function findIntersect(a:FormalRay, b:FormalRay, seedOnA:Coord){
+export function rayIntersect(a:FormalRay, b:FormalRay, seedOnA:Coord){
     if(rayParallel(a, b)){
         return
     }

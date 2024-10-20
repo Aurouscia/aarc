@@ -1,17 +1,17 @@
 import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
-import { Scaler } from "@/utils/scaler";
+import { Scaler } from "@/utils/eventUtils/scaler";
 import { Coord, FormalPt, RectCoord } from "../coord";
-import { coordDistSq } from "@/utils/coordDist";
-import { listenPureClick } from "@/utils/pureClick";
-import { eventClientCoord } from "@/utils/eventClientCoord";
-import { coordOnLineOfFormalPts } from "@/utils/coordOnLine";
+import { coordDistSq } from "@/utils/coordUtils/coordDist";
+import { listenPureClick } from "@/utils/eventUtils/pureClick";
+import { eventClientCoord } from "@/utils/eventUtils/eventClientCoord";
+import { coordOnLineOfFormalPts } from "@/utils/coordUtils/coordOnLine";
 import { OpsBtn, OpsBtnType, useOpsStore } from "./opsStore";
 import { ControlPoint, ControlPointDir, ControlPointSta, Line } from "../save";
 import { useSnapStore } from "./snapStore";
-import { rectInside } from "@/utils/rectInside";
-import { coordAdd, coordSub } from "@/utils/coordMath";
+import { rectInside } from "@/utils/coordUtils/coordInsideRect";
+import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
 import { useNameEditStore } from "./nameEditStore";
 import { useConfigStore } from "./configStore";
 

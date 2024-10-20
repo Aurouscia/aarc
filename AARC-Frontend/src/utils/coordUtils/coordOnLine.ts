@@ -1,5 +1,5 @@
 import { Coord, FormalPt } from "@/models/coord";
-import { isZero } from "./sgn";
+import { isZero } from "../sgn";
 import { ControlPointDir } from "@/models/save";
 
 interface CoordOnLineJudgeConfig{

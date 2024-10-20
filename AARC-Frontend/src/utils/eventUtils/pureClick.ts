@@ -1,5 +1,5 @@
 import { Coord } from "@/models/coord"
-import { coordDistSq } from "./coordDist"
+import { coordDistSq } from "../coordUtils/coordDist"
 import { eventClientCoord } from "./eventClientCoord"
 
 let downCoord:Coord = [-1000, -1000]

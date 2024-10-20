@@ -1,5 +1,5 @@
 import { Coord } from "@/models/coord";
-import { isZero } from "./sgn";
+import { isZero } from "../sgn";
 
 export type PosRel = 's'|'l'|'llu'|'lu'|'luu'|'u'|'uur'|'ur'|'urr'
 export function coordRel(a:Coord, b:Coord){

@@ -3,7 +3,7 @@ import { ControlPoint } from "@/models/save";
 import { useConfigStore } from "@/models/stores/configStore";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useSaveStore } from "@/models/stores/saveStore";
-import { coordTwinShrink } from "@/utils/coordMath";
+import { coordTwinShrink } from "@/utils/coordUtils/coordMath";
 import { sgn } from "@/utils/sgn";
 
 export function useTextCvsWorker(){

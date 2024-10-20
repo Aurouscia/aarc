@@ -1,11 +1,11 @@
 import { LineSeg, useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, Line } from "../../save";
-import { coordRelDiff } from "@/utils/coordRel";
-import { applyBias } from "@/utils/coordBias";
+import { coordRelDiff } from "@/utils/coordUtils/coordRel";
+import { applyBias } from "@/utils/coordUtils/coordBias";
 import { Coord, FormalPt, SgnCoord } from "../../coord";
-import { coordFill } from "@/utils/coordFill";
+import { coordFill } from "@/utils/coordUtils/coordFill";
 import { sgn } from "@/utils/sgn";
-import { coordDist } from "@/utils/coordDist";
+import { coordDist } from "@/utils/coordUtils/coordDist";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useConfigStore } from "@/models/stores/configStore";
 
