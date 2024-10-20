@@ -151,14 +151,12 @@ export const useSnapStore = defineStore('snap',()=>{
                 })
             })
             const firstCandWay = snapLines.value[0].way
-            if(cands.length == 1)
-                return {snapRes:cands[0].snapTo, freeAxis:firstCandWay}
-            else{
+            if(cands.length > 1){
                 const intersection = findIntersect(snapLines.value[0], snapLines.value[1], cands[0].snapTo)
                 if(intersection)
                     return {snapRes: intersection}
-                return {snapRes: cands[0].snapTo, freeAxis:firstCandWay}
             }
+            return {snapRes: cands[0].snapTo, freeAxis:firstCandWay}
         }
         return {}
     }
