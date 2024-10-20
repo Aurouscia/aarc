@@ -8,7 +8,7 @@ import { listenPureClick } from "@/utils/pureClick";
 import { eventClientCoord } from "@/utils/eventClientCoord";
 import { coordOnLineOfFormalPts } from "@/utils/coordOnLine";
 import { OpsBtn, OpsBtnType, useOpsStore } from "./opsStore";
-import { ControlPointDir, ControlPointSta } from "../save";
+import { ControlPoint, ControlPointDir, ControlPointSta, Line } from "../save";
 import { useSnapStore } from "./snapStore";
 import { rectInside } from "@/utils/rectInside";
 import { coordAdd, coordSub } from "@/utils/coordMath";
@@ -22,12 +22,12 @@ export const useEnvStore = defineStore('env', ()=>{
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const cs = useConfigStore()
     const opsStore = useOpsStore();
-    const activePtId = ref<number>(-1)
+    const activePt = ref<ControlPoint>()
     const activePtType = ref<'body'|'name'>('body')
     const activePtNameGrabbedAt = ref<Coord>([0,0])
     const activePtNameSnapped = ref<'no'|'vague'|'accu'>('no')
     const nameEditStore = useNameEditStore()
-    const activeLineId = ref<number>(-1)
+    const activeLine = ref<Line>()
     const cursorPos = ref<Coord>()
     const cursorDir = ref<ControlPointDir>(ControlPointDir.vertical)
     const cursorOnLineAfterPtIdx = ref<number>(-1)
@@ -74,9 +74,9 @@ export const useEnvStore = defineStore('env', ()=>{
         const pt = !doingSth && onPt(coord)
         if(pt){
             //点到点上了
-            activePtId.value = pt.id
+            activePt.value = pt
             activePtType.value = 'body'
-            activeLineId.value = -1
+            activeLine.value = undefined
             cursorPos.value = [...pt.pos]
             setOpsPos(pt.pos)
             setOpsForPt()
@@ -87,9 +87,9 @@ export const useEnvStore = defineStore('env', ()=>{
         const staName = !doingSth && onStaName(coord)
         if(staName){
             //点到站名上了
-            activePtId.value = staName.id
+            activePt.value = saveStore.getPtById(staName.id)
             activePtType.value = 'name'
-            activeLineId.value = -1
+            activeLine.value = undefined
             nameEditStore.startEditing(staName.id)
             setOpsPos(false)
             return
@@ -98,28 +98,28 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         //判断是否在线上
         //如果已经移动过点，这时formalPts还未更新，不应该进行点击线路判断，直接视为点击空白处
-        const line = !doingSth && onLine(coord);
-        if(line && line.length>0){
+        const lineMatches = !doingSth && onLine(coord);
+        if(lineMatches && lineMatches.length>0){
             //点到线上了
-            let line0 = line[0]
-            activeLineId.value = line0.lineId
-            activePtId.value = -1
-            cursorPos.value = [...line0.alignedPos]
-            cursorOnLineAfterPtIdx.value = line0.afterPtIdx
-            cursorDir.value = line0.dir
-            setOpsPos(line0.alignedPos)
+            const lineMatch = lineMatches[0]
+            activeLine.value = saveStore.getLineById(lineMatch.lineId)
+            activePt.value = undefined
+            cursorPos.value = [...lineMatch.alignedPos]
+            cursorOnLineAfterPtIdx.value = lineMatch.afterPtIdx
+            cursorDir.value = lineMatch.dir
+            setOpsPos(lineMatch.alignedPos)
             setOpsForLine()
             return
         }
         //点击空白位置
         let changedLines:number[] = []
         let movedStaNames:number[] = []
-        if(activePtId.value > 0){
-            changedLines = saveStore.getLinesByPt(activePtId.value).map(x=>x.id)
-            movedStaNames.push(activePtId.value)
+        if(activePt.value){
+            changedLines = saveStore.getLinesByPt(activePt.value.id).map(x=>x.id)
+            movedStaNames.push(activePt.value.id)
         }
-        activePtId.value = -1
-        activeLineId.value = -1
+        activePt.value = undefined
+        activeLine.value = undefined
         cursorPos.value = undefined
         setOpsPos(false)
         pointMutated.value(changedLines, movedStaNames)
@@ -132,15 +132,15 @@ export const useEnvStore = defineStore('env', ()=>{
         const coord = translateFromClient(clientCoord);
         if(!coord)
             return;
-        if(activePtId.value > 0){
+        if(activePt.value){
             if(activePtType.value == 'body'){
                 const pt = onPt(coord)
-                if(pt && pt.id === activePtId.value){
+                if(pt && pt === activePt.value){
                     movingPoint.value = true
                 }
             }else if(activePtType.value == 'name'){
                 const pt = onStaName(coord)
-                if(pt && pt.id === activePtId.value){
+                if(pt && pt === activePt.value){
                     movingPoint.value = true
                     const nameGlobalPos = coordAdd(pt.nameP || [0,0], pt.pos)
                     activePtNameGrabbedAt.value = coordSub(coord, nameGlobalPos)
@@ -155,7 +155,7 @@ export const useEnvStore = defineStore('env', ()=>{
             if(!clientCoord)
                 return;
             const coord = translateFromClient(clientCoord);
-            const pt = saveStore.save?.points.find(x=>x.id === activePtId.value)
+            const pt = activePt.value
             if(pt && coord){
                 if(activePtType.value=='body'){
                     pt.pos = coord;
@@ -293,13 +293,12 @@ export const useEnvStore = defineStore('env', ()=>{
         opsStore.show = true
     }
     function setOpsForPt(){
-        const ptId = activePtId.value;
-        const pt = saveStore.save?.points.find(x=>x.id==ptId)
+        const pt = activePt.value;
         if(!pt){
             opsStore.btns = []
             return;
         }
-        const relatedLines = saveStore.getLinesByPt(ptId)
+        const relatedLines = saveStore.getLinesByPt(pt.id)
         const relatedLineIds = relatedLines.map(line=>line.id)
         const onLineRes = onLine(pt.pos, relatedLineIds)
         const addToLines = onLineRes.map<OpsBtn>(l=>{
@@ -307,8 +306,8 @@ export const useEnvStore = defineStore('env', ()=>{
             return{
                 type:'addPtTL' as OpsBtnType,
                 cb:()=>{
-                    saveStore.insertPtToLine(ptId, l.lineId, l.afterPtIdx, l.alignedPos, l.dir);
-                    pointMutated.value([l.lineId, ...relatedLineIds], [ptId])
+                    saveStore.insertPtToLine(pt.id, l.lineId, l.afterPtIdx, l.alignedPos, l.dir);
+                    pointMutated.value([l.lineId, ...relatedLineIds], [pt.id])
                 },
                 color
             }
@@ -317,16 +316,17 @@ export const useEnvStore = defineStore('env', ()=>{
             return{
                 type:'rmPtFL' as OpsBtnType,
                 cb:()=>{
-                    saveStore.removePtFromLine(ptId, l.id);
+                    saveStore.removePtFromLine(pt.id, l.id);
                     pointMutated.value([l.id, ...relatedLineIds], [])
                 },
                 color: l.color
             }
         })
         const rmPtCb = ()=>{
-            saveStore.removePt(activePtId.value);
-            activePtId.value = -1
-            activeLineId.value = -1
+            if(activePt.value)
+                saveStore.removePt(activePt.value.id);
+            activePt.value = undefined
+            activeLine.value = undefined
             cursorPos.value = undefined
             setOpsPos(false)
             pointMutated.value(relatedLineIds, [])
@@ -369,10 +369,12 @@ export const useEnvStore = defineStore('env', ()=>{
     function setOpsForLine(){
         const insertPtCb = ()=>{
             if(cursorPos.value){
-                const id = saveStore.insertPtOnLine(activeLineId.value, cursorOnLineAfterPtIdx.value, cursorPos.value, cursorDir.value)
-                pointMutated.value([activeLineId.value], [])
+                if(!activeLine.value)
+                    return;
+                const id = saveStore.insertPtOnLine(activeLine.value.id, cursorOnLineAfterPtIdx.value, cursorPos.value, cursorDir.value)
+                pointMutated.value([activeLine.value.id], [])
                 if(id!==undefined){
-                    activePtId.value = id
+                    activePt.value = saveStore.getPtById(id)
                     setOpsForPt()
                 }
             }
@@ -396,8 +398,8 @@ export const useEnvStore = defineStore('env', ()=>{
     }
     
     return { 
-        init, activePtId, activePtType, activePtNameSnapped,
-        activeLineId, cursorPos, movingPoint,
+        init, activePt, activePtType, activePtNameSnapped,
+        activeLine, cursorPos, movingPoint,
         cvsFrame, cvsCont, cvsWidth, cvsHeight, getDisplayRatio,
         pointMutated, rescaled, setLinesFormalPts, setStaNameRects
     }

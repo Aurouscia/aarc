@@ -18,7 +18,7 @@ const { mainLineCvs, mainPtCvs, mainPtNameCvs, renderMainCvs } = useMainCvsDispa
 const { activeCvs, renderActiveCvs } = useActiveCvsDispatcher()
 const { cursorCvs, startRenderCursor } = useCursorCvsDispatcher()
 const mainCvsInsnif = computed<boolean>(()=>
-    envStore.activePtId >= 0 || envStore.activeLineId >= 0
+    !!envStore.activePt || !!envStore.activeLine
 )
 
 onMounted(async()=>{

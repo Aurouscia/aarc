@@ -24,6 +24,9 @@ export const useSaveStore = defineStore('save', () => {
         })
         return res;
     }
+    function getLineById(lineId:number){
+        return save.value?.lines.find(l=>l.id == lineId)
+    }
     function adjacentSegs(ptId:number):LineSeg[]{
         const lines = save.value?.lines
         if(!lines)
@@ -153,7 +156,7 @@ export const useSaveStore = defineStore('save', () => {
     const cvsHeight = computed<number>(()=>save.value?.cvsSize[1] || 1)
     return { 
         save, getNewId, cvsWidth, cvsHeight,
-        getPtById, getPtsByIds, getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt,
+        getPtById, getPtsByIds, getLineById, getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt,
         insertPtOnLine, insertPtToLine, removePt, removePtFromLine,
         isNamedPt
     }

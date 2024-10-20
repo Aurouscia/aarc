@@ -19,16 +19,12 @@ export function useActiveCvsDispatcher(){
     envStore.rescaled.push(renderActiveCvs)
     function renderActiveCvs(){
         const ctx = getCtx();
-        const activeLineId = envStore.activeLineId
-        if(activeLineId >= 0){
-            const line = saveStore.save?.lines.find(x=>x.id == activeLineId)
-            if(line){
-                renderLine(ctx, line)
-                renderLinePoints(ctx, line)
-            }
+        if(envStore.activeLine){
+            renderLine(ctx, envStore.activeLine)
+            renderLinePoints(ctx, envStore.activeLine)
         }
-        const activePtId = envStore.activePtId;
-        if(activePtId >= 0){
+        const activePtId = envStore.activePt?.id;
+        if(activePtId){
             if(envStore.activePtType=='body'){
                 const activeSegs = saveStore.adjacentSegs(activePtId)
                 if(activeSegs.length>0){

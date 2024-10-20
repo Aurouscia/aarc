@@ -37,8 +37,8 @@ export function useLineCvsWorker(){
         linkPts(formalPts, ctx)
     }
     function renderSegsLine(ctx:CanvasRenderingContext2D, segs:LineSeg[]){
-        const activeId = envStore.activePtId;
-        if(activeId === undefined)
+        const activeId = envStore.activePt?.id;
+        if(!activeId)
             return;
         segs.forEach(seg=>{
             const formalPts = formalize(seg.pts)
