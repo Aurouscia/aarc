@@ -130,6 +130,7 @@ export const useEnvStore = defineStore('env', ()=>{
         setOpsPos(false)
         pointMutated.value(changedLines, movedStaNames)
         movedPoint.value = false
+        activePtNameSnapped.value = 'no'
     }
     function moveStartHandler(e:MouseEvent|TouchEvent){
         const clientCoord = eventClientCoord(e)
