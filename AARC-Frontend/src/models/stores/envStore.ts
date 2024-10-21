@@ -275,14 +275,21 @@ export const useEnvStore = defineStore('env', ()=>{
         }
     }
     const staNameRects:{ptId:number, rect:RectCoord}[] = []
-    function setStaNameRects(ptId:number, rect:RectCoord){
-        let target = staNameRects.find(x=>x.ptId == ptId)
-        if(!target){
-            target = {ptId, rect}
-            staNameRects.push(target)
-        }
-        else{
-            target.rect = rect
+    function setStaNameRects(ptId:number, rect:RectCoord|false){
+        let targetIdx = staNameRects.findIndex(x=>x.ptId == ptId)
+        let target = staNameRects[targetIdx]
+        if(rect){
+            if(!target){
+                target = {ptId, rect}
+                staNameRects.push(target)
+            }
+            else{
+                target.rect = rect
+            }
+        }else{
+            if(target){
+                staNameRects.splice(targetIdx, 1)
+            }
         }
     }
 
@@ -329,8 +336,10 @@ export const useEnvStore = defineStore('env', ()=>{
             }
         })
         const rmPtCb = ()=>{
-            if(activePt.value)
+            if(activePt.value){
                 saveStore.removePt(activePt.value.id);
+                setStaNameRects(activePt.value.id, false);
+            }
             activePt.value = undefined
             activeLine.value = undefined
             cursorPos.value = undefined
