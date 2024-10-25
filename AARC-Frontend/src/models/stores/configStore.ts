@@ -5,7 +5,6 @@ import { Config } from "../config"
 import { useSaveStore } from "./saveStore"
 
 export const configDefault:Config = {
-    mr: 1.5,
     bgColor: '#eeeeee',
 
     lineWidth: 14,
@@ -32,8 +31,8 @@ export const configDefault:Config = {
     gridMainLineColor: '#999999',
     gridSubLineColor: '#aaaaaa',
 
-    clickPtThrs: 16,
-    clickLineThrs: 10,
+    clickPtThrs: 24,
+    clickLineThrs: 12,
 
     cursorSize: 14,
     cursorLineWidth: 4,
@@ -42,7 +41,7 @@ export const configDefault:Config = {
     snapOctaClingPtNameDist: 16,
     snapOctaRayPtPtThrs: 16,
     snapOctaClingPtPtThrs: 10,
-    snapOctaClingPtNameThrs: 6,
+    snapOctaClingPtNameThrs: 8,
     snapOctaRayPtNameThrs: 6,
     snapGridThrs: 6
 }

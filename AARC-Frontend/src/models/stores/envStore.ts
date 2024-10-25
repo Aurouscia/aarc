@@ -69,10 +69,26 @@ export const useEnvStore = defineStore('env', ()=>{
             return
         //判断是否处于某种需要退出的状态（点击任何东西都算点击空白处（退出状态））
         const doingSth = movedPoint.value || nameEditStore.edited
+        //const doingSth = false
+
+        //判断是否在站名上
+        const staName = onStaName(coord)
+        if(staName && !(doingSth && activePt.value?.id !== staName.id)){
+            //点到站名上了
+            activePt.value = saveStore.getPtById(staName.id)
+            activePtType.value = 'name'
+            activeLine.value = undefined
+            nameEditStore.startEditing(staName.id)
+            cursorPos.value = undefined
+            setOpsPos(false)
+            return
+        }else{
+            nameEditStore.endEditing()
+        }
 
         //判断是否在点上
-        const pt = !doingSth && onPt(coord)
-        if(pt){
+        const pt = onPt(coord)
+        if(pt && !(doingSth && activePt.value?.id !== pt.id)){
             //点到点上了
             activePt.value = pt
             activePtType.value = 'body'
@@ -83,19 +99,7 @@ export const useEnvStore = defineStore('env', ()=>{
             nameEditStore.startEditing(pt.id)
             return
         }
-        //判断是否在站名上
-        const staName = !doingSth && onStaName(coord)
-        if(staName){
-            //点到站名上了
-            activePt.value = saveStore.getPtById(staName.id)
-            activePtType.value = 'name'
-            activeLine.value = undefined
-            nameEditStore.startEditing(staName.id)
-            setOpsPos(false)
-            return
-        }else{
-            nameEditStore.endEditing()
-        }
+        
         //判断是否在线上
         //如果已经移动过点，这时formalPts还未更新，不应该进行点击线路判断，直接视为点击空白处
         const lineMatches = !doingSth && onLine(coord);
@@ -140,17 +144,18 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!coord)
             return;
         if(activePt.value){
-            if(activePtType.value == 'body'){
+            const pt = onStaName(coord)
+            if(pt && pt === activePt.value){
+                activePtType.value = 'name'
+                movingPoint.value = true
+                cursorPos.value = undefined
+                const nameGlobalPos = coordAdd(pt.nameP || [0,0], pt.pos)
+                activePtNameGrabbedAt.value = coordSub(coord, nameGlobalPos)
+            }else{
                 const pt = onPt(coord)
                 if(pt && pt === activePt.value){
+                    activePtType.value = 'body'
                     movingPoint.value = true
-                }
-            }else if(activePtType.value == 'name'){
-                const pt = onStaName(coord)
-                if(pt && pt === activePt.value){
-                    movingPoint.value = true
-                    const nameGlobalPos = coordAdd(pt.nameP || [0,0], pt.pos)
-                    activePtNameGrabbedAt.value = coordSub(coord, nameGlobalPos)
                 }
             }
         }

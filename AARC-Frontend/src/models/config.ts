@@ -1,7 +1,6 @@
 import { AllKeysOptional } from "@/utils/type/AllKeysOptional"
 
 export interface Config{
-    mr: number
     bgColor: string,
 
     lineWidth: number,

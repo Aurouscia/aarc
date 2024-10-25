@@ -52,7 +52,7 @@ export function usePointCvsWorker(){
             let markSize = cs.config.ptBareSize;
             let markWidth = cs.config.ptBareLineWidth;
             if(active){
-                markSize *= 1.5
+                markSize *= 1.8
                 markColor = '#000'
             }
             const a1 = applyBias(pos, biasA1, markSize)

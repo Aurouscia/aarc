@@ -25,17 +25,16 @@ export function useActiveCvsDispatcher(){
         }
         const activePtId = envStore.activePt?.id;
         if(activePtId){
+            const activeSegs = saveStore.adjacentSegs(activePtId)
+            if(activeSegs.length>0){
+                renderSegsLine(ctx, activeSegs)
+                renderSegsPoints(ctx, activeSegs, activePtId)
+            }else{
+                renderPointById(ctx, activePtId, true)
+            }
             if(envStore.activePtType=='body'){
-                const activeSegs = saveStore.adjacentSegs(activePtId)
-                if(activeSegs.length>0){
-                    renderSegsLine(ctx, activeSegs)
-                    renderSegsPoints(ctx, activeSegs, activePtId)
-                }else{
-                    renderPointById(ctx, activePtId, true)
-                }
-                renderPtNameById(ctx, activePtId)
+                renderPtNameById(ctx, activePtId, true)
             }else if(envStore.activePtType=='name'){
-                renderPointById(ctx, activePtId, false)
                 let markRoot:'free'|'snapVague'|'snapAccu' = 'free'
                 if(envStore.activePtNameSnapped == 'accu')
                     markRoot = 'snapAccu'
