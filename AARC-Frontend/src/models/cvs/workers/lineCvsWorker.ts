@@ -32,9 +32,13 @@ export function useLineCvsWorker(){
             envStore.setLinesFormalPts(line.id, formalPts)
         }
         ctx.lineCap = 'round'
+        linkPts(formalPts, ctx)
+        ctx.lineWidth *= 1.5
+        ctx.strokeStyle = cs.config.bgColor
+        ctx.stroke()
         ctx.lineWidth = cs.config.lineWidth
         ctx.strokeStyle = line.color
-        linkPts(formalPts, ctx)
+        ctx.stroke()
     }
     function renderSegsLine(ctx:CanvasRenderingContext2D, segs:LineSeg[]){
         const activeId = envStore.activePt?.id;
@@ -43,9 +47,13 @@ export function useLineCvsWorker(){
         segs.forEach(seg=>{
             const formalPts = formalize(seg.pts)
             ctx.lineCap = 'round'
+            linkPts(formalPts, ctx)
+            ctx.lineWidth *= 1.5
+            ctx.strokeStyle = cs.config.bgColor
+            ctx.stroke()
             ctx.lineWidth = cs.config.lineWidth
             ctx.strokeStyle = seg.line.color
-            linkPts(formalPts, ctx)
+            ctx.stroke()
         })
     }
     function formalize(pts:ControlPoint[]):FormalPt[]{
@@ -134,7 +142,6 @@ export function useLineCvsWorker(){
             prevDist = nextDist;
             prevPt = nowPt;
         }
-        ctx.stroke()
     }
     return { renderAllLines, renderLine, renderSegsLine }
 }
