@@ -21,40 +21,70 @@ export const devSave:Save = {
             sta: ControlPointSta.sta,
             name: '五福路',
             nameS: 'wufu Rd.',
-            nameP: [20,0]
+            nameP: [30,0]
         },
         {
             id: 3,
             pos: [700, 550],
             dir: ControlPointDir.vertical,
-            sta: ControlPointSta.sta
+            sta: ControlPointSta.sta,
+            name: '丽水阁',
+            nameS: 'LiShuiGe',
+            nameP: [20, 0] 
         },
         {
             id: 4,
-            pos: [300, 800],
+            pos: [450, 750],
             dir: ControlPointDir.vertical,
-            sta: ControlPointSta.sta
+            sta: ControlPointSta.sta,
+            name: '体育中心',
+            nameS: 'Sports Center',
+            nameP: [0, 20]
         },
         {
             id: 11,
             pos: [650, 700],
             dir: ControlPointDir.incline,
-            sta: ControlPointSta.sta
+            sta: ControlPointSta.sta,
+            name: '暖冬',
+            nameS: 'NuanDong',
+            nameP: [30, 0]
         },
         {
             id: 5,
             pos: [800, 200],
             dir: ControlPointDir.vertical,
-            sta: ControlPointSta.plain
+            sta: ControlPointSta.sta,
+            name: '至喜',
+            nameS: 'ZhiXi',
+            nameP: [0, 20]
         },
         {
             id: 6,
             pos: [200, 400],
             dir: ControlPointDir.vertical,
-            sta: ControlPointSta.plain
+            sta: ControlPointSta.sta,
+            name: '明启',
+            nameS: 'MingQi',
+            nameP: [0, -20]
         },
         {
             id: 7,
+            pos: [532.322330475, 317.677669525],
+            dir: ControlPointDir.incline,
+            sta: ControlPointSta.sta
+        },
+        {
+            id: 8,
+            pos: [600, 500],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.sta,
+            name: "中央公园",
+            nameS: "Central Park",
+            nameP: [-20, 0]
+        },
+        {
+            id: 30,
             pos: [300, 1100],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta,
@@ -63,7 +93,7 @@ export const devSave:Save = {
             nameP: [-15, 15]
         },
         {
-            id: 8,
+            id: 31,
             pos: [450, 1100],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta,
@@ -72,7 +102,7 @@ export const devSave:Save = {
             nameP: [0, 20]
         },
         {
-            id: 9,
+            id: 32,
             pos: [600, 1100],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta,
@@ -81,13 +111,13 @@ export const devSave:Save = {
             nameP: [0, -20]
         },
         {
-            id: 10,
-            pos: [750, 1100],
+            id: 33,
+            pos: [750, 900],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta,
             name: '火车北站\n西广场(假日酒店)',
             nameS: 'Northern Railway Station\nSouth Square (Holiday Inn)',
-            nameP: [15, -15]
+            nameP: [20, 0]
         }
     ],
     lines: [
@@ -107,10 +137,10 @@ export const devSave:Save = {
         },
         {
             id: 103,
-            pts: [],
+            pts: [7, 8, 11, 33],
             name: "三号线",
             nameSub: "Line 3",
-            color: "#0000ff"
+            color: "#ff8800"
         }
     ],
     config:{}
