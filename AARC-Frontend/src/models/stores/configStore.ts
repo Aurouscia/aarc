@@ -38,7 +38,7 @@ export const configDefault:Config = {
     cursorLineWidth: 4,
 
     snapOctaClingPtPtDist: 25,
-    snapOctaClingPtNameDist: 16,
+    snapOctaClingPtNameDist: 18,
     snapOctaRayPtPtThrs: 16,
     snapOctaClingPtPtThrs: 10,
     snapOctaClingPtNameThrs: 8,
