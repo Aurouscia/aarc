@@ -36,7 +36,7 @@ export const useEnvStore = defineStore('env', ()=>{
     let scaler:Scaler;
     const pointMutated = ref<(changedLines:number[], staNameMoved:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])
-    const { snap, snapName } = useSnapStore()
+    const { snap, snapName, snapNameStatus } = useSnapStore()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -81,6 +81,15 @@ export const useEnvStore = defineStore('env', ()=>{
             nameEditStore.startEditing(staName.id)
             cursorPos.value = undefined
             setOpsPos(false)
+            //立即检查该点是否是snap位置
+            if(activePt.value){
+                const snapRes = snapNameStatus(activePt.value)
+                if(snapRes){
+                    activePtNameSnapped.value = snapRes.type
+                }else{
+                    activePtNameSnapped.value = 'no'
+                }
+            }
             return
         }else{
             nameEditStore.endEditing()
@@ -149,6 +158,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 activePtType.value = 'name'
                 movingPoint.value = true
                 cursorPos.value = undefined
+                //鼠标/手指抓住的点不一定是站名原点，需要做个记录和变换
                 const nameGlobalPos = coordAdd(pt.nameP || [0,0], pt.pos)
                 activePtNameGrabbedAt.value = coordSub(coord, nameGlobalPos)
             }else{

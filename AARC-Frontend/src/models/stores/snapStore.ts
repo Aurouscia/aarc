@@ -8,7 +8,7 @@ import { rayIntersect } from "@/utils/rayUtils/rayIntersection";
 import { applyBias } from "@/utils/coordUtils/coordBias";
 import { coordDistSq, coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { useConfigStore } from "./configStore";
-import { sqrt2half } from "@/utils/consts";
+import { numberCmpEpsilon, sqrt2half } from "@/utils/consts";
 
 export const useSnapStore = defineStore('snap',()=>{
     const cs = useConfigStore()
@@ -72,6 +72,20 @@ export const useSnapStore = defineStore('snap',()=>{
                 to: [x, y] as Coord,
                 type: 'vague'
             }
+    }
+    function snapNameStatus(pt:ControlPoint):{type:'vague'|'accu'}|undefined{
+        if(!pt.nameP)
+            return;
+        let [x, y] = pt.nameP
+        const epsSqr = numberCmpEpsilon ** 2
+        const to = snapStaNameTo.value.find(t=>{
+            return coordDistSqLessThan(pt.nameP!, t, epsSqr)
+        })
+        if(to){
+            return {type:'accu'}
+        }
+        if(Math.abs(x) < numberCmpEpsilon || Math.abs(y) < numberCmpEpsilon)
+            return {type: 'vague'}
     }
     function snapNeighborExtends(pt:ControlPoint):{snapRes?:Coord, freeAxis?:SgnCoord}{
         const pos = pt.pos
@@ -306,5 +320,5 @@ export const useSnapStore = defineStore('snap',()=>{
         }
         return pos
     }
-    return { snap, snapName, snapLines, snapLinesForPt, snapGridIntv }
+    return { snap, snapName, snapNameStatus, snapLines, snapLinesForPt, snapGridIntv }
 })
