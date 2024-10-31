@@ -8,10 +8,12 @@ import { sgn } from "@/utils/sgn";
 import { coordDist } from "@/utils/coordUtils/coordDist";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useConfigStore } from "@/models/stores/configStore";
+import { useFormalizedLineStore } from "@/models/stores/saveDerived/formalizedLineStore";
 
 export function useLineCvsWorker(){
     const saveStore = useSaveStore();
     const envStore = useEnvStore();
+    const formalizedLineStore = useFormalizedLineStore()
     const cs = useConfigStore();
     function renderAllLines(ctx:CanvasRenderingContext2D, needReportFormalPtsLines?:number[]){
         if(!saveStore.save){
@@ -29,7 +31,7 @@ export function useLineCvsWorker(){
             return;
         const formalPts = formalize(pts)
         if(needReportFormalPts){
-            envStore.setLinesFormalPts(line.id, formalPts)
+            formalizedLineStore.setLinesFormalPts(line.id, formalPts)
         }
         ctx.lineCap = 'round'
         linkPts(formalPts, ctx)

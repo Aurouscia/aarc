@@ -2,7 +2,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { Scaler } from "@/utils/eventUtils/scaler";
-import { Coord, FormalPt, RectCoord } from "../coord";
+import { Coord, RectCoord } from "../coord";
 import { coordDistSq } from "@/utils/coordUtils/coordDist";
 import { listenPureClick } from "@/utils/eventUtils/pureClick";
 import { eventClientCoord } from "@/utils/eventUtils/eventClientCoord";
@@ -14,6 +14,7 @@ import { rectInside } from "@/utils/coordUtils/coordInsideRect";
 import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
 import { useNameEditStore } from "./nameEditStore";
 import { useConfigStore } from "./configStore";
+import { useFormalizedLineStore } from "./saveDerived/formalizedLineStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
@@ -37,6 +38,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const pointMutated = ref<(changedLines:number[], staNameMoved:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])
     const { snap, snapName, snapNameStatus } = useSnapStore()
+    const { enumerateFormalizedLines } = useFormalizedLineStore()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -214,7 +216,7 @@ export const useEnvStore = defineStore('env', ()=>{
     }
     function onLine(c:Coord, exceptLines:number[] = []){
         const res:{lineId:number, alignedPos:Coord, afterPtIdx:number, dir:ControlPointDir}[] = []
-        linesFormalPts.forEach(line=>{
+        enumerateFormalizedLines(line=>{
             if(exceptLines.includes(line.lineId))
                 return;
             const onLineRes = coordOnLineOfFormalPts(c, line.pts, {
@@ -279,17 +281,6 @@ export const useEnvStore = defineStore('env', ()=>{
         return [offsetCoord[0] - sx, offsetCoord[1] - sy]
     }
 
-    const linesFormalPts:{lineId:number, pts:FormalPt[]}[] = []
-    function setLinesFormalPts(lineId:number, pts:FormalPt[]){
-        let target = linesFormalPts.find(x=>x.lineId == lineId)
-        if(!target){
-            target = {lineId, pts}
-            linesFormalPts.push(target)
-        }
-        else{
-            target.pts = pts
-        }
-    }
     const staNameRects:{ptId:number, rect:RectCoord}[] = []
     function setStaNameRects(ptId:number, rect:RectCoord|false){
         let targetIdx = staNameRects.findIndex(x=>x.ptId == ptId)
@@ -432,6 +423,6 @@ export const useEnvStore = defineStore('env', ()=>{
         init, activePt, activePtType, activePtNameSnapped,
         activeLine, cursorPos, movingPoint,
         cvsFrame, cvsCont, cvsWidth, cvsHeight, getDisplayRatio,
-        pointMutated, rescaled, setLinesFormalPts, setStaNameRects
+        pointMutated, rescaled, setStaNameRects
     }
 })
