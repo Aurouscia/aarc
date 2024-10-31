@@ -2,7 +2,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { Scaler } from "@/utils/eventUtils/scaler";
-import { Coord, RectCoord } from "../coord";
+import { Coord } from "../coord";
 import { coordDistSq } from "@/utils/coordUtils/coordDist";
 import { listenPureClick } from "@/utils/eventUtils/pureClick";
 import { eventClientCoord } from "@/utils/eventUtils/eventClientCoord";
@@ -15,6 +15,7 @@ import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
 import { useNameEditStore } from "./nameEditStore";
 import { useConfigStore } from "./configStore";
 import { useFormalizedLineStore } from "./saveDerived/formalizedLineStore";
+import { useStaNameRectStore } from "./saveDerived/staNameRectStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
@@ -39,6 +40,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const rescaled = ref<(()=>void)[]>([])
     const { snap, snapName, snapNameStatus } = useSnapStore()
     const { enumerateFormalizedLines } = useFormalizedLineStore()
+    const { enumerateStaNameRects, setStaNameRects } = useStaNameRectStore()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -236,12 +238,15 @@ export const useEnvStore = defineStore('env', ()=>{
         return res
     }
     function onStaName(c:Coord){
-        for(const rect of staNameRects){
+        let onPt:ControlPoint|undefined;
+        enumerateStaNameRects(rect=>{
             if(rectInside(rect.rect, c)){
                 const pt = saveStore.save?.points.find(pt => pt.id == rect.ptId)
-                return pt
+                onPt = pt;
+                return;
             }
-        }
+        })
+        return onPt;
     }
     function translateFromOffset(coordOffset:Coord):Coord|undefined{
         const [ox, oy] = coordOffset;
@@ -279,25 +284,6 @@ export const useEnvStore = defineStore('env', ()=>{
         if(sx===undefined || sy===undefined)
             return;
         return [offsetCoord[0] - sx, offsetCoord[1] - sy]
-    }
-
-    const staNameRects:{ptId:number, rect:RectCoord}[] = []
-    function setStaNameRects(ptId:number, rect:RectCoord|false){
-        let targetIdx = staNameRects.findIndex(x=>x.ptId == ptId)
-        let target = staNameRects[targetIdx]
-        if(rect){
-            if(!target){
-                target = {ptId, rect}
-                staNameRects.push(target)
-            }
-            else{
-                target.rect = rect
-            }
-        }else{
-            if(target){
-                staNameRects.splice(targetIdx, 1)
-            }
-        }
     }
 
     function setOpsPos(coord:Coord|false){
@@ -423,6 +409,6 @@ export const useEnvStore = defineStore('env', ()=>{
         init, activePt, activePtType, activePtNameSnapped,
         activeLine, cursorPos, movingPoint,
         cvsFrame, cvsCont, cvsWidth, cvsHeight, getDisplayRatio,
-        pointMutated, rescaled, setStaNameRects
+        pointMutated, rescaled
     }
 })

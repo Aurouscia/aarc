@@ -1,14 +1,14 @@
 import { Coord, RectCoord } from "@/models/coord";
 import { ControlPoint } from "@/models/save";
 import { useConfigStore } from "@/models/stores/configStore";
-import { useEnvStore } from "@/models/stores/envStore";
+import { useStaNameRectStore } from "@/models/stores/saveDerived/staNameRectStore";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { coordTwinShrink } from "@/utils/coordUtils/coordMath";
 import { sgn } from "@/utils/sgn";
 
 export function useTextCvsWorker(){
     const saveStore = useSaveStore()
-    const envStore = useEnvStore()
+    const staNameRectStore = useStaNameRectStore()
     const cs = useConfigStore()
     function renderAllPtName(ctx:CanvasRenderingContext2D, needReportRectPts?:number[]){
         if(!saveStore.save)
@@ -126,7 +126,7 @@ export function useTextCvsWorker(){
             const leftUpper:Coord = [leftMost, yTop]
             const rightLower:Coord = [rightMost, yTop+totalHeight]
             const rect:RectCoord = [leftUpper, rightLower]
-            envStore.setStaNameRects(pt.id, rect)
+            staNameRectStore.setStaNameRects(pt.id, rect)
         }
     }
     return { renderAllPtName, renderPtName, renderPtNameById }
