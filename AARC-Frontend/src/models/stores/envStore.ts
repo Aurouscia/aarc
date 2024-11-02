@@ -16,6 +16,7 @@ import { useNameEditStore } from "./nameEditStore";
 import { useConfigStore } from "./configStore";
 import { useFormalizedLineStore } from "./saveDerived/formalizedLineStore";
 import { useStaNameRectStore } from "./saveDerived/staNameRectStore";
+import { useStaClusterStore } from "./saveDerived/staClusterStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
@@ -29,6 +30,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const activePtNameGrabbedAt = ref<Coord>([0,0])
     const activePtNameSnapped = ref<'no'|'vague'|'accu'>('no')
     const nameEditStore = useNameEditStore()
+    const staClusterStore = useStaClusterStore()
     const activeLine = ref<Line>()
     const cursorPos = ref<Coord>()
     const cursorDir = ref<ControlPointDir>(ControlPointDir.vertical)
@@ -181,7 +183,7 @@ export const useEnvStore = defineStore('env', ()=>{
             if(!clientCoord)
                 return;
             const coord = translateFromClient(clientCoord);
-            const pt = activePt.value
+            let pt = activePt.value
             if(pt && coord){
                 if(activePtType.value=='body'){
                     pt.pos = coord;
@@ -190,6 +192,15 @@ export const useEnvStore = defineStore('env', ()=>{
                         pt.pos = snapRes
                     cursorPos.value = coord
                 }else if(activePtType.value=='name'){
+                    const transferRes = staClusterStore.tryTransferStaNameWithinCluster(pt)
+                    if(transferRes){
+                        pt.name = undefined
+                        pt.nameS = undefined 
+                        pt.nameP = undefined
+                        nameEditStore.targetPtId = transferRes.id
+                        activePt.value = transferRes
+                        pt = transferRes
+                    }
                     const nameGlobalPos = coordSub(coord, activePtNameGrabbedAt.value)
                     pt.nameP = coordSub(nameGlobalPos, pt.pos)
                     const snapRes = snapName(pt)

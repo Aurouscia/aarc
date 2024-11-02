@@ -5,22 +5,26 @@ import { isZero, lessThanOrEqualTo } from "@/utils/sgn";
 import { numberCmpEpsilon } from '@/utils/consts'
 import { coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { Coord } from "@/models/coord";
+import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
 
 export function useClusterCvsWorker(){
     const saveStore = useSaveStore()
+    const staClusterStore = useStaClusterStore()
     const cs = useConfigStore()
 
     function renderClusters(ctx:CanvasRenderingContext2D){
         const crys = findAllCrystals()
         if(!crys)
             return;
+        staClusterStore.setStaClusters([...crys])
+        const polys = crystalsToPolys(crys)
         const forEachPoly = (doSth:()=>void)=>{
-            for(const cry of crys){
+            for(const p of polys){
                 ctx.beginPath();
-                const firstPos = cry[0]
+                const firstPos = p[0]
                 ctx.moveTo(firstPos[0], firstPos[1])
-                for(let i=1;i<cry.length;i++){
-                    ctx.lineTo(cry[i][0], cry[i][1])
+                for(let i=1;i<p.length;i++){
+                    ctx.lineTo(p[i][0], p[i][1])
                 }
                 ctx.closePath()
                 doSth()
@@ -52,7 +56,8 @@ export function useClusterCvsWorker(){
     }
 
     //同样朝向且紧挨着的控制点，会被汇总为一个“晶体”，用一个矩形覆盖
-    function findAllCrystals():Coord[][]|undefined{
+    function findAllCrystals():ControlPoint[][]|undefined
+    {
         const pts = saveStore.save?.points.filter(pt=>pt.sta == ControlPointSta.sta)
         if(!pts)
             return;
@@ -86,8 +91,11 @@ export function useClusterCvsWorker(){
                 }
             }
         }
+        return crys.filter(c=>c.length>1)
+    }
+    function crystalsToPolys(crystals:ControlPoint[][]):Coord[][]{
         const polys:Coord[][] = []
-        crys.filter(c=>c.length>1).forEach(c=>{
+        crystals.forEach(c=>{
             if(c[0].dir === ControlPointDir.vertical){
                 let l = 1e10
                 let r = -1e10

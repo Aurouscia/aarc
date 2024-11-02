@@ -44,7 +44,7 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
         editing.value = false;
         edited.value = false;
     }
-    return { nameMain, nameSub, editing, edited,
+    return { targetPtId, nameMain, nameSub, editing, edited,
         startEditing, endEditing, applyName,
         nameInputFocusHandler
     }
