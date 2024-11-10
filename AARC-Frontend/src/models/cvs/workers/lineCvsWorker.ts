@@ -1,4 +1,4 @@
-import { LineSeg, useSaveStore } from "../../stores/saveStore";
+import { useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, Line } from "../../save";
 import { coordRelDiff } from "@/utils/coordUtils/coordRel";
 import { applyBias } from "@/utils/coordUtils/coordBias";
@@ -35,7 +35,7 @@ export function useLineCvsWorker(){
             formalizedLineStore.setLinesFormalPts(line.id, formalPts)
         }
         ctx.lineCap = 'round'
-        linkPts(formalPts, ctx)
+        linkPts(ctx, formalPts)
         ctx.lineWidth *= 1.5
         ctx.strokeStyle = cs.config.bgColor
         ctx.stroke()
@@ -43,21 +43,52 @@ export function useLineCvsWorker(){
         ctx.strokeStyle = line.color
         ctx.stroke()
     }
-    function renderSegsLine(ctx:CanvasRenderingContext2D, segs:LineSeg[]){
+    function renderSegsAroundActivePt(ctx:CanvasRenderingContext2D):ControlPoint[]{
         const activeId = envStore.activePt?.id;
         if(!activeId)
-            return;
-        segs.forEach(seg=>{
-            const formalPts = formalize(seg.pts)
+            return [];
+        const searchRes:{formalizePtIds:number[], trimLeft:boolean, trimRight:boolean, line:Line}[] = []
+        saveStore.save?.lines.forEach(line=>{
+            const idx = line.pts.indexOf(activeId)
+            if(idx==-1)
+                return;
+            const maxIdx = line.pts.length-1
+            const formalizePtIds:number[] = []
+            let trimLeft = false; let trimRight = false;
+            if(idx-3>=0){formalizePtIds.push(line.pts[idx-3]); trimLeft = true}
+            if(idx-2>=0){formalizePtIds.push(line.pts[idx-2])}
+            if(idx-1>=0){formalizePtIds.push(line.pts[idx-1])}
+            formalizePtIds.push(line.pts[idx]);
+            if(idx+1<=maxIdx){formalizePtIds.push(line.pts[idx+1])}
+            if(idx+2<=maxIdx){formalizePtIds.push(line.pts[idx+2])}
+            if(idx+3<=maxIdx){formalizePtIds.push(line.pts[idx+3]); trimRight = true}
+            searchRes.push({formalizePtIds, trimLeft, trimRight, line})
+        })
+        const relatedPts:Set<ControlPoint> = new Set()
+        searchRes.forEach(res=>{
+            const fpts = saveStore.getPtsByIds(res.formalizePtIds)
+            fpts.forEach(pt=>relatedPts.add(pt))
+            const formalized = formalize(fpts)
+            if(res.trimLeft && formalized.length>0){
+                let leftIdx = formalized[0].afterIdxEqv
+                const trimCount = formalized.findIndex(x=>x.afterIdxEqv!==leftIdx)
+                formalized.splice(0, trimCount)
+            }
+            if(res.trimRight && formalized.length>1){
+                let rightIdx = formalized[formalized.length-2].afterIdxEqv
+                const trimFrom = formalized.findIndex(x=>x.afterIdxEqv===rightIdx)
+                formalized.splice(trimFrom+1)
+            }
+            linkPts(ctx, formalized)
             ctx.lineCap = 'round'
-            linkPts(formalPts, ctx)
             ctx.lineWidth *= 1.5
             ctx.strokeStyle = cs.config.bgColor
             ctx.stroke()
             ctx.lineWidth = cs.config.lineWidth
-            ctx.strokeStyle = seg.line.color
+            ctx.strokeStyle = res.line.color
             ctx.stroke()
         })
+        return [...relatedPts]
     }
     function formalize(pts:ControlPoint[]):FormalPt[]{
         if(pts.length<2)
@@ -144,7 +175,7 @@ export function useLineCvsWorker(){
             }
         })
     }
-    function linkPts(formalPts:FormalPt[], ctx:CanvasRenderingContext2D){
+    function linkPts(ctx:CanvasRenderingContext2D, formalPts:FormalPt[]){
         if(formalPts.length<=1){
             return;
         }
@@ -180,5 +211,5 @@ export function useLineCvsWorker(){
             prevPt = nowPt;
         }
     }
-    return { renderAllLines, renderLine, renderSegsLine }
+    return { renderAllLines, renderLine, renderSegsAroundActivePt }
 }

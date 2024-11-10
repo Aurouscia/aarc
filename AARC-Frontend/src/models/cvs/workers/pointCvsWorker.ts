@@ -1,4 +1,4 @@
-import { LineSeg, useSaveStore } from "../../stores/saveStore";
+import { useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, ControlPointSta, Line } from "../../save";
 import { applyBias } from "@/utils/coordUtils/coordBias";
 import { SgnCoord } from "@/models/coord";
@@ -22,10 +22,8 @@ export function usePointCvsWorker(){
             pts?.forEach(p=>renderPoint(ctx, p))
         }
     }
-    function renderSegsPoints(ctx:CanvasRenderingContext2D, segs:LineSeg[], activeId:number){
-        segs.forEach(seg=>{
-            seg.pts.forEach(pt=>renderPoint(ctx, pt, activeId == pt.id))
-        })
+    function renderArrayPoints(ctx:CanvasRenderingContext2D, pts:ControlPoint[], activeId:number){
+        pts.forEach(pt=>renderPoint(ctx, pt, activeId == pt.id))
     }
     function renderPointById(ctx:CanvasRenderingContext2D, ptId:number, active:boolean = false){
         const pt = saveStore.getPtById(ptId)
@@ -91,5 +89,5 @@ export function usePointCvsWorker(){
             ctx.stroke()
         }
     }
-    return { renderAllPoints, renderLinePoints, renderSegsPoints, renderPoint, renderPointById }
+    return { renderAllPoints, renderLinePoints, renderArrayPoints, renderPoint, renderPointById }
 }
