@@ -2,13 +2,14 @@ import { LineSeg, useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, Line } from "../../save";
 import { coordRelDiff } from "@/utils/coordUtils/coordRel";
 import { applyBias } from "@/utils/coordUtils/coordBias";
-import { Coord, FormalPt, SgnCoord } from "../../coord";
+import { Coord, FormalPt, SgnCoord, twinPts2Ray } from "../../coord";
 import { coordFill } from "@/utils/coordUtils/coordFill";
 import { sgn } from "@/utils/sgn";
 import { coordDist } from "@/utils/coordUtils/coordDist";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useConfigStore } from "@/models/stores/configStore";
 import { useFormalizedLineStore } from "@/models/stores/saveDerived/formalizedLineStore";
+import { rayIntersect } from "@/utils/rayUtils/rayIntersection";
 
 export function useLineCvsWorker(){
     const saveStore = useSaveStore();
@@ -59,17 +60,25 @@ export function useLineCvsWorker(){
         })
     }
     function formalize(pts:ControlPoint[]):FormalPt[]{
-        const formalPts:FormalPt[] = []
+        if(pts.length<2)
+            return [];
+        const formalSegs:{a:Coord, itp:Coord[], b:Coord}[] = []
         for(let i=0;i<pts.length-1;i++){
             const a = pts[i]
             const b = pts[i+1]
-            if(i===0)
-                formalPts.push({pos:a.pos, afterIdxEqv: i})
-            const insert = formalizeSeg(a, b)
-            insert.forEach((pos)=>{
-                formalPts.push({pos, afterIdxEqv: i})
-            })
-            formalPts.push({pos:b.pos, afterIdxEqv: i+1})
+            const itp = formalizeSeg(a, b)
+            formalSegs.push({a:a.pos, itp, b:b.pos})
+        }
+        //辅助矫正
+        illPosedSegJustify(formalSegs)
+        if(formalSegs.length==0)
+            return []
+        const formalPts:FormalPt[] = []
+        formalPts.push({pos:formalSegs[0].a, afterIdxEqv:0})
+        for(let i=0;i<formalSegs.length;i++){
+            const seg = formalSegs[i]
+            seg.itp.forEach(p=>formalPts.push({pos:p, afterIdxEqv:i}))
+            formalPts.push({pos:seg.b, afterIdxEqv:i+1})
         }
         return formalPts
     }
@@ -108,6 +117,32 @@ export function useLineCvsWorker(){
                 return coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'top')
             }
         }
+    }
+    function illPosedSegJustify(segs:{a:Coord, itp:Coord[], b:Coord}[]){
+        if(segs.length==0)
+            return;
+
+        const illIdxs:number[] = []
+        for(let i=0;i<segs.length;i++){
+            if(segs[i].itp.length==2)
+                illIdxs.push(i)
+        }
+        illIdxs.forEach(i=>{
+            if(i>0 && i<segs.length-1){
+                const thisSeg = segs[i]
+                const prevSeg = segs[i-1]
+                const nextSeg = segs[i+1]
+                if(prevSeg.itp.length<2 && nextSeg.itp.length<2){
+                    const prevRef = prevSeg.itp.length==0 ? prevSeg.a : prevSeg.itp[0]
+                    const prevRay = twinPts2Ray(prevRef, prevSeg.b)
+                    const nextRef = nextSeg.itp.length==0 ? nextSeg.b : nextSeg.itp[0]
+                    const nextRay = twinPts2Ray(nextRef, nextSeg.a)
+                    const itsc = rayIntersect(prevRay, nextRay)
+                    if(itsc)
+                        thisSeg.itp = [itsc]
+                }
+            }
+        })
     }
     function linkPts(formalPts:FormalPt[], ctx:CanvasRenderingContext2D){
         if(formalPts.length<=1){

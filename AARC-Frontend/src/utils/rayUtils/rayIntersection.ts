@@ -4,9 +4,12 @@ import { sqrt2, sqrt2half } from "@/utils/consts";
 import { isZero } from "@/utils/sgn";
 import { rayParallel } from "./rayParallel";
 
-export function rayIntersect(a:FormalRay, b:FormalRay, seedOnA:Coord){
+export function rayIntersect(a:FormalRay, b:FormalRay, seedOnA?:Coord){
     if(rayParallel(a, b)){
         return
+    }
+    if(!seedOnA){
+        seedOnA = a.source
     }
     let [ax, ay] = a.way;
     let [bx, by] = b.way;
