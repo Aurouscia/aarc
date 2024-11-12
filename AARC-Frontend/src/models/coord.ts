@@ -42,5 +42,5 @@ export function collapseWay(way?:SgnCoord):'vert'|'hori'|'rise'|'fall'|'none'{
 }
 export function twinPts2Ray(from:Coord, to:Coord):FormalRay{
     const way:SgnCoord = [sgn(to[0]-from[0]),sgn(to[1]-from[1])]
-    return{source:to, way}
+    return{source:from, way}
 }

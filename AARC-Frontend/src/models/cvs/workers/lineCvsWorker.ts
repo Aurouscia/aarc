@@ -10,6 +10,8 @@ import { useEnvStore } from "@/models/stores/envStore";
 import { useConfigStore } from "@/models/stores/configStore";
 import { useFormalizedLineStore } from "@/models/stores/saveDerived/formalizedLineStore";
 import { rayIntersect } from "@/utils/rayUtils/rayIntersection";
+import { rayPerpendicular } from "@/utils/rayUtils/rayParallel";
+import { rayRotate90 } from "@/utils/rayUtils/rayRotate";
 
 export function useLineCvsWorker(){
     const saveStore = useSaveStore();
@@ -150,7 +152,7 @@ export function useLineCvsWorker(){
         }
     }
     function illPosedSegJustify(segs:{a:Coord, itp:Coord[], b:Coord}[]){
-        if(segs.length==0)
+        if(segs.length<=1)
             return;
 
         const illIdxs:number[] = []
@@ -169,6 +171,45 @@ export function useLineCvsWorker(){
                     const nextRef = nextSeg.itp.length==0 ? nextSeg.b : nextSeg.itp[0]
                     const nextRay = twinPts2Ray(nextRef, nextSeg.a)
                     const itsc = rayIntersect(prevRay, nextRay)
+                    if(itsc)
+                        thisSeg.itp = [itsc]
+                }
+            }
+            if(i==segs.length-1){
+                const thisSeg = segs[i]
+                const prevSeg = segs[i-1]
+                if(prevSeg.itp.length<2){
+                    const prevRef = prevSeg.itp.length==0 ? prevSeg.a : prevSeg.itp[0]
+                    const prevRay = twinPts2Ray(prevRef, prevSeg.b)
+                    const thisRefToADist = coordDist(thisSeg.itp[0], thisSeg.a)
+                    const thisRay = twinPts2Ray(thisSeg.itp[0], thisSeg.a)
+                    const thisOtherRay = twinPts2Ray(thisSeg.b, thisSeg.itp[1])
+                    let itsc:Coord|undefined;
+                    if(rayPerpendicular(prevRay, thisRay)){
+                        itsc = rayIntersect(prevRay, thisOtherRay)
+                    }else if(thisRefToADist < cs.config.lineTurnAreaRadius){
+                        rayRotate90(thisOtherRay)
+                        itsc = rayIntersect(prevRay, thisOtherRay)
+                    }
+                    if(itsc)
+                        thisSeg.itp = [itsc]
+                }
+            }else if(i==0){
+                const thisSeg = segs[i]
+                const nextSeg = segs[i+1]
+                if(nextSeg.itp.length<2){
+                    const nextRef = nextSeg.itp.length==0 ? nextSeg.b : nextSeg.itp[0]
+                    const nextRay = twinPts2Ray(nextRef, nextSeg.a)
+                    const thisRefToBDist = coordDist(thisSeg.itp[1], thisSeg.b)
+                    const thisRay = twinPts2Ray(thisSeg.itp[1], thisSeg.b)
+                    const thisOtherRay = twinPts2Ray(thisSeg.a, thisSeg.itp[0])
+                    let itsc:Coord|undefined;
+                    if(rayPerpendicular(nextRay, thisRay)){
+                        itsc = rayIntersect(nextRay, thisOtherRay)
+                    }else if(thisRefToBDist < cs.config.lineTurnAreaRadius){
+                        rayRotate90(thisOtherRay)
+                        itsc = rayIntersect(nextRay, thisOtherRay)
+                    }
                     if(itsc)
                         thisSeg.itp = [itsc]
                 }
