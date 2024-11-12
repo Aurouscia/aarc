@@ -61,7 +61,7 @@ export const devSave:Save = {
         },
         {
             id: 6,
-            pos: [200, 400],
+            pos: [350, 400],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta,
             name: '明启',
@@ -82,6 +82,15 @@ export const devSave:Save = {
             name: "中央公园",
             nameS: "Central Park",
             nameP: [-20, 0]
+        },
+        {
+            id: 9,
+            pos: [300, 500],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.sta,
+            name: "长治",
+            nameS: "Chang Zhi",
+            nameP: [0, 20]
         },
         {
             id: 30,
@@ -130,7 +139,7 @@ export const devSave:Save = {
         },
         {
             id: 102,
-            pts: [5, 2, 6],
+            pts: [5, 2, 6, 9],
             name: "二号线",
             nameSub: "Line 2",
             color: "#009900"

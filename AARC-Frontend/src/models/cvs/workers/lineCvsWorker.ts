@@ -2,7 +2,7 @@ import { useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, Line } from "../../save";
 import { coordRelDiff } from "@/utils/coordUtils/coordRel";
 import { applyBias } from "@/utils/coordUtils/coordBias";
-import { Coord, FormalPt, SgnCoord, twinPts2Ray } from "../../coord";
+import { Coord, FormalPt, FormalRay, SgnCoord, twinPts2Ray } from "../../coord";
 import { coordFill } from "@/utils/coordUtils/coordFill";
 import { sgn } from "@/utils/sgn";
 import { coordDist } from "@/utils/coordUtils/coordDist";
@@ -12,6 +12,8 @@ import { useFormalizedLineStore } from "@/models/stores/saveDerived/formalizedLi
 import { rayIntersect } from "@/utils/rayUtils/rayIntersection";
 import { rayPerpendicular } from "@/utils/rayUtils/rayParallel";
 import { rayRotate90 } from "@/utils/rayUtils/rayRotate";
+
+interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill?:boolean}
 
 export function useLineCvsWorker(){
     const saveStore = useSaveStore();
@@ -95,12 +97,12 @@ export function useLineCvsWorker(){
     function formalize(pts:ControlPoint[]):FormalPt[]{
         if(pts.length<2)
             return [];
-        const formalSegs:{a:Coord, itp:Coord[], b:Coord}[] = []
+        const formalSegs:FormalSeg[] = []
         for(let i=0;i<pts.length-1;i++){
             const a = pts[i]
             const b = pts[i+1]
-            const itp = formalizeSeg(a, b)
-            formalSegs.push({a:a.pos, itp, b:b.pos})
+            const seg = formalizeSeg(a, b)
+            formalSegs.push(seg)
         }
         //辅助矫正
         illPosedSegJustify(formalSegs)
@@ -115,14 +117,16 @@ export function useLineCvsWorker(){
         }
         return formalPts
     }
-    function formalizeSeg(a:ControlPoint, b:ControlPoint):Coord[]{
+    function formalizeSeg(a:ControlPoint, b:ControlPoint):FormalSeg{
         let xDiff = a.pos[0] - b.pos[0]
         let yDiff = a.pos[1] - b.pos[1]
         const rel = coordRelDiff(xDiff, yDiff)
         const pr = rel.posRel
         const rv = rel.rev;
         if(pr == 's')
-            return [a.pos];
+            return {a:a.pos, itp:[], b:b.pos};
+        const originalA = a;
+        const originalB = b;
         if(rel.rev){
             const temp = a;
             a = b;
@@ -130,42 +134,52 @@ export function useLineCvsWorker(){
             xDiff = -xDiff
             yDiff = -yDiff
         }
-        if(a.dir==b.dir){
-            if(a.dir==ControlPointDir.incline){
-                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'midVert')
+        let itp:Coord[]
+        let ill = false;
+        if(a.dir===b.dir){
+            if(a.dir==ControlPointDir.vertical && (pr=='l'||pr=='u')){
+                ill = false
+            }else if(a.dir==ControlPointDir.incline && (pr=='lu'||pr=='ur')){
+                ill = false
             }else{
-                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'midInc')
+                ill = true
+            }
+            if(a.dir==ControlPointDir.incline){
+                itp = coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'midVert')
+            }else{
+                itp = coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'midInc')
             }
         }
-        if(a.dir==ControlPointDir.incline){
+        else if(a.dir==ControlPointDir.incline){
             if(pr == 'luu' || pr == 'uur'){
-                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'top')
+                itp = coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'top')
             }else{
-                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'bottom')
+                itp = coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'bottom')
             }
         }else{
             if(pr == 'luu' || pr == 'uur'){
-                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'bottom')
+                itp = coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'bottom')
             }else{
-                return coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'top')
+                itp = coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'top')
             }
         }
+        return {a:originalA.pos, b:originalB.pos, itp, ill}
     }
-    function illPosedSegJustify(segs:{a:Coord, itp:Coord[], b:Coord}[]){
+    function illPosedSegJustify(segs:FormalSeg[]){
         if(segs.length<=1)
             return;
 
         const illIdxs:number[] = []
         for(let i=0;i<segs.length;i++){
-            if(segs[i].itp.length==2)
+            if(segs[i].ill)
                 illIdxs.push(i)
         }
         illIdxs.forEach(i=>{
+            const thisSeg = segs[i]
             if(i>0 && i<segs.length-1){
-                const thisSeg = segs[i]
                 const prevSeg = segs[i-1]
                 const nextSeg = segs[i+1]
-                if(prevSeg.itp.length<2 && nextSeg.itp.length<2){
+                if(!prevSeg.ill && !nextSeg.ill){
                     const prevRef = prevSeg.itp.length==0 ? prevSeg.a : prevSeg.itp[0]
                     const prevRay = twinPts2Ray(prevRef, prevSeg.b)
                     const nextRef = nextSeg.itp.length==0 ? nextSeg.b : nextSeg.itp[0]
@@ -175,43 +189,48 @@ export function useLineCvsWorker(){
                         thisSeg.itp = [itsc]
                 }
             }
-            if(i==segs.length-1){
-                const thisSeg = segs[i]
-                const prevSeg = segs[i-1]
-                if(prevSeg.itp.length<2){
-                    const prevRef = prevSeg.itp.length==0 ? prevSeg.a : prevSeg.itp[0]
-                    const prevRay = twinPts2Ray(prevRef, prevSeg.b)
-                    const thisRefToADist = coordDist(thisSeg.itp[0], thisSeg.a)
-                    const thisRay = twinPts2Ray(thisSeg.itp[0], thisSeg.a)
-                    const thisOtherRay = twinPts2Ray(thisSeg.b, thisSeg.itp[1])
-                    let itsc:Coord|undefined;
-                    if(rayPerpendicular(prevRay, thisRay)){
-                        itsc = rayIntersect(prevRay, thisOtherRay)
-                    }else if(thisRefToADist < cs.config.lineTurnAreaRadius){
-                        rayRotate90(thisOtherRay)
-                        itsc = rayIntersect(prevRay, thisOtherRay)
+            else{
+                const func = (neibRef:Coord, share:Coord, thisRef:Coord|null, thisTip:Coord)=>{
+                    const neibRay = twinPts2Ray(neibRef, share)
+                    let thisRefToShareDist = 1e10; 
+                    let thisRay:FormalRay;
+                    if(!thisRef){
+                        thisRay = {source:thisTip, way:[...neibRay.way]}
+                        rayRotate90(thisRay)
+                    }else{
+                        thisRefToShareDist = coordDist(thisRef, share)
+                        thisRay = twinPts2Ray(thisRef, share)
+                        thisRay.source = thisTip
                     }
-                    if(itsc)
-                        thisSeg.itp = [itsc]
+                    if(rayPerpendicular(neibRay, thisRay)){
+                        return rayIntersect(neibRay, thisRay)
+                    }else if(thisRefToShareDist < cs.config.lineTurnAreaRadius){
+                        rayRotate90(thisRay)
+                        return rayIntersect(neibRay, thisRay)
+                    }
                 }
-            }else if(i==0){
-                const thisSeg = segs[i]
-                const nextSeg = segs[i+1]
-                if(nextSeg.itp.length<2){
-                    const nextRef = nextSeg.itp.length==0 ? nextSeg.b : nextSeg.itp[0]
-                    const nextRay = twinPts2Ray(nextRef, nextSeg.a)
-                    const thisRefToBDist = coordDist(thisSeg.itp[1], thisSeg.b)
-                    const thisRay = twinPts2Ray(thisSeg.itp[1], thisSeg.b)
-                    const thisOtherRay = twinPts2Ray(thisSeg.a, thisSeg.itp[0])
-                    let itsc:Coord|undefined;
-                    if(rayPerpendicular(nextRay, thisRay)){
-                        itsc = rayIntersect(nextRay, thisOtherRay)
-                    }else if(thisRefToBDist < cs.config.lineTurnAreaRadius){
-                        rayRotate90(thisOtherRay)
-                        itsc = rayIntersect(nextRay, thisOtherRay)
+                let itsc:Coord|undefined
+                if(i==segs.length-1){
+                    const prevSeg = segs[i-1]
+                    if(!prevSeg.ill){
+                        const neibRef = prevSeg.itp.length==0 ? prevSeg.a : prevSeg.itp[0]
+                        const share = thisSeg.a
+                        const thisRef = thisSeg.itp.length>1 ? thisSeg.itp[0] : null
+                        const thisTip = thisSeg.b
+                        itsc = func(neibRef, share, thisRef, thisTip)
                     }
-                    if(itsc)
-                        thisSeg.itp = [itsc]
+                }else if(i==0){
+                    const nextSeg = segs[i+1]
+                    if(!nextSeg.ill){
+                        const neibRef = nextSeg.itp.length==0 ? nextSeg.b : nextSeg.itp[0]
+                        const share = thisSeg.b
+                        const thisRef = thisSeg.itp.length>1 ? thisSeg.itp[1] : null
+                        const thisTip = thisSeg.a
+                        itsc = func(neibRef, share, thisRef, thisTip)
+                    }
+                }
+                if(itsc){
+                    thisSeg.itp = [itsc]
                 }
             }
         })

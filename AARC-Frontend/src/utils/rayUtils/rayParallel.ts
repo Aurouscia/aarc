@@ -9,5 +9,5 @@ export function rayParallel(a:FormalRay, b:FormalRay){
 export function rayPerpendicular(a:FormalRay, b:FormalRay){
     const [a1, a2] = a.way;
     const [b1, b2] = b.way;
-    return isZero(a1*b1 - a2*b2)
+    return isZero(a1*b1 + a2*b2)
 }
