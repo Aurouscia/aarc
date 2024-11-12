@@ -178,7 +178,7 @@ export const useSnapStore = defineStore('snap',()=>{
             })
             const firstCandWay = snapLines.value[0].way
             if(cands.length > 1){
-                const intersection = rayIntersect(snapLines.value[0], snapLines.value[1], cands[0].snapTo)
+                const intersection = rayIntersect(snapLines.value[0], snapLines.value[1])
                 if(intersection)
                     return {snapRes: intersection}
             }

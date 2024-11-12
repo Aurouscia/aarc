@@ -184,7 +184,7 @@ export function useLineCvsWorker(){
                     const prevRay = twinPts2Ray(prevRef, prevSeg.b)
                     const nextRef = nextSeg.itp.length==0 ? nextSeg.b : nextSeg.itp[0]
                     const nextRay = twinPts2Ray(nextRef, nextSeg.a)
-                    const itsc = rayIntersect(prevRay, nextRay)
+                    const itsc = rayIntersect(prevRay, nextRay, true)
                     if(itsc)
                         thisSeg.itp = [itsc]
                 }
@@ -203,10 +203,10 @@ export function useLineCvsWorker(){
                         thisRay.source = thisTip
                     }
                     if(rayPerpendicular(neibRay, thisRay)){
-                        return rayIntersect(neibRay, thisRay)
+                        return rayIntersect(neibRay, thisRay, true)
                     }else if(thisRefToShareDist < cs.config.lineTurnAreaRadius){
                         rayRotate90(thisRay)
-                        return rayIntersect(neibRay, thisRay)
+                        return rayIntersect(neibRay, thisRay, true)
                     }
                 }
                 let itsc:Coord|undefined
