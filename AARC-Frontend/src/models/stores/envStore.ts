@@ -437,6 +437,8 @@ export const useEnvStore = defineStore('env', ()=>{
         const pt2Pos:Coord = [...viewCenterCoord]
         pt1Pos[0] -= 50
         pt2Pos[0] += 50
+        ensureSpaceForNewPt(pt1Pos)
+        ensureSpaceForNewPt(pt2Pos)
         const pt1:ControlPoint = {
             id: saveStore.getNewId(),
             pos: pt1Pos,
@@ -487,6 +489,30 @@ export const useEnvStore = defineStore('env', ()=>{
         })
         if(needRemove.length>0){
             pointMutated.value()
+        }
+    }
+    function ensureSpaceForNewPt(coord:Coord){
+        const original:Coord = [...coord]
+        let safty = 16
+        let ok = false
+        let offset = 20;
+        let offsetSgn = 1
+        while(!ok){
+            ok = !onPt(coord)
+            if(ok)
+                ok = !onStaName(coord)
+            if(ok)
+                ok = onLine(coord).length == 0
+            if(!ok){
+                coord[1] = original[1] + offset*offsetSgn
+                offsetSgn *= -1
+                if(offsetSgn > 0)
+                    offset += 40
+                console.log(coord)
+            }
+            safty--;
+            if(safty<=0)
+                break;
         }
     }
     
