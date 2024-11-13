@@ -40,7 +40,7 @@ export const useEnvStore = defineStore('env', ()=>{
     let scaler:Scaler;
     const pointMutated = ref<(changedLines?:number[], staNameMoved?:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])
-    const { snap, snapName, snapNameStatus } = useSnapStore()
+    const { snap, snapName, snapNameStatus, snapGrid } = useSnapStore()
     const { enumerateFormalizedLines, setLinesFormalPts } = useFormalizedLineStore()
     const { enumerateStaNameRects, setStaNameRects } = useStaNameRectStore()
     function init(){
@@ -392,7 +392,12 @@ export const useEnvStore = defineStore('env', ()=>{
             if(cursorPos.value){
                 if(!activeLine.value)
                     return;
-                const id = saveStore.insertPtOnLine(activeLine.value.id, cursorOnLineAfterPtIdx.value, cursorPos.value, cursorDir.value)
+                let cur:Coord = [...cursorPos.value]
+                const gridSnapped = snapGrid(cur)
+                if(gridSnapped){
+                    cur = gridSnapped
+                }
+                const id = saveStore.insertPtOnLine(activeLine.value.id, cursorOnLineAfterPtIdx.value, cur, cursorDir.value)
                 pointMutated.value([activeLine.value.id], [])
                 if(id!==undefined){
                     activePt.value = saveStore.getPtById(id)

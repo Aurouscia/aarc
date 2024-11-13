@@ -320,5 +320,5 @@ export const useSnapStore = defineStore('snap',()=>{
         }
         return pos
     }
-    return { snap, snapName, snapNameStatus, snapLines, snapLinesForPt, snapGridIntv }
+    return { snap, snapName, snapNameStatus, snapGrid, snapLines, snapLinesForPt, snapGridIntv }
 })
