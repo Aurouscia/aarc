@@ -220,6 +220,11 @@ export class Scaler{
             this.widthReset(mutiple);
         }
     }
+    getCenterOffset():{x:number, y:number}{
+        const x = this.frame.scrollLeft + this.frame.offsetWidth/2
+        const y = this.frame.scrollTop + this.frame.offsetHeight/2
+        return {x, y}
+    }
 }
 
 type TouchInfoRes = {cx:number,cy:number,dist?:number}|undefined

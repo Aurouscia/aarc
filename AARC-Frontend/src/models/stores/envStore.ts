@@ -38,10 +38,10 @@ export const useEnvStore = defineStore('env', ()=>{
     const cvsFrame = ref<HTMLDivElement>()
     const cvsCont = ref<HTMLDivElement>()
     let scaler:Scaler;
-    const pointMutated = ref<(changedLines:number[], staNameMoved:number[])=>void>(()=>{});
+    const pointMutated = ref<(changedLines?:number[], staNameMoved?:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])
     const { snap, snapName, snapNameStatus } = useSnapStore()
-    const { enumerateFormalizedLines } = useFormalizedLineStore()
+    const { enumerateFormalizedLines, setLinesFormalPts } = useFormalizedLineStore()
     const { enumerateStaNameRects, setStaNameRects } = useStaNameRectStore()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
@@ -335,6 +335,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 cb:()=>{
                     saveStore.removePtFromLine(pt.id, l.id);
                     pointMutated.value([l.id, ...relatedLineIds], [])
+                    pointlessLineScan()
                 },
                 color: l.color
             }
@@ -349,6 +350,7 @@ export const useEnvStore = defineStore('env', ()=>{
             cursorPos.value = undefined
             setOpsPos(false)
             pointMutated.value(relatedLineIds, [])
+            pointlessLineScan()
         }
         const swDirCb = ()=>{
             if(pt){
@@ -406,6 +408,54 @@ export const useEnvStore = defineStore('env', ()=>{
         ]
     }
 
+    function delLine(lineId:number){
+        if(!saveStore.save)
+            return
+        const idx = saveStore.save.lines.findIndex(x=>x.id==lineId)
+        if(idx >= 0)
+            saveStore.save.lines.splice(idx, 1)
+        setLinesFormalPts(lineId, false)
+        pointMutated.value([],[])
+    }
+    function createLine(){
+        if(!saveStore.save)
+            return
+        const viewCenter = scaler.getCenterOffset()
+        let viewCenterCoord:Coord|undefined = [viewCenter.x, viewCenter.y]
+        viewCenterCoord = translateFromOffset(viewCenterCoord)
+        if(!viewCenterCoord)
+            return
+        const pt1Pos:Coord = [...viewCenterCoord]
+        const pt2Pos:Coord = [...viewCenterCoord]
+        pt1Pos[0] -= 50
+        pt2Pos[0] += 50
+        const pt1:ControlPoint = {
+            id: saveStore.getNewId(),
+            pos: pt1Pos,
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.sta
+        }
+        const pt2:ControlPoint = {
+            id: saveStore.getNewId(),
+            pos: pt2Pos,
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.sta
+        }
+        saveStore.save.points.push(pt1, pt2)
+        const newLine = {
+            id: saveStore.getNewId(),
+            pts: [pt1.id, pt2.id],
+            name: '新线路',
+            nameSub: 'NewLine',
+            color: "#ff0000"
+        }
+        saveStore.save.lines.push(newLine)
+        pointMutated.value([newLine.id], [pt1.id, pt2.id])
+    }
+    function lineColorChanged(){
+        pointMutated.value([],[])
+    }
+
     function getDisplayRatio(soften = 1){
         if(!cvsCont.value)
             return 1;
@@ -415,11 +465,28 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         return wr
     }
+    function pointlessLineScan(){
+        if(!saveStore.save)
+            return
+        const needRemove:number[] = []
+        saveStore.save.lines.forEach((l,idx)=>{
+            if(l.pts.length<2){
+                needRemove.unshift(idx)
+            }
+        })
+        needRemove.forEach(idx=>{
+            saveStore.save?.lines.splice(idx, 1)
+        })
+        if(needRemove.length>0){
+            pointMutated.value()
+        }
+    }
     
     return { 
         init, activePt, activePtType, activePtNameSnapped,
         activeLine, cursorPos, movingPoint,
         cvsFrame, cvsCont, cvsWidth, cvsHeight, getDisplayRatio,
-        pointMutated, rescaled
+        pointMutated, rescaled,
+        delLine, createLine, lineColorChanged
     }
 })

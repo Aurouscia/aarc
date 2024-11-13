@@ -5,9 +5,11 @@ import { storeToRefs } from 'pinia';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useLinesArrange } from '@/utils/eventUtils/linesArrange';
 import { Line } from '@/models/save';
+import { useEnvStore } from '@/models/stores/envStore';
 
 const saveStore = useSaveStore()
 const { save } = storeToRefs(saveStore)
+const envStore = useEnvStore()
 const sidebar = ref<InstanceType<typeof SideBar>>()
 
 defineExpose({
@@ -17,26 +19,18 @@ defineExpose({
 const { registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, activeId: arrangingId } 
     = useLinesArrange(65)
 function createLine(){
-    save.value?.lines.push({
-        id: saveStore.getNewId(),
-        pts: [],
-        name: '新线路',
-        nameSub: 'NewLine',
-        color: "#ff0000"
-    })
+    envStore.createLine()
 }
 function delLine(line:Line){
-    if(window.confirm(`确定删除线路${line.name}？`) && save.value){
-        const idx = save.value.lines.findIndex(x=>x.id==line.id)
-        if(idx >= 0)
-            save.value?.lines.splice(idx, 1)
+    if(window.confirm(`确定删除线路"${line.name}"？`) && save.value){
+        envStore.delLine(line.id)
     }
 }
 onMounted(()=>{
 
 })
 onUnmounted(()=>{
-
+    disposeLinesArrange()
 })
 </script>
 
@@ -46,7 +40,7 @@ onUnmounted(()=>{
         <div v-if="save" class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l in save.lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
                 <div class="sqrBtn">🖊</div>
-                <input v-model="l.color" type="color" class="sqrBtn"/>
+                <input v-model="l.color" type="color" class="sqrBtn" @blur="envStore.lineColorChanged"/>
                 <div class="names">
                     <input v-model="l.name"/>
                     <input v-model="l.nameSub"/>

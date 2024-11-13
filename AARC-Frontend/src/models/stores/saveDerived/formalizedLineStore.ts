@@ -8,7 +8,12 @@ export interface FormalizedLine{
 
 export const useFormalizedLineStore = defineStore('formalizedLine', ()=>{
     const formalizedLines:FormalizedLine[] = []
-    function setLinesFormalPts(lineId:number, pts:FormalPt[]){
+    function setLinesFormalPts(lineId:number, pts:FormalPt[]|false){
+        if(pts===false){
+            let idx = formalizedLines.findIndex(x=>x.lineId == lineId)
+            formalizedLines.splice(idx, 1)
+            return
+        }
         let target = formalizedLines.find(x=>x.lineId == lineId)
         if(!target){
             target = {lineId, pts}
