@@ -35,18 +35,18 @@ export function useClusterCvsWorker(){
         const rectLineWidth = (cs.config.ptStaSize + cs.config.ptStaLineWidth)* 2
         const bgColor = cs.config.bgColor;
         const exchangeColor = cs.config.ptStaExchangeLineColor;
-        ctx.lineWidth = rectLineWidth + cs.config.ptStaLineWidth
+        ctx.lineWidth = rectLineWidth
         ctx.strokeStyle = bgColor
         forEachPoly(()=>{
             ctx.stroke()
         })
             
-        ctx.lineWidth = rectLineWidth
+        ctx.lineWidth = rectLineWidth - cs.config.ptStaLineWidth
         ctx.strokeStyle = exchangeColor
         forEachPoly(() => {
             ctx.stroke()
         })
-        ctx.lineWidth = rectLineWidth - cs.config.ptStaLineWidth*2
+        ctx.lineWidth = rectLineWidth - cs.config.ptStaLineWidth*3
         ctx.strokeStyle = cs.config.ptStaFillColor
         ctx.fillStyle = cs.config.ptStaFillColor
         forEachPoly(() => {
