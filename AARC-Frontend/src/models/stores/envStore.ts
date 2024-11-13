@@ -325,6 +325,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 cb:()=>{
                     saveStore.insertPtToLine(pt.id, l.lineId, l.afterPtIdx, l.alignedPos, l.dir);
                     pointMutated.value([l.lineId, ...relatedLineIds], [pt.id])
+                    setOpsForPt()
                 },
                 color
             }
@@ -336,6 +337,8 @@ export const useEnvStore = defineStore('env', ()=>{
                     saveStore.removePtFromLine(pt.id, l.id);
                     pointMutated.value([l.id, ...relatedLineIds], [])
                     pointlessLineScan()
+                    setOpsForPt()
+                    activeLine.value = undefined
                 },
                 color: l.color
             }
