@@ -5,6 +5,7 @@ import { Coord } from "../coord";
 import { isSameCoord } from "@/utils/sgn";
 
 export const useSaveStore = defineStore('save', () => {
+    //不应直接在此删除/添加车站/线路，应通过envStore进行，避免数据不一致
     const save = ref<Save>()
     function getNewId() {
         if(!save.value)

@@ -416,14 +416,15 @@ export const useEnvStore = defineStore('env', ()=>{
         ]
     }
 
-    function delLine(lineId:number){
+    function delLine(lineId:number, suppressRender?:boolean){
         if(!saveStore.save)
             return
         const idx = saveStore.save.lines.findIndex(x=>x.id==lineId)
         if(idx >= 0)
             saveStore.save.lines.splice(idx, 1)
         setLinesFormalPts(lineId, false)
-        pointMutated.value([],[])
+        if(!suppressRender)
+            pointMutated.value([],[])
     }
     function createLine(){
         if(!saveStore.save)
@@ -478,18 +479,14 @@ export const useEnvStore = defineStore('env', ()=>{
     function pointlessLineScan(){
         if(!saveStore.save)
             return
-        const needRemove:number[] = []
-        saveStore.save.lines.forEach((l,idx)=>{
+        const needRemoveIds:number[] = []
+        saveStore.save.lines.forEach(l=>{
             if(l.pts.length<2){
-                needRemove.unshift(idx)
+                needRemoveIds.push(l.id)
             }
         })
-        needRemove.forEach(idx=>{
-            saveStore.save?.lines.splice(idx, 1)
-        })
-        if(needRemove.length>0){
-            pointMutated.value()
-        }
+        needRemoveIds.forEach(lineId=>delLine(lineId, true))
+        pointMutated.value([],[])
     }
     function ensureSpaceForNewPt(coord:Coord){
         const original:Coord = [...coord]
