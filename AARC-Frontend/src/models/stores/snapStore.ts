@@ -22,18 +22,8 @@ export const useSnapStore = defineStore('snap',()=>{
         const sndh = snd * sqrt2half;
         return [
             [snd,0],[-snd,0],[0,snd],[0,-snd],
-            [snd,snd],[snd,-snd],[-snd,snd],[-snd,-snd],
             [sndh,sndh],[sndh,-sndh],[-sndh,sndh],[-sndh,-sndh]
         ]
-    })
-    const snapTargetDir = ref<ControlPointDir>()
-    const snapStaNameToFiltered = computed<Coord[]>(()=>{
-        const val = snapStaNameTo.value
-        if(snapTargetDir.value === ControlPointDir.vertical){
-            return val.slice(0, 8)
-        }else{
-            return [...val.slice(0, 4), ...val.slice(8)]
-        }
     })
     function snap(pt:ControlPoint):Coord|undefined{
         snapLines.value = []
@@ -58,8 +48,7 @@ export const useSnapStore = defineStore('snap',()=>{
         const snapClingThrsSq = cs.snapOctaClingPtNameThrsSq
         const snapRayThrs = cs.config.snapOctaRayPtNameThrs
         let [x, y] = pt.nameP
-        snapTargetDir.value = pt.dir
-        const to = snapStaNameToFiltered.value.find(t=>{
+        const to = snapStaNameTo.value.find(t=>{
             return coordDistSqLessThan(pt.nameP!, t, snapClingThrsSq)
         })
         if(to){
@@ -89,8 +78,7 @@ export const useSnapStore = defineStore('snap',()=>{
             return;
         let [x, y] = pt.nameP
         const epsSqr = numberCmpEpsilon ** 2
-        snapTargetDir.value = pt.dir
-        const to = snapStaNameToFiltered.value.find(t=>{
+        const to = snapStaNameTo.value.find(t=>{
             return coordDistSqLessThan(pt.nameP!, t, epsSqr)
         })
         if(to){
