@@ -197,6 +197,7 @@ export const useEnvStore = defineStore('env', ()=>{
                         pt.name = undefined
                         pt.nameS = undefined 
                         pt.nameP = undefined
+                        setStaNameRects(pt.id, false)
                         nameEditStore.targetPtId = transferRes.id
                         activePt.value = transferRes
                         pt = transferRes
