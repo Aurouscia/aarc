@@ -375,7 +375,7 @@ export const useEnvStore = defineStore('env', ()=>{
             }
         }
         opsStore.btns = [
-            {
+            [{
                 type:'swPtDir',
                 cb:swDirCb
             },
@@ -386,9 +386,9 @@ export const useEnvStore = defineStore('env', ()=>{
             {
                 type:'rmPt',
                 cb:rmPtCb
-            },
-            ...addToLines,
-            ...rmFromLines
+            }],
+            [...rmFromLines],
+            [...addToLines]
         ]
     }
     function setOpsForLine(){
@@ -409,12 +409,12 @@ export const useEnvStore = defineStore('env', ()=>{
                 }
             }
         }
-        opsStore.btns = [
+        opsStore.btns = [[
             {
                 type:'addPt',
                 cb: insertPtCb
             }
-        ]
+        ]]
     }
 
     function delLine(lineId:number, suppressRender?:boolean){

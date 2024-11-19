@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useOpsStore } from '@/models/stores/opsStore';
+import { OpsBtn, useOpsStore } from '@/models/stores/opsStore';
 import { isSameCoord } from '@/utils/sgn';
 import { storeToRefs } from 'pinia';
 import { computed, CSSProperties, ref, watch } from 'vue';
@@ -8,16 +8,22 @@ const opsStore = useOpsStore()
 const { show, clientPos, at, btns } = storeToRefs(opsStore)
 const posAndShow = computed(()=>{return{show:show.value, clientPos:clientPos.value}})
 const moveMs = 4
-const width = 50
 const dist = 10
 const sunken = ref<boolean>(true);
 let sinkTimer = 0
-const opsStyle = ref<CSSProperties>({
-    width,
+const opssStyle = ref<CSSProperties>({
     opacity:0
 })
+const btnsf = computed<OpsBtn[][]>(()=>{
+    return btns.value?.filter(x=>x && x.length>0) || []
+})
 const height = computed<number>(()=>{
-    return 7+btns.value.length*42
+    if(btnsf.value.length == 0)
+        return 8
+    return 8 + Math.max(...btnsf.value.map(x=>x.length))*42
+})
+const width = computed<number>(()=>{
+    return 8 + (btnsf.value?.filter(x=>x.length>0).length || 0)*42
 })
 watch(posAndShow, (newVal, oldVal) => {
     window.clearTimeout(sinkTimer)
@@ -26,10 +32,10 @@ watch(posAndShow, (newVal, oldVal) => {
         showTurnedTrue = true
         window.setTimeout(()=>{
             sunken.value = false;
-            opsStyle.value.opacity = 1
+            opssStyle.value.opacity = 1
         }, moveMs)
     }else if(!newVal.show && oldVal.show){
-        opsStyle.value.opacity = 0
+        opssStyle.value.opacity = 0
         sinkTimer = window.setTimeout(()=>{
             sunken.value = true
         }, 200)
@@ -39,15 +45,15 @@ watch(posAndShow, (newVal, oldVal) => {
         return
     }
     if (showTurnedTrue) {
-        opsStyle.value.transition = '0s'
+        opssStyle.value.transition = '0s'
         window.setTimeout(() => {
-            opsStyle.value.transition = undefined;
+            opssStyle.value.transition = undefined;
         }, moveMs / 2)
         showTurnedTrue = false;
     }
     let top: number, left: number;
     if (at.value == 'lb' || at.value == 'lt') {
-        left = clientPos.value[0] - width - dist
+        left = clientPos.value[0] - width.value - dist
     } else {
         left = clientPos.value[0] + dist
     }
@@ -56,34 +62,43 @@ watch(posAndShow, (newVal, oldVal) => {
     } else {
         top = clientPos.value[1] + dist
     }
-    opsStyle.value.left = left
-    opsStyle.value.top = top
+    opssStyle.value.left = left
+    opssStyle.value.top = top
 })
 watch(btns, ()=>{
     window.setTimeout(()=>{
-        opsStyle.value.height = height.value;
+        opssStyle.value.height = height.value;
+        opssStyle.value.width = width.value;
     }, moveMs)
 })
 </script>
 
 <template>
-<div class="ops" :class="{sunken}" :style="opsStyle">
-    <div v-for="b in btns" @click="b.cb" :style="{backgroundColor: b.color}">{{ b.type }}</div>
+<div class="opss" :class="{sunken}" :style="opssStyle">
+    <div v-for="bCol in btnsf" class="ops">
+        <div v-for="b in bCol" @click="b.cb" :style="{backgroundColor: b.color}">{{ b.type }}</div>
+    </div>
 </div>
 </template>
 
 <style scoped lang="scss">
-.ops{
+.opss{
     position: fixed;
-    background-color: white;
+    background-color: rgba($color: #fff, $alpha: 0.9);
     border-radius: 10px;
     box-shadow: 0px 0px 5px 0px black;
     display: flex;
-    flex-direction: column;
     justify-content: center;
+    gap: 2px
+}
+.ops{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
     gap: 2px;
     overflow: hidden;
+    margin-top: 4px;
     div{
         width: 40px;
         height: 40px;
