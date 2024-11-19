@@ -3,27 +3,23 @@ import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { Scaler } from "@/utils/eventUtils/scaler";
 import { Coord } from "../coord";
-import { coordDistSq } from "@/utils/coordUtils/coordDist";
 import { listenPureClick } from "@/utils/eventUtils/pureClick";
 import { eventClientCoord } from "@/utils/eventUtils/eventClientCoord";
-import { coordOnLineOfFormalPts } from "@/utils/coordUtils/coordOnLine";
 import { OpsBtn, OpsBtnType, useOpsStore } from "./opsStore";
 import { ControlPoint, ControlPointDir, ControlPointSta, Line } from "../save";
 import { useSnapStore } from "./snapStore";
-import { rectInside } from "@/utils/coordUtils/coordInsideRect";
 import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
 import { useNameEditStore } from "./nameEditStore";
-import { useConfigStore } from "./configStore";
 import { useFormalizedLineStore } from "./saveDerived/formalizedLineStore";
 import { useStaNameRectStore } from "./saveDerived/staNameRectStore";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
+import { useOnDetectStore } from "./saveDerived/saveDerivedDerived/onDetectStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
     const movedPoint = ref<boolean>(false)
     const saveStore = useSaveStore();
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
-    const cs = useConfigStore()
     const opsStore = useOpsStore();
     const activePt = ref<ControlPoint>()
     const activePtType = ref<'body'|'name'>('body')
@@ -41,8 +37,9 @@ export const useEnvStore = defineStore('env', ()=>{
     const pointMutated = ref<(changedLines?:number[], staNameMoved?:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])
     const { snap, snapName, snapNameStatus, snapGrid } = useSnapStore()
-    const { enumerateFormalizedLines, setLinesFormalPts } = useFormalizedLineStore()
-    const { enumerateStaNameRects, setStaNameRects } = useStaNameRectStore()
+    const { setLinesFormalPts } = useFormalizedLineStore()
+    const { setStaNameRects } = useStaNameRectStore()
+    const { onPt, onLine, onStaName } = useOnDetectStore()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -222,44 +219,6 @@ export const useEnvStore = defineStore('env', ()=>{
         activePtNameGrabbedAt.value = [0,0]
     }
 
-    function onPt(c:Coord){
-        return saveStore.save?.points.find(p=>{
-            const distSq = coordDistSq(p.pos, c)
-            return distSq < cs.clickPtThrsSq
-        })
-    }
-    function onLine(c:Coord, exceptLines:number[] = []){
-        const res:{lineId:number, alignedPos:Coord, afterPtIdx:number, dir:ControlPointDir}[] = []
-        enumerateFormalizedLines(line=>{
-            if(exceptLines.includes(line.lineId))
-                return;
-            const onLineRes = coordOnLineOfFormalPts(c, line.pts, {
-                clickLineThrs: cs.config.clickLineThrs,
-                clickLineThrsSq: cs.clickLineThrsSq,
-                clickLineThrs_sqrt2_sq: cs.clickLineThrs_sqrt2_sq
-            })
-            if(onLineRes){
-                res.push({
-                    lineId: line.lineId,
-                    alignedPos: onLineRes.aligned,
-                    afterPtIdx: onLineRes.afterPt,
-                    dir: onLineRes.dir
-                })
-            }
-        })
-        return res
-    }
-    function onStaName(c:Coord){
-        let onPt:ControlPoint|undefined;
-        enumerateStaNameRects(rect=>{
-            if(rectInside(rect.rect, c)){
-                const pt = saveStore.save?.points.find(pt => pt.id == rect.ptId)
-                onPt = pt;
-                return;
-            }
-        })
-        return onPt;
-    }
     function translateFromOffset(coordOffset:Coord):Coord|undefined{
         const [ox, oy] = coordOffset;
         const w = cvsCont.value?.offsetWidth;
