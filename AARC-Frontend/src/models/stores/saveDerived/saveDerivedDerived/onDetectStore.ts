@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { useSaveStore } from "../../saveStore";
 import { Coord } from "@/models/coord";
-import { coordDistSq } from "@/utils/coordUtils/coordDist";
+import { coordDistSq, coordDistSqWithThrs } from "@/utils/coordUtils/coordDist";
 import { ControlPoint, ControlPointDir } from "@/models/save";
 import { useFormalizedLineStore } from "../formalizedLineStore";
 import { useConfigStore } from "../../configStore";
@@ -14,11 +14,26 @@ export const useOnDetectStore = defineStore('onDetect', ()=>{
     const saveStore = useSaveStore()
     const { enumerateFormalizedLines } = useFormalizedLineStore()
     const { enumerateStaNameRects } = useStaNameRectStore()
-    function onPt(c:Coord){
-        return saveStore.save?.points.find(p=>{
-            const distSq = coordDistSq(p.pos, c)
-            return distSq < cs.clickPtThrsSq
+    function onPt(c:Coord, strictClosest?:boolean){
+        if(saveStore.save?.points.length==0)
+            return undefined
+        if(!strictClosest){
+            return saveStore.save?.points.find(p=>{
+                const distSq = coordDistSq(p.pos, c)
+                return distSq < cs.clickPtThrsSq
+            })
+        }
+        let closestDistSq = 1e10
+        let closestPt:ControlPoint|undefined = undefined
+        saveStore.save?.points.map(p=>{
+            const distSq = coordDistSqWithThrs(p.pos, c, cs.clickLineThrsSq)
+            if(typeof distSq == 'number' && distSq < closestDistSq){
+                closestDistSq = distSq
+                closestPt = p
+            }
         })
+        if(closestDistSq < cs.clickLineThrsSq)
+            return closestPt
     }
     function onLine(c:Coord, exceptLines:number[] = []){
         const res:{lineId:number, alignedPos:Coord, afterPtIdx:number, dir:ControlPointDir}[] = []

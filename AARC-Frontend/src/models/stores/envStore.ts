@@ -99,7 +99,7 @@ export const useEnvStore = defineStore('env', ()=>{
         }
 
         //判断是否在点上
-        const pt = onPt(coord)
+        const pt = onPt(coord, true)
         if(pt && !(doingSth && activePt.value?.id !== pt.id)){
             //点到点上了
             activePt.value = pt
@@ -165,7 +165,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 const nameGlobalPos = coordAdd(pt.nameP || [0,0], pt.pos)
                 activePtNameGrabbedAt.value = coordSub(coord, nameGlobalPos)
             }else{
-                const pt = onPt(coord)
+                const pt = onPt(coord, true)
                 if(pt && pt === activePt.value){
                     activePtType.value = 'body'
                     movingPoint.value = true

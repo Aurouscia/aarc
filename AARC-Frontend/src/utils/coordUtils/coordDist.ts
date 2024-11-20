@@ -15,3 +15,13 @@ export function coordDistSqLessThan(a:Coord, b:Coord, cmp:number){
     const diffYSq = (a[1] - b[1])**2
     return (diffXSq + diffYSq) < cmp
 }
+export function coordDistSqWithThrs(a:Coord, b:Coord, thrs:number){
+    const diffXSq = (a[0] - b[0])**2
+    if(diffXSq > thrs)
+        return false;
+    const diffYSq = (a[1] - b[1])**2
+    const res = diffXSq + diffYSq
+    if(res < thrs)
+        return res
+    return false
+}
