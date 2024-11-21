@@ -1,6 +1,7 @@
 import { useConfigStore } from "@/models/stores/configStore";
 import { useLineExtendStore } from "@/models/stores/saveDerived/saveDerivedDerived/lineExtendStore";
 import { useSaveStore } from "@/models/stores/saveStore";
+import { drawCross } from "@/utils/drawUtils/drawCross";
 
 export function useLineExtendCvsWorker(){
     const { enumerateLineExtendBtns } = useLineExtendStore()
@@ -25,6 +26,16 @@ export function useLineExtendCvsWorker(){
             ctx.arc(...eb.btnPos, staRadius, 0, 2*Math.PI)
             ctx.fillStyle = lineColor
             ctx.fill()
+            
+            drawCross(ctx, {
+                dir: 'vertical',
+                pos: eb.btnPos,
+                armLength: cs.config.ptStaSize * 0.6,
+                repetitions: [{
+                    armWidth: cs.config.ptStaLineWidth,
+                    color: 'white'
+                }]
+            })
         })
     }
     return { renderLineExtend }

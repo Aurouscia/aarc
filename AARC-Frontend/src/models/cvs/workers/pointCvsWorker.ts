@@ -1,8 +1,7 @@
 import { useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, ControlPointSta, Line } from "../../save";
-import { applyBias } from "@/utils/coordUtils/coordBias";
-import { SgnCoord } from "@/models/coord";
 import { useConfigStore } from "@/models/stores/configStore";
+import { drawCross } from "@/utils/drawUtils/drawCross";
 
 export function usePointCvsWorker(){
     const saveStore = useSaveStore();
@@ -34,40 +33,27 @@ export function usePointCvsWorker(){
         const pos = pt.pos;
         let markColor = '#999'
         if(pt.sta == ControlPointSta.plain || active){
-            ctx.lineCap = 'round'
-            let biasA1:SgnCoord, biasA2:SgnCoord, biasB1:SgnCoord, biasB2:SgnCoord;
-            if(pt.dir === ControlPointDir.incline){
-                biasA1 = [-1, -1]
-                biasA2 = [1, 1]
-                biasB1 = [-1, 1]
-                biasB2 = [1, -1]
-            }else{
-                biasA1 = [-1, 0]
-                biasA2 = [1, 0]
-                biasB1 = [0, -1]
-                biasB2 = [0, 1]
-            }
+            const dir = pt.dir === ControlPointDir.incline ? 'incline':'vertical'
             let markSize = cs.config.ptBareSize;
             let markWidth = cs.config.ptBareLineWidth;
             if(active){
                 markSize *= 1.8
                 markColor = '#000'
             }
-            const a1 = applyBias(pos, biasA1, markSize)
-            const a2 = applyBias(pos, biasA2, markSize)
-            const b1 = applyBias(pos, biasB1, markSize)
-            const b2 = applyBias(pos, biasB2, markSize)
-            ctx.beginPath()
-            ctx.moveTo(a1[0], a1[1])
-            ctx.lineTo(a2[0], a2[1])
-            ctx.moveTo(b1[0], b1[1])
-            ctx.lineTo(b2[0], b2[1])
-            ctx.lineWidth = markWidth * 2;
-            ctx.strokeStyle = 'white'
-            ctx.stroke();
-            ctx.lineWidth = markWidth;
-            ctx.strokeStyle = markColor
-            ctx.stroke()
+            drawCross(ctx, {
+                pos,
+                dir,
+                armLength: markSize,
+                repetitions: [
+                    {
+                        armWidth: markWidth*2,
+                        color: cs.config.bgColor
+                    },{
+                        armWidth: markWidth,
+                        color: markColor
+                    }
+                ]
+            })
         }
         if(pt.sta === ControlPointSta.sta){
             const relatedLines = saveStore.getLinesByPt(pt.id)
