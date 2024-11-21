@@ -40,7 +40,7 @@ export function useLineCvsWorker(){
         }
         ctx.lineCap = 'round'
         linkPts(ctx, formalPts)
-        ctx.lineWidth *= 1.5
+        ctx.lineWidth = cs.config.lineWidth * 1.5
         ctx.strokeStyle = cs.config.bgColor
         ctx.stroke()
         ctx.lineWidth = cs.config.lineWidth

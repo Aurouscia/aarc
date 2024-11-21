@@ -1,3 +1,4 @@
+import { useColorProcStore } from "@/models/stores/colorProcStore";
 import { useConfigStore } from "@/models/stores/configStore";
 import { useLineExtendStore } from "@/models/stores/saveDerived/saveDerivedDerived/lineExtendStore";
 import { useSaveStore } from "@/models/stores/saveStore";
@@ -5,26 +6,25 @@ import { drawCross } from "@/utils/drawUtils/drawCross";
 
 export function useLineExtendCvsWorker(){
     const { enumerateLineExtendBtns } = useLineExtendStore()
+    const { colorProcLineExtend } = useColorProcStore()
     const saveStore = useSaveStore()
     const cs = useConfigStore()
     function renderLineExtend(ctx:CanvasRenderingContext2D){
         enumerateLineExtendBtns((eb)=>{
             const lineColor = saveStore.getLineById(eb.lineId)?.color || '#ccc'
+            let extendColor = colorProcLineExtend.convert(lineColor)
             ctx.lineCap = 'round'
             ctx.beginPath()
             ctx.moveTo(...eb.rootPos)
             ctx.lineTo(...eb.btnPos)
-            ctx.lineWidth *= 1.5
-            ctx.strokeStyle = cs.config.bgColor
-            ctx.stroke()
-            ctx.lineWidth = cs.config.lineWidth
-            ctx.strokeStyle = lineColor
+            ctx.lineWidth = cs.config.lineWidth * 0.6
+            ctx.strokeStyle = extendColor
             ctx.stroke()
 
             ctx.beginPath()
             const staRadius = cs.config.ptStaSize + cs.config.ptStaLineWidth/2
             ctx.arc(...eb.btnPos, staRadius, 0, 2*Math.PI)
-            ctx.fillStyle = lineColor
+            ctx.fillStyle = extendColor
             ctx.fill()
             
             drawCross(ctx, {
@@ -32,7 +32,7 @@ export function useLineExtendCvsWorker(){
                 pos: eb.btnPos,
                 armLength: cs.config.ptStaSize * 0.6,
                 repetitions: [{
-                    armWidth: cs.config.ptStaLineWidth,
+                    armWidth: cs.config.ptStaLineWidth/2,
                     color: 'white'
                 }]
             })

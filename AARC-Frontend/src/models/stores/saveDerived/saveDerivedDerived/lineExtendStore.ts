@@ -9,7 +9,8 @@ import { sqrt2 } from "@/utils/consts";
 export const useLineExtendStore = defineStore('lineExtend', ()=>{
     const saveStore = useSaveStore()
     type ExtendBtn = {lineId:number, at:'head'|'tail', rootPos:Coord, btnPos:Coord}
-    const extendBtnLength = 200;
+    const extendBtnLengthVert = 150;
+    const extendBtnLengthIncline = 100 * sqrt2
     const extendBtns:ExtendBtn[] = []
     function refreshLineExtend(ptId:number, relatedFormalizedSegs:FormalizedLine[]){
         extendBtns.length = 0
@@ -39,10 +40,10 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
                     rootPos = fl.pts[m].pos
                     secondPos = fl.pts[m-1].pos
                 }
-                let eLength = extendBtnLength
+                let eLength = extendBtnLengthVert
                 const relType = coordRelSimple(rootPos, secondPos)
                 if(relType == 'others')
-                    eLength *= sqrt2 * 0.75
+                    eLength = extendBtnLengthIncline
                 const btnPos = coordTwinExtend(rootPos, secondPos, eLength)
                 extendBtns.push({...tar, rootPos, btnPos})
             }
