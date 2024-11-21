@@ -27,8 +27,9 @@ export function useActiveCvsDispatcher(){
         }
         const activePtId = envStore.activePt?.id;
         if(activePtId){
-            renderLineExtend(ctx)
-
+            if(!envStore.movedPoint){
+                renderLineExtend(ctx)
+            }
             const activeSegs = saveStore.adjacentSegs(activePtId)
             if(activeSegs.length>0){
                 const relatedPts = renderSegsAroundActivePt(ctx)

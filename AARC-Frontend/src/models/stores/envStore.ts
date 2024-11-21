@@ -478,7 +478,7 @@ export const useEnvStore = defineStore('env', ()=>{
     
     return { 
         init, activePt, activePtType, activePtNameSnapped,
-        activeLine, cursorPos, movingPoint,
+        activeLine, cursorPos, movingPoint, movedPoint,
         cvsFrame, cvsCont, cvsWidth, cvsHeight, getDisplayRatio,
         pointMutated, rescaled,
         delLine, createLine, lineColorChanged

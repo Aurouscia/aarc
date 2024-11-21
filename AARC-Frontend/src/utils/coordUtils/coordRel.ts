@@ -33,3 +33,16 @@ export function coordRelDiff(xDiff:number, yDiff:number):{posRel:PosRel, rev:boo
     }
     return {posRel:'urr',rev:xDiff<0}
 }
+
+export type PosRelSimple = 'same'|'vert'|'others'
+export function coordRelSimple(a:Coord, b:Coord):PosRelSimple{
+    const xDiff = a[0] - b[0]
+    const yDiff = a[1] - b[1]
+    const xDiffZ = isZero(xDiff)
+    const yDiffZ = isZero(yDiff)
+    if(xDiffZ && yDiffZ)
+        return 'same'
+    if(xDiffZ || yDiffZ)
+        return 'vert'
+    return 'others'
+}

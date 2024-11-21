@@ -3,6 +3,8 @@ import { useFormalizedLineStore } from "../formalizedLineStore";
 import { useSaveStore } from "../../saveStore";
 import { coordTwinExtend } from "@/utils/coordUtils/coordMath";
 import { Coord } from "@/models/coord";
+import { coordRelSimple } from "@/utils/coordUtils/coordRel";
+import { sqrt2 } from "@/utils/consts";
 
 export const useLineExtendStore = defineStore('lineExtend', ()=>{
     const { enumerateFormalizedLines } = useFormalizedLineStore()
@@ -29,17 +31,20 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
             const tar = targets.find(x=>fl.lineId==x.lineId)
             if(tar && fl.pts.length>=2){
                 let rootPos:Coord
-                let btnPos:Coord
+                let secondPos:Coord
                 if(tar.at=='head'){
                     rootPos = fl.pts[0].pos
-                    const secondPos = fl.pts[1].pos
-                    btnPos = coordTwinExtend(rootPos, secondPos, extendBtnLength)
+                    secondPos = fl.pts[1].pos
                 }else{
                     const m = fl.pts.length-1;
                     rootPos = fl.pts[m].pos
-                    const secondPos = fl.pts[m-1].pos
-                    btnPos = coordTwinExtend(rootPos, secondPos, extendBtnLength)
+                    secondPos = fl.pts[m-1].pos
                 }
+                let eLength = extendBtnLength
+                const relType = coordRelSimple(rootPos, secondPos)
+                if(relType == 'others')
+                    eLength *= sqrt2 * 0.75
+                const btnPos = coordTwinExtend(rootPos, secondPos, eLength)
                 extendBtns.push({...tar, rootPos, btnPos})
             }
         })
