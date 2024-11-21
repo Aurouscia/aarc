@@ -74,18 +74,20 @@ export function useLineCvsWorker(){
         const formalizedSegs:FormalizedLine[] = []
         searchRes.forEach(res=>{
             const fpts = saveStore.getPtsByIds(res.formalizePtIds)
-            fpts.forEach(pt=>relatedPts.add(pt))
             const formalized = formalize(fpts)
             if(res.trimLeft && formalized.length>0){
                 let leftIdx = formalized[0].afterIdxEqv
                 const trimCount = formalized.findIndex(x=>x.afterIdxEqv!==leftIdx)
                 formalized.splice(0, trimCount)
+                fpts.shift()
             }
             if(res.trimRight && formalized.length>1){
                 let rightIdx = formalized[formalized.length-2].afterIdxEqv
                 const trimFrom = formalized.findIndex(x=>x.afterIdxEqv===rightIdx)
                 formalized.splice(trimFrom+1)
+                fpts.pop()
             }
+            fpts.forEach(pt=>relatedPts.add(pt))
             formalizedSegs.push({lineId:res.line.id, pts:formalized})
             linkPts(ctx, formalized)
             ctx.lineCap = 'round'
