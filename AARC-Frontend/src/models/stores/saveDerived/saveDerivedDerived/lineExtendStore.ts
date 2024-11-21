@@ -7,7 +7,7 @@ import { coordRelSimple } from "@/utils/coordUtils/coordRel";
 import { sqrt2 } from "@/utils/consts";
 
 export const useLineExtendStore = defineStore('lineExtend', ()=>{
-    const { enumerateFormalizedLines } = useFormalizedLineStore()
+    const { enumerateFormalizedLinesTemp } = useFormalizedLineStore()
     const saveStore = useSaveStore()
     type ExtendBtn = {lineId:number, at:'head'|'tail', rootPos:Coord, btnPos:Coord}
     const extendBtnLength = 200;
@@ -27,7 +27,7 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
             else if(atTail)
                 targets.push({lineId:line.id, at:'tail'})
         })
-        enumerateFormalizedLines(fl=>{
+        enumerateFormalizedLinesTemp(fl=>{
             const tar = targets.find(x=>fl.lineId==x.lineId)
             if(tar && fl.pts.length>=2){
                 let rootPos:Coord

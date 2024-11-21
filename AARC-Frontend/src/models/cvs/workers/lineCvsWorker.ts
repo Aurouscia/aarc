@@ -8,7 +8,7 @@ import { sgn } from "@/utils/sgn";
 import { coordDist } from "@/utils/coordUtils/coordDist";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useConfigStore } from "@/models/stores/configStore";
-import { useFormalizedLineStore } from "@/models/stores/saveDerived/formalizedLineStore";
+import { FormalizedLine, useFormalizedLineStore } from "@/models/stores/saveDerived/formalizedLineStore";
 import { rayIntersect } from "@/utils/rayUtils/rayIntersection";
 import { rayPerpendicular } from "@/utils/rayUtils/rayParallel";
 import { rayRotate90 } from "@/utils/rayUtils/rayRotate";
@@ -69,6 +69,7 @@ export function useLineCvsWorker(){
             searchRes.push({formalizePtIds, trimLeft, trimRight, line})
         })
         const relatedPts:Set<ControlPoint> = new Set()
+        const formalizedSegs:FormalizedLine[] = []
         searchRes.forEach(res=>{
             const fpts = saveStore.getPtsByIds(res.formalizePtIds)
             fpts.forEach(pt=>relatedPts.add(pt))
@@ -83,6 +84,7 @@ export function useLineCvsWorker(){
                 const trimFrom = formalized.findIndex(x=>x.afterIdxEqv===rightIdx)
                 formalized.splice(trimFrom+1)
             }
+            formalizedSegs.push({lineId:res.line.id, pts:formalized})
             linkPts(ctx, formalized)
             ctx.lineCap = 'round'
             ctx.lineWidth *= 1.5
@@ -92,6 +94,7 @@ export function useLineCvsWorker(){
             ctx.strokeStyle = res.line.color
             ctx.stroke()
         })
+        formalizedLineStore.setFormalizedLinesTemp(formalizedSegs)
         return [...relatedPts]
     }
     function formalize(pts:ControlPoint[]):FormalPt[]{
