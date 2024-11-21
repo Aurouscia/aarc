@@ -16,7 +16,7 @@ export function useActiveCvsDispatcher(){
     const lineExtendStore = useLineExtendStore()
     const { cvs: activeCvs, getCtx } = useCvs()
     const { renderSegsAroundActivePt, renderLine } = useLineCvsWorker()
-    const { renderArrayPoints, renderLinePoints, renderPointById } = usePointCvsWorker()
+    const { renderSomePoints, renderLinePoints, renderPointById } = usePointCvsWorker()
     const { renderRay } = useRayCvsWorker()
     const { renderPtNameById } = useTextCvsWorker()
     const { renderLineExtend } = useLineExtendCvsWorker()
@@ -29,14 +29,14 @@ export function useActiveCvsDispatcher(){
         }
         const activePtId = envStore.activePt?.id;
         if(activePtId){
-            if(!envStore.movingPoint){
-                lineExtendStore.refreshLineExtend(activePtId)
-                renderLineExtend(ctx)
-            }
-            const activeSegs = saveStore.adjacentSegs(activePtId)
-            if(activeSegs.length>0){
-                const relatedPts = renderSegsAroundActivePt(ctx)
-                renderArrayPoints(ctx, relatedPts, activePtId)
+            const activePtBelongLines = saveStore.getLinesByPt(activePtId)
+            if(activePtBelongLines.length>0){
+                const segRenderRes = renderSegsAroundActivePt(ctx)
+                if(!envStore.movingPoint){
+                    lineExtendStore.refreshLineExtend(activePtId, segRenderRes.formalizedSegs)
+                    renderLineExtend(ctx)
+                }
+                renderSomePoints(ctx, segRenderRes.relatedPts, activePtId)
             }else{
                 renderPointById(ctx, activePtId, true)
             }

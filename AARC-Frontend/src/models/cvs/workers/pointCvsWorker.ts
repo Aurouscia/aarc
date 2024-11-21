@@ -21,8 +21,10 @@ export function usePointCvsWorker(){
             pts?.forEach(p=>renderPoint(ctx, p))
         }
     }
-    function renderArrayPoints(ctx:CanvasRenderingContext2D, pts:ControlPoint[], activeId:number){
-        pts.forEach(pt=>renderPoint(ctx, pt, activeId == pt.id))
+    function renderSomePoints(ctx:CanvasRenderingContext2D, pts:Iterable<ControlPoint>, activeId:number){
+        for(const pt of pts){
+            renderPoint(ctx, pt, activeId == pt.id)
+        }
     }
     function renderPointById(ctx:CanvasRenderingContext2D, ptId:number, active:boolean = false){
         const pt = saveStore.getPtById(ptId)
@@ -75,5 +77,5 @@ export function usePointCvsWorker(){
             ctx.stroke()
         }
     }
-    return { renderAllPoints, renderLinePoints, renderArrayPoints, renderPoint, renderPointById }
+    return { renderAllPoints, renderLinePoints, renderSomePoints, renderPoint, renderPointById }
 }

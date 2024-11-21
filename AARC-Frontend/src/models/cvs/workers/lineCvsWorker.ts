@@ -47,10 +47,12 @@ export function useLineCvsWorker(){
         ctx.strokeStyle = line.color
         ctx.stroke()
     }
-    function renderSegsAroundActivePt(ctx:CanvasRenderingContext2D):ControlPoint[]{
+    function renderSegsAroundActivePt(ctx:CanvasRenderingContext2D)
+        :{relatedPts:Iterable<ControlPoint>, formalizedSegs:FormalizedLine[]}
+    {
         const activeId = envStore.activePt?.id;
         if(!activeId)
-            return [];
+            return{relatedPts:[],formalizedSegs:[]};
         const searchRes:{formalizePtIds:number[], trimLeft:boolean, trimRight:boolean, line:Line}[] = []
         saveStore.save?.lines.forEach(line=>{
             const idx = line.pts.indexOf(activeId)
@@ -94,8 +96,10 @@ export function useLineCvsWorker(){
             ctx.strokeStyle = res.line.color
             ctx.stroke()
         })
-        formalizedLineStore.setFormalizedLinesTemp(formalizedSegs)
-        return [...relatedPts]
+        return {
+            relatedPts,
+            formalizedSegs
+        }
     }
     function formalize(pts:ControlPoint[]):FormalPt[]{
         if(pts.length<2)

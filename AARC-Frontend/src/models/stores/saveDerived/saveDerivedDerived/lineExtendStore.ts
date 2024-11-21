@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { useFormalizedLineStore } from "../formalizedLineStore";
+import { FormalizedLine } from "../formalizedLineStore";
 import { useSaveStore } from "../../saveStore";
 import { coordTwinExtend } from "@/utils/coordUtils/coordMath";
 import { Coord } from "@/models/coord";
@@ -7,12 +7,11 @@ import { coordRelSimple } from "@/utils/coordUtils/coordRel";
 import { sqrt2 } from "@/utils/consts";
 
 export const useLineExtendStore = defineStore('lineExtend', ()=>{
-    const { enumerateFormalizedLinesTemp } = useFormalizedLineStore()
     const saveStore = useSaveStore()
     type ExtendBtn = {lineId:number, at:'head'|'tail', rootPos:Coord, btnPos:Coord}
     const extendBtnLength = 200;
     const extendBtns:ExtendBtn[] = []
-    function refreshLineExtend(ptId:number){
+    function refreshLineExtend(ptId:number, relatedFormalizedSegs:FormalizedLine[]){
         extendBtns.length = 0
         const targets:{lineId:number, at:'head'|'tail'}[] = []
         saveStore.save?.lines.forEach(line=>{
@@ -27,7 +26,7 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
             else if(atTail)
                 targets.push({lineId:line.id, at:'tail'})
         })
-        enumerateFormalizedLinesTemp(fl=>{
+        relatedFormalizedSegs.forEach(fl=>{
             const tar = targets.find(x=>fl.lineId==x.lineId)
             if(tar && fl.pts.length>=2){
                 let rootPos:Coord
