@@ -14,6 +14,7 @@ import { useFormalizedLineStore } from "./saveDerived/formalizedLineStore";
 import { useStaNameRectStore } from "./saveDerived/staNameRectStore";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
 import { useOnDetectStore } from "./saveDerived/saveDerivedDerived/onDetectStore";
+import { useLineExtendStore } from "./saveDerived/saveDerivedDerived/lineExtendStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
@@ -40,6 +41,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const { setLinesFormalPts } = useFormalizedLineStore()
     const { setStaNameRects } = useStaNameRectStore()
     const { onPt, onLine, onStaName } = useOnDetectStore()
+    const { refreshLineExtend } = useLineExtendStore()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -109,6 +111,7 @@ export const useEnvStore = defineStore('env', ()=>{
             setOpsPos(pt.pos)
             setOpsForPt()
             nameEditStore.startEditing(pt.id)
+            refreshLineExtend(pt.id)
             return
         }
         

@@ -98,7 +98,7 @@ watch(btns, ()=>{
     align-items: center;
     gap: 2px;
     overflow: hidden;
-    margin-top: 4px;
+    margin-top: 5px;
     div{
         width: 40px;
         height: 40px;

@@ -19,3 +19,9 @@ export function coordTwinShrink(fixed:Coord, move:Coord, by:number){
     const diffModified = coordMut(diff, by/diffLength)
     return coordAdd(move, diffModified)
 }
+export function coordTwinExtend(head:Coord, afterHead:Coord, by:number){
+    const diff = coordSub(head, afterHead)
+    const diffLength = Math.sqrt(coordTo0DistSq(diff))
+    const adjusted = coordMut(diff, by/diffLength)
+    return coordAdd(head, adjusted)
+}

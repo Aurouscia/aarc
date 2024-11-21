@@ -6,6 +6,7 @@ import { usePointCvsWorker } from "../workers/pointCvsWorker";
 import { useRayCvsWorker } from "../workers/rayCvsWorker";
 import { useSnapStore } from "@/models/stores/snapStore";
 import { useTextCvsWorker } from "../workers/textCvsWorker";
+import { useLineExtendCvsWorker } from "../workers/lineExtendCvsWorker";
 
 export function useActiveCvsDispatcher(){
     const saveStore = useSaveStore()
@@ -16,6 +17,7 @@ export function useActiveCvsDispatcher(){
     const { renderArrayPoints, renderLinePoints, renderPointById } = usePointCvsWorker()
     const { renderRay } = useRayCvsWorker()
     const { renderPtNameById } = useTextCvsWorker()
+    const { renderLineExtend } = useLineExtendCvsWorker()
     envStore.rescaled.push(renderActiveCvs)
     function renderActiveCvs(){
         const ctx = getCtx();
@@ -25,6 +27,8 @@ export function useActiveCvsDispatcher(){
         }
         const activePtId = envStore.activePt?.id;
         if(activePtId){
+            renderLineExtend(ctx)
+
             const activeSegs = saveStore.adjacentSegs(activePtId)
             if(activeSegs.length>0){
                 const relatedPts = renderSegsAroundActivePt(ctx)
