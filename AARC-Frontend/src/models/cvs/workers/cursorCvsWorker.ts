@@ -18,7 +18,7 @@ export function useCursorCvsWorker(){
             angleNow = 0
     }
     function renderCursorLayer(ctx:CanvasRenderingContext2D, x:number, y:number, angle:number, style:string, lineWidth:number){
-        const r = envStore.getDisplayRatio()
+        const r = 1
         ctx.strokeStyle = style
         ctx.lineWidth = lineWidth*r
         ctx.beginPath()
