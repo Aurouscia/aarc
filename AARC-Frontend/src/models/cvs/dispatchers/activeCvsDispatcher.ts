@@ -8,6 +8,7 @@ import { useSnapStore } from "@/models/stores/snapStore";
 import { useTextCvsWorker } from "../workers/textCvsWorker";
 import { useLineExtendCvsWorker } from "../workers/lineExtendCvsWorker";
 import { useLineExtendStore } from "@/models/stores/saveDerived/saveDerivedDerived/lineExtendStore";
+import { useCursorCvsWorker } from "../workers/cursorCvsWorker";
 
 export function useActiveCvsDispatcher(){
     const saveStore = useSaveStore()
@@ -20,8 +21,10 @@ export function useActiveCvsDispatcher(){
     const { renderRay } = useRayCvsWorker()
     const { renderPtNameById } = useTextCvsWorker()
     const { renderLineExtend } = useLineExtendCvsWorker()
+    const { renderCursor } = useCursorCvsWorker()
     envStore.rescaled.push(renderActiveCvs)
     function renderActiveCvs(){
+        //该函数应被设置为每x毫秒执行一次
         const ctx = getCtx();
         if(envStore.activeLine){
             renderLine(ctx, envStore.activeLine)
@@ -59,6 +62,7 @@ export function useActiveCvsDispatcher(){
                 renderRay(ctx, l.source, l.way)
             })
         }
+        renderCursor(ctx)
     }
     return { activeCvs, renderActiveCvs }
 }

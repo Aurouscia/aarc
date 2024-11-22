@@ -7,7 +7,6 @@ import Name from './NameEdit.vue';
 import { useActiveCvsDispatcher } from '@/models/cvs/dispatchers/activeCvsDispatcher';
 import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
-import { useCursorCvsDispatcher } from '@/models/cvs/dispatchers/cursorCvsDispatcher';
 import { useConfigStore } from '@/models/stores/configStore';
 
 const envStore = useEnvStore();
@@ -16,7 +15,6 @@ const { cvsFrame, cvsCont, cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
 const { baseCvs } = useBaseCvsDispatcher()
 const { mainLineCvs, mainPtCvs, mainPtNameCvs, renderMainCvs } = useMainCvsDispatcher()
 const { activeCvs, renderActiveCvs } = useActiveCvsDispatcher()
-const { cursorCvs, startRenderCursor } = useCursorCvsDispatcher()
 const mainCvsInsnif = computed<boolean>(()=>
     !!envStore.activePt || !!envStore.activeLine
 )
@@ -33,7 +31,6 @@ onMounted(async()=>{
     setInterval(()=>{
         renderActiveCvs()
     }, 50)
-    startRenderCursor()
     document.oncontextmenu = function(e){
         e.preventDefault()
     }
@@ -49,7 +46,6 @@ onMounted(async()=>{
             <canvas ref="mainPtCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>
             <canvas ref="mainPtNameCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>
             <canvas ref="activeCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
-            <canvas ref="cursorCvs" :width="cvsWidth" :height="cvsWidth"></canvas>
         </div>
     </div>
     <Ops></Ops>
