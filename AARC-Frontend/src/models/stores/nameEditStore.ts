@@ -12,6 +12,7 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
     const edited = ref(false)
     const editing = ref(false)
     const nameInputFocusHandler = ref<()=>void>()
+    const nameEditorDiv = ref<HTMLDivElement>()
     function startEditing(ptId:number){
         endEditing()
         const pt = saveStore.getPtById(ptId)
@@ -44,8 +45,13 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
         editing.value = false;
         edited.value = false;
     }
+    function getEditorDivEffectiveHeight(){
+        if(!editing.value)
+            return 0
+        return nameEditorDiv.value?.clientHeight || 0
+    }
     return { targetPtId, nameMain, nameSub, editing, edited,
         startEditing, endEditing, applyName,
-        nameInputFocusHandler
+        nameInputFocusHandler, nameEditorDiv, getEditorDivEffectiveHeight
     }
 })

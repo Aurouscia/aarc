@@ -195,6 +195,10 @@ export const useEnvStore = defineStore('env', ()=>{
             const clientCoord = eventClientCoord(e)
             if(!clientCoord)
                 return;
+            const nameEditorHeight = nameEditStore.getEditorDivEffectiveHeight()
+            if(clientCoord[1] < nameEditorHeight+10){
+                nameEditStore.endEditing()
+            }
             const coord = translateFromClient(clientCoord);
             let pt = activePt.value
             if(pt && coord){

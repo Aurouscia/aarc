@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
 const nameEditStore = useNameEditStore()
-const { nameMain, nameSub, editing } = storeToRefs(nameEditStore)
+const { nameMain, nameSub, editing, nameEditorDiv } = storeToRefs(nameEditStore)
 const nameMainRows = computed<number>(()=>{
     return countChar(nameMain.value, '\n')
 })
@@ -53,7 +53,7 @@ function inputHandler(type:'main'|'sub'){
 </script>
 
 <template>
-    <div class="nameEditor" :class="{hidden:!editing}">
+    <div class="nameEditor" :class="{hidden:!editing}" ref="nameEditorDiv">
         <textarea v-model="nameMain" :rows="nameMainRows" @input="inputHandler('main')"
             @focus="nameEditStore.nameInputFocusHandler" spellcheck="false"></textarea>
         <textarea v-model="nameSub" :rows="nameSubRows" @input="inputHandler('sub')"
