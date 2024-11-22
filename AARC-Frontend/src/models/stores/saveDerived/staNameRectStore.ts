@@ -25,8 +25,12 @@ export const useStaNameRectStore = defineStore('staNameRect', ()=>{
             }
         }
     }
-    function enumerateStaNameRects(fn:(rect:StaNameRect)=>void){
-        staNameRects.forEach(fn)
+    function enumerateStaNameRects(fn:(rect:StaNameRect)=>boolean|undefined){
+        for(let line of staNameRects){
+            const enough = fn(line)
+            if(enough)
+                break
+        }
     }
     return { setStaNameRects, enumerateStaNameRects }
 })

@@ -52,8 +52,12 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
             }
         })
     }
-    function enumerateLineExtendBtns(fn:(ex:ExtendBtn)=>void){
-        extendBtns.forEach(fn)
+    function enumerateLineExtendBtns(fn:(ex:ExtendBtn)=>boolean|undefined){
+        for(let line of extendBtns){
+            const enough = fn(line)
+            if(enough)
+                break
+        }
     }
     return { refreshLineExtend, enumerateLineExtendBtns }
 })

@@ -64,7 +64,7 @@ export const useOnDetectStore = defineStore('onDetect', ()=>{
             if(rectInside(rect.rect, c)){
                 const pt = saveStore.save?.points.find(pt => pt.id == rect.ptId)
                 onPt = pt;
-                return;
+                return true;
             }
         })
         return onPt;
@@ -74,6 +74,7 @@ export const useOnDetectStore = defineStore('onDetect', ()=>{
         enumerateLineExtendBtns(leb=>{
             if(coordDistSqLessThan(leb.btnPos, c, cs.clickPtThrsSq)){
                 onLeb = leb
+                return true
             }
         })
         return onLeb
