@@ -102,7 +102,7 @@ export const useSaveStore = defineStore('save', () => {
             return pt.id != exceptId
         })
     }
-    function insertPtOnLine(lineId:number, afterIdx:number, pos:Coord, dir:ControlPointDir){
+    function insertNewPtToLine(lineId:number, afterIdx:number|'head'|'tail', pos:Coord, dir:ControlPointDir){
         if(!save.value)
             return;
         const line = save.value.lines.find(x=>x.id == lineId)
@@ -115,6 +115,10 @@ export const useSaveStore = defineStore('save', () => {
                 sta: ControlPointSta.sta
             }
             save.value.points.push(newPt)
+            if(afterIdx==='head')
+                afterIdx = -1
+            else if(afterIdx==='tail')
+                afterIdx = line.pts.length
             line.pts.splice(afterIdx+1, 0, id)
             return id;
         }
@@ -195,7 +199,7 @@ export const useSaveStore = defineStore('save', () => {
     return { 
         save, getNewId, cvsWidth, cvsHeight,
         getPtById, getPtsByIds, getLineById, getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt,
-        insertPtOnLine, insertPtToLine, removePt, removePtFromLine, tryMergePt,
+        insertNewPtToLine, insertPtToLine, removePt, removePtFromLine, tryMergePt,
         isNamedPt
     }
 })

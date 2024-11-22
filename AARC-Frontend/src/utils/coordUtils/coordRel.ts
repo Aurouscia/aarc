@@ -1,5 +1,6 @@
 import { Coord } from "@/models/coord";
 import { isZero } from "../sgn";
+import { ControlPointDir } from "@/models/save";
 
 export type PosRel = 's'|'l'|'llu'|'lu'|'luu'|'u'|'uur'|'ur'|'urr'
 export function coordRel(a:Coord, b:Coord){
@@ -34,15 +35,12 @@ export function coordRelDiff(xDiff:number, yDiff:number):{posRel:PosRel, rev:boo
     return {posRel:'urr',rev:xDiff<0}
 }
 
-export type PosRelSimple = 'same'|'vert'|'others'
-export function coordRelSimple(a:Coord, b:Coord):PosRelSimple{
+export function coordRelDir(a:Coord, b:Coord):ControlPointDir{
     const xDiff = a[0] - b[0]
     const yDiff = a[1] - b[1]
     const xDiffZ = isZero(xDiff)
     const yDiffZ = isZero(yDiff)
-    if(xDiffZ && yDiffZ)
-        return 'same'
     if(xDiffZ || yDiffZ)
-        return 'vert'
-    return 'others'
+        return ControlPointDir.vertical
+    return ControlPointDir.incline
 }

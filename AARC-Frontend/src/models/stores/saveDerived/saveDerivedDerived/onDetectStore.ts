@@ -1,19 +1,21 @@
 import { defineStore } from "pinia";
 import { useSaveStore } from "../../saveStore";
 import { Coord } from "@/models/coord";
-import { coordDistSq, coordDistSqWithThrs } from "@/utils/coordUtils/coordDist";
+import { coordDistSq, coordDistSqLessThan, coordDistSqWithThrs } from "@/utils/coordUtils/coordDist";
 import { ControlPoint, ControlPointDir } from "@/models/save";
 import { useFormalizedLineStore } from "../formalizedLineStore";
 import { useConfigStore } from "../../configStore";
 import { coordOnLineOfFormalPts } from "@/utils/coordUtils/coordOnLine";
 import { useStaNameRectStore } from "../staNameRectStore";
 import { rectInside } from "@/utils/coordUtils/coordInsideRect";
+import { ExtendBtn, useLineExtendStore } from "./lineExtendStore";
 
 export const useOnDetectStore = defineStore('onDetect', ()=>{
     const cs = useConfigStore()
     const saveStore = useSaveStore()
     const { enumerateFormalizedLines } = useFormalizedLineStore()
     const { enumerateStaNameRects } = useStaNameRectStore()
+    const { enumerateLineExtendBtns } = useLineExtendStore()
     function onPt(c:Coord, strictClosest?:boolean){
         if(saveStore.save?.points.length==0)
             return undefined
@@ -26,13 +28,13 @@ export const useOnDetectStore = defineStore('onDetect', ()=>{
         let closestDistSq = 1e10
         let closestPt:ControlPoint|undefined = undefined
         saveStore.save?.points.map(p=>{
-            const distSq = coordDistSqWithThrs(p.pos, c, cs.clickLineThrsSq)
+            const distSq = coordDistSqWithThrs(p.pos, c, cs.clickPtThrsSq)
             if(typeof distSq == 'number' && distSq < closestDistSq){
                 closestDistSq = distSq
                 closestPt = p
             }
         })
-        if(closestDistSq < cs.clickLineThrsSq)
+        if(closestDistSq < cs.clickPtThrsSq)
             return closestPt
     }
     function onLine(c:Coord, exceptLines:number[] = []){
@@ -67,5 +69,14 @@ export const useOnDetectStore = defineStore('onDetect', ()=>{
         })
         return onPt;
     }
-    return { onPt, onLine, onStaName }
+    function onLineExtendBtn(c:Coord){
+        let onLeb:ExtendBtn|undefined
+        enumerateLineExtendBtns(leb=>{
+            if(coordDistSqLessThan(leb.btnPos, c, cs.clickPtThrsSq)){
+                onLeb = leb
+            }
+        })
+        return onLeb
+    }
+    return { onPt, onLine, onStaName, onLineExtendBtn }
 })

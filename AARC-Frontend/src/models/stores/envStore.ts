@@ -39,7 +39,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const { snap, snapName, snapNameStatus, snapGrid } = useSnapStore()
     const { setLinesFormalPts } = useFormalizedLineStore()
     const { setStaNameRects } = useStaNameRectStore()
-    const { onPt, onLine, onStaName } = useOnDetectStore()
+    const { onPt, onLine, onStaName, onLineExtendBtn } = useOnDetectStore()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -127,6 +127,22 @@ export const useEnvStore = defineStore('env', ()=>{
             setOpsForLine()
             return
         }
+
+        //判断是否在线路延长按钮上
+        const lineExtend = onLineExtendBtn(coord)
+        if(lineExtend){
+            const newPtId = saveStore.insertNewPtToLine(
+                lineExtend.lineId, lineExtend.at, lineExtend.btnPos, lineExtend.btnDir)
+            if(newPtId){
+                activePt.value = saveStore.getPtById(newPtId)
+                if(activePt.value){
+                    cursorPos.value = [...activePt.value.pos]
+                    pointMutated.value([lineExtend.lineId], [activePt.value.id])
+                }
+            }
+            return
+        }
+
         //点击空白位置
         let changedLines:number[] = []
         let movedStaNames:number[] = []
@@ -360,7 +376,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 if(gridSnapped){
                     cur = gridSnapped
                 }
-                const id = saveStore.insertPtOnLine(activeLine.value.id, cursorOnLineAfterPtIdx.value, cur, cursorDir.value)
+                const id = saveStore.insertNewPtToLine(activeLine.value.id, cursorOnLineAfterPtIdx.value, cur, cursorDir.value)
                 pointMutated.value([activeLine.value.id], [])
                 if(id!==undefined){
                     activePt.value = saveStore.getPtById(id)

@@ -3,12 +3,13 @@ import { FormalizedLine } from "../formalizedLineStore";
 import { useSaveStore } from "../../saveStore";
 import { coordTwinExtend } from "@/utils/coordUtils/coordMath";
 import { Coord } from "@/models/coord";
-import { coordRelSimple } from "@/utils/coordUtils/coordRel";
+import { coordRelDir } from "@/utils/coordUtils/coordRel";
 import { sqrt2 } from "@/utils/consts";
+import { ControlPointDir } from "@/models/save";
 
+export type ExtendBtn = {lineId:number, at:'head'|'tail', rootPos:Coord, btnPos:Coord, btnDir:ControlPointDir}
 export const useLineExtendStore = defineStore('lineExtend', ()=>{
     const saveStore = useSaveStore()
-    type ExtendBtn = {lineId:number, at:'head'|'tail', rootPos:Coord, btnPos:Coord}
     const extendBtnLengthVert = 150;
     const extendBtnLengthIncline = 100 * sqrt2
     const extendBtns:ExtendBtn[] = []
@@ -41,11 +42,13 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
                     secondPos = fl.pts[m-1].pos
                 }
                 let eLength = extendBtnLengthVert
-                const relType = coordRelSimple(rootPos, secondPos)
-                if(relType == 'others')
+                
+                const btnDir = coordRelDir(rootPos, secondPos)
+                if(btnDir === ControlPointDir.incline){
                     eLength = extendBtnLengthIncline
+                }
                 const btnPos = coordTwinExtend(rootPos, secondPos, eLength)
-                extendBtns.push({...tar, rootPos, btnPos})
+                extendBtns.push({...tar, rootPos, btnPos, btnDir})
             }
         })
     }
