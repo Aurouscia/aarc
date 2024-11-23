@@ -8,10 +8,12 @@ import { useActiveCvsDispatcher } from '@/models/cvs/dispatchers/activeCvsDispat
 import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useConfigStore } from '@/models/stores/configStore';
+import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 
 const envStore = useEnvStore();
 const configStore = useConfigStore();
-const { cvsFrame, cvsCont, cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
+const { cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
+const { cvsFrame, cvsCont } = storeToRefs(useCvsFrameStore())
 const { baseCvs } = useBaseCvsDispatcher()
 const { mainCvs, renderMainCvs } = useMainCvsDispatcher()
 const { activeCvs, renderActiveCvs } = useActiveCvsDispatcher()

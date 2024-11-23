@@ -1,7 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
-import { Scaler } from "@/utils/eventUtils/scaler";
 import { Coord } from "../coord";
 import { listenPureClick } from "@/utils/eventUtils/pureClick";
 import { eventClientCoord } from "@/utils/eventUtils/eventClientCoord";
@@ -14,6 +13,7 @@ import { useFormalizedLineStore } from "./saveDerived/formalizedLineStore";
 import { useStaNameRectStore } from "./saveDerived/staNameRectStore";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
 import { useOnDetectStore } from "./saveDerived/saveDerivedDerived/onDetectStore";
+import { useCvsFrameStore } from "./cvsFrameStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const movingPoint = ref<boolean>(false)
@@ -31,9 +31,10 @@ export const useEnvStore = defineStore('env', ()=>{
     const cursorPos = ref<Coord>()
     const cursorDir = ref<ControlPointDir>(ControlPointDir.vertical)
     const cursorOnLineAfterPtIdx = ref<number>(-1)
-    const cvsFrame = ref<HTMLDivElement>()
-    const cvsCont = ref<HTMLDivElement>()
-    let scaler:Scaler;
+    const cvsFrameStore = useCvsFrameStore()
+    const { cvsFrame, cvsCont } = storeToRefs(cvsFrameStore)
+    const { initScaler, translateFromClient, translateToClient,
+        translateFromOffset, getViewCenterOffset } = cvsFrameStore
     const pointMutated = ref<(changedLines?:number[], staNameMoved?:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])
     const { snap, snapName, snapNameStatus, snapGrid } = useSnapStore()
@@ -43,8 +44,7 @@ export const useEnvStore = defineStore('env', ()=>{
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
-        scaler = new Scaler(cvsFrame.value, cvsCont.value, viewRescaleHandler, viewMoveHandler, movingPoint)
-        scaler.widthReset()
+        initScaler(viewRescaleHandler, viewMoveHandler, movingPoint)
         nameEditStore.nameInputFocusHandler = ()=>{setOpsPos(false)}
         listenPureClick(cvsCont.value, pureClickHandler)
         cvsCont.value.addEventListener('mousedown', moveStartHandler)
@@ -239,44 +239,6 @@ export const useEnvStore = defineStore('env', ()=>{
         activePtNameGrabbedAt.value = [0,0]
     }
 
-    function translateFromOffset(coordOffset:Coord):Coord|undefined{
-        const [ox, oy] = coordOffset;
-        const w = cvsCont.value?.offsetWidth;
-        const h = cvsCont.value?.offsetHeight;
-        if(!w || !h)
-            return;
-        const ratioX = cvsWidth.value/w
-        const ratioY = cvsHeight.value/h
-        return [ratioX*ox, ratioY*oy]
-    }
-    function translateFromClient(coordClient:Coord):Coord|undefined{
-        const sx = cvsFrame.value?.scrollLeft;
-        const sy = cvsFrame.value?.scrollTop;
-        if(sx===undefined || sy===undefined)
-            return;
-        return translateFromOffset([coordClient[0] + sx, coordClient[1] + sy])
-    }
-    function translateToOffset(coord:Coord):Coord|undefined{
-        const [cx, cy] = coord;
-        const w = cvsCont.value?.offsetWidth;
-        const h = cvsCont.value?.offsetHeight;
-        if(!w || !h)
-            return;
-        const ratioX = cvsWidth.value/w
-        const ratioY = cvsHeight.value/h
-        return [cx/ratioX, cy/ratioY]
-    }
-    function translateToClient(coord:Coord):Coord|undefined{
-        const offsetCoord = translateToOffset(coord)
-        if(!offsetCoord)
-            return
-        const sx = cvsFrame.value?.scrollLeft;
-        const sy = cvsFrame.value?.scrollTop;
-        if(sx===undefined || sy===undefined)
-            return;
-        return [offsetCoord[0] - sx, offsetCoord[1] - sy]
-    }
-
     function setOpsPos(coord:Coord|false){
         if(!coord){
             opsStore.show = false;
@@ -409,7 +371,7 @@ export const useEnvStore = defineStore('env', ()=>{
     function createLine(){
         if(!saveStore.save)
             return
-        const viewCenter = scaler.getCenterOffset()
+        const viewCenter = getViewCenterOffset()
         let viewCenterCoord:Coord|undefined = [viewCenter.x, viewCenter.y]
         viewCenterCoord = translateFromOffset(viewCenterCoord)
         if(!viewCenterCoord)
@@ -496,7 +458,7 @@ export const useEnvStore = defineStore('env', ()=>{
     return { 
         init, activePt, activePtType, activePtNameSnapped,
         activeLine, cursorPos, movingPoint, movedPoint,
-        cvsFrame, cvsCont, cvsWidth, cvsHeight, getDisplayRatio,
+        cvsWidth, cvsHeight, getDisplayRatio,
         pointMutated, rescaled,
         delLine, createLine, lineColorChanged
     }
