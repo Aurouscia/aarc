@@ -11,6 +11,7 @@ import { useLineExtendStore } from "@/models/stores/saveDerived/saveDerivedDeriv
 import { useCursorCvsWorker } from "../workers/cursorCvsWorker";
 import { SgnCoord } from "@/models/coord";
 import { defineStore, storeToRefs } from "pinia";
+import { useEmphasizeCvsWorker } from "../workers/emphasizeCvsWorker";
 
 export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const saveStore = useSaveStore()
@@ -24,6 +25,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const { renderPtNameById } = useTextCvsWorker()
     const { renderLineExtend } = useLineExtendCvsWorker()
     const { renderCursor } = useCursorCvsWorker()
+    const { renderEmphasizesForRingLines } = useEmphasizeCvsWorker()
 
     const { getActivePtOpsAvoidance } = storeToRefs(envStore)
     getActivePtOpsAvoidance.value = renderActiveCvs
@@ -34,6 +36,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
         if(envStore.activeLine){
             renderLine(ctx, envStore.activeLine)
             renderLinePoints(ctx, envStore.activeLine)
+            renderEmphasizesForRingLines(ctx, [envStore.activeLine])
         }
         let lineExtendWays:SgnCoord[] = []
         const activePtId = envStore.activePt?.id;

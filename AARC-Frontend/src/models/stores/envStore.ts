@@ -354,6 +354,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 pointMutated.value([activeLine.value.id], [])
                 if(id!==undefined){
                     activePt.value = saveStore.getPtById(id)
+                    activeLine.value = undefined
                     setOpsForPt()
                 }
             }
