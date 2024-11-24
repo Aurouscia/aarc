@@ -13,6 +13,7 @@ let sinkTimer = 0
 const opssStyle = ref<CSSProperties>({
     opacity:0
 })
+const opsStyle = ref<CSSProperties>({})
 
 const sizeIgnoreBtns = ref(false)
 const btnsf = computed<OpsBtn[][]>(()=>{
@@ -26,7 +27,7 @@ const height = computed<number>(()=>{
 const width = computed<number>(()=>{
     if(sizeIgnoreBtns.value)
         return 8
-    return 8 + (btnsf.value?.filter(x=>x.length>0).length || 0)*42
+    return 8 + btnsf.value.length*42
 })
 
 watch(clientPos, (newVal, oldVal)=>{
@@ -36,6 +37,7 @@ watch(clientPos, (newVal, oldVal)=>{
     if(newVal && !oldVal) {
         opssStyle.value.transition = '0s'
         sizeIgnoreBtns.value = true
+        applyFlex()
         applyPos(newVal)
         applySize()
         window.setTimeout(() => {
@@ -57,6 +59,7 @@ watch(clientPos, (newVal, oldVal)=>{
         }, 200)
     }
     else{
+        applyFlex()
         applyPos(newVal!)
         applySize()
     }
@@ -93,11 +96,31 @@ function opCssTop(clientPosY:number){
         return clientPosY + dist
     return clientPosY + dist*vertAtDistRatio
 }
+
+function applyFlex(){
+    if(at.value == 'l' || at.value == 'lt' || at.value == 'lb')
+        opssStyle.value.flexDirection = 'row-reverse'
+    else
+        opssStyle.value.flexDirection = 'row'
+
+    if(at.value == 'l' || at.value == 'r'){
+        opsStyle.value.justifyContent = 'center'
+        opsStyle.value.flexDirection = 'column'
+    }
+    else if(at.value == 't' || at.value == 'lt' || at.value == 'rt'){
+        opsStyle.value.justifyContent = 'flex-start'
+        opsStyle.value.flexDirection = 'column-reverse'
+    }
+    else{
+        opsStyle.value.justifyContent = 'flex-start'
+        opsStyle.value.flexDirection = 'column'
+    }
+}
 </script>
 
 <template>
 <div class="opss" :class="{sunken}" :style="opssStyle">
-    <div v-for="bCol in btnsf" class="ops">
+    <div v-for="bCol in btnsf" class="ops" :style="opsStyle">
         <div v-for="b in bCol" @click="b.cb" :style="{backgroundColor: b.color}">{{ b.type }}</div>
     </div>
 </div>
@@ -106,12 +129,14 @@ function opCssTop(clientPosY:number){
 <style scoped lang="scss">
 .opss{
     position: fixed;
-    background-color: rgba($color: #fff, $alpha: 0.9);
+    background-color: rgba($color: #fff, $alpha: 0.85);
     border-radius: 10px;
     box-shadow: 0px 0px 5px 0px black;
     display: flex;
     justify-content: center;
-    gap: 2px
+    gap: 2px;
+    padding: 5px;
+    box-sizing: border-box;
 }
 .ops{
     display: flex;
@@ -120,7 +145,6 @@ function opCssTop(clientPosY:number){
     align-items: center;
     gap: 2px;
     overflow: hidden;
-    margin-top: 5px;
     div{
         width: 40px;
         height: 40px;
