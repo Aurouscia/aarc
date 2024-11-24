@@ -64,6 +64,9 @@ watch(clientPos, (newVal, oldVal)=>{
         applySize()
     }
 })
+watch(btns, ()=>{
+    applySize()
+})
 function applyPos(clientPos:Coord){
     opssStyle.value.left = opCssLeft(clientPos[0])+'px'
     opssStyle.value.top = opCssTop(clientPos[1])+'px'
