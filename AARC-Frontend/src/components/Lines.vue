@@ -6,18 +6,24 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import { useLinesArrange } from '@/utils/eventUtils/linesArrange';
 import { Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
+import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 
 const saveStore = useSaveStore()
 const { save } = storeToRefs(saveStore)
 const envStore = useEnvStore()
+const mainCvsDispatcher = useMainCvsDispatcher()
 const sidebar = ref<InstanceType<typeof SideBar>>()
 
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()}
 })
 
-const { registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, activeId: arrangingId } 
-    = useLinesArrange(65)
+const {
+    registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, activeId: arrangingId
+} = useLinesArrange(65, orderChanged) //65：一个线路框60高，加上5的缝隙
+function orderChanged(){
+    mainCvsDispatcher.renderMainCvs()
+}
 function createLine(){
     envStore.createLine()
 }
