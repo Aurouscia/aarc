@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useNameEditStore } from '@/models/stores/nameEditStore';
 import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const nameEditStore = useNameEditStore()
 const { nameMain, nameSub, editing, nameEditorDiv } = storeToRefs(nameEditStore)
@@ -11,6 +11,8 @@ const nameMainRows = computed<number>(()=>{
 const nameSubRows = computed<number>(()=>{
     return countChar(nameSub.value, '\n')
 })
+const nameMainInput = ref<HTMLTextAreaElement>()
+const nameSubInput = ref<HTMLTextAreaElement>()
 function countChar(str:string|undefined, char:string){
     let count = 1
     if(!str)
@@ -50,14 +52,31 @@ function inputHandler(type:'main'|'sub'){
     }
     nameEditStore.applyName()
 }
+function keyHandler(e:KeyboardEvent){
+    console.log(e.key)
+    if(e.key==='Tab'){
+        e.preventDefault()
+        const activeEle = document.activeElement
+        if(nameMainInput.value === activeEle){
+            nameSubInput.value?.focus()
+        }else if(nameSubInput.value === activeEle){
+            nameMainInput.value?.focus()
+        }
+    }else if(e.key==="Escape"){
+        e.preventDefault()
+        nameSubInput.value?.blur()
+        nameMainInput.value?.blur()
+        nameEditStore.endEditing()
+    }
+}
 </script>
 
 <template>
     <div class="nameEditor" :class="{hidden:!editing}" ref="nameEditorDiv">
-        <textarea v-model="nameMain" :rows="nameMainRows" @input="inputHandler('main')"
-            @focus="nameEditStore.nameInputFocusHandler" spellcheck="false"></textarea>
-        <textarea v-model="nameSub" :rows="nameSubRows" @input="inputHandler('sub')"
-            @focus="nameEditStore.nameInputFocusHandler" class="subName" spellcheck="false"></textarea>
+        <textarea v-model="nameMain" ref="nameMainInput" :rows="nameMainRows" @input="inputHandler('main')"
+            @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler" spellcheck="false"></textarea>
+        <textarea v-model="nameSub" ref="nameSubInput" :rows="nameSubRows" @input="inputHandler('sub')"
+            @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler" class="subName" spellcheck="false"></textarea>
     </div>
 </template>
 
