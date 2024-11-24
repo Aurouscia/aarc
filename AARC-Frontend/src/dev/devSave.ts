@@ -7,7 +7,7 @@ export const devSave:Save = {
     points: [
         {
             id: 1,
-            pos: [200, 200],
+            pos: [350, 250],
             dir: ControlPointDir.incline,
             sta: ControlPointSta.sta,
             name: '三阳路',
@@ -34,21 +34,12 @@ export const devSave:Save = {
         },
         {
             id: 4,
-            pos: [450, 750],
+            pos: [500, 750],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta,
             name: '体育中心',
             nameS: 'Sports Center',
             nameP: [0, 20]
-        },
-        {
-            id: 11,
-            pos: [650, 700],
-            dir: ControlPointDir.incline,
-            sta: ControlPointSta.sta,
-            name: '暖冬',
-            nameS: 'NuanDong',
-            nameP: [30, 0]
         },
         {
             id: 5,
@@ -61,12 +52,12 @@ export const devSave:Save = {
         },
         {
             id: 6,
-            pos: [350, 400],
+            pos: [400, 400],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta,
             name: '明启',
             nameS: 'MingQi',
-            nameP: [0, -20]
+            nameP: [0, 20]
         },
         {
             id: 7,
@@ -91,6 +82,30 @@ export const devSave:Save = {
             name: "长治",
             nameS: "Chang Zhi",
             nameP: [0, 20]
+        },
+        {
+            id: 10,
+            pos: [275, 500],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.sta,
+        },
+        {
+            id: 11,
+            pos: [650, 700],
+            dir: ControlPointDir.incline,
+            sta: ControlPointSta.sta,
+            name: '暖冬',
+            nameS: 'NuanDong',
+            nameP: [30, 0]
+        },
+        {
+            id: 12,
+            pos: [350, 700],
+            dir: ControlPointDir.incline,
+            sta: ControlPointSta.sta,
+            name: '钢铁厂',
+            nameS: 'GangTieChang',
+            nameP: [-12.727922058, 12.727922058]
         },
         {
             id: 30,
@@ -132,7 +147,7 @@ export const devSave:Save = {
     lines: [
         {
             id: 101,
-            pts: [1, 2, 3, 11, 4],
+            pts: [10, 1, 2, 3, 11, 4, 12, 10],
             name: "一号线",
             nameSub: "Line 1",
             color: "#44cef6"

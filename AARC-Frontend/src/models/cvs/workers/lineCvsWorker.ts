@@ -13,6 +13,7 @@ import { rayIntersect } from "@/utils/rayUtils/rayIntersection";
 import { rayPerpendicular } from "@/utils/rayUtils/rayParallel";
 import { rayRotate90 } from "@/utils/rayUtils/rayRotate";
 import { defineStore } from "pinia";
+import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill?:boolean}
 
@@ -56,20 +57,22 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             return{relatedPts:[],formalizedSegs:[]};
         const searchRes:{formalizePtIds:number[], trimLeft:boolean, trimRight:boolean, line:Line}[] = []
         saveStore.save?.lines.forEach(line=>{
-            const idx = line.pts.indexOf(activeId)
-            if(idx==-1)
+            const indices = ptInLineIndices(activeId, line)
+            if(indices.length==0)
                 return;
-            const maxIdx = line.pts.length-1
-            const formalizePtIds:number[] = []
-            let trimLeft = false; let trimRight = false;
-            if(idx-3>=0){formalizePtIds.push(line.pts[idx-3]); trimLeft = true}
-            if(idx-2>=0){formalizePtIds.push(line.pts[idx-2])}
-            if(idx-1>=0){formalizePtIds.push(line.pts[idx-1])}
-            formalizePtIds.push(line.pts[idx]);
-            if(idx+1<=maxIdx){formalizePtIds.push(line.pts[idx+1])}
-            if(idx+2<=maxIdx){formalizePtIds.push(line.pts[idx+2])}
-            if(idx+3<=maxIdx){formalizePtIds.push(line.pts[idx+3]); trimRight = true}
-            searchRes.push({formalizePtIds, trimLeft, trimRight, line})
+            indices.forEach(idx=>{
+                const maxIdx = line.pts.length-1
+                const formalizePtIds:number[] = []
+                let trimLeft = false; let trimRight = false;
+                if(idx-3>=0){formalizePtIds.push(line.pts[idx-3]); trimLeft = true}
+                if(idx-2>=0){formalizePtIds.push(line.pts[idx-2])}
+                if(idx-1>=0){formalizePtIds.push(line.pts[idx-1])}
+                formalizePtIds.push(line.pts[idx]);
+                if(idx+1<=maxIdx){formalizePtIds.push(line.pts[idx+1])}
+                if(idx+2<=maxIdx){formalizePtIds.push(line.pts[idx+2])}
+                if(idx+3<=maxIdx){formalizePtIds.push(line.pts[idx+3]); trimRight = true}
+                searchRes.push({formalizePtIds, trimLeft, trimRight, line})
+            })
         })
         const relatedPts:Set<ControlPoint> = new Set()
         const formalizedSegs:FormalizedLine[] = []
