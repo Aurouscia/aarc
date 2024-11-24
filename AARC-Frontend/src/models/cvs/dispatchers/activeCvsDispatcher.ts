@@ -9,6 +9,8 @@ import { useTextCvsWorker } from "../workers/textCvsWorker";
 import { useLineExtendCvsWorker } from "../workers/lineExtendCvsWorker";
 import { useLineExtendStore } from "@/models/stores/saveDerived/saveDerivedDerived/lineExtendStore";
 import { useCursorCvsWorker } from "../workers/cursorCvsWorker";
+import { SgnCoord } from "@/models/coord";
+import { storeToRefs } from "pinia";
 
 export function useActiveCvsDispatcher(){
     const saveStore = useSaveStore()
@@ -22,7 +24,10 @@ export function useActiveCvsDispatcher(){
     const { renderPtNameById } = useTextCvsWorker()
     const { renderLineExtend } = useLineExtendCvsWorker()
     const { renderCursor } = useCursorCvsWorker()
-    envStore.rescaled.push(renderActiveCvs)
+
+    const { getActivePtOpsAvoidance } = storeToRefs(envStore)
+    getActivePtOpsAvoidance.value = renderActiveCvs
+
     function renderActiveCvs(){
         //该函数应被设置为每x毫秒执行一次
         const ctx = getCtx();
@@ -30,6 +35,7 @@ export function useActiveCvsDispatcher(){
             renderLine(ctx, envStore.activeLine)
             renderLinePoints(ctx, envStore.activeLine)
         }
+        let lineExtendWays:SgnCoord[] = []
         const activePtId = envStore.activePt?.id;
         if(activePtId){
             const activePtBelongLines = saveStore.getLinesByPt(activePtId)
@@ -37,6 +43,7 @@ export function useActiveCvsDispatcher(){
                 const segRenderRes = renderSegsAroundActivePt(ctx)
                 if(!envStore.movingPoint){
                     lineExtendStore.refreshLineExtend(activePtId, segRenderRes.formalizedSegs)
+                    lineExtendWays = lineExtendStore.getLineExtendWays()
                     renderLineExtend(ctx)
                 }
                 renderSomePoints(ctx, segRenderRes.relatedPts, activePtId)
@@ -63,6 +70,7 @@ export function useActiveCvsDispatcher(){
             })
         }
         renderCursor(ctx)
+        return lineExtendWays
     }
     return { activeCvs, renderActiveCvs }
 }

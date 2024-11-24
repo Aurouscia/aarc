@@ -1,7 +1,7 @@
 import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
-import { Coord } from "../coord";
+import { Coord, SgnCoord } from "../coord";
 import { listenPureClick } from "@/utils/eventUtils/pureClick";
 import { eventClientCoord } from "@/utils/eventUtils/eventClientCoord";
 import { OpsBtn, OpsBtnType, useOpsStore } from "./opsStore";
@@ -37,6 +37,7 @@ export const useEnvStore = defineStore('env', ()=>{
         translateFromOffset, getViewCenterOffset } = cvsFrameStore
     const pointMutated = ref<(changedLines?:number[], staNameMoved?:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])
+    const getActivePtOpsAvoidance = ref<()=>SgnCoord[]>(()=>[])
     const { snap, snapName, snapNameStatus, snapGrid } = useSnapStore()
     const { setLinesFormalPts } = useFormalizedLineStore()
     const { setStaNameRects } = useStaNameRectStore()
@@ -106,6 +107,7 @@ export const useEnvStore = defineStore('env', ()=>{
             activePtType.value = 'body'
             activeLine.value = undefined
             cursorPos.value = [...pt.pos]
+            opsStore.atAvoidWays = getActivePtOpsAvoidance.value()
             setOpsPos(pt.pos)
             setOpsForPt()
             nameEditStore.startEditing(pt.id)
@@ -241,7 +243,7 @@ export const useEnvStore = defineStore('env', ()=>{
 
     function setOpsPos(coord:Coord|false){
         if(!coord){
-            opsStore.show = false;
+            opsStore.clientPos = undefined
             opsStore.btns = []
             return
         }
@@ -249,7 +251,6 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!clientCoord)
             return
         opsStore.clientPos = clientCoord
-        opsStore.show = true
     }
     function setOpsForPt(){
         const pt = activePt.value;
@@ -459,7 +460,7 @@ export const useEnvStore = defineStore('env', ()=>{
         init, activePt, activePtType, activePtNameSnapped,
         activeLine, cursorPos, movingPoint, movedPoint,
         cvsWidth, cvsHeight, getDisplayRatio,
-        pointMutated, rescaled,
+        pointMutated, rescaled, getActivePtOpsAvoidance,
         delLine, createLine, lineColorChanged
     }
 })

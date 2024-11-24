@@ -2,12 +2,14 @@ import { defineStore } from "pinia";
 import { FormalizedLine } from "../formalizedLineStore";
 import { useSaveStore } from "../../saveStore";
 import { coordTwinExtend } from "@/utils/coordUtils/coordMath";
-import { Coord } from "@/models/coord";
+import { Coord, SgnCoord, twinPts2SgnCoord } from "@/models/coord";
 import { coordRelDir } from "@/utils/coordUtils/coordRel";
 import { sqrt2 } from "@/utils/consts";
 import { ControlPointDir } from "@/models/save";
 
-export type ExtendBtn = {lineId:number, at:'head'|'tail', rootPos:Coord, btnPos:Coord, btnDir:ControlPointDir}
+export type ExtendBtn = {
+    lineId:number, at:'head'|'tail', rootPos:Coord,
+    btnPos:Coord, btnDir:ControlPointDir, way:SgnCoord}
 export const useLineExtendStore = defineStore('lineExtend', ()=>{
     const saveStore = useSaveStore()
     const extendBtnLengthVert = 150;
@@ -48,7 +50,8 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
                     eLength = extendBtnLengthIncline
                 }
                 const btnPos = coordTwinExtend(rootPos, secondPos, eLength)
-                extendBtns.push({...tar, rootPos, btnPos, btnDir})
+                const way = twinPts2SgnCoord(secondPos, rootPos)
+                extendBtns.push({...tar, rootPos, btnPos, btnDir, way})
             }
         })
     }
@@ -59,5 +62,8 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
                 break
         }
     }
-    return { refreshLineExtend, enumerateLineExtendBtns }
+    function getLineExtendWays():SgnCoord[]{
+        return extendBtns.map(x=>[...x.way])
+    }
+    return { refreshLineExtend, enumerateLineExtendBtns, getLineExtendWays }
 })

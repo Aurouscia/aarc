@@ -44,3 +44,10 @@ export function twinPts2Ray(from:Coord, to:Coord):FormalRay{
     const way:SgnCoord = [sgn(to[0]-from[0]),sgn(to[1]-from[1])]
     return{source:from, way}
 }
+export function twinPts2SgnCoord(from:Coord, to:Coord):SgnCoord{
+    const way:SgnCoord = [sgn(to[0]-from[0]),sgn(to[1]-from[1])]
+    return way
+}
+export function waySame(way0:SgnCoord, way1:SgnCoord){
+    return way0[0] == way1[0] && way0[1] == way1[1]
+}
