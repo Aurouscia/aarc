@@ -33,7 +33,7 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
             pt.nameS = nameSub.value
             if(saveStore.isNamedPt(pt) && !pt.nameP){
                 const dist = cs.config.snapOctaClingPtNameDist
-                pt.nameP = [dist, 0]
+                pt.nameP = [0, dist]
             }
         }
     }
