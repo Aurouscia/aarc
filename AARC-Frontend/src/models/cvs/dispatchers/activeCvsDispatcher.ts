@@ -41,9 +41,9 @@ export function useActiveCvsDispatcher(){
             const activePtBelongLines = saveStore.getLinesByPt(activePtId)
             if(activePtBelongLines.length>0){
                 const segRenderRes = renderSegsAroundActivePt(ctx)
+                lineExtendStore.refreshLineExtend(activePtId, segRenderRes.formalizedSegs)
+                lineExtendWays = lineExtendStore.getLineExtendWays()
                 if(!envStore.movingPoint){
-                    lineExtendStore.refreshLineExtend(activePtId, segRenderRes.formalizedSegs)
-                    lineExtendWays = lineExtendStore.getLineExtendWays()
                     renderLineExtend(ctx)
                 }
                 renderSomePoints(ctx, segRenderRes.relatedPts, activePtId)
