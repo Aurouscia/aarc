@@ -2,8 +2,9 @@ import { useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, ControlPointSta, Line } from "../../save";
 import { useConfigStore } from "@/models/stores/configStore";
 import { drawCross } from "@/utils/drawUtils/drawCross";
+import { defineStore } from "pinia";
 
-export function usePointCvsWorker(){
+export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     const saveStore = useSaveStore();
     const cs = useConfigStore();
     function renderAllPoints(ctx:CanvasRenderingContext2D){
@@ -78,4 +79,4 @@ export function usePointCvsWorker(){
         }
     }
     return { renderAllPoints, renderLinePoints, renderSomePoints, renderPoint, renderPointById }
-}
+})

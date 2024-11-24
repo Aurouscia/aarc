@@ -1,8 +1,9 @@
 import { useEnvStore } from "@/models/stores/envStore";
 import { useCvs } from "../common/cvs";
 import { useGridCvsWorker } from "../workers/gridCvsWorker";
+import { defineStore } from "pinia";
 
-export function useBaseCvsDispatcher(){
+export const useBaseCvsDispatcher = defineStore('baseCvsDispatcher', ()=>{
     const { cvs: baseCvs, getCtx } = useCvs()
     const { rescaled } = useEnvStore()
     rescaled.push(renderBaseCvs)
@@ -12,4 +13,4 @@ export function useBaseCvsDispatcher(){
         renderGrid(ctx)
     }
     return { baseCvs, renderBaseCvs }
-}
+})

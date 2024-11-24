@@ -1,7 +1,7 @@
 import { useSaveStore } from "@/models/stores/saveStore";
 import { ref } from "vue";
 
-export function useLinesArrange(unit:number){
+export function useLinesArrange(unit:number, orderChanged:()=>void){
     const saveStore = useSaveStore()
     const activeId = ref<number>(-1)
     let activeOriginalY:number = -1
@@ -45,6 +45,7 @@ export function useLinesArrange(unit:number){
             const item = saveStore.save.lines.splice(idx, 1)
             saveStore.save.lines.splice(idx+move, 0, ...item)
             activeOriginalY = y
+            orderChanged()
         }
     }
     function mouseUpHandler(){

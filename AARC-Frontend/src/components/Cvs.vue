@@ -14,9 +14,11 @@ const envStore = useEnvStore();
 const configStore = useConfigStore();
 const { cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
 const { cvsFrame, cvsCont } = storeToRefs(useCvsFrameStore())
-const { baseCvs } = useBaseCvsDispatcher()
-const { mainCvs, renderMainCvs } = useMainCvsDispatcher()
-const { activeCvs, renderActiveCvs } = useActiveCvsDispatcher()
+const { baseCvs } = storeToRefs(useBaseCvsDispatcher())
+const mainCvsDispatcher = useMainCvsDispatcher()
+const { mainCvs } = storeToRefs(mainCvsDispatcher)
+const activeCvsDispatcher = useActiveCvsDispatcher()
+const { activeCvs } = storeToRefs(activeCvsDispatcher)
 const mainCvsInsnif = computed<boolean>(()=>
     !!envStore.activePt || !!envStore.activeLine
 )
@@ -29,9 +31,9 @@ onMounted(async()=>{
     await nextTick()
     envStore.init()
     configStore.readConfigFromSave()
-    renderMainCvs()
+    mainCvsDispatcher.renderMainCvs()
     setInterval(()=>{
-        renderActiveCvs()
+        activeCvsDispatcher.renderActiveCvs()
     }, 50)
     document.oncontextmenu = function(e){
         e.preventDefault()

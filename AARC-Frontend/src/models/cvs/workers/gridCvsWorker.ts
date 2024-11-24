@@ -1,9 +1,9 @@
 import { useConfigStore } from "@/models/stores/configStore";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useSnapStore } from "@/models/stores/snapStore";
-import { storeToRefs } from "pinia";
+import { defineStore, storeToRefs } from "pinia";
 
-export function useGridCvsWorker(){
+export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
     const envStore = useEnvStore();
     const { getDisplayRatio } = envStore;
     const { cvsWidth, cvsHeight } = storeToRefs(envStore)
@@ -61,4 +61,4 @@ export function useGridCvsWorker(){
         }
     }
     return { renderGrid }
-}
+})

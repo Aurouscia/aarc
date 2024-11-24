@@ -12,10 +12,11 @@ import { FormalizedLine, useFormalizedLineStore } from "@/models/stores/saveDeri
 import { rayIntersect } from "@/utils/rayUtils/rayIntersection";
 import { rayPerpendicular } from "@/utils/rayUtils/rayParallel";
 import { rayRotate90 } from "@/utils/rayUtils/rayRotate";
+import { defineStore } from "pinia";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill?:boolean}
 
-export function useLineCvsWorker(){
+export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     const saveStore = useSaveStore();
     const envStore = useEnvStore();
     const formalizedLineStore = useFormalizedLineStore()
@@ -281,4 +282,4 @@ export function useLineCvsWorker(){
         }
     }
     return { renderAllLines, renderLine, renderSegsAroundActivePt }
-}
+})

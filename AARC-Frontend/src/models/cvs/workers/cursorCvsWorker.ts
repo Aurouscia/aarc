@@ -1,8 +1,8 @@
 import { useConfigStore } from "@/models/stores/configStore"
 import { useEnvStore } from "@/models/stores/envStore"
-import { storeToRefs } from "pinia"
+import { defineStore, storeToRefs } from "pinia"
 
-export function useCursorCvsWorker(){
+export const useCursorCvsWorker = defineStore('cursorCvsWorker', ()=>{
     const cs = useConfigStore()
     const envStore = useEnvStore()
     const { cursorPos } = storeToRefs(envStore)
@@ -29,4 +29,4 @@ export function useCursorCvsWorker(){
         ctx.stroke()
     }
     return { renderCursor }
-}
+})

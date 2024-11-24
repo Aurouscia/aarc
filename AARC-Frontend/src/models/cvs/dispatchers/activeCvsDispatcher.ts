@@ -10,9 +10,9 @@ import { useLineExtendCvsWorker } from "../workers/lineExtendCvsWorker";
 import { useLineExtendStore } from "@/models/stores/saveDerived/saveDerivedDerived/lineExtendStore";
 import { useCursorCvsWorker } from "../workers/cursorCvsWorker";
 import { SgnCoord } from "@/models/coord";
-import { storeToRefs } from "pinia";
+import { defineStore, storeToRefs } from "pinia";
 
-export function useActiveCvsDispatcher(){
+export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const saveStore = useSaveStore()
     const envStore = useEnvStore()
     const snapStore = useSnapStore()
@@ -73,4 +73,4 @@ export function useActiveCvsDispatcher(){
         return lineExtendWays
     }
     return { activeCvs, renderActiveCvs }
-}
+})

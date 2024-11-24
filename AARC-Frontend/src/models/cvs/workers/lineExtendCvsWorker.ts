@@ -3,8 +3,9 @@ import { useConfigStore } from "@/models/stores/configStore";
 import { useLineExtendStore } from "@/models/stores/saveDerived/saveDerivedDerived/lineExtendStore";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { drawCross } from "@/utils/drawUtils/drawCross";
+import { defineStore } from "pinia";
 
-export function useLineExtendCvsWorker(){
+export const useLineExtendCvsWorker = defineStore('lineExtendCvsWorker', ()=>{
     const { enumerateLineExtendBtns } = useLineExtendStore()
     const { colorProcLineExtend } = useColorProcStore()
     const saveStore = useSaveStore()
@@ -39,4 +40,4 @@ export function useLineExtendCvsWorker(){
         })
     }
     return { renderLineExtend }
-}
+})

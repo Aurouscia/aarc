@@ -4,8 +4,9 @@ import { useLineCvsWorker } from "../workers/lineCvsWorker";
 import { usePointCvsWorker } from "../workers/pointCvsWorker";
 import { useTextCvsWorker } from "../workers/textCvsWorker";
 import { useClusterCvsWorker } from "../workers/clusterCvsWorker";
+import { defineStore } from "pinia";
 
-export function useMainCvsDispatcher(){
+export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const envStore = useEnvStore()
     envStore.pointMutated = renderMainCvs
     const { cvs: mainCvs, getCtx: getCtx } = useCvs()
@@ -21,4 +22,4 @@ export function useMainCvsDispatcher(){
         renderAllPtName(ctx, movedStaNames)
     }
     return { mainCvs, renderMainCvs }
-}
+})

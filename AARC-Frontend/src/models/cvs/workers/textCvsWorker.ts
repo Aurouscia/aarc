@@ -5,8 +5,9 @@ import { useStaNameRectStore } from "@/models/stores/saveDerived/staNameRectStor
 import { useSaveStore } from "@/models/stores/saveStore";
 import { coordTwinShrink } from "@/utils/coordUtils/coordMath";
 import { sgn } from "@/utils/sgn";
+import { defineStore } from "pinia";
 
-export function useTextCvsWorker(){
+export const useTextCvsWorker = defineStore('textCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const staNameRectStore = useStaNameRectStore()
     const cs = useConfigStore()
@@ -130,4 +131,4 @@ export function useTextCvsWorker(){
         }
     }
     return { renderAllPtName, renderPtName, renderPtNameById }
-}
+})

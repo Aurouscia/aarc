@@ -6,8 +6,9 @@ import { numberCmpEpsilon } from '@/utils/consts'
 import { coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { Coord } from "@/models/coord";
 import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
+import { defineStore } from "pinia";
 
-export function useClusterCvsWorker(){
+export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const staClusterStore = useStaClusterStore()
     const cs = useConfigStore()
@@ -166,4 +167,4 @@ export function useClusterCvsWorker(){
     }
 
     return { renderClusters }
-}
+})
