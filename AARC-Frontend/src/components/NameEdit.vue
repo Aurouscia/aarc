@@ -53,7 +53,6 @@ function inputHandler(type:'main'|'sub'){
     nameEditStore.applyName()
 }
 function keyHandler(e:KeyboardEvent){
-    console.log(e.key)
     if(e.key==='Tab'){
         e.preventDefault()
         const activeEle = document.activeElement

@@ -85,6 +85,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     cursorPos.value = [...activePt.value.pos]
                     pointMutated.value([lineExtend.lineId], [activePt.value.id])
                     setOpsPos(false)
+                    nameEditStore.startEditing(newPtId)
                 }
             }
             return
@@ -98,7 +99,7 @@ export const useEnvStore = defineStore('env', ()=>{
             activePt.value = saveStore.getPtById(staName.id)
             activePtType.value = 'name'
             activeLine.value = undefined
-            nameEditStore.startEditing(staName.id)
+            nameEditStore.toggleEditing(staName.id)
             cursorPos.value = undefined
             setOpsPos(false)
             //立即检查该点是否是snap位置
@@ -111,8 +112,6 @@ export const useEnvStore = defineStore('env', ()=>{
                 }
             }
             return
-        }else{
-            nameEditStore.endEditing()
         }
 
         //判断是否在点上
@@ -128,11 +127,12 @@ export const useEnvStore = defineStore('env', ()=>{
                 opsStore.atAvoidWays = getActivePtOpsAvoidance.value()
                 setOpsPos(pt.pos)
                 setOpsForPt()
+                nameEditStore.startEditing(pt.id)
             }else{
                 //菜单已在时，再次点击使其收起
                 setOpsPos(false)
+                nameEditStore.endEditing()
             }
-            nameEditStore.startEditing(pt.id)
             return
         }
         
@@ -149,6 +149,7 @@ export const useEnvStore = defineStore('env', ()=>{
             cursorDir.value = lineMatch.dir
             setOpsPos(lineMatch.alignedPos)
             setOpsForLine()
+            nameEditStore.endEditing()
             return
         }
 
@@ -172,6 +173,7 @@ export const useEnvStore = defineStore('env', ()=>{
         pointMutated.value(changedLines, movedStaNames)
         movedPoint.value = false
         activePtNameSnapped.value = 'no'
+        nameEditStore.endEditing()
     }
     function moveStartHandler(e:MouseEvent|TouchEvent){
         const clientCoord = eventClientCoord(e)

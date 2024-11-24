@@ -45,13 +45,20 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
         editing.value = false;
         edited.value = false;
     }
+    function toggleEditing(ptId:number){
+        if(editing.value){
+            endEditing()
+        }else{
+            startEditing(ptId)
+        }
+    }
     function getEditorDivEffectiveHeight(){
         if(!editing.value)
             return 0
         return nameEditorDiv.value?.clientHeight || 0
     }
     return { targetPtId, nameMain, nameSub, editing, edited,
-        startEditing, endEditing, applyName,
+        startEditing, endEditing, toggleEditing, applyName,
         nameInputFocusHandler, nameEditorDiv, getEditorDivEffectiveHeight
     }
 })
