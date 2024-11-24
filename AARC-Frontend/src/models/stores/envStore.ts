@@ -73,7 +73,23 @@ export const useEnvStore = defineStore('env', ()=>{
             return
         //判断是否处于某种需要退出的状态（点击任何东西都算点击空白处（退出状态））
         const doingSth = movedPoint.value || nameEditStore.edited
-        //const doingSth = false
+
+        //判断是否在线路延长按钮上
+        const lineExtend = onLineExtendBtn(coord)
+        if (lineExtend) {
+            const newPtId = saveStore.insertNewPtToLine(
+                lineExtend.lineId, lineExtend.at, lineExtend.btnPos, lineExtend.btnDir)
+            if (newPtId) {
+                activePt.value = saveStore.getPtById(newPtId)
+                if (activePt.value) {
+                    cursorPos.value = [...activePt.value.pos]
+                    pointMutated.value([lineExtend.lineId], [activePt.value.id])
+                    setOpsPos(false)
+                }
+            }
+            return
+        }
+
 
         //判断是否在站名上
         const staName = onStaName(coord)
@@ -127,21 +143,6 @@ export const useEnvStore = defineStore('env', ()=>{
             cursorDir.value = lineMatch.dir
             setOpsPos(lineMatch.alignedPos)
             setOpsForLine()
-            return
-        }
-
-        //判断是否在线路延长按钮上
-        const lineExtend = onLineExtendBtn(coord)
-        if(lineExtend){
-            const newPtId = saveStore.insertNewPtToLine(
-                lineExtend.lineId, lineExtend.at, lineExtend.btnPos, lineExtend.btnDir)
-            if(newPtId){
-                activePt.value = saveStore.getPtById(newPtId)
-                if(activePt.value){
-                    cursorPos.value = [...activePt.value.pos]
-                    pointMutated.value([lineExtend.lineId], [activePt.value.id])
-                }
-            }
             return
         }
 
