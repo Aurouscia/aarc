@@ -313,7 +313,6 @@ export const useEnvStore = defineStore('env', ()=>{
                     pt.dir = ControlPointDir.vertical
                 else
                     pt.dir = ControlPointDir.incline
-                pointMutated.value(relatedLineIds, [])
             }
         }
         const swSta = ()=>{
@@ -322,7 +321,6 @@ export const useEnvStore = defineStore('env', ()=>{
                     pt.sta = ControlPointSta.sta
                 else
                     pt.sta = ControlPointSta.plain
-                pointMutated.value([], [])
             }
         }
         opsStore.btns = [

@@ -15,6 +15,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const { renderClusters } = useClusterCvsWorker()
     const { renderAllPtName } = useTextCvsWorker()
     function renderMainCvs(changedLines?:number[], movedStaNames?:number[]){
+        console.log('绘制主画布')
         const ctx = getCtx();
         renderAllLines(ctx, changedLines)
         renderAllPoints(ctx)
