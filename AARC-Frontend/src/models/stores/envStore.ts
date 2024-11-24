@@ -123,9 +123,15 @@ export const useEnvStore = defineStore('env', ()=>{
             activePtType.value = 'body'
             activeLine.value = undefined
             cursorPos.value = [...pt.pos]
-            opsStore.atAvoidWays = getActivePtOpsAvoidance.value()
-            setOpsPos(pt.pos)
-            setOpsForPt()
+            if(!opsStore.clientPos){
+                //菜单不在时，弹出菜单
+                opsStore.atAvoidWays = getActivePtOpsAvoidance.value()
+                setOpsPos(pt.pos)
+                setOpsForPt()
+            }else{
+                //菜单已在时，再次点击使其收起
+                setOpsPos(false)
+            }
             nameEditStore.startEditing(pt.id)
             return
         }
