@@ -426,7 +426,7 @@ export const useEnvStore = defineStore('env', ()=>{
             }
         }
         if(newLine){
-            saveStore.save.lines.push(newLine)
+            saveStore.createNewLine(newLine)
             pointMutated.value([newLine.id], [pt1.id, pt2.id])
         }
     }

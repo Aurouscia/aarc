@@ -5,6 +5,7 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import Terrains from './sideList/Terrains.vue';
 
 const lines = ref<InstanceType<typeof Lines>>()
+const terrains = ref<InstanceType<typeof Lines>>()
 const saveStore = useSaveStore()
 
 function fakeSave(){
@@ -18,11 +19,12 @@ onMounted(()=>{
 
 <template>
     <div class="menu">
-        <div @click="fakeSave" class="sqrBtn withShadow">存</div>
         <div @click="lines?.comeOut" class="sqrBtn withShadow">线</div>
+        <div @click="terrains?.comeOut" class="sqrBtn withShadow">地</div>
+        <div @click="fakeSave" class="sqrBtn withShadow">存</div>
     </div>
     <Lines ref="lines"></Lines>
-    <Terrains></Terrains>
+    <Terrains ref="terrains"></Terrains>
 </template>
 
 <style scoped lang="scss">

@@ -4,6 +4,7 @@ import { ControlPoint, ControlPointDir, ControlPointSta, Line, LineType, Save } 
 import { Coord } from "../coord";
 import { isSameCoord } from "@/utils/sgn";
 import { getRangeByPred } from "@/utils/lang/getRangeByPred";
+import { checkOrder } from "@/utils/lang/checkOrder";
 
 export const useSaveStore = defineStore('save', () => {
     //不应直接在此删除/添加车站/线路，应通过envStore进行，避免数据不一致
@@ -140,6 +141,17 @@ export const useSaveStore = defineStore('save', () => {
             line.pts.splice(afterIdx+1, 0, ptId)
         }
     }
+    function createNewLine(newLine:Line){
+        if(!save.value)
+            throw Error('找不到存档')
+        ensureLinesOrderedByType()
+        const newTypeOrderNum = lineTypeOrderNum(newLine)
+        const firstBiggerIdx = save.value.lines.findIndex(x=>lineTypeOrderNum(x) > newTypeOrderNum)
+        if(firstBiggerIdx==-1)
+            save.value.lines.push(newLine)
+        else
+            save.value.lines.splice(firstBiggerIdx, 0, newLine)
+    }
     function removePt(ptId:number){
         if(!save.value)
             return;
@@ -161,17 +173,17 @@ export const useSaveStore = defineStore('save', () => {
             line.pts = line.pts.filter(pt=>pt!==ptId)
     }
     function ensureLinesOrderedByType(){
-        const lineTypeOrder = (t?:LineType)=>{
-            if(t===LineType.common||t===undefined)
-                return 1
-            else
-                return 0
-        }
-        save.value?.lines.sort((a,b)=>{
-            const ao = lineTypeOrder(a.type)
-            const bo = lineTypeOrder(b.type)
-            return ao - bo
+        if(!save.value)
+            throw Error('找不到存档')
+        const ok = checkOrder(save.value.lines, 'asc', lineTypeOrderNum)
+        if(ok)
+            return
+        console.warn('线路类型顺序异常，正在修复')
+        const newList:Line[] = []
+        lineTypesRenderOrder.forEach(type=>{
+            newList.push(...getLinesByType(type))
         })
+        save.value.lines.splice(0, save.value.lines.length, ...newList)
     }
     function arrangeLinesOfType(ids:number[], lineType:LineType){
         ensureLinesOrderedByType()
@@ -229,16 +241,22 @@ export const useSaveStore = defineStore('save', () => {
             mergedByPt:keepPt
         }
     }
-
     function isNamedPt(pt:ControlPoint){
         return !!pt.name?.trim()
+    }
+
+    const lineTypesRenderOrder = [
+        LineType.terrain,
+        LineType.common]
+    function lineTypeOrderNum(line: Line){
+        return lineTypesRenderOrder.indexOf(line.type)
     }
     const cvsWidth = computed<number>(()=>save.value?.cvsSize[0] || 1)
     const cvsHeight = computed<number>(()=>save.value?.cvsSize[1] || 1)
     return { 
         save, getNewId, cvsWidth, cvsHeight,
         getPtById, getPtsByIds, getLineById, getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType,
-        insertNewPtToLine, insertPtToLine, removePt, removePtFromLine, arrangeLinesOfType, tryMergePt,
+        insertNewPtToLine, insertPtToLine, createNewLine, removePt, removePtFromLine, arrangeLinesOfType, tryMergePt,
         isNamedPt
     }
 })
