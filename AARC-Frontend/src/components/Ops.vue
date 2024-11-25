@@ -7,7 +7,7 @@ import { computed, CSSProperties, ref, watch } from 'vue';
 const opsStore = useOpsStore()
 const { clientPos, at, btns } = storeToRefs(opsStore)
 const moveMs = 4
-const dist = 10
+const dist = 12
 const sunken = ref<boolean>(true);
 let sinkTimer = 0
 const opssStyle = ref<CSSProperties>({
@@ -19,6 +19,7 @@ const sizeIgnoreBtns = ref(false)
 const btnsf = computed<OpsBtn[][]>(()=>{
     return btns.value?.filter(x=>x && x.length>0) || []
 })
+const firstBtnHalf = 24
 const height = computed<number>(()=>{
     if(btnsf.value.length == 0 || sizeIgnoreBtns.value)
         return 8
@@ -83,7 +84,7 @@ function opCssLeft(clientPosX:number){
     if (at.value == 'lb' || at.value == 'lt') 
         return clientPosX - width.value - dist
     else if(at.value == 't' || at.value == 'b')
-        return clientPosX - width.value/2
+        return clientPosX - firstBtnHalf
     else if(at.value == 'rb' || at.value == 'rt')
         return clientPosX + dist
     return clientPosX + dist*vertAtDistRatio
@@ -94,7 +95,7 @@ function opCssTop(clientPosY:number){
     if (at.value == 'lt' || at.value == 'rt') 
         return clientPosY - height.value - dist
     else if(at.value == 'l' || at.value == 'r')
-        return clientPosY - height.value/2
+        return clientPosY - firstBtnHalf
     else if(at.value == 'lb' || at.value == 'rb')
         return clientPosY + dist
     return clientPosY + dist*vertAtDistRatio
