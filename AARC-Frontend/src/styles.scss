@@ -67,6 +67,9 @@
         border-width: 0px;
         flex-shrink: 0;
     }
+    label{
+        cursor: pointer;
+    }
     .names{
         display: flex;
         flex-direction: column;
