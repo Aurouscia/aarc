@@ -1,4 +1,4 @@
-import { LineType, Save } from "@/models/save";
+import { ColorPreset, LineType, Save } from "@/models/save";
 import { ControlPointDir, ControlPointSta } from "@/models/save";
 
 export const devSave:Save = {
@@ -108,33 +108,6 @@ export const devSave:Save = {
             nameP: [-12.727922058, 12.727922058]
         },
         {
-            id: 30,
-            pos: [300, 1100],
-            dir: ControlPointDir.vertical,
-            sta: ControlPointSta.sta,
-            name: '火车北站\n西广场(假日酒店)',
-            nameS: 'Northern Railway Station\nSouth Square (Holiday Inn)',
-            nameP: [-15, 15]
-        },
-        {
-            id: 31,
-            pos: [450, 1100],
-            dir: ControlPointDir.vertical,
-            sta: ControlPointSta.sta,
-            name: '火车北站\n西广场(假日酒店)',
-            nameS: 'Northern Railway Station\nSouth Square (Holiday Inn)',
-            nameP: [0, 20]
-        },
-        {
-            id: 32,
-            pos: [600, 1100],
-            dir: ControlPointDir.vertical,
-            sta: ControlPointSta.sta,
-            name: '火车北站\n西广场(假日酒店)',
-            nameS: 'Northern Railway Station\nSouth Square (Holiday Inn)',
-            nameP: [0, -20]
-        },
-        {
             id: 33,
             pos: [750, 900],
             dir: ControlPointDir.vertical,
@@ -142,9 +115,36 @@ export const devSave:Save = {
             name: '火车北站\n西广场(假日酒店)',
             nameS: 'Northern Railway Station\nSouth Square (Holiday Inn)',
             nameP: [20, 0]
+        },
+        {
+            id: 50,
+            pos: [200, 900],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.plain
+        },
+        {
+            id: 51,
+            pos: [650, 800],
+            dir: ControlPointDir.incline,
+            sta: ControlPointSta.plain
+        },
+        {
+            id: 52,
+            pos: [1000, 700],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.plain
         }
     ],
     lines: [
+        {
+            id: 150,
+            pts: [50, 51, 52],
+            name: '向阳江',
+            nameSub: 'XiangYang Rr.',
+            color: 'black',
+            colorPre: ColorPreset.water,
+            type: LineType.terrain
+        },
         {
             id: 101,
             pts: [10, 1, 2, 3, 11, 4, 12, 10],

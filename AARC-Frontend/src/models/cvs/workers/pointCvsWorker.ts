@@ -35,7 +35,12 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     function renderPoint(ctx:CanvasRenderingContext2D, pt:ControlPoint, active:boolean = false){
         const pos = pt.pos;
         let markColor = '#999'
-        if(pt.sta == ControlPointSta.plain || active){
+        let staType = pt.sta
+        //TODO：性能优化
+        const relatedLines = saveStore.getLinesByPt(pt.id)
+        if(relatedLines.some(x=>saveStore.isLineTypeWithoutSta(x.type)))
+            staType = ControlPointSta.plain
+        if(staType == ControlPointSta.plain || active){
             const dir = pt.dir === ControlPointDir.incline ? 'incline':'vertical'
             let markSize = cs.config.ptBareSize;
             let markWidth = cs.config.ptBareLineWidth;
@@ -58,13 +63,11 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
                 ]
             })
         }
-        if(pt.sta === ControlPointSta.sta){
-            const relatedLines = saveStore.getLinesByPt(pt.id)
+        if(staType === ControlPointSta.sta){
             if(relatedLines.length==1 && !active){
-                ctx.strokeStyle = relatedLines[0].color
+                ctx.strokeStyle = saveStore.getLineActualColor(relatedLines[0])
             }else{
                 ctx.strokeStyle = markColor
-
                 ctx.beginPath()
                 ctx.fillStyle = cs.config.bgColor
                 ctx.arc(pos[0], pos[1], cs.config.ptStaSize + cs.config.ptStaLineWidth, 0, 2*Math.PI)

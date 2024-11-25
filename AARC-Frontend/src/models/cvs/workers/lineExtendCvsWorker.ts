@@ -12,7 +12,7 @@ export const useLineExtendCvsWorker = defineStore('lineExtendCvsWorker', ()=>{
     const cs = useConfigStore()
     function renderLineExtend(ctx:CanvasRenderingContext2D){
         enumerateLineExtendBtns((eb)=>{
-            const lineColor = saveStore.getLineById(eb.lineId)?.color || '#ccc'
+            const lineColor = saveStore.getLineActualColorById(eb.lineId)
             let extendColor = colorProcLineExtend.convert(lineColor)
             ctx.lineCap = 'round'
             ctx.beginPath()

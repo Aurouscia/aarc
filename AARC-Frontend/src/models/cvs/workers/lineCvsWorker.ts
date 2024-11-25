@@ -46,7 +46,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         ctx.strokeStyle = cs.config.bgColor
         ctx.stroke()
         ctx.lineWidth = cs.config.lineWidth
-        ctx.strokeStyle = line.color
+        ctx.strokeStyle = saveStore.getLineActualColor(line)
         ctx.stroke()
     }
     function renderSegsAroundActivePt(ctx:CanvasRenderingContext2D)
@@ -99,7 +99,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             ctx.strokeStyle = cs.config.bgColor
             ctx.stroke()
             ctx.lineWidth = cs.config.lineWidth
-            ctx.strokeStyle = res.line.color
+            ctx.strokeStyle = saveStore.getLineActualColor(res.line)
             ctx.stroke()
         })
         return {

@@ -6,7 +6,7 @@ import { useConfigStore } from '@/models/stores/configStore';
 import { useSideListShared } from './shared/sideListShared';
 
 const { 
-    sidebar, init, lines: terrains, envStore,
+    sidebar, init, lines: terrains, envStore, saveStore,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
     createLine, delLine
 } = useSideListShared(LineType.terrain, '地形')
@@ -26,7 +26,6 @@ defineExpose({
 })
 onMounted(()=>{
     init()
-    sidebar.value?.extend()
 })
 onUnmounted(()=>{
     disposeLinesArrange()
@@ -38,7 +37,7 @@ onUnmounted(()=>{
         @extend="registerLinesArrange" @fold="disposeLinesArrange" @click="toggleEditingColorLineId()">
         <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l in terrains" :key="l.id" :class="{arranging: arrangingId==l.id}">
-                <div class="sqrBtn" :style="{backgroundColor: l.color}"
+                <div class="sqrBtn" :style="{backgroundColor: saveStore.getLineActualColor(l)}"
                     @click="e=>{toggleEditingColorLineId(l);e.stopPropagation()}"></div>
                 <div v-if="editingColorLine===l" class="colorPanel" @click="e=>e.stopPropagation()">
                     <div>

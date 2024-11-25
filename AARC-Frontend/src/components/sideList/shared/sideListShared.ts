@@ -34,7 +34,7 @@ export function useSideListShared(lineType:LineType, lineTypeCalled:string){
         lines.value = saveStore.getLinesByType(lineType)
     }
     return {
-        sidebar, lines, init, envStore,
+        sidebar, lines, init, envStore, saveStore,
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
         createLine, delLine
     }

@@ -16,7 +16,7 @@ export const useEmphasizeCvsWorker = defineStore('emphasizeCvsWorker', ()=>{
             if(isRing(line)){
                 const pt = saveStore.getPtById(line.pts[0])
                 if(pt)
-                    targets.push({pos:pt.pos, color:line.color})
+                    targets.push({pos:pt.pos, color:saveStore.getLineActualColor(line)})
             }
         })
         const radius = cs.config.ptStaSize*2

@@ -5,10 +5,13 @@ import { Coord } from "../coord";
 import { isSameCoord } from "@/utils/sgn";
 import { getRangeByPred } from "@/utils/lang/getRangeByPred";
 import { checkOrder } from "@/utils/lang/checkOrder";
+import { useConfigStore } from "./configStore";
 
 export const useSaveStore = defineStore('save', () => {
     //不应直接在此删除/添加车站/线路，应通过envStore进行，避免数据不一致
     const save = ref<Save>()
+    const configStore = useConfigStore()
+
     function getNewId() {
         if(!save.value)
             throw Error("找不到存档")
@@ -30,6 +33,17 @@ export const useSaveStore = defineStore('save', () => {
     }
     function getLineById(lineId:number){
         return save.value?.lines.find(l=>l.id == lineId)
+    }
+    function getLineActualColor(line:Line) {
+        if (line.colorPre) 
+            return configStore.getPresetColor(line.colorPre)
+        return line.color
+    }
+    function getLineActualColorById(lineId:number){
+        const line = getLineById(lineId)
+        if(!line)
+            return 'black'
+        return getLineActualColor(line)
     }
     function adjacentSegs(ptId:number):LineSeg[]{
         const lines = save.value?.lines
@@ -248,17 +262,25 @@ export const useSaveStore = defineStore('save', () => {
 
     const lineTypesRenderOrder = [
         LineType.terrain,
-        LineType.common]
+        LineType.common
+    ]
     function lineTypeOrderNum(line: Line){
         return lineTypesRenderOrder.indexOf(line.type)
+    }
+    const lineTypesWithoutSta = [
+        LineType.terrain
+    ]
+    function isLineTypeWithoutSta(lineType:LineType){
+        return lineTypesWithoutSta.includes(lineType)
     }
     const cvsWidth = computed<number>(()=>save.value?.cvsSize[0] || 1)
     const cvsHeight = computed<number>(()=>save.value?.cvsSize[1] || 1)
     return { 
         save, getNewId, cvsWidth, cvsHeight,
-        getPtById, getPtsByIds, getLineById, getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType,
+        getPtById, getPtsByIds, getLineById, getLineActualColor, getLineActualColorById,
+        getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType,
         insertNewPtToLine, insertPtToLine, createNewLine, removePt, removePtFromLine, arrangeLinesOfType, tryMergePt,
-        isNamedPt
+        isNamedPt, isLineTypeWithoutSta
     }
 })
 

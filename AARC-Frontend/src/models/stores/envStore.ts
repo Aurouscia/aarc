@@ -271,7 +271,6 @@ export const useEnvStore = defineStore('env', ()=>{
         const relatedLineIds = relatedLines.map(line=>line.id)
         const onLineRes = onLine(pt.pos, relatedLineIds)
         const addToLines = onLineRes.map<OpsBtn>(l=>{
-            const color = saveStore.save?.lines.find(x=>x.id==l.lineId)?.color
             return{
                 type:'addPtTL' as OpsBtnType,
                 cb:()=>{
@@ -279,7 +278,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     pointMutated.value([l.lineId, ...relatedLineIds], [pt.id])
                     setOpsForPt()
                 },
-                color
+                color: saveStore.getLineActualColorById(l.lineId)
             }
         })
         const rmFromLines = relatedLines.map(l=>{
@@ -292,7 +291,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     setOpsForPt()
                     activeLine.value = undefined
                 },
-                color: l.color
+                color: saveStore.getLineActualColor(l)
             }
         })
         const rmPtCb = ()=>{

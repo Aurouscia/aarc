@@ -3,9 +3,10 @@ import { defineStore } from "pinia"
 import { computed, ref } from "vue"
 import { Config } from "../config"
 import { useSaveStore } from "./saveStore"
+import { ColorPreset } from "../save"
 
 export const configDefault:Config = {
-    bgColor: '#eeeeee',
+    bgColor: '#ffffff',
 
     lineWidth: 14,
     lineTurnAreaRadius: 20,
@@ -75,10 +76,21 @@ export const useConfigStore = defineStore('config', ()=>{
     const snapOctaClingPtNameThrsSq = computed<number>(()=>
         config.value.snapOctaClingPtNameThrs ** 2)
     
+    function getPresetColor(presetType:ColorPreset){
+        if(presetType == ColorPreset.water)
+            return config.value.colorPresetWater
+        if(presetType == ColorPreset.greenland)
+            return config.value.colorPresetGreenland
+        if(presetType == ColorPreset.area)
+            return config.value.colorPresetArea
+        return 'black'
+    }
+
     return { 
         config, readConfigFromSave,
         staNameFontStr, staNameFontSubStr,
         clickPtThrsSq, clickLineThrsSq, clickLineThrs_sqrt2_sq, 
-        snapOctaClingPtPtThrsSq, snapOctaClingPtNameThrsSq
+        snapOctaClingPtPtThrsSq, snapOctaClingPtNameThrsSq,
+        getPresetColor
     }
 })
