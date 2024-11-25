@@ -39,7 +39,11 @@ export interface Config{
     snapOctaClingPtPtThrs: number,
     snapOctaClingPtNameThrs: number,
     snapOctaRayPtNameThrs: number,
-    snapGridThrs: number
+    snapGridThrs: number,
+
+    colorPresetArea: string,
+    colorPresetWater :string,
+    colorPresetGreenland: string
 }
 
 export type ConfigInSave = AllKeysOptional<Config>

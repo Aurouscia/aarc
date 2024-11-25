@@ -1,8 +1,9 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
-import { ControlPoint, ControlPointDir, ControlPointSta, Line, Save } from "../save";
+import { ControlPoint, ControlPointDir, ControlPointSta, Line, LineType, Save } from "../save";
 import { Coord } from "../coord";
 import { isSameCoord } from "@/utils/sgn";
+import { getRangeByPred } from "@/utils/lang/getRangeByPred";
 
 export const useSaveStore = defineStore('save', () => {
     //不应直接在此删除/添加车站/线路，应通过envStore进行，避免数据不一致
@@ -56,6 +57,11 @@ export const useSaveStore = defineStore('save', () => {
         if(!lines)
             return []
         return lines.filter(line=>line.pts.includes(ptId))
+    }
+    function getLinesByType(lineType:LineType){
+        if(!save.value)
+            throw Error("找不到存档")
+        return save.value.lines.filter(x=>x.type==lineType)
     }
     function getNeighborByPt(ptId:number){
         const lines = save.value?.lines
@@ -154,6 +160,39 @@ export const useSaveStore = defineStore('save', () => {
         if(line)
             line.pts = line.pts.filter(pt=>pt!==ptId)
     }
+    function ensureLinesOrderedByType(){
+        const lineTypeOrder = (t?:LineType)=>{
+            if(t===LineType.common||t===undefined)
+                return 1
+            else
+                return 0
+        }
+        save.value?.lines.sort((a,b)=>{
+            const ao = lineTypeOrder(a.type)
+            const bo = lineTypeOrder(b.type)
+            return ao - bo
+        })
+    }
+    function arrangeLinesOfType(ids:number[], lineType:LineType){
+        ensureLinesOrderedByType()
+        if(!save.value)
+            throw Error('找不到存档')
+        const range = getRangeByPred(save.value.lines, (line)=>line.type==lineType)
+        if(!range){
+            throw Error('排序设定：不存在该类型线路')
+        }
+        const rangeLength = range.last - range.first+1
+        if(rangeLength != ids.length)
+            throw Error('排序设定：该类型线路个数与排序指令参数长度不一致')
+        const temp:Line[] = []
+        ids.forEach(id=>{
+            const line = getLineById(id)
+            if(!line)
+                throw Error('排序设定：找不到指定线路')
+            temp.push(line)
+        })
+        save.value.lines.splice(range.first, rangeLength, ...temp)
+    }
     function tryMergePt(ptId:number){
         const thisPt = getPtById(ptId)
         if(!thisPt || !save.value){
@@ -198,8 +237,8 @@ export const useSaveStore = defineStore('save', () => {
     const cvsHeight = computed<number>(()=>save.value?.cvsSize[1] || 1)
     return { 
         save, getNewId, cvsWidth, cvsHeight,
-        getPtById, getPtsByIds, getLineById, getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt,
-        insertNewPtToLine, insertPtToLine, removePt, removePtFromLine, tryMergePt,
+        getPtById, getPtsByIds, getLineById, getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType,
+        insertNewPtToLine, insertPtToLine, removePt, removePtFromLine, arrangeLinesOfType, tryMergePt,
         isNamedPt
     }
 })

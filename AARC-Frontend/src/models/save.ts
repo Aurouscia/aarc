@@ -28,11 +28,24 @@ export interface ControlPoint{
     nameP?:Coord
 }
 
-
+export enum ColorPreset{
+    none = 0,
+    area = 1,
+    water = 2,
+    greenland = 3,
+}
+export enum LineType{
+    common = 0,
+    terrain = 1
+}
 export interface Line{
     id:number
     pts: number[]
     name:string
     nameSub:string
     color:string
+    colorPre?:ColorPreset
+    //width?:number
+    type:LineType
+    //isFilled?:boolean
 }

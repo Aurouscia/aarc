@@ -43,7 +43,11 @@ export const configDefault:Config = {
     snapOctaClingPtPtThrs: 10,
     snapOctaClingPtNameThrs: 8,
     snapOctaRayPtNameThrs: 6,
-    snapGridThrs: 6
+    snapGridThrs: 6,
+
+    colorPresetArea: '#cccccc',
+    colorPresetWater: '#c3e5eb',
+    colorPresetGreenland: '#ceeda4'
 }
 
 export const useConfigStore = defineStore('config', ()=>{

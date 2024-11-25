@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import Lines from './Lines.vue';
+import Lines from './sideList/Lines.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
+import Terrains from './sideList/Terrains.vue';
 
 const lines = ref<InstanceType<typeof Lines>>()
 const saveStore = useSaveStore()
@@ -21,6 +22,7 @@ onMounted(()=>{
         <div @click="lines?.comeOut" class="sqrBtn withShadow">线</div>
     </div>
     <Lines ref="lines"></Lines>
+    <Terrains></Terrains>
 </template>
 
 <style scoped lang="scss">

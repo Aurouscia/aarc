@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useSaveStore } from '@/models/stores/saveStore';
-import SideBar from './common/SideBar.vue';
+import SideBar from '../common/SideBar.vue';
 import { storeToRefs } from 'pinia';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useLinesArrange } from '@/utils/eventUtils/linesArrange';
-import { Line } from '@/models/save';
+import { Line, LineType } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 
@@ -13,6 +13,7 @@ const { save } = storeToRefs(saveStore)
 const envStore = useEnvStore()
 const mainCvsDispatcher = useMainCvsDispatcher()
 const sidebar = ref<InstanceType<typeof SideBar>>()
+const lines = ref<Line[]>([])
 
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()}
@@ -20,20 +21,27 @@ defineExpose({
 
 const {
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, activeId: arrangingId
-} = useLinesArrange(65, orderChanged) //65：一个线路框60高，加上5的缝隙
+} = useLinesArrange(65, lines, orderChanged) //65：一个线路框60高，加上5的缝隙
 function orderChanged(){
+    const orderedIds = lines.value.map(x=>x.id)
+    saveStore.arrangeLinesOfType(orderedIds, LineType.common)
     mainCvsDispatcher.renderMainCvs()
 }
 function createLine(){
-    envStore.createLine()
+    envStore.createLine('line')
+    init()
 }
 function delLine(line:Line){
     if(window.confirm(`确定删除线路"${line.name}"？`) && save.value){
         envStore.delLine(line.id)
+        init()
     }
 }
+function init(){
+    lines.value = saveStore.getLinesByType(LineType.common)
+}
 onMounted(()=>{
-
+    init()
 })
 onUnmounted(()=>{
     disposeLinesArrange()
@@ -41,12 +49,14 @@ onUnmounted(()=>{
 </script>
 
 <template>
-    <SideBar ref="sidebar" :shrink-way="'v-show'" 
+    <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList"
         @extend="registerLinesArrange" @fold="disposeLinesArrange">
         <div v-if="save" class="lines" :class="{arranging: arrangingId >= 0}">
-            <div v-for="l in save.lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
-                <div class="sqrBtn">🖊</div>
-                <input v-model="l.color" type="color" class="sqrBtn" @blur="envStore.lineColorChanged"/>
+            <div v-for="l in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
+                <div class="colorEdit">
+                    <label :for="'lineColor'+l.id" class="sqrBtn" :style="{backgroundColor:l.color}">　</label>
+                    <input v-model="l.color" type="color" :id="'lineColor'+l.id" @blur="envStore.lineColorChanged"/>
+                </div>
                 <div class="names">
                     <input v-model="l.name"/>
                     <input v-model="l.nameSub"/>
@@ -66,62 +76,5 @@ onUnmounted(()=>{
 </template>
 
 <style scoped lang="scss">
-.lines{
-    background-color: #ccc;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    padding: 5px;
-    justify-content: flex-start;
-    align-items: stretch;
-    border-radius: 5px;
-}
-.lines.arranging{
-    cursor: ns-resize;
-}
-.lines>div{
-    height: 60px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    gap: 3px;
-    background-color: white;
-    padding: 5px;
-    border-radius: 5px;
-}
-.lines>div.arranging{
-    box-shadow: 0px 0px 5px 2px black;
-    background-color: #ddd;
-}
-.newLine{
-    font-size: 20px;
-    cursor: pointer;
-    color: #999;
-    &:hover{
-        color: black
-    }
-}
-input[type=color]{
-    width: 2rem;
-    height: 2rem;
-    border-width: 0px;
-    border-radius: 5px;
-    flex-shrink: 0;
-}
-.names{
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    input{
-        font-size: 14px;
-        width: 100px;
-        border: none;
-    }
-    input:first-child{
-        font-size: 18px;
-    }
-}
-.moveBtn{
-    cursor: ns-resize;
-}
+
 </style>

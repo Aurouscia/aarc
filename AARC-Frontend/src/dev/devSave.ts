@@ -1,4 +1,4 @@
-import { Save } from "@/models/save";
+import { LineType, Save } from "@/models/save";
 import { ControlPointDir, ControlPointSta } from "@/models/save";
 
 export const devSave:Save = {
@@ -150,21 +150,24 @@ export const devSave:Save = {
             pts: [10, 1, 2, 3, 11, 4, 12, 10],
             name: "一号线",
             nameSub: "Line 1",
-            color: "#44cef6"
+            color: "#44cef6",
+            type: LineType.common
         },
         {
             id: 102,
             pts: [5, 2, 6, 9],
             name: "二号线",
             nameSub: "Line 2",
-            color: "#009900"
+            color: "#009900",
+            type: LineType.common
         },
         {
             id: 103,
             pts: [7, 8, 11, 33],
             name: "三号线",
             nameSub: "Line 3",
-            color: "#ff8800"
+            color: "#ff8800",
+            type: LineType.common
         }
     ],
     config:{}

@@ -1,8 +1,7 @@
-import { useSaveStore } from "@/models/stores/saveStore";
-import { ref } from "vue";
+import { Line } from "@/models/save";
+import { Ref, ref } from "vue";
 
-export function useLinesArrange(unit:number, orderChanged:()=>void){
-    const saveStore = useSaveStore()
+export function useLinesArrange(unit:number, lines:Ref<Line[]>, orderChanged:()=>void){
     const activeId = ref<number>(-1)
     let activeOriginalY:number = -1
     function mouseDownLineArrange(e:MouseEvent|TouchEvent, id:number){
@@ -38,12 +37,12 @@ export function useLinesArrange(unit:number, orderChanged:()=>void){
             move = 1
         else if(diff < -unit)
             move = -1
-        if(move != 0 && saveStore.save){
-            const idx = saveStore.save.lines.findIndex(x=>x.id == activeId.value)
+        if(move != 0){
+            const idx = lines.value.findIndex(x=>x.id == activeId.value)
             if(idx==-1)
                 return;
-            const item = saveStore.save.lines.splice(idx, 1)
-            saveStore.save.lines.splice(idx+move, 0, ...item)
+            const item = lines.value.splice(idx, 1)
+            lines.value.splice(idx+move, 0, ...item)
             activeOriginalY = y
             orderChanged()
         }

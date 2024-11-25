@@ -5,7 +5,7 @@ import { Coord, SgnCoord } from "../coord";
 import { listenPureClick } from "@/utils/eventUtils/pureClick";
 import { eventClientCoord } from "@/utils/eventUtils/eventClientCoord";
 import { OpsBtn, OpsBtnType, useOpsStore } from "./opsStore";
-import { ControlPoint, ControlPointDir, ControlPointSta, Line } from "../save";
+import { ColorPreset, ControlPoint, ControlPointDir, ControlPointSta, Line, LineType } from "../save";
 import { useSnapStore } from "./snapStore";
 import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
 import { useNameEditStore } from "./nameEditStore";
@@ -377,7 +377,7 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!suppressRender)
             pointMutated.value([],[])
     }
-    function createLine(){
+    function createLine(type:'line'|'terrain'){
         if(!saveStore.save)
             return
         const viewCenter = getViewCenterOffset()
@@ -404,15 +404,31 @@ export const useEnvStore = defineStore('env', ()=>{
             sta: ControlPointSta.sta
         }
         saveStore.save.points.push(pt1, pt2)
-        const newLine = {
-            id: saveStore.getNewId(),
-            pts: [pt1.id, pt2.id],
-            name: '新线路',
-            nameSub: 'NewLine',
-            color: "#ff0000"
+        let newLine:Line|undefined = undefined
+        if(type=='line'){
+            newLine = {
+                id: saveStore.getNewId(),
+                pts: [pt1.id, pt2.id],
+                name: '新线路',
+                nameSub: 'NewLine',
+                color: "#ff0000",
+                type: LineType.common
+            }
+        }else if(type=='terrain'){
+            newLine = {
+                id: saveStore.getNewId(),
+                pts: [pt1.id, pt2.id],
+                name: '新地形',
+                nameSub: 'NewTerrain',
+                color: "#000000",
+                type: LineType.terrain,
+                colorPre: ColorPreset.water
+            }
         }
-        saveStore.save.lines.push(newLine)
-        pointMutated.value([newLine.id], [pt1.id, pt2.id])
+        if(newLine){
+            saveStore.save.lines.push(newLine)
+            pointMutated.value([newLine.id], [pt1.id, pt2.id])
+        }
     }
     function lineColorChanged(){
         pointMutated.value([],[])
