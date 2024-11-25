@@ -377,7 +377,7 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!suppressRender)
             pointMutated.value([],[])
     }
-    function createLine(type:'line'|'terrain'){
+    function createLine(type:LineType){
         if(!saveStore.save)
             return
         const viewCenter = getViewCenterOffset()
@@ -405,7 +405,7 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         saveStore.save.points.push(pt1, pt2)
         let newLine:Line|undefined = undefined
-        if(type=='line'){
+        if(type==LineType.common){
             newLine = {
                 id: saveStore.getNewId(),
                 pts: [pt1.id, pt2.id],
@@ -414,7 +414,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 color: "#ff0000",
                 type: LineType.common
             }
-        }else if(type=='terrain'){
+        }else if(type==LineType.terrain){
             newLine = {
                 id: saveStore.getNewId(),
                 pts: [pt1.id, pt2.id],
@@ -472,7 +472,6 @@ export const useEnvStore = defineStore('env', ()=>{
                 offsetSgn *= -1
                 if(offsetSgn > 0)
                     offset += 40
-                console.log(coord)
             }
             safty--;
             if(safty<=0)

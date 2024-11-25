@@ -145,6 +145,7 @@ export const useSaveStore = defineStore('save', () => {
         if(!save.value)
             throw Error('找不到存档')
         ensureLinesOrderedByType()
+        console.log(save.value.lines)
         const newTypeOrderNum = lineTypeOrderNum(newLine)
         const firstBiggerIdx = save.value.lines.findIndex(x=>lineTypeOrderNum(x) > newTypeOrderNum)
         if(firstBiggerIdx==-1)

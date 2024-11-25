@@ -1,21 +1,17 @@
 <script setup lang="ts">
-import { useSaveStore } from '@/models/stores/saveStore';
 import SideBar from '../common/SideBar.vue';
-import { storeToRefs } from 'pinia';
 import { onMounted, onUnmounted, ref } from 'vue';
-import { useLinesArrange } from '@/utils/eventUtils/linesArrange';
-import { Line, LineType } from '@/models/save';
-import { useEnvStore } from '@/models/stores/envStore';
-import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
+import { LineType } from '@/models/save';
 import { useConfigStore } from '@/models/stores/configStore';
+import { useSideListShared } from './shared/sideListShared';
 
-const saveStore = useSaveStore()
-const { save } = storeToRefs(saveStore)
-const envStore = useEnvStore()
-const mainCvsDispatcher = useMainCvsDispatcher()
-const sidebar = ref<InstanceType<typeof SideBar>>()
+const { 
+    sidebar, init, lines: terrains, envStore,
+    registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
+    createLine, delLine
+} = useSideListShared(LineType.terrain, '地形')
+
 const cs = useConfigStore()
-const terrains = ref<Line[]>([])
 
 const editingColorLineId = ref<number>()
 function toggleEditingColorLineId(lineId?:number){
@@ -28,28 +24,6 @@ function toggleEditingColorLineId(lineId?:number){
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()}
 })
-
-const {
-    registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, activeId: arrangingId
-} = useLinesArrange(65, terrains, orderChanged) //65：一个线路框60高，加上5的缝隙
-function orderChanged(){
-    const orderedIds = terrains.value.map(x=>x.id)
-    saveStore.arrangeLinesOfType(orderedIds, LineType.terrain)
-    mainCvsDispatcher.renderMainCvs()
-}
-function createLine(){
-    envStore.createLine('terrain')
-    init()
-}
-function delLine(line:Line){
-    if(window.confirm(`确定删除地形"${line.name}"？`) && save.value){
-        envStore.delLine(line.id)
-        init()
-    }
-}
-function init(){
-    terrains.value = saveStore.getLinesByType(LineType.terrain)
-}
 onMounted(()=>{
     init()
     sidebar.value?.extend()
@@ -62,7 +36,7 @@ onUnmounted(()=>{
 <template>
     <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList"
         @extend="registerLinesArrange" @fold="disposeLinesArrange">
-        <div v-if="save" class="lines" :class="{arranging: arrangingId >= 0}">
+        <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l in terrains" :key="l.id" :class="{arranging: arrangingId==l.id}" @click="toggleEditingColorLineId()">
                 <div class="sqrBtn" :style="{backgroundColor: l.color}"
                     @click="e=>{toggleEditingColorLineId(l.id);e.stopPropagation()}"></div>

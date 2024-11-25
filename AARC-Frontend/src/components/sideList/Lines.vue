@@ -1,45 +1,18 @@
 <script setup lang="ts">
-import { useSaveStore } from '@/models/stores/saveStore';
 import SideBar from '../common/SideBar.vue';
-import { storeToRefs } from 'pinia';
-import { onMounted, onUnmounted, ref } from 'vue';
-import { useLinesArrange } from '@/utils/eventUtils/linesArrange';
-import { Line, LineType } from '@/models/save';
-import { useEnvStore } from '@/models/stores/envStore';
-import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
+import { onMounted, onUnmounted } from 'vue';
+import { useSideListShared } from './shared/sideListShared';
+import { LineType } from '@/models/save';
 
-const saveStore = useSaveStore()
-const { save } = storeToRefs(saveStore)
-const envStore = useEnvStore()
-const mainCvsDispatcher = useMainCvsDispatcher()
-const sidebar = ref<InstanceType<typeof SideBar>>()
-const lines = ref<Line[]>([])
+const { 
+    sidebar, init, lines, envStore,
+    registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
+    createLine, delLine
+} = useSideListShared(LineType.common, '线路')
 
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()}
 })
-
-const {
-    registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, activeId: arrangingId
-} = useLinesArrange(65, lines, orderChanged) //65：一个线路框60高，加上5的缝隙
-function orderChanged(){
-    const orderedIds = lines.value.map(x=>x.id)
-    saveStore.arrangeLinesOfType(orderedIds, LineType.common)
-    mainCvsDispatcher.renderMainCvs()
-}
-function createLine(){
-    envStore.createLine('line')
-    init()
-}
-function delLine(line:Line){
-    if(window.confirm(`确定删除线路"${line.name}"？`) && save.value){
-        envStore.delLine(line.id)
-        init()
-    }
-}
-function init(){
-    lines.value = saveStore.getLinesByType(LineType.common)
-}
 onMounted(()=>{
     init()
 })
@@ -51,7 +24,7 @@ onUnmounted(()=>{
 <template>
     <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList"
         @extend="registerLinesArrange" @fold="disposeLinesArrange">
-        <div v-if="save" class="lines" :class="{arranging: arrangingId >= 0}">
+        <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
                 <div class="colorEdit">
                     <label :for="'lineColor'+l.id" class="sqrBtn" :style="{backgroundColor:l.color}">　</label>
