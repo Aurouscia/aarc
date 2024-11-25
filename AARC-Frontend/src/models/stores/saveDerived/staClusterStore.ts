@@ -15,16 +15,20 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         if(!cluster)
             return
         const nameGlobalPos = coordAdd(sta.pos, sta.nameP)
+        let originalDistSq = coordDistSq(sta.pos, nameGlobalPos)
+        const transferThrs = 200
         let minDistSq = 1e10
         let closestPt:ControlPoint|undefined;
         cluster.forEach(pt=>{
+            if(pt.id == sta.id)
+                return
             const distSq = coordDistSq(pt.pos, nameGlobalPos)
             if(distSq < minDistSq){
                 minDistSq = distSq;
                 closestPt = pt;
             }
         })
-        if(closestPt && closestPt.id !== sta.id){
+        if(closestPt && originalDistSq - minDistSq > transferThrs){
             const relPosToClosest = coordSub(nameGlobalPos, closestPt.pos)
             closestPt.name = sta.name
             closestPt.nameS = sta.nameS
