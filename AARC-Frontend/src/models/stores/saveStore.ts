@@ -270,8 +270,20 @@ export const useSaveStore = defineStore('save', () => {
     const lineTypesWithoutSta = [
         LineType.terrain
     ]
-    function isLineTypeWithoutSta(lineType:LineType){
-        return lineTypesWithoutSta.includes(lineType)
+    function isLineTypeWithoutSta(lineType:LineType|LineType[]){
+        if(typeof lineType === 'number')
+            return lineTypesWithoutSta.includes(lineType)
+        return lineType.some(t=>lineTypesWithoutSta.includes(t))
+    }
+    function isPtNoSta(ptId:number){
+        for(const line of save.value?.lines||[]){
+            if(line.pts.includes(ptId)){
+                if(isLineTypeWithoutSta(line.type)){
+                    return true
+                }
+            }
+        }
+        return false
     }
     const cvsWidth = computed<number>(()=>save.value?.cvsSize[0] || 1)
     const cvsHeight = computed<number>(()=>save.value?.cvsSize[1] || 1)
@@ -280,7 +292,7 @@ export const useSaveStore = defineStore('save', () => {
         getPtById, getPtsByIds, getLineById, getLineActualColor, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType,
         insertNewPtToLine, insertPtToLine, createNewLine, removePt, removePtFromLine, arrangeLinesOfType, tryMergePt,
-        isNamedPt, isLineTypeWithoutSta
+        isNamedPt, isLineTypeWithoutSta, isPtNoSta
     }
 })
 

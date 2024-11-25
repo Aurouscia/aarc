@@ -15,6 +15,8 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
     const nameEditorDiv = ref<HTMLDivElement>()
     function startEditing(ptId:number){
         endEditing()
+        if(saveStore.isPtNoSta(ptId))
+            return
         const pt = saveStore.getPtById(ptId)
         if(pt){
             targetPtId.value = ptId

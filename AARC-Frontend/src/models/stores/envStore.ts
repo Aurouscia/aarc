@@ -269,6 +269,8 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         const relatedLines = saveStore.getLinesByPt(pt.id)
         const relatedLineIds = relatedLines.map(line=>line.id)
+        const relatedLineTypes = relatedLines.map(line=>line.type)
+        const isLineTypeWithoutSta = saveStore.isLineTypeWithoutSta(relatedLineTypes)
         const onLineRes = onLine(pt.pos, relatedLineIds)
         const addToLines = onLineRes.map<OpsBtn>(l=>{
             return{
@@ -322,19 +324,21 @@ export const useEnvStore = defineStore('env', ()=>{
                     pt.sta = ControlPointSta.plain
             }
         }
-        opsStore.btns = [
-            [{
+        let firstCol:OpsBtn[] = [{
                 type:'swPtDir',
                 cb:swDirCb
-            },
-            {
-                type:'swPtSta',
-                cb:swSta
-            },
-            {
+            },{
                 type:'rmPt',
                 cb:rmPtCb
-            }],
+            }]
+        if(!isLineTypeWithoutSta){
+            firstCol.splice(1, 0, {
+                type:'swPtSta',
+                cb:swSta
+            })
+        }
+        opsStore.btns = [
+            [...firstCol],
             [...rmFromLines],
             [...addToLines]
         ]
