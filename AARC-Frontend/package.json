@@ -9,7 +9,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && vue-tsc"
+    "build": "vite build",
+    "build-here": "vite build --outDir ./dist"
   },
   "dependencies": {
     "@aurouscia/au-undo-redo": "^0.2.1",
