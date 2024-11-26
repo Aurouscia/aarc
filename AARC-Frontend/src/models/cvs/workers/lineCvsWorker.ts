@@ -10,7 +10,7 @@ import { useEnvStore } from "@/models/stores/envStore";
 import { useConfigStore } from "@/models/stores/configStore";
 import { FormalizedLine, useFormalizedLineStore } from "@/models/stores/saveDerived/formalizedLineStore";
 import { rayIntersect } from "@/utils/rayUtils/rayIntersection";
-import { rayPerpendicular } from "@/utils/rayUtils/rayParallel";
+import { rayPerpendicular, rayRel } from "@/utils/rayUtils/rayParallel";
 import { rayRotate90 } from "@/utils/rayUtils/rayRotate";
 import { defineStore } from "pinia";
 import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
@@ -249,6 +249,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         ctx.beginPath()
         ctx.moveTo(first[0], first[1])
         let prevPt:Coord = first
+        let prevToNowRay:FormalRay = twinPts2Ray(first, second)
         let prevDist:number = coordDist(first, second);
         for(let i=1;i<pts.length;i++){
             const nowPt = pts[i]
@@ -258,7 +259,11 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
             const nextPt = pts[i+1]
             const nextDist = coordDist(nowPt, nextPt)
-            const turnRadius = cs.config.lineTurnAreaRadius * turnRadiusRatio
+            let turnRadius = cs.config.lineTurnAreaRadius * turnRadiusRatio
+            const nowToNextRay = twinPts2Ray(nowPt, nextPt)
+            const rel = rayRel(prevToNowRay, nowToNextRay)
+            if(rel==='others')
+                turnRadius /= 2.4142135*0.618 //tan(67.5°)=2.4142135
             const taRadius = Math.min(turnRadius, prevDist/2, nextDist/2)
             const prevBias:SgnCoord = [
                 sgn(prevPt[0] - nowPt[0]) as -1|0|1,
@@ -270,9 +275,10 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 sgn(nextPt[1] - nowPt[1]) as -1|0|1,
             ]
             const nextSok = applyBias(nowPt, nextBias, taRadius)
-            ctx.lineTo(prevSok[0], prevSok[1])
-            ctx.quadraticCurveTo(nowPt[0], nowPt[1], nextSok[0], nextSok[1])
+            ctx.lineTo(...prevSok)
+            ctx.quadraticCurveTo(...nowPt, ...nextSok)
             prevDist = nextDist;
+            prevToNowRay = nowToNextRay;
             prevPt = nowPt;
         }
     }

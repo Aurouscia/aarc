@@ -9,7 +9,7 @@ export const configDefault:Config = {
     bgColor: '#ffffff',
 
     lineWidth: 14,
-    lineTurnAreaRadius: 20,
+    lineTurnAreaRadius: 30,
 
     ptBareSize: 12,
     ptBareLineWidth: 3,
