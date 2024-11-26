@@ -4,21 +4,31 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import { ColorPreset, Line, LineType } from '@/models/save';
 import { useConfigStore } from '@/models/stores/configStore';
 import { useSideListShared } from './shared/sideListShared';
+import LineConfig from './shared/LineConfig.vue';
 
 const { 
     sidebar, init, lines: terrains, envStore, saveStore,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
-    createLine, delLine
+    createLine, delLine, editingInfoLineId, editInfoOfLine
 } = useSideListShared(LineType.terrain, '地形')
 
 const cs = useConfigStore()
 
 const editingColorLine = ref<Line>()
-function toggleEditingColorLineId(line?:Line){
+function editColorOfLine(line:Line){
     if(line===editingColorLine.value && !!line)
         editingColorLine.value = undefined
-    else
-        editingColorLine.value = line
+    else{
+        setTimeout(()=>{
+            editingColorLine.value = line
+        }, 1)
+    }
+}
+
+function colorPreChanged(){
+    setTimeout(()=>{
+        envStore.lineInfoChanged()
+    },1)
 }
 
 defineExpose({
@@ -34,16 +44,17 @@ onUnmounted(()=>{
 
 <template>
     <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList"
-        @extend="registerLinesArrange" @fold="disposeLinesArrange" @click="toggleEditingColorLineId()">
+        @extend="registerLinesArrange" @fold="disposeLinesArrange" @click="editingInfoLineId=undefined;editingColorLine=undefined">
         <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l in terrains" :key="l.id" :class="{arranging: arrangingId==l.id}">
-                <div class="sqrBtn" :style="{backgroundColor: saveStore.getLineActualColor(l)}"
-                    @click="e=>{toggleEditingColorLineId(l);e.stopPropagation()}"></div>
-                <div v-if="editingColorLine===l" class="colorPanel" @click="e=>e.stopPropagation()">
+                <div class="sqrBtn" :class="{sqrActive:editingColorLine?.id===l.id}"
+                    :style="{backgroundColor: saveStore.getLineActualColor(l)}"
+                    @click="()=>{editColorOfLine(l)}"></div>
+                <div v-if="editingColorLine===l" class="colorPanel withShadow" @click="e=>{colorPreChanged();e.stopPropagation()}">
                     <div>
                         <div class="colorInputConatainer">
                             <label for="customColorInput" :style="{backgroundColor:l.color}">　</label>
-                            <input v-model="l.color" id="customColorInput" type="color" @blur="envStore.lineColorChanged"/>
+                            <input v-model="l.color" id="customColorInput" type="color" @blur="colorPreChanged"/>
                         </div>
                         <input name="colorType" type="radio" id="colorCustom" :value="undefined" v-model="l.colorPre"/>
                         <label for="colorCustom">自定义</label>
@@ -68,7 +79,15 @@ onUnmounted(()=>{
                     <input v-model="l.name"/>
                     <input v-model="l.nameSub"/>
                 </div>
-                <div class="sqrBtn moveBtn" @mousedown="e => mouseDownLineArrange(e, l.id)" @touchstart="e => mouseDownLineArrange(e, l.id)">
+                <div class="infoEdit">
+                    <div class="sqrBtn" :class="{sqrActive:editingInfoLineId===l.id}" @click="editInfoOfLine(l.id)">...</div>
+                    <div v-if="editingInfoLineId===l.id" class="infoEditPanel">
+                        <LineConfig :line="l"></LineConfig>
+                    </div>
+                </div>
+                <div class="sqrBtn moveBtn" :class="{sqrActive:arrangingId===l.id}"
+                    @mousedown="e => mouseDownLineArrange(e, l.id)"
+                    @touchstart="e => mouseDownLineArrange(e, l.id)">
                     ⇅
                 </div>
                 <div class="sqrBtn" @click="delLine(l)">
@@ -93,7 +112,6 @@ onUnmounted(()=>{
         padding: 5px;
         border-radius: inherit;
         background-color: inherit;
-        box-shadow: 0px 0px 5px 2px black;
         display: flex;
         gap: 5px;
         flex-direction: column;

@@ -16,6 +16,9 @@
     &:hover{
         background-color: #ccc;
     }
+    &.sqrActive{
+        box-shadow: 0px 0px 5px 0px #000;
+    }
 }
 
 .withShadow{
@@ -85,5 +88,15 @@
     }
     .moveBtn{
         cursor: ns-resize;
+    }
+
+    .infoEdit{
+        position: relative;
+        .infoEditPanel{
+            z-index: 10;
+            position: absolute;
+            top: 35px;
+            right: -50px;
+        }
     }
 }

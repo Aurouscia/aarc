@@ -433,7 +433,7 @@ export const useEnvStore = defineStore('env', ()=>{
             pointMutated.value([newLine.id], [pt1.id, pt2.id])
         }
     }
-    function lineColorChanged(){
+    function lineInfoChanged(){
         pointMutated.value([],[])
     }
 
@@ -487,6 +487,6 @@ export const useEnvStore = defineStore('env', ()=>{
         activeLine, cursorPos, movingPoint, movedPoint,
         cvsWidth, cvsHeight, getDisplayRatio,
         pointMutated, rescaled, getActivePtOpsAvoidance,
-        delLine, createLine, lineColorChanged
+        delLine, createLine, lineInfoChanged
     }
 })

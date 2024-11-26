@@ -33,9 +33,22 @@ export function useSideListShared(lineType:LineType, lineTypeCalled:string){
     function init(){
         lines.value = saveStore.getLinesByType(lineType)
     }
+
+    const editingInfoLineId = ref<number>()
+    function editInfoOfLine(lineId:number){
+        if(lineId!==editingInfoLineId.value){
+            setTimeout(()=>{
+                editingInfoLineId.value = lineId
+            },1)
+        }else{
+            editingInfoLineId.value = undefined
+        }
+    }
+
     return {
         sidebar, lines, init, envStore, saveStore,
-        registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
+        registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
+        arrangingId, editingInfoLineId, editInfoOfLine,
         createLine, delLine
     }
 }

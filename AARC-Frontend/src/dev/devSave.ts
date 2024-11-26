@@ -141,7 +141,7 @@ export const devSave:Save = {
             pts: [50, 51, 52],
             name: '向阳江',
             nameSub: 'XiangYang Rr.',
-            color: 'black',
+            color: '#000000',
             colorPre: ColorPreset.water,
             type: LineType.terrain,
             width: 3
