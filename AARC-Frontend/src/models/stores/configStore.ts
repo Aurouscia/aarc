@@ -11,9 +11,9 @@ export const configDefault:Config = {
     lineWidth: 14,
     lineTurnAreaRadius: 20,
 
-    ptBareSize: 16,
-    ptBareLineWidth: 4,
-    ptBareLineColor: '#999999',
+    ptBareSize: 12,
+    ptBareLineWidth: 3,
+    ptBareLineColor: '#666666',
     ptBareLineColorSelected: '#000000',
     ptStaSize: 10,
     ptStaLineWidth: 4,
