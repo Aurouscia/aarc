@@ -45,7 +45,7 @@ export interface Line{
     nameSub:string
     color:string
     colorPre?:ColorPreset
-    //width?:number
+    width?:number
     type:LineType
     //isFilled?:boolean
 }

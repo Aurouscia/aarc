@@ -40,14 +40,8 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         if(needReportFormalPts){
             formalizedLineStore.setLinesFormalPts(line.id, formalPts)
         }
-        ctx.lineCap = 'round'
-        linkPts(ctx, formalPts)
-        ctx.lineWidth = cs.config.lineWidth * 1.5
-        ctx.strokeStyle = cs.config.bgColor
-        ctx.stroke()
-        ctx.lineWidth = cs.config.lineWidth
-        ctx.strokeStyle = saveStore.getLineActualColor(line)
-        ctx.stroke()
+        linkPts(ctx, formalPts, line.width)
+        doRender(ctx, line)
     }
     function renderSegsAroundActivePt(ctx:CanvasRenderingContext2D)
         :{relatedPts:Iterable<ControlPoint>, formalizedSegs:FormalizedLine[]}
@@ -77,6 +71,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         const relatedPts:Set<ControlPoint> = new Set()
         const formalizedSegs:FormalizedLine[] = []
         searchRes.forEach(res=>{
+            const line = res.line
             const fpts = saveStore.getPtsByIds(res.formalizePtIds)
             const formalized = formalize(fpts)
             if(res.trimLeft && formalized.length>0){
@@ -92,15 +87,9 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 fpts.pop()
             }
             fpts.forEach(pt=>relatedPts.add(pt))
-            formalizedSegs.push({lineId:res.line.id, pts:formalized})
-            linkPts(ctx, formalized)
-            ctx.lineCap = 'round'
-            ctx.lineWidth *= 1.5
-            ctx.strokeStyle = cs.config.bgColor
-            ctx.stroke()
-            ctx.lineWidth = cs.config.lineWidth
-            ctx.strokeStyle = saveStore.getLineActualColor(res.line)
-            ctx.stroke()
+            formalizedSegs.push({lineId:line.id, pts:formalized})
+            linkPts(ctx, formalized, line.width)
+            doRender(ctx, line)
         })
         return {
             relatedPts,
@@ -248,10 +237,12 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
         })
     }
-    function linkPts(ctx:CanvasRenderingContext2D, formalPts:FormalPt[]){
+    function linkPts(ctx:CanvasRenderingContext2D, formalPts:FormalPt[], turnRadiusRatio:number|undefined){
         if(formalPts.length<=1){
             return;
         }
+        if(!turnRadiusRatio)
+            turnRadiusRatio = 1
         const pts = formalPts.map(x=>x.pos)
         const first = pts[0]
         const second = pts[1]
@@ -267,7 +258,8 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
             const nextPt = pts[i+1]
             const nextDist = coordDist(nowPt, nextPt)
-            const taRadius = Math.min(cs.config.lineTurnAreaRadius, prevDist/2, nextDist/2)
+            const turnRadius = cs.config.lineTurnAreaRadius * turnRadiusRatio
+            const taRadius = Math.min(turnRadius, prevDist/2, nextDist/2)
             const prevBias:SgnCoord = [
                 sgn(prevPt[0] - nowPt[0]) as -1|0|1,
                 sgn(prevPt[1] - nowPt[1]) as -1|0|1,
@@ -283,6 +275,17 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             prevDist = nextDist;
             prevPt = nowPt;
         }
+    }
+    function doRender(ctx:CanvasRenderingContext2D, lineInfo:Line){
+        const carpetWiden = cs.config.lineWidth * 0.5
+        const lineWidth = cs.config.lineWidth * (lineInfo.width||1)
+        ctx.lineCap = 'round'
+        ctx.lineWidth = lineWidth+carpetWiden
+        ctx.strokeStyle = cs.config.bgColor
+        ctx.stroke()
+        ctx.lineWidth = lineWidth
+        ctx.strokeStyle = saveStore.getLineActualColor(lineInfo)
+        ctx.stroke()
     }
     return { renderAllLines, renderLine, renderSegsAroundActivePt }
 })

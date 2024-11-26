@@ -143,7 +143,8 @@ export const devSave:Save = {
             nameSub: 'XiangYang Rr.',
             color: 'black',
             colorPre: ColorPreset.water,
-            type: LineType.terrain
+            type: LineType.terrain,
+            width: 3
         },
         {
             id: 101,
