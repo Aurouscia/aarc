@@ -152,6 +152,12 @@ export const useSaveStore = defineStore('save', () => {
         if(line && pt){
             pt.pos = pos
             pt.dir = dir
+            if(isLineTypeWithoutSta(line.type)){
+                pt.sta = ControlPointSta.plain
+                pt.name = undefined
+                pt.nameS = undefined
+                pt.nameP = undefined
+            }
             line.pts.splice(afterIdx+1, 0, ptId)
         }
     }
