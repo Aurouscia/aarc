@@ -13,6 +13,7 @@
     "build-here": "vite build --outDir ./dist"
   },
   "dependencies": {
+    "@aurouscia/au-color-picker": "^0.0.6",
     "@aurouscia/au-undo-redo": "^0.2.1",
     "@aurouscia/keyboard-shortcut": "^0.0.3",
     "color": "^4.2.3",

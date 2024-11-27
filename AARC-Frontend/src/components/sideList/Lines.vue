@@ -4,6 +4,7 @@ import { onMounted, onUnmounted } from 'vue';
 import { useSideListShared } from './shared/sideListShared';
 import { LineType } from '@/models/save';
 import LineConfig from './shared/LineConfig.vue';
+import { AuColorPicker } from '@aurouscia/au-color-picker';
 
 const { 
     sidebar, init, lines, envStore,
@@ -29,8 +30,7 @@ onUnmounted(()=>{
         <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
                 <div class="colorEdit">
-                    <label :for="'lineColor'+l.id" class="sqrBtn" :style="{backgroundColor:l.color}">　</label>
-                    <input v-model="l.color" type="color" :id="'lineColor'+l.id" @blur="envStore.lineInfoChanged"/>
+                    <AuColorPicker :inital="l.color" @done="c=>{l.color=c;envStore.lineInfoChanged()}"></AuColorPicker>
                 </div>
                 <div class="names">
                     <input v-model="l.name"/>
