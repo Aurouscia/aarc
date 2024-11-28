@@ -44,11 +44,12 @@ onUnmounted(()=>{
         <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l in terrains" :key="l.id" :class="{arranging: arrangingId==l.id}">
                 <AuColorPickerPresetsNested
-                    :inital="l.color"
+                    :initial="l.color"
                     :presets="presets"
                     :initial-selected-preset="getPresetNameByEnum(l.colorPre)"
                     @preset-switched="n=>colorPreChanged(l, n)"
                     @done="c=>colorPickerDone(l,c)"
+                    :show-package-name="true"
                     ></AuColorPickerPresetsNested>
                 <div class="names">
                     <input v-model="l.name"/>

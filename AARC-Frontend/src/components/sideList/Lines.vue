@@ -30,7 +30,7 @@ onUnmounted(()=>{
         <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
                 <div class="colorEdit">
-                    <AuColorPicker :inital="l.color" @done="c=>{l.color=c;envStore.lineInfoChanged()}"></AuColorPicker>
+                    <AuColorPicker :initial="l.color" @done="c=>{l.color=c;envStore.lineInfoChanged()}" :show-package-name="true"></AuColorPicker>
                 </div>
                 <div class="names">
                     <input v-model="l.name"/>
