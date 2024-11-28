@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SideBar from '../common/SideBar.vue';
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { Line, LineType } from '@/models/save';
 import { useSideListShared } from './shared/useSideListShared';
 import LineConfig from './shared/LineConfig.vue';
@@ -27,6 +27,12 @@ function colorPickerDone(l:Line, c:string){
         envStore.lineInfoChanged()
 }
 
+const colorPicker = ref<InstanceType<typeof AuColorPickerPresetsNested>[]>([])
+function clickContainer(){
+    editingInfoLineId.value = undefined
+    colorPicker.value.forEach(cp=>cp.closePanel())
+}
+
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()}
 })
@@ -40,7 +46,7 @@ onUnmounted(()=>{
 
 <template>
     <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList"
-        @extend="registerLinesArrange" @fold="disposeLinesArrange" @click="editingInfoLineId=undefined">
+        @extend="registerLinesArrange" @fold="disposeLinesArrange" @click="clickContainer">
         <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l in terrains" :key="l.id" :class="{arranging: arrangingId==l.id}">
                 <AuColorPickerPresetsNested
@@ -50,6 +56,9 @@ onUnmounted(()=>{
                     @preset-switched="n=>colorPreChanged(l, n)"
                     @done="c=>colorPickerDone(l,c)"
                     :show-package-name="true"
+                    :entry-respond-delay="1"
+                    ref="colorPicker"
+                    :panel-click-stop-propagation="true"
                     ></AuColorPickerPresetsNested>
                 <div class="names">
                     <input v-model="l.name"/>

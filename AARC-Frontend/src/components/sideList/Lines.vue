@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SideBar from '../common/SideBar.vue';
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useSideListShared } from './shared/useSideListShared';
 import { LineType } from '@/models/save';
 import LineConfig from './shared/LineConfig.vue';
@@ -12,6 +12,12 @@ const {
     arrangingId, editingInfoLineId, editInfoOfLine,
     createLine, delLine
 } = useSideListShared(LineType.common, '线路')
+
+const colorPicker = ref<InstanceType<typeof AuColorPicker>[]>([])
+function clickContainer(){
+    editingInfoLineId.value = undefined
+    colorPicker.value.forEach(cp=>cp.closePanel())
+}
 
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()}
@@ -26,11 +32,16 @@ onUnmounted(()=>{
 
 <template>
     <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList"
-        @extend="registerLinesArrange" @fold="disposeLinesArrange" @click="editingInfoLineId=undefined">
+        @extend="registerLinesArrange" @fold="disposeLinesArrange" @click="clickContainer">
         <div class="lines" :class="{arranging: arrangingId >= 0}">
-            <div v-for="l in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
+            <div v-for="l,idx in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
                 <div class="colorEdit">
-                    <AuColorPicker :initial="l.color" @done="c=>{l.color=c;envStore.lineInfoChanged()}" :show-package-name="true"></AuColorPicker>
+                    <AuColorPicker :initial="l.color"
+                        @done="c=>{l.color=c;envStore.lineInfoChanged()}"
+                        ref="colorPicker" :panel-base-z-index="idx"
+                        :show-package-name="true"
+                        :entry-respond-delay="1"
+                        :panel-click-stop-propagation="true"></AuColorPicker>
                 </div>
                 <div class="names">
                     <input v-model="l.name"/>
