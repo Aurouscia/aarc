@@ -1,34 +1,30 @@
 <script setup lang="ts">
 import SideBar from '../common/SideBar.vue';
-import { onMounted, onUnmounted, ref } from 'vue';
-import { ColorPreset, Line, LineType } from '@/models/save';
-import { useConfigStore } from '@/models/stores/configStore';
-import { useSideListShared } from './shared/sideListShared';
+import { onMounted, onUnmounted } from 'vue';
+import { Line, LineType } from '@/models/save';
+import { useSideListShared } from './shared/useSideListShared';
 import LineConfig from './shared/LineConfig.vue';
+import { AuColorPickerPresetsNested } from '@aurouscia/au-color-picker';
+import { useColorPresetNames } from './shared/useColorPresetNames';
 
 const { 
-    sidebar, init, lines: terrains, envStore, saveStore,
+    sidebar, init, lines: terrains, envStore,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
     createLine, delLine, editingInfoLineId, editInfoOfLine
 } = useSideListShared(LineType.terrain, '地形')
 
-const cs = useConfigStore()
+const { getPresetNameByEnum, getPresetEnumByName, presets } = useColorPresetNames()
 
-const editingColorLine = ref<Line>()
-function editColorOfLine(line:Line){
-    if(line===editingColorLine.value && !!line)
-        editingColorLine.value = undefined
-    else{
-        setTimeout(()=>{
-            editingColorLine.value = line
-        }, 1)
-    }
-}
-
-function colorPreChanged(){
+function colorPreChanged(l:Line, presetName:string|undefined){
+    l.colorPre = getPresetEnumByName(presetName)
     setTimeout(()=>{
         envStore.lineInfoChanged()
     },1)
+}
+function colorPickerDone(l:Line, c:string){
+    l.color = c
+    if(!l.colorPre)
+        envStore.lineInfoChanged()
 }
 
 defineExpose({
@@ -44,37 +40,16 @@ onUnmounted(()=>{
 
 <template>
     <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList"
-        @extend="registerLinesArrange" @fold="disposeLinesArrange" @click="editingInfoLineId=undefined;editingColorLine=undefined">
+        @extend="registerLinesArrange" @fold="disposeLinesArrange" @click="editingInfoLineId=undefined">
         <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l in terrains" :key="l.id" :class="{arranging: arrangingId==l.id}">
-                <div class="sqrBtn" :class="{sqrActive:editingColorLine?.id===l.id}"
-                    :style="{backgroundColor: saveStore.getLineActualColor(l)}"
-                    @click="()=>{editColorOfLine(l)}"></div>
-                <div v-if="editingColorLine===l" class="colorPanel withShadow" @click="e=>{colorPreChanged();e.stopPropagation()}">
-                    <div>
-                        <div class="colorInputConatainer">
-                            <label for="customColorInput" :style="{backgroundColor:l.color}">　</label>
-                            <input v-model="l.color" id="customColorInput" type="color" @blur="colorPreChanged"/>
-                        </div>
-                        <input name="colorType" type="radio" id="colorCustom" :value="undefined" v-model="l.colorPre"/>
-                        <label for="colorCustom">自定义</label>
-                    </div>
-                    <div>
-                        <div class="preset" :style="{backgroundColor: cs.config.colorPresetWater}"></div>
-                        <input name="colorType" type="radio" id="colorWater" :value="ColorPreset.water" v-model="l.colorPre"/>
-                        <label for="colorWater">水系</label>
-                    </div>
-                    <div>
-                        <div class="preset" :style="{backgroundColor: cs.config.colorPresetGreenland}"></div>
-                        <input name="colorType" type="radio" id="colorGreenland" :value="ColorPreset.greenland" v-model="l.colorPre"/>
-                        <label for="colorGreenland">绿地</label>
-                    </div>
-                    <div>
-                        <div class="preset" :style="{backgroundColor: cs.config.colorPresetArea}"></div>
-                        <input name="colorType" type="radio" id="colorArea" :value="ColorPreset.area" v-model="l.colorPre"/>
-                        <label for="colorArea">区域</label>
-                    </div>
-                </div>
+                <AuColorPickerPresetsNested
+                    :inital="l.color"
+                    :presets="presets"
+                    :initial-selected-preset="getPresetNameByEnum(l.colorPre)"
+                    @preset-switched="n=>colorPreChanged(l, n)"
+                    @done="c=>colorPickerDone(l,c)"
+                    ></AuColorPickerPresetsNested>
                 <div class="names">
                     <input v-model="l.name"/>
                     <input v-model="l.nameSub"/>

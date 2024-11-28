@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import SideBar from '../common/SideBar.vue';
 import { onMounted, onUnmounted } from 'vue';
-import { useSideListShared } from './shared/sideListShared';
+import { useSideListShared } from './shared/useSideListShared';
 import { LineType } from '@/models/save';
 import LineConfig from './shared/LineConfig.vue';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
