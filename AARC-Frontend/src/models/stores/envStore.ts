@@ -71,8 +71,21 @@ export const useEnvStore = defineStore('env', ()=>{
         const coord = translateFromClient(clientCord);
         if(!coord)
             return
-        //判断是否处于某种需要退出的状态（点击任何东西都算点击空白处（退出状态））
-        const doingSth = movedPoint.value || nameEditStore.edited
+
+        //根据当前状态判断是否需要重新渲染主画布
+        let rerenderParamLineIds:number[]|undefined = undefined
+        let rerenderParamPtIds:number[]|undefined = undefined
+        if(nameEditStore.edited && activePt.value?.id){
+            rerenderParamPtIds = [activePt.value.id]
+        }
+        if(movedPoint.value && activePt.value?.id){
+            const lines = saveStore.getLinesByPt(activePt.value.id)
+            rerenderParamLineIds = lines.map(x=>x.id)
+        }
+        if(rerenderParamLineIds || rerenderParamPtIds){
+            //重新渲染的同时，更新了相关staNameRect和FormalPts，确保接下来的点击判断使用最新数据
+            pointMutated.value(rerenderParamLineIds, rerenderParamPtIds)
+        }
 
         //判断是否在线路延长按钮上
         const lineExtend = onLineExtendBtn(coord)
@@ -95,7 +108,7 @@ export const useEnvStore = defineStore('env', ()=>{
         //判断是否在站名上
         const staName = onStaName(coord)
         const namingPtChanged = activePt.value?.id !== staName?.id
-        if(staName && !(doingSth && namingPtChanged)){
+        if(staName){
             //点到站名上了
             activePt.value = saveStore.getPtById(staName.id)
             activePtType.value = 'name'
@@ -125,7 +138,7 @@ export const useEnvStore = defineStore('env', ()=>{
         //判断是否在点上
         const pt = onPt(coord, true)
         const activePtChanged = activePt.value?.id !== pt?.id
-        if(pt && !(doingSth && activePtChanged)){
+        if(pt){
             //点到点上了
             activePt.value = pt
             activePtType.value = 'body'
@@ -147,7 +160,7 @@ export const useEnvStore = defineStore('env', ()=>{
         
         //判断是否在线上
         //如果已经移动过点，这时formalPts还未更新，不应该进行点击线路判断，直接视为点击空白处
-        const lineMatches = !doingSth && onLine(coord);
+        const lineMatches = onLine(coord);
         if(lineMatches && lineMatches.length>0){
             //点到线上了
             const lineMatch = lineMatches[0]
@@ -368,6 +381,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     activePt.value = saveStore.getPtById(id)
                     activeLine.value = undefined
                     setOpsForPt()
+                    nameEditStore.startEditing(id)
                 }
             }
         }
