@@ -94,12 +94,20 @@ export const useEnvStore = defineStore('env', ()=>{
 
         //判断是否在站名上
         const staName = onStaName(coord)
-        if(staName && !(doingSth && activePt.value?.id !== staName.id)){
+        const namingPtChanged = activePt.value?.id !== staName?.id
+        if(staName && !(doingSth && namingPtChanged)){
             //点到站名上了
             activePt.value = saveStore.getPtById(staName.id)
             activePtType.value = 'name'
             activeLine.value = undefined
-            nameEditStore.toggleEditing(staName.id)
+            if(namingPtChanged)
+                nameEditStore.startEditing(staName.id)
+            else if(opsStore.showingOps && nameEditStore.editing){
+                //如果正在命名的车站没变，而且菜单显示着，则保留站名编辑
+            }else{
+                //如果正在命名的车站没变，而且菜单未显示，则收起站名编辑
+                nameEditStore.toggleEditing(staName.id)
+            }
             cursorPos.value = undefined
             setOpsPos(false)
             //立即检查该点是否是snap位置
@@ -116,20 +124,21 @@ export const useEnvStore = defineStore('env', ()=>{
 
         //判断是否在点上
         const pt = onPt(coord, true)
-        if(pt && !(doingSth && activePt.value?.id !== pt.id)){
+        const activePtChanged = activePt.value?.id !== pt?.id
+        if(pt && !(doingSth && activePtChanged)){
             //点到点上了
             activePt.value = pt
             activePtType.value = 'body'
             activeLine.value = undefined
             cursorPos.value = [...pt.pos]
-            if(!opsStore.clientPos){
+            if(!opsStore.clientPos || activePtChanged){
                 //菜单不在时，弹出菜单
                 opsStore.atAvoidWays = getActivePtOpsAvoidance.value()
                 setOpsPos(pt.pos)
                 setOpsForPt()
                 nameEditStore.startEditing(pt.id)
-            }else{
-                //菜单已在时，再次点击使其收起
+            }else if(!activePtChanged){
+                //菜单已在同一个点上时，再次点击使其收起
                 setOpsPos(false)
                 nameEditStore.endEditing()
             }

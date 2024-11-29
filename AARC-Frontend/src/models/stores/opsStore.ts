@@ -39,6 +39,9 @@ export const useOpsStore = defineStore('ops', ()=>{
         })
         return tryOrder[minScoreTryIdx]
     })
+    const showingOps = computed<boolean>(()=>{
+        return !!clientPos.value
+    })
 
     const tryOrder:OpsAt[] = ['rb', 'r', 'b', 'rt', 'lb', 'l', 't', 'lt']
     const allAts:OpsAt[] = ['rb', 'r', 'rt', 't', 'lt', 'l', 'lb', 'b']
@@ -67,5 +70,5 @@ export const useOpsStore = defineStore('ops', ()=>{
             return 'lb'
         return 'b'
     }
-    return { clientPos, at, btns, atAvoidWays }
+    return { clientPos, showingOps, at, btns, atAvoidWays }
 })
