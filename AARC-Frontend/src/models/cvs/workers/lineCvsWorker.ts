@@ -116,17 +116,39 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     function formalize(pts:ControlPoint[]):FormalPt[]{
         if(pts.length<2)
             return [];
+        const isRingLine = isRing(pts)
         const formalSegs:FormalSeg[] = []
-        for(let i=0;i<pts.length-1;i++){
-            const a = pts[i]
-            const b = pts[i+1]
-            const seg = formalizeSeg(a, b)
-            formalSegs.push(seg)
+        if(!isRingLine){
+            for(let i=0;i<pts.length-1;i++){
+                const a = pts[i]
+                const b = pts[i+1]
+                const seg = formalizeSeg(a, b)
+                formalSegs.push(seg)
+            }
+        }else{
+            const a = pts[pts.length-2]
+            const b = pts[0]
+            const headMarginSeg = formalizeSeg(a, b)
+            formalSegs.push(headMarginSeg)
+            for(let i=0;i<pts.length-1;i++){
+                const a = pts[i]
+                const b = pts[i+1]
+                const seg = formalizeSeg(a, b)
+                formalSegs.push(seg)
+            }
+            const c = pts[pts.length-1]
+            const d = pts[1]
+            const tailMarginSeg = formalizeSeg(c, d)
+            formalSegs.push(tailMarginSeg)
         }
         //辅助矫正
         illPosedSegJustify(formalSegs)
         if(formalSegs.length==0)
             return []
+        if(isRingLine){
+            formalSegs.shift()
+            formalSegs.pop()
+        }
         const formalPts:FormalPt[] = []
         formalPts.push({pos:formalSegs[0].a, afterIdxEqv:0})
         for(let i=0;i<formalSegs.length;i++){

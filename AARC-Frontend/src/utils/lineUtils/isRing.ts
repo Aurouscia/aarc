@@ -1,11 +1,15 @@
-import { Line } from "@/models/save";
+import { ControlPoint, Line } from "@/models/save";
 
-export function isRing(line:Line|number[]){
+export function isRing(line:Line|number[]|ControlPoint[]){
+    if('length' in line && line.length<=2)
+        return
     let ptIds:number[] = []
     if('name' in line){
         ptIds = line.pts
+    }else if(typeof line[0] === 'number'){
+        ptIds = line as number[]
     }else{
-        ptIds = line
+        ptIds = (line as ControlPoint[]).map(x=>x.id)
     }
     if(ptIds.length<=2)
         return
