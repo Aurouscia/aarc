@@ -283,15 +283,25 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         }
     }
     function doRender(ctx:CanvasRenderingContext2D, lineInfo:Line){
-        const carpetWiden = cs.config.lineWidth * 0.5
-        const lineWidth = cs.config.lineWidth * (lineInfo.width||1)
-        ctx.lineCap = 'round'
-        ctx.lineWidth = lineWidth+carpetWiden
-        ctx.strokeStyle = cs.config.bgColor
-        ctx.stroke()
-        ctx.lineWidth = lineWidth
-        ctx.strokeStyle = saveStore.getLineActualColor(lineInfo)
-        ctx.stroke()
+        if(!lineInfo.isFilled){
+            const carpetWiden = cs.config.lineWidth * 0.5
+            const lineWidth = cs.config.lineWidth * (lineInfo.width||1)
+            ctx.lineCap = 'round'
+            ctx.lineWidth = lineWidth+carpetWiden
+            ctx.strokeStyle = cs.config.bgColor
+            ctx.stroke()
+            ctx.lineWidth = lineWidth
+            ctx.strokeStyle = saveStore.getLineActualColor(lineInfo)
+            ctx.stroke()
+        }else{
+            const carpetWiden = cs.config.lineWidth * 0.5
+            ctx.lineCap = 'round'
+            ctx.lineWidth = carpetWiden
+            ctx.strokeStyle = cs.config.bgColor
+            ctx.stroke()
+            ctx.fillStyle = saveStore.getLineActualColor(lineInfo)
+            ctx.fill()
+        }
     }
     return { renderAllLines, renderLine, renderSegsAroundActivePt }
 })

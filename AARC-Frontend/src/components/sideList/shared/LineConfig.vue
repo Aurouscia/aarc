@@ -11,12 +11,19 @@ defineProps<{
 
 <template>
 <div class="lineConfig withShadow" @click="e=>e.stopPropagation()">
+    <div class="configTitle">设置</div>
     <div class="configItem">
         <div>线宽</div>
-        <div class="slideBar">
+        <div class="slideBarItem">
             <input type="range" v-model="line.width" min="0.5" :max="lineWidthRangeMax||2" step="0.25" value="1"
                 @change="envStore.lineInfoChanged"/>
             <div>{{ line.width || 1 }}×</div>
+        </div>
+    </div>
+    <div class="configItem">
+        <div>填充</div>
+        <div class="checkItem">
+            <input type="checkbox" v-model="line.isFilled" @change="envStore.lineInfoChanged"/>
         </div>
     </div>
 </div>
@@ -29,14 +36,15 @@ defineProps<{
     border-radius: 5px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
     .configItem{
         display: flex;
         gap: 10px;
         justify-content: space-between;
         align-items: center;
         white-space: nowrap;
-        .slideBar{
+        border-top: 1px solid #ccc;
+        padding: 5px 0px 5px 0px;
+        .slideBarItem{
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -46,6 +54,19 @@ defineProps<{
                 font-size: 12px;
             }
         }
+        .checkItem{
+            flex-grow: 1;
+            text-align: center;
+            input[type=checkbox]{
+                width: 20px;
+                height: 20px;
+            }
+        }
+    }
+    .configTitle{
+        font-weight: bold;
+        padding: 0px 0px 5px 0px;
+        text-align: center;
     }
 }
 </style>

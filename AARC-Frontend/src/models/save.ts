@@ -47,5 +47,5 @@ export interface Line{
     colorPre?:ColorPreset
     width?:number
     type:LineType
-    //isFilled?:boolean
+    isFilled?:boolean
 }
