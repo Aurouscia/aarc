@@ -34,7 +34,7 @@ export const useTextCvsWorker = defineStore('textCvsWorker', ()=>{
         const ySgn = sgn(pt.nameP[1])
 
         const distSq = pt.nameP[0] ** 2 + pt.nameP[1] ** 2
-        if(distSq > 800){
+        if(distSq > 1200){
             ctx.beginPath()
             ctx.lineWidth = 2
             ctx.strokeStyle = "#999"
@@ -96,6 +96,7 @@ export const useTextCvsWorker = defineStore('textCvsWorker', ()=>{
         ctx.strokeStyle = cs.config.bgColor
         ctx.globalAlpha = 0.8
         ctx.lineWidth = cs.config.staNameFontSize/4
+        ctx.lineJoin = 'round'
         render('stroke', needReportRect)
         ctx.globalAlpha = 1
         render('fill')
