@@ -67,7 +67,7 @@ export const useEnvStore = defineStore('env', ()=>{
         setOpsPos(false)
     }
     
-    function pureClickHandler(clientCord:Coord){
+    function pureClickHandler(clientCord:Coord, isRightBtn?:boolean){
         const coord = translateFromClient(clientCord);
         if(!coord)
             return
@@ -144,16 +144,25 @@ export const useEnvStore = defineStore('env', ()=>{
             activePtType.value = 'body'
             activeLine.value = undefined
             cursorPos.value = [...pt.pos]
-            if(!opsStore.clientPos || activePtChanged){
-                //菜单不在时，弹出菜单
-                opsStore.atAvoidWays = getActivePtOpsAvoidance.value()
-                setOpsPos(pt.pos)
-                setOpsForPt()
-                nameEditStore.startEditing(pt.id)
-            }else if(!activePtChanged){
-                //菜单已在同一个点上时，再次点击使其收起
-                setOpsPos(false)
-                nameEditStore.endEditing()
+            if(isRightBtn){
+                //右键点击控制点，切换其方向
+                if(pt.dir===ControlPointDir.incline)
+                    pt.dir = ControlPointDir.vertical
+                else
+                    pt.dir = ControlPointDir.incline
+                movedPoint.value = true
+            }else{
+                if(!opsStore.clientPos || activePtChanged){
+                    //菜单不在时，弹出菜单
+                    opsStore.atAvoidWays = getActivePtOpsAvoidance.value()
+                    setOpsPos(pt.pos)
+                    setOpsForPt()
+                    nameEditStore.startEditing(pt.id)
+                }else if(!activePtChanged){
+                    //菜单已在同一个点上时，再次点击使其收起
+                    setOpsPos(false)
+                    nameEditStore.endEditing()
+                }
             }
             return
         }

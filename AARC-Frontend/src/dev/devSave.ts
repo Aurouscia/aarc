@@ -139,8 +139,6 @@ export const devSave:Save = {
             pos: [950, 550],
             dir: ControlPointDir.incline,
             sta: ControlPointSta.plain,
-            name: '不该显示的站名',
-            nameP: [0, 20]
         },
         {
             id: 54,
