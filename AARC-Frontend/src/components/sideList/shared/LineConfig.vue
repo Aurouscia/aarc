@@ -1,12 +1,22 @@
 <script setup lang="ts">
 import { Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
+import { onMounted, ref } from 'vue';
 
 const envStore = useEnvStore()
-defineProps<{
+const props = defineProps<{
     line:Line,
     lineWidthRangeMax?:number
 }>()
+const lineWidthBinded = ref(1)
+function lineWidthChanged(){
+    props.line.width = lineWidthBinded.value
+    envStore.lineInfoChanged()
+}
+
+onMounted(()=>{
+    lineWidthBinded.value = props.line.width || 1
+})
 </script>
 
 <template>
@@ -15,9 +25,9 @@ defineProps<{
     <div class="configItem">
         <div>线宽</div>
         <div class="slideBarItem">
-            <input type="range" v-model="line.width" min="0.5" :max="lineWidthRangeMax||2" step="0.25" value="1"
-                @change="envStore.lineInfoChanged"/>
-            <div>{{ line.width || 1 }}×</div>
+            <input type="range" v-model="lineWidthBinded" :min="0.5" :max="lineWidthRangeMax||2" :step="0.25" value="1"
+                @change="lineWidthChanged"/>
+            <div>{{ lineWidthBinded || 1 }}×</div>
         </div>
     </div>
     <div class="configItem">
