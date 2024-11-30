@@ -14,6 +14,7 @@ import { rayPerpendicular, rayRel } from "@/utils/rayUtils/rayParallel";
 import { rayRotate90 } from "@/utils/rayUtils/rayRotate";
 import { defineStore } from "pinia";
 import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
+import { getByIndexInRing, isRing } from "@/utils/lineUtils/isRing";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill?:boolean}
 
@@ -58,13 +59,29 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 const maxIdx = line.pts.length-1
                 const formalizePtIds:number[] = []
                 let trimLeft = false; let trimRight = false;
-                if(idx-3>=0){formalizePtIds.push(line.pts[idx-3]); trimLeft = true}
-                if(idx-2>=0){formalizePtIds.push(line.pts[idx-2])}
-                if(idx-1>=0){formalizePtIds.push(line.pts[idx-1])}
-                formalizePtIds.push(line.pts[idx]);
-                if(idx+1<=maxIdx){formalizePtIds.push(line.pts[idx+1])}
-                if(idx+2<=maxIdx){formalizePtIds.push(line.pts[idx+2])}
-                if(idx+3<=maxIdx){formalizePtIds.push(line.pts[idx+3]); trimRight = true}
+                if(isRing(line)){
+                    const pm3 = getByIndexInRing(line, idx-3)
+                    if(pm3){formalizePtIds.push(pm3);trimLeft = true}
+                    const pm2 = getByIndexInRing(line, idx-2)
+                    if(pm2){formalizePtIds.push(pm2)}
+                    const pm1 = getByIndexInRing(line, idx-1)
+                    if(pm1){formalizePtIds.push(pm1)}
+                    formalizePtIds.push(line.pts[idx]);
+                    const pa1 = getByIndexInRing(line, idx+1)
+                    if(pa1){formalizePtIds.push(pa1)}
+                    const pa2 = getByIndexInRing(line, idx+2)
+                    if(pa2){formalizePtIds.push(pa2)}
+                    const pa3 = getByIndexInRing(line, idx+3)
+                    if(pa3){formalizePtIds.push(pa3);trimRight = true}
+                }else{
+                    if(idx-3>=0){formalizePtIds.push(line.pts[idx-3]); trimLeft = true}
+                    if(idx-2>=0){formalizePtIds.push(line.pts[idx-2])}
+                    if(idx-1>=0){formalizePtIds.push(line.pts[idx-1])}
+                    formalizePtIds.push(line.pts[idx]);
+                    if(idx+1<=maxIdx){formalizePtIds.push(line.pts[idx+1])}
+                    if(idx+2<=maxIdx){formalizePtIds.push(line.pts[idx+2])}
+                    if(idx+3<=maxIdx){formalizePtIds.push(line.pts[idx+3]); trimRight = true}
+                }
                 searchRes.push({formalizePtIds, trimLeft, trimRight, line})
             })
         })
