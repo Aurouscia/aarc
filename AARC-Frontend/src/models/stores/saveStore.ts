@@ -157,6 +157,7 @@ export const useSaveStore = defineStore('save', () => {
                 pt.name = undefined
                 pt.nameS = undefined
                 pt.nameP = undefined
+                disposedStaNameOf.value(pt.id)
             }
             line.pts.splice(afterIdx+1, 0, ptId)
         }
@@ -293,8 +294,9 @@ export const useSaveStore = defineStore('save', () => {
     }
     const cvsWidth = computed<number>(()=>save.value?.cvsSize[0] || 1)
     const cvsHeight = computed<number>(()=>save.value?.cvsSize[1] || 1)
+    const disposedStaNameOf = ref<(ptId:number)=>void>(()=>{})
     return { 
-        save, getNewId, cvsWidth, cvsHeight,
+        save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf,
         getPtById, getPtsByIds, getLineById, getLineActualColor, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType,
         insertNewPtToLine, insertPtToLine, createNewLine, removePt, removePtFromLine, arrangeLinesOfType, tryMergePt,

@@ -1,4 +1,4 @@
-import { defineStore } from "pinia";
+import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { useConfigStore } from "./configStore";
@@ -6,6 +6,8 @@ import { useConfigStore } from "./configStore";
 export const useNameEditStore = defineStore('nameEdit', ()=>{
     const cs = useConfigStore()
     const saveStore = useSaveStore()
+    const { disposedStaNameOf } = storeToRefs(saveStore)
+    disposedStaNameOf.value = disposedStaNameHandler
     const targetPtId = ref<number>()
     const nameMain = ref<string>()
     const nameSub = ref<string>()
@@ -39,6 +41,16 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
             }
         }
     }
+    function disposedStaNameHandler(ptId:number){
+        if(targetPtId.value == ptId){
+            targetPtId.value = -1
+            nameMain.value = undefined
+            nameSub.value = undefined
+            editing.value = false;
+            edited.value = false;
+        }
+    }
+
     function endEditing(){
         if(!editing.value){
             return
