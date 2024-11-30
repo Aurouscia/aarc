@@ -336,6 +336,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     pt.dir = ControlPointDir.vertical
                 else
                     pt.dir = ControlPointDir.incline
+                movedPoint.value = true
             }
         }
         const swSta = ()=>{
