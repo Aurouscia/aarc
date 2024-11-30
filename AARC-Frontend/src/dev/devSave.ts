@@ -43,7 +43,7 @@ export const devSave:Save = {
         },
         {
             id: 5,
-            pos: [800, 200],
+            pos: [700, 250],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta,
             name: '至喜',
@@ -133,6 +133,38 @@ export const devSave:Save = {
             pos: [1000, 700],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.plain
+        },
+        {
+            id: 53,
+            pos: [950, 550],
+            dir: ControlPointDir.incline,
+            sta: ControlPointSta.plain,
+            name: '不该显示的站名',
+            nameP: [0, 20]
+        },
+        {
+            id: 54,
+            pos: [950, 450],
+            dir: ControlPointDir.incline,
+            sta: ControlPointSta.plain
+        },
+        {
+            id: 55,
+            pos: [1200, 400],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.plain
+        },
+        {
+            id: 56,
+            pos: [1200, 850],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.plain
+        },
+        {
+            id: 57,
+            pos: [1000, 850],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.plain
         }
     ],
     lines: [
@@ -145,6 +177,16 @@ export const devSave:Save = {
             colorPre: ColorPreset.water,
             type: LineType.terrain,
             width: 3
+        },
+        {
+            id: 151,
+            pts: [52, 53, 54, 55, 56, 57, 52],
+            name: '丽景湖',
+            nameSub: 'LiJing Lake',
+            color: '#000000',
+            colorPre: ColorPreset.water,
+            type: LineType.terrain,
+            isFilled: true
         },
         {
             id: 101,

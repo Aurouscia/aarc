@@ -106,7 +106,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             fpts.forEach(pt=>relatedPts.add(pt))
             formalizedSegs.push({lineId:line.id, pts:formalized})
             linkPts(ctx, formalized, line.width)
-            doRender(ctx, line)
+            doRender(ctx, line, true)
         })
         return {
             relatedPts,
@@ -321,8 +321,8 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             prevPt = nowPt;
         }
     }
-    function doRender(ctx:CanvasRenderingContext2D, lineInfo:Line){
-        if(!lineInfo.isFilled){
+    function doRender(ctx:CanvasRenderingContext2D, lineInfo:Line, enforceNoFill?:boolean){
+        if(!lineInfo.isFilled || enforceNoFill){
             const carpetWiden = cs.config.lineWidth * 0.5
             const lineWidth = cs.config.lineWidth * (lineInfo.width||1)
             ctx.lineCap = 'round'
