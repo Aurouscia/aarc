@@ -17,9 +17,13 @@ barStyle.value = {
     right:foldedRight
 }
 
-let timer:number
+let movingTimer:number = 0
+let folding:boolean = false
 function extend(){
-    window.clearTimeout(timer)
+    if(showing.value && !folding)
+        return
+    folding = false
+    window.clearTimeout(movingTimer)
     showing.value = true;
     coverStyle.value = {
         display:'block',
@@ -30,15 +34,19 @@ function extend(){
         width,
         boxShadow: '0px 0px 10px 0px black'
     }
-    setTimeout(()=>{
+    movingTimer = window.setTimeout(()=>{
         coverStyle.value={
             display:'block',
             opacity:0.3
         }
-    })
+    },1)
     emit('extend');
 }
 function fold(){
+    if(!showing.value || folding)
+        return
+    folding = true
+    window.clearTimeout(movingTimer)
     coverStyle.value = {
         display:'block',
         opacity:0
@@ -48,10 +56,11 @@ function fold(){
         width,
         boxShadow:'none'
     }
-    timer = window.setTimeout(()=>{
+    movingTimer = window.setTimeout(()=>{
         coverStyle.value = {}
         showing.value = false;
-    },500)
+        folding = false
+    },300)
     emit('fold');
 }
 defineExpose({extend,fold})
@@ -88,7 +97,7 @@ const emit = defineEmits<{
     bottom: 0px;
     display: flex;
     flex-direction: column;
-    transition: 0.5s;
+    transition: 0.3s;
     background-color: white;
     box-shadow: none;
     z-index: 1001;
@@ -100,7 +109,7 @@ const emit = defineEmits<{
     top: 0px;bottom:0px;
     left: 0px;right:0px;
     display: none;
-    transition: 0.5s;
+    transition: 0.3s;
     z-index: 1000;
 }
 </style>

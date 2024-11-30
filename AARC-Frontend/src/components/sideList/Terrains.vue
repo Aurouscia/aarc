@@ -34,7 +34,8 @@ function clickContainer(){
 }
 
 defineExpose({
-    comeOut: ()=>{sidebar.value?.extend()}
+    comeOut: ()=>{sidebar.value?.extend()},
+    fold: ()=>{sidebar.value?.fold()}
 })
 onMounted(()=>{
     init()
