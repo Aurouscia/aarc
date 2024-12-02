@@ -54,6 +54,37 @@ export function waySame(way0:SgnCoord, way1:SgnCoord){
 }
 export function waysSort<T>(items:T[], waySelector:(item:T)=>SgnCoord){
     items.sort((a,b)=>{
-        return coordCrossProduct(waySelector(a), waySelector(b))
+        const aWay = waySelector(a)
+        const bWay = waySelector(b)
+        return wayClockwiseIdx(aWay) - wayClockwiseIdx(bWay)
     })
 }
+export function wayClockwiseIdx(way:SgnCoord):number{
+    // 7 0 1
+    // 6   2
+    // 5 4 3
+    const [x,y] = way
+    if(x===0){
+        if(y===1)
+            return 4
+        else
+            return 0
+    }
+    if(x===1){
+        if(y===-1)
+            return 1
+        if(y===0)
+            return 2
+        return 3 
+    }
+    else{
+        if(y===1)
+            return 5
+        if(y===0)
+            return 6
+        return 7
+    }
+}
+
+//TODO：pureClickHandler的重复渲染
+//合并点时冒出来的车站图标
