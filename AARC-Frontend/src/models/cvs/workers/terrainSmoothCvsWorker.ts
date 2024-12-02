@@ -6,6 +6,7 @@ import { useSaveStore } from "@/models/stores/saveStore";
 import { sqrt2 } from "@/utils/consts";
 import { applyBias } from "@/utils/coordUtils/coordBias";
 import { coordDist } from "@/utils/coordUtils/coordDist";
+import { drawArcByThreePoints } from "@/utils/drawUtils/drawArc";
 import { isSameIdxInLine } from "@/utils/lineUtils/isRing";
 import { wayRel } from "@/utils/rayUtils/rayParallel";
 import { defineStore } from "pinia";
@@ -62,7 +63,7 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                     isFirstT = false
                 }
                 ctx.lineTo(...a)
-                ctx.quadraticCurveTo(...c.mid, ...b)
+                drawArcByThreePoints(ctx, a, c.mid, b)
             })
             ctx.closePath()
             ctx.fill()
