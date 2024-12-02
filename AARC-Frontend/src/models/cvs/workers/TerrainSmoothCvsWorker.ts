@@ -3,7 +3,7 @@ import { LineType } from "@/models/save";
 import { useConfigStore } from "@/models/stores/configStore";
 import { useFormalizedLineStore } from "@/models/stores/saveDerived/formalizedLineStore";
 import { useSaveStore } from "@/models/stores/saveStore";
-import { sqrt2half } from "@/utils/consts";
+import { sqrt2 } from "@/utils/consts";
 import { applyBias } from "@/utils/coordUtils/coordBias";
 import { coordDist } from "@/utils/coordUtils/coordDist";
 import { wayRel } from "@/utils/rayUtils/rayParallel";
@@ -34,8 +34,10 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                 let aBack = bWidth / 2
                 let bBack = aWidth / 2
                 if(rel==='others'){
-                    aBack *= sqrt2half
-                    bBack *= sqrt2half
+                    aBack *= sqrt2
+                    bBack *= sqrt2
+                    aBack -= 0.5 //不少后退点就有莫名其妙的缝隙
+                    bBack -= 0.5
                 }
                 const noZeroWidthRatio = [t.linkA.lineWidth, t.linkB.lineWidth].filter(x=>x>0)
                 const smallerWidthRatio = noZeroWidthRatio.length>0 ? Math.min(...noZeroWidthRatio) : 1 
@@ -58,7 +60,7 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                     ctx.moveTo(...a)
                     isFirstT = false
                 }else{
-                    ctx.lineTo(...a)
+                ctx.lineTo(...a)
                 }
                 ctx.quadraticCurveTo(...c.mid, ...b)
             })

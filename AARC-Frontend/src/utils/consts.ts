@@ -1,3 +1,3 @@
 export const numberCmpEpsilon = 1e-4
-export const sqrt2 = 1.414213562
-export const sqrt2half = 0.707106781
+export const sqrt2 = Math.SQRT2
+export const sqrt2half = Math.SQRT1_2
