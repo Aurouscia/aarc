@@ -1,5 +1,5 @@
 import { useSaveStore } from "../../stores/saveStore";
-import { ControlPoint, ControlPointDir, Line } from "../../save";
+import { ControlPoint, ControlPointDir, Line, LineType } from "../../save";
 import { coordRelDiff } from "@/utils/coordUtils/coordRel";
 import { applyBias } from "@/utils/coordUtils/coordBias";
 import { Coord, FormalPt, FormalRay, SgnCoord, twinPts2Ray } from "../../coord";
@@ -17,23 +17,28 @@ import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
 import { getByIndexInRing, isRing } from "@/utils/lineUtils/isRing";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill?:boolean}
+type LineRenderType = 'both'|'body'|'carpet'
 
 export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     const saveStore = useSaveStore();
     const envStore = useEnvStore();
     const formalizedLineStore = useFormalizedLineStore()
     const cs = useConfigStore();
-    function renderAllLines(ctx:CanvasRenderingContext2D, needReportFormalPtsLines?:number[]){
+    function renderAllLines(ctx:CanvasRenderingContext2D, needReportFormalPtsLines?:number[], ltype?:LineType, rtype?:LineRenderType){
         if(!saveStore.save){
             return
         }
         const lines = saveStore.save.lines;
         for(const line of lines){
+            if(ltype !== undefined){
+                if(ltype != line.type)
+                    continue
+            }
             const needReportFormalPts = !needReportFormalPtsLines || needReportFormalPtsLines.includes(line.id)
-            renderLine(ctx, line, needReportFormalPts)
+            renderLine(ctx, line, needReportFormalPts, rtype)
         }
     }
-    function renderLine(ctx:CanvasRenderingContext2D, line:Line, needReportFormalPts?:boolean){
+    function renderLine(ctx:CanvasRenderingContext2D, line:Line, needReportFormalPts?:boolean, rtype?:LineRenderType){
         const pts = saveStore.getPtsByIds(line.pts)
         if(pts.length<=1)
             return;
@@ -42,7 +47,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             formalizedLineStore.setLinesFormalPts(line.id, formalPts)
         }
         linkPts(ctx, formalPts, line.width)
-        doRender(ctx, line)
+        doRender(ctx, line, undefined, undefined, rtype)
     }
     function renderSegsAroundActivePt(ctx:CanvasRenderingContext2D)
         :{relatedPts:Iterable<ControlPoint>, formalizedSegs:FormalizedLine[]}
@@ -322,25 +327,35 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             prevPt = nowPt;
         }
     }
-    function doRender(ctx:CanvasRenderingContext2D, lineInfo:Line, enforceNoFill?:boolean, enforceLineWidth?:number){
+    function doRender(ctx:CanvasRenderingContext2D, lineInfo:Line, enforceNoFill?:boolean, enforceLineWidth?:number, type?:LineRenderType){
+        const drawCarpet = !type || type==='both' || type==='carpet'
+        const drawBody = !type || type==='both' || type==='body'
         if(!lineInfo.isFilled || enforceNoFill){
-            const carpetWiden = cs.config.lineWidth * 0.5
             const lineWidth = cs.config.lineWidth * (enforceLineWidth||lineInfo.width||1)
             ctx.lineCap = 'round'
-            ctx.lineWidth = lineWidth+carpetWiden
-            ctx.strokeStyle = cs.config.bgColor
-            ctx.stroke()
-            ctx.lineWidth = lineWidth
-            ctx.strokeStyle = saveStore.getLineActualColor(lineInfo)
-            ctx.stroke()
+            if(drawCarpet){
+                const carpetWiden = cs.config.lineWidth * 0.5
+                ctx.lineWidth = lineWidth+carpetWiden
+                ctx.strokeStyle = cs.config.bgColor
+                ctx.stroke()
+            }
+            if(drawBody){
+                ctx.lineWidth = lineWidth
+                ctx.strokeStyle = saveStore.getLineActualColor(lineInfo)
+                ctx.stroke()
+            }
         }else{
-            const carpetWiden = cs.config.lineWidth * 0.5
             ctx.lineCap = 'round'
-            ctx.lineWidth = carpetWiden
-            ctx.strokeStyle = cs.config.bgColor
-            ctx.stroke()
-            ctx.fillStyle = saveStore.getLineActualColor(lineInfo)
-            ctx.fill()
+            if(drawCarpet){
+                const carpetWiden = cs.config.lineWidth * 0.5
+                ctx.lineWidth = carpetWiden
+                ctx.strokeStyle = cs.config.bgColor
+                ctx.stroke()
+            }
+            if(drawBody){
+                ctx.fillStyle = saveStore.getLineActualColor(lineInfo)
+                ctx.fill()
+            }
         }
     }
     return { renderAllLines, renderLine, renderSegsAroundActivePt }

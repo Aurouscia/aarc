@@ -6,6 +6,7 @@ import { useTextCvsWorker } from "../workers/textCvsWorker";
 import { useClusterCvsWorker } from "../workers/clusterCvsWorker";
 import { defineStore } from "pinia";
 import { useTerrainSmoothCvsWorker } from "../workers/TerrainSmoothCvsWorker";
+import { LineType } from "@/models/save";
 
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const envStore = useEnvStore()
@@ -19,8 +20,10 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     function renderMainCvs(changedLines?:number[], movedStaNames?:number[]){
         console.log('绘制主画布')
         const ctx = getCtx();
-        renderAllLines(ctx, changedLines)
+        renderAllLines(ctx, changedLines, LineType.terrain, 'carpet')
         renderAllTerrainSmooth(ctx)
+        renderAllLines(ctx, [], LineType.terrain, 'body')
+        renderAllLines(ctx, changedLines, LineType.common)
         renderAllPoints(ctx)
         renderClusters(ctx)
         renderAllPtName(ctx, movedStaNames)
