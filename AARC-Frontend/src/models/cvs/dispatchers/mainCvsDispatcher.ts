@@ -5,7 +5,7 @@ import { usePointCvsWorker } from "../workers/pointCvsWorker";
 import { useTextCvsWorker } from "../workers/textCvsWorker";
 import { useClusterCvsWorker } from "../workers/clusterCvsWorker";
 import { defineStore } from "pinia";
-import { useTerrainSmoothCvsWorker } from "../workers/TerrainSmoothCvsWorker";
+import { useTerrainSmoothCvsWorker } from "../workers/terrainSmoothCvsWorker";
 import { LineType } from "@/models/save";
 
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
