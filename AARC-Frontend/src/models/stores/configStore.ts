@@ -49,7 +49,8 @@ export const configDefault:Config = {
 
     colorPresetArea: '#cccccc',
     colorPresetWater: '#c3e5eb',
-    colorPresetGreenland: '#ceeda4'
+    colorPresetGreenland: '#ceeda4',
+    colorPresetIsland: '#ffffff'
 }
 
 export const useConfigStore = defineStore('config', ()=>{
@@ -84,6 +85,8 @@ export const useConfigStore = defineStore('config', ()=>{
             return config.value.colorPresetGreenland
         if(presetType == ColorPreset.area)
             return config.value.colorPresetArea
+        if(presetType == ColorPreset.island)
+            return config.value.colorPresetIsland
         return 'black'
     }
     function getTurnRadiusOf(line:Line|number, turnRel:WayRel, justify:'outer'|'middle'|'inner' = 'inner'){

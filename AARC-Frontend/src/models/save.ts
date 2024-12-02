@@ -33,6 +33,7 @@ export enum ColorPreset{
     area = 1,
     water = 2,
     greenland = 3,
+    island = 4
 }
 export enum LineType{
     common = 0,

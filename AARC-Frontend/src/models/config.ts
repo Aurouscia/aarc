@@ -43,7 +43,8 @@ export interface Config{
 
     colorPresetArea: string,
     colorPresetWater :string,
-    colorPresetGreenland: string
+    colorPresetGreenland: string,
+    colorPresetIsland: string
 }
 
 export type ConfigInSave = AllKeysOptional<Config>
