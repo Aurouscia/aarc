@@ -9,7 +9,7 @@ import { coordDist } from "@/utils/coordUtils/coordDist";
 import { wayRel } from "@/utils/rayUtils/rayParallel";
 import { defineStore } from "pinia";
 
-type TerrainLink = { lineId: number, way: SgnCoord, dist: number, lineWidth:number }
+type TerrainLink = { lineId: number, inLineIdx:number, way: SgnCoord, dist: number, lineWidth:number }
 type TerrainTransition = {center:Coord, linkA:TerrainLink, linkB:TerrainLink, color:string}
 
 export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', ()=>{
@@ -98,17 +98,17 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
             const selfPos = saveStore.getPtById(pt.ptId)?.pos
             if (!selfPos)
                 return
-            const adjss: { pos: Coord, belongLine: number }[] = []
+            const adjss: { pos: Coord, belongLine: number, belongInLineIdx:number }[] = []
             pt.belongs.forEach(belong => {
                 const adjPoss = formalizedLineStore.findAdjacentFormatPts(belong.inLineIdx, belong.lineId)
-                const adjs = adjPoss.map(x => { return { pos: x, belongLine: belong.lineId } })
+                const adjs = adjPoss.map(x => { return { pos: x, belongLine: belong.lineId, belongInLineIdx: belong.inLineIdx } })
                 adjss.push(...adjs)
             })
             const linksHere: TerrainLink[] = []
             adjss.forEach(adj => {
                 const adjWay = twinPts2SgnCoord(selfPos, adj.pos)
                 const dist = coordDist(selfPos, adj.pos)
-                linksHere.push({ lineId: adj.belongLine, way: adjWay, dist, lineWidth:1 })
+                linksHere.push({ lineId: adj.belongLine, way: adjWay, dist, lineWidth:1, inLineIdx:adj.belongInLineIdx })
             })
             waysSort(linksHere, x => x.way)
             junctions.push({ ptPos: selfPos, links: linksHere })
@@ -129,7 +129,7 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
             const firstLineColor = saveStore.getLineActualColor(firstLine)
             for(let i=0;i<jun.links.length;i++){
                 let linkB = jun.links[i]
-                if(linkB.lineId === linkA.lineId){
+                if(linkB.lineId === linkA.lineId && linkB.inLineIdx === linkA.inLineIdx){
                     linkA = linkB
                     continue
                 }
