@@ -6,6 +6,7 @@ import { useSaveStore } from "@/models/stores/saveStore";
 import { sqrt2half } from "@/utils/consts";
 import { applyBias } from "@/utils/coordUtils/coordBias";
 import { coordDist } from "@/utils/coordUtils/coordDist";
+import { soften } from "@/utils/lang/soften";
 import { wayRel } from "@/utils/rayUtils/rayParallel";
 import { defineStore } from "pinia";
 
@@ -20,6 +21,8 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
         const transitionGroups = findTerrainTransitions()
         const lineWidthBase = cs.config.lineWidth
         transitionGroups.forEach(transGroup=>{
+            const curves:{mid:Coord, aWay:SgnCoord, bWay:SgnCoord}[] = []
+            let smallestAdditionalBack = 1e10
             ctx.beginPath()
             ctx.fillStyle = transGroup.color
             let isFirstT = true
@@ -27,34 +30,37 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                 const rel = wayRel(t.linkA.way, t.linkB.way)
                 if(rel==='parallel')
                     return
-                console.log(t.linkA.lineWidth, t.linkB.lineWidth)
                 const aWidth = t.linkA.lineWidth * lineWidthBase
                 const bWidth = t.linkB.lineWidth * lineWidthBase
                 let aBack = bWidth / 2
                 let bBack = aWidth / 2
-                const smallerWidth = Math.min(...[aBack, bBack].filter(x=>x>0)) 
                 if(rel==='others'){
                     aBack *= sqrt2half
                     bBack *= sqrt2half
                 }
+                const smallerWidth = Math.min(...[aBack, bBack].filter(x=>x>0)) 
                 const restriction = Math.min(t.linkA.dist/2, t.linkB.dist/2)
                 const biggerBack = Math.max(aBack, bBack)
                 const left = restriction - biggerBack
                 if(left <= 0)
                     return
-                const additionalBack = Math.min(left, cs.config.lineTurnAreaRadius * smallerWidth)
-                //此处计算贝塞尔控制点
-                const bzMid = applyBias(applyBias(t.center, t.linkA.way, aBack), t.linkB.way, bBack)
-                //下面计算头尾
-                const bzA = applyBias(bzMid, t.linkA.way, additionalBack)
-                const bzB = applyBias(bzMid, t.linkB.way, additionalBack)
+                const targetRadius = soften(cs.config.lineTurnAreaRadius * smallerWidth, 0.5)
+                const additionalBack = Math.min(left, targetRadius)
+                const mid = applyBias(applyBias(t.center, t.linkA.way, aBack), t.linkB.way, bBack)
+                curves.push({mid, aWay:t.linkA.way, bWay:t.linkB.way})
+                if(additionalBack<smallestAdditionalBack)
+                    smallestAdditionalBack = additionalBack
+            })
+            curves.forEach(c=>{
+                const a = applyBias(c.mid, c.aWay, smallestAdditionalBack)
+                const b = applyBias(c.mid, c.bWay, smallestAdditionalBack)
                 if(isFirstT){
-                    ctx.moveTo(...bzA)
+                    ctx.moveTo(...a)
                     isFirstT = false
                 }else{
-                    ctx.lineTo(...bzA)
+                    ctx.lineTo(...a)
                 }
-                ctx.quadraticCurveTo(...bzMid, ...bzB)
+                ctx.quadraticCurveTo(...c.mid, ...b)
             })
             ctx.closePath()
             ctx.fill()
