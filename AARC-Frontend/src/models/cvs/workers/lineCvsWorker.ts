@@ -15,7 +15,6 @@ import { rayRotate90 } from "@/utils/rayUtils/rayRotate";
 import { defineStore } from "pinia";
 import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
 import { getByIndexInRing, isRing } from "@/utils/lineUtils/isRing";
-import { soften } from "@/utils/lang/soften";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill?:boolean}
 type LineRenderType = 'both'|'body'|'carpet'
@@ -287,7 +286,6 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         if(formalPts.length<=1){
             return;
         }
-        const turnRadiusRatio = lineTurnRadiusRatio(lineInfo)
         const pts = formalPts.map(x=>x.pos)
         const first = pts[0]
         const second = pts[1]
@@ -304,11 +302,9 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
             const nextPt = pts[i+1]
             const nextDist = coordDist(nowPt, nextPt)
-            let turnRadius = cs.config.lineTurnAreaRadius * turnRadiusRatio
             const nowToNextRay = twinPts2Ray(nowPt, nextPt)
             const rel = rayRel(prevToNowRay, nowToNextRay)
-            if(rel==='others')
-                turnRadius /= 2.4142135*0.618 //tan(67.5°)=2.4142135
+            const turnRadius = cs.getTurnRadiusOf(lineInfo, rel==='perpendicular')
             const taRadius = Math.min(turnRadius, prevDist/2, nextDist/2)
             const prevBias:SgnCoord = [
                 sgn(prevPt[0] - nowPt[0]) as -1|0|1,
@@ -357,9 +353,6 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 ctx.fill()
             }
         }
-    }
-    function lineTurnRadiusRatio(line:Line){
-        return soften(line.width||1, 0.5)
     }
     return { renderAllLines, renderLine, renderSegsAroundActivePt }
 })

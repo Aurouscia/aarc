@@ -3,7 +3,7 @@ import { defineStore } from "pinia"
 import { computed, ref } from "vue"
 import { Config } from "../config"
 import { useSaveStore } from "./saveStore"
-import { ColorPreset } from "../save"
+import { ColorPreset, Line } from "../save"
 
 export const configDefault:Config = {
     bgColor: '#ffffff',
@@ -85,12 +85,28 @@ export const useConfigStore = defineStore('config', ()=>{
             return config.value.colorPresetArea
         return 'black'
     }
+    function getTurnRadiusOf(line:Line|number, perpendicular:boolean, justify:'outer'|'middle'|'inner' = 'inner'){
+        let lineWidthRatio = typeof line == 'number' ? line : line.width
+        const base = config.value.lineTurnAreaRadius
+        let radius:number
+        if(justify==='middle'){
+            radius = base
+        }else{
+            const justifyBy = config.value.lineWidth * (lineWidthRatio || 1) / 2
+            radius = justify==='outer' ? base - justifyBy : base + justifyBy
+        }
+        if(radius<0)
+            radius = 0 
+        if(!perpendicular)
+            radius /= 2.4142135*0.618 //tan(67.5°)=2.4142135
+        return radius
+    }
 
     return { 
         config, readConfigFromSave,
         staNameFontStr, staNameFontSubStr,
         clickPtThrsSq, clickLineThrsSq, clickLineThrs_sqrt2_sq, 
         snapOctaClingPtPtThrsSq, snapOctaClingPtNameThrsSq,
-        getPresetColor
+        getPresetColor, getTurnRadiusOf
     }
 })

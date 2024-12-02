@@ -6,7 +6,6 @@ import { useSaveStore } from "@/models/stores/saveStore";
 import { sqrt2half } from "@/utils/consts";
 import { applyBias } from "@/utils/coordUtils/coordBias";
 import { coordDist } from "@/utils/coordUtils/coordDist";
-import { soften } from "@/utils/lang/soften";
 import { wayRel } from "@/utils/rayUtils/rayParallel";
 import { defineStore } from "pinia";
 
@@ -38,13 +37,14 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                     aBack *= sqrt2half
                     bBack *= sqrt2half
                 }
-                const smallerWidth = Math.min(...[aBack, bBack].filter(x=>x>0)) 
+                const noZeroWidthRatio = [t.linkA.lineWidth, t.linkB.lineWidth].filter(x=>x>0)
+                const smallerWidthRatio = noZeroWidthRatio.length>0 ? Math.min(...noZeroWidthRatio) : 1 
                 const restriction = Math.min(t.linkA.dist/2, t.linkB.dist/2)
                 const biggerBack = Math.max(aBack, bBack)
                 const left = restriction - biggerBack
                 if(left <= 0)
                     return
-                const targetRadius = soften(cs.config.lineTurnAreaRadius * smallerWidth, 0.5)
+                const targetRadius = cs.getTurnRadiusOf(smallerWidthRatio, rel=='perpendicular', 'middle')
                 const additionalBack = Math.min(left, targetRadius)
                 const mid = applyBias(applyBias(t.center, t.linkA.way, aBack), t.linkB.way, bBack)
                 curves.push({mid, aWay:t.linkA.way, bWay:t.linkB.way})
