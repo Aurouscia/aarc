@@ -1,3 +1,4 @@
+import { coordCrossProduct } from "@/utils/coordUtils/coordMath"
 import { sgn } from "@/utils/sgn"
 
 export type Coord = [number, number]
@@ -50,4 +51,9 @@ export function twinPts2SgnCoord(from:Coord, to:Coord):SgnCoord{
 }
 export function waySame(way0:SgnCoord, way1:SgnCoord){
     return way0[0] == way1[0] && way0[1] == way1[1]
+}
+export function waysSort<T>(items:T[], waySelector:(item:T)=>SgnCoord){
+    items.sort((a,b)=>{
+        return coordCrossProduct(waySelector(a), waySelector(b))
+    })
 }

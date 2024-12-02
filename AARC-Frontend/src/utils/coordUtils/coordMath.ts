@@ -12,6 +12,9 @@ export function coordTo0DistSq(a:Coord):number{
 export function coordMut(a:Coord, c:number):Coord{
     return [a[0]*c, a[1]*c]
 }
+export function coordCrossProduct(a:Coord, b:Coord):number{
+    return a[0]*b[1] - a[1]*b[0]
+}
 
 export function coordTwinShrink(fixed:Coord, move:Coord, by:number){
     const diff = coordSub(fixed, move)

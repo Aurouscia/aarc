@@ -1,4 +1,4 @@
-import { FormalPt } from "@/models/coord";
+import { Coord, FormalPt } from "@/models/coord";
 import { defineStore } from "pinia";
 
 export interface FormalizedLine{
@@ -23,11 +23,28 @@ export const useFormalizedLineStore = defineStore('formalizedLine', ()=>{
             target.pts = pts
         }
     }
+    function findAdjacentFormatPts(ptIdx:number, lineId:number){
+        const line = formalizedLines.find(x=>x.lineId==lineId)
+        if(!line)
+            return []
+        const idx = line?.pts.findIndex(x=>x.afterIdxEqv==ptIdx)
+        if(idx===-1)
+            return []
+        const res:Coord[] = []
+        if(idx>0){
+            res.push(line.pts[idx-1].pos)
+        }
+        if(idx<line.pts.length-1){
+            res.push(line.pts[idx+1].pos)
+        }
+        return res
+    }
     function enumerateFormalizedLines(fn:(line:FormalizedLine)=>void){
         formalizedLines.forEach(fn)
     }
     return { 
         setLinesFormalPts,
-        enumerateFormalizedLines
+        enumerateFormalizedLines,
+        findAdjacentFormatPts
     }
 })

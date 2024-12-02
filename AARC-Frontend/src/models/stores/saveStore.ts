@@ -34,10 +34,18 @@ export const useSaveStore = defineStore('save', () => {
     function getLineById(lineId:number){
         return save.value?.lines.find(l=>l.id == lineId)
     }
+    function getLinesByIds(lineIds:Set<number>){
+        return save.value?.lines.filter(l=>lineIds.has(l.id)) || []
+    }
     function getLineActualColor(line:Line) {
         if (line.colorPre) 
             return configStore.getPresetColor(line.colorPre)
         return line.color
+    }
+    function linesActualColorSame(lineA:Line, lineB:Line){
+        if(!lineA.colorPre && !lineB.colorPre)
+            return lineA.color === lineB.color
+        return lineA.colorPre === lineB.colorPre
     }
     function getLineActualColorById(lineId:number){
         const line = getLineById(lineId)
@@ -297,7 +305,7 @@ export const useSaveStore = defineStore('save', () => {
     const disposedStaNameOf = ref<(ptId:number)=>void>(()=>{})
     return { 
         save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf,
-        getPtById, getPtsByIds, getLineById, getLineActualColor, getLineActualColorById,
+        getPtById, getPtsByIds, getLineById, getLinesByIds, getLineActualColor, linesActualColorSame, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType,
         insertNewPtToLine, insertPtToLine, createNewLine, removePt, removePtFromLine, arrangeLinesOfType, tryMergePt,
         isNamedPt, isLineTypeWithoutSta, isPtNoSta
