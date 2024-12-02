@@ -304,7 +304,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             const nextDist = coordDist(nowPt, nextPt)
             const nowToNextRay = twinPts2Ray(nowPt, nextPt)
             const rel = rayRel(prevToNowRay, nowToNextRay)
-            const turnRadius = cs.getTurnRadiusOf(lineInfo, rel==='perpendicular')
+            const turnRadius = cs.getTurnRadiusOf(lineInfo, rel)
             const taRadius = Math.min(turnRadius, prevDist/2, nextDist/2)
             const prevBias:SgnCoord = [
                 sgn(prevPt[0] - nowPt[0]) as -1|0|1,

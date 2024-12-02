@@ -4,6 +4,7 @@ import { computed, ref } from "vue"
 import { Config } from "../config"
 import { useSaveStore } from "./saveStore"
 import { ColorPreset, Line } from "../save"
+import { WayRel } from "@/utils/rayUtils/rayParallel"
 
 export const configDefault:Config = {
     bgColor: '#ffffff',
@@ -85,7 +86,7 @@ export const useConfigStore = defineStore('config', ()=>{
             return config.value.colorPresetArea
         return 'black'
     }
-    function getTurnRadiusOf(line:Line|number, perpendicular:boolean, justify:'outer'|'middle'|'inner' = 'inner'){
+    function getTurnRadiusOf(line:Line|number, turnRel:WayRel, justify:'outer'|'middle'|'inner' = 'inner'){
         let lineWidthRatio = typeof line == 'number' ? line : line.width
         const base = config.value.lineTurnAreaRadius
         let radius:number
@@ -97,8 +98,10 @@ export const useConfigStore = defineStore('config', ()=>{
         }
         if(radius<0)
             radius = 0 
-        if(!perpendicular)
+        else if(turnRel === '45')
             radius /= 2.4142135*0.618 //tan(67.5°)=2.4142135
+        else if(turnRel === '135')
+            radius *= 2.4142135/0.618
         return radius
     }
 

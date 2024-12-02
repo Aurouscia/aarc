@@ -25,15 +25,17 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
             ctx.beginPath()
             ctx.fillStyle = transGroup.color
             let isFirstT = true
+            console.log(transGroup)
             transGroup.trans.forEach(t=>{
-                const rel = wayRel(t.linkA.way, t.linkB.way)
+                const rel = wayRel(t.linkA.way, t.linkB.way, true)
+                console.log(rel)
                 if(rel==='parallel')
                     return
                 const aWidth = t.linkA.lineWidth * lineWidthBase
                 const bWidth = t.linkB.lineWidth * lineWidthBase
                 let aBack = bWidth / 2
                 let bBack = aWidth / 2
-                if(rel==='others'){
+                if(rel==='45' || rel === '135'){
                     aBack *= sqrt2
                     bBack *= sqrt2
                     aBack -= 0.5 //不少后退点就有莫名其妙的缝隙
@@ -46,7 +48,7 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                 const left = restriction - biggerBack
                 if(left <= 0)
                     return
-                const targetRadius = cs.getTurnRadiusOf(smallerWidthRatio, rel=='perpendicular', 'middle')
+                const targetRadius = cs.getTurnRadiusOf(smallerWidthRatio, rel, 'middle')
                 const additionalBack = Math.min(left, targetRadius)
                 const mid = applyBias(applyBias(t.center, t.linkA.way, aBack), t.linkB.way, bBack)
                 curves.push({mid, aWay:t.linkA.way, bWay:t.linkB.way})
