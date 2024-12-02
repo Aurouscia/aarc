@@ -15,6 +15,7 @@ import { rayRotate90 } from "@/utils/rayUtils/rayRotate";
 import { defineStore } from "pinia";
 import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
 import { getByIndexInRing, isRing } from "@/utils/lineUtils/isRing";
+import { drawArcByThreePoints } from "@/utils/drawUtils/drawArc";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill?:boolean}
 type LineRenderType = 'both'|'body'|'carpet'
@@ -317,7 +318,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             ]
             const nextSok = applyBias(nowPt, nextBias, taRadius)
             ctx.lineTo(...prevSok)
-            ctx.quadraticCurveTo(...nowPt, ...nextSok)
+            drawArcByThreePoints(ctx, prevSok, nowPt, nextSok)
             prevDist = nextDist;
             prevToNowRay = nowToNextRay;
             prevPt = nowPt;

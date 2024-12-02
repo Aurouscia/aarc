@@ -84,3 +84,7 @@ export function wayClockwiseIdx(way:SgnCoord):number{
         return 7
     }
 }
+export function wayAngle(way:SgnCoord):number{
+    const idx = wayClockwiseIdx(way)
+    return (idx - 2) * Math.PI / 4
+}
