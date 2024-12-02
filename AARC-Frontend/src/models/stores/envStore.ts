@@ -185,16 +185,12 @@ export const useEnvStore = defineStore('env', ()=>{
         }
 
         //点击空白位置
-        let changedLines:number[] = []
-        let movedStaNames:number[] = []
         if(activePt.value){
             const tryMergeRes = saveStore.tryMergePt(activePt.value?.id)
             if(tryMergeRes){
-                changedLines.push(...tryMergeRes.mutatedLines.map(x=>x.id))
-                movedStaNames.push(tryMergeRes.mergedByPt.id, activePt.value.id)
-            }else{
-                changedLines.push(...saveStore.getLinesByPt(activePt.value.id).map(x=>x.id))
-                movedStaNames.push(activePt.value.id)
+                const changedLines = tryMergeRes.mutatedLines.map(x=>x.id)
+                const movedStaNames = [tryMergeRes.mergedByPt.id, activePt.value.id]
+                pointMutated.value(changedLines, movedStaNames)
             }
         }
         activePt.value = undefined
