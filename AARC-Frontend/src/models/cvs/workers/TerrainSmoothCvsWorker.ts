@@ -6,6 +6,7 @@ import { useSaveStore } from "@/models/stores/saveStore";
 import { sqrt2 } from "@/utils/consts";
 import { applyBias } from "@/utils/coordUtils/coordBias";
 import { coordDist } from "@/utils/coordUtils/coordDist";
+import { isSameIdxInLine } from "@/utils/lineUtils/isRing";
 import { wayRel } from "@/utils/rayUtils/rayParallel";
 import { defineStore } from "pinia";
 
@@ -20,15 +21,13 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
         const transitionGroups = findTerrainTransitions()
         const lineWidthBase = cs.config.lineWidth
         transitionGroups.forEach(transGroup=>{
-            const curves:{mid:Coord, aWay:SgnCoord, bWay:SgnCoord}[] = []
+            const curves:{center:Coord, mid:Coord, aWay:SgnCoord, bWay:SgnCoord}[] = []
             let smallestAdditionalBack = 1e10
             ctx.beginPath()
             ctx.fillStyle = transGroup.color
             let isFirstT = true
-            console.log(transGroup)
             transGroup.trans.forEach(t=>{
                 const rel = wayRel(t.linkA.way, t.linkB.way, true)
-                console.log(rel)
                 if(rel==='parallel')
                     return
                 const aWidth = t.linkA.lineWidth * lineWidthBase
@@ -51,7 +50,7 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                 const targetRadius = cs.getTurnRadiusOf(smallerWidthRatio, rel, 'middle')
                 const additionalBack = Math.min(left, targetRadius)
                 const mid = applyBias(applyBias(t.center, t.linkA.way, aBack), t.linkB.way, bBack)
-                curves.push({mid, aWay:t.linkA.way, bWay:t.linkB.way})
+                curves.push({center:t.center, mid, aWay:t.linkA.way, bWay:t.linkB.way})
                 if(additionalBack<smallestAdditionalBack)
                     smallestAdditionalBack = additionalBack
             })
@@ -59,11 +58,10 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                 const a = applyBias(c.mid, c.aWay, smallestAdditionalBack)
                 const b = applyBias(c.mid, c.bWay, smallestAdditionalBack)
                 if(isFirstT){
-                    ctx.moveTo(...a)
+                    ctx.moveTo(...c.center)
                     isFirstT = false
-                }else{
-                ctx.lineTo(...a)
                 }
+                ctx.lineTo(...a)
                 ctx.quadraticCurveTo(...c.mid, ...b)
             })
             ctx.closePath()
@@ -127,18 +125,18 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
             const transHere:TerrainTransition[] = []
             let linkA = jun.links[jun.links.length-1]
             let lineA = relatedLines.find(x=>x.id===linkA.lineId)
-            const firstLine = lineA
-            if(!firstLine)
+            if(!lineA)
                 return
+            const firstLine = lineA
             const firstLineColor = saveStore.getLineActualColor(firstLine)
             for(let i=0;i<jun.links.length;i++){
                 let linkB = jun.links[i]
-                if(linkB.lineId === linkA.lineId && linkB.inLineIdx === linkA.inLineIdx){
+                if(linkB.lineId === linkA.lineId && isSameIdxInLine(lineA, linkA.inLineIdx, linkB.inLineIdx)){
                     linkA = linkB
                     continue
                 }
                 const lineB = relatedLines.find(x=>x.id===linkB.lineId)
-                if(lineA && lineB){
+                if(lineB){
                     //确保junction的每一条线都颜色一致
                     if(saveStore.linesActualColorSame(firstLine, lineB)){
                         linkA.lineWidth = lineA.width || 1
@@ -155,7 +153,8 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                         }
                         transHere.push(trans)
                     }
-                }
+                }else
+                    return
                 lineA = lineB
                 linkA = linkB
             }

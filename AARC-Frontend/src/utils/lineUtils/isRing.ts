@@ -1,8 +1,8 @@
 import { ControlPoint, Line } from "@/models/save";
 
-export function isRing(line:Line|number[]|ControlPoint[]){
+function getPtIds(line:Line|number[]|ControlPoint[]){
     if('length' in line && line.length<=2)
-        return
+        return []
     let ptIds:number[] = []
     if('name' in line){
         ptIds = line.pts
@@ -11,17 +11,16 @@ export function isRing(line:Line|number[]|ControlPoint[]){
     }else{
         ptIds = (line as ControlPoint[]).map(x=>x.id)
     }
+    return ptIds
+}
+export function isRing(line:Line|number[]|ControlPoint[]){
+    const ptIds = getPtIds(line)
     if(ptIds.length<=2)
         return
     return ptIds[0] === ptIds[ptIds.length-1]
 }
 export function getByIndexInRing(line:Line|number[], idx:number){
-    let ptIds:number[] = []
-    if('name' in line){
-        ptIds = line.pts
-    }else{
-        ptIds = line
-    }
+    const ptIds = getPtIds(line)
     const maxIdx = ptIds.length-1
     if(idx>=0 && idx<=maxIdx){
         return ptIds[idx]
@@ -36,4 +35,15 @@ export function getByIndexInRing(line:Line|number[], idx:number){
             return ptIds[diff]
         }
     }
+}
+export function isSameIdxInLine(line:Line|number[], idxA:number, idxB:number){
+    if(isRing(line)){
+        const ptIds = getPtIds(line)
+        const maxIdx = ptIds.length-1
+        if(idxA === maxIdx)
+            idxA = 0
+        if(idxB === maxIdx)
+            idxB = 0
+    }
+    return idxA === idxB
 }
