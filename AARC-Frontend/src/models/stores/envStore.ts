@@ -201,7 +201,6 @@ export const useEnvStore = defineStore('env', ()=>{
         activeLine.value = undefined
         cursorPos.value = undefined
         setOpsPos(false)
-        pointMutated.value(changedLines, movedStaNames)
         movedPoint.value = false
         activePtNameSnapped.value = 'no'
         nameEditStore.endEditing()
@@ -489,7 +488,8 @@ export const useEnvStore = defineStore('env', ()=>{
             }
         })
         needRemoveIds.forEach(lineId=>delLine(lineId, true))
-        pointMutated.value([],[])
+        if(needRemoveIds.length>0)
+            pointMutated.value([],[])
     }
     function ensureSpaceForNewPt(coord:Coord){
         const original:Coord = [...coord]

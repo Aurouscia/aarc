@@ -1,4 +1,3 @@
-import { coordCrossProduct } from "@/utils/coordUtils/coordMath"
 import { sgn } from "@/utils/sgn"
 
 export type Coord = [number, number]
@@ -85,6 +84,3 @@ export function wayClockwiseIdx(way:SgnCoord):number{
         return 7
     }
 }
-
-//TODO：pureClickHandler的重复渲染
-//合并点时冒出来的车站图标
