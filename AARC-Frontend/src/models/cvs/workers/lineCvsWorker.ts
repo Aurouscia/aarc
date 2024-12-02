@@ -15,6 +15,7 @@ import { rayRotate90 } from "@/utils/rayUtils/rayRotate";
 import { defineStore } from "pinia";
 import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
 import { getByIndexInRing, isRing } from "@/utils/lineUtils/isRing";
+import { soften } from "@/utils/lang/soften";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill?:boolean}
 type LineRenderType = 'both'|'body'|'carpet'
@@ -46,7 +47,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         if(needReportFormalPts){
             formalizedLineStore.setLinesFormalPts(line.id, formalPts)
         }
-        linkPts(ctx, formalPts, line.width)
+        linkPts(ctx, formalPts, line)
         doRender(ctx, line, undefined, undefined, rtype)
     }
     function renderSegsAroundActivePt(ctx:CanvasRenderingContext2D)
@@ -110,7 +111,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
             fpts.forEach(pt=>relatedPts.add(pt))
             formalizedSegs.push({lineId:line.id, pts:formalized})
-            linkPts(ctx, formalized, line.width)
+            linkPts(ctx, formalized, line)
             const enforceLineWidth = line.isFilled ? 1 : undefined
             doRender(ctx, line, true, enforceLineWidth)
         })
@@ -282,12 +283,11 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
         })
     }
-    function linkPts(ctx:CanvasRenderingContext2D, formalPts:FormalPt[], turnRadiusRatio:number|undefined){
+    function linkPts(ctx:CanvasRenderingContext2D, formalPts:FormalPt[], lineInfo:Line){
         if(formalPts.length<=1){
             return;
         }
-        if(!turnRadiusRatio)
-            turnRadiusRatio = 1
+        const turnRadiusRatio = lineTurnRadiusRatio(lineInfo)
         const pts = formalPts.map(x=>x.pos)
         const first = pts[0]
         const second = pts[1]
@@ -357,6 +357,9 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 ctx.fill()
             }
         }
+    }
+    function lineTurnRadiusRatio(line:Line){
+        return soften(line.width||1, 0.5)
     }
     return { renderAllLines, renderLine, renderSegsAroundActivePt }
 })
