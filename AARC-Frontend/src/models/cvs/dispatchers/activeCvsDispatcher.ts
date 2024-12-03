@@ -5,7 +5,7 @@ import { useEnvStore } from "@/models/stores/envStore";
 import { usePointCvsWorker } from "../workers/pointCvsWorker";
 import { useRayCvsWorker } from "../workers/rayCvsWorker";
 import { useSnapStore } from "@/models/stores/snapStore";
-import { useTextCvsWorker } from "../workers/textCvsWorker";
+import { useStaNameCvsWorker } from "../workers/staNameCvsWorker";
 import { useLineExtendCvsWorker } from "../workers/lineExtendCvsWorker";
 import { useLineExtendStore } from "@/models/stores/saveDerived/saveDerivedDerived/lineExtendStore";
 import { useCursorCvsWorker } from "../workers/cursorCvsWorker";
@@ -22,7 +22,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const { renderSegsAroundActivePt, renderLine } = useLineCvsWorker()
     const { renderSomePoints, renderLinePoints, renderPointById } = usePointCvsWorker()
     const { renderRay } = useRayCvsWorker()
-    const { renderPtNameById } = useTextCvsWorker()
+    const { renderPtNameById } = useStaNameCvsWorker()
     const { renderLineExtend } = useLineExtendCvsWorker()
     const { renderCursor } = useCursorCvsWorker()
     const { renderEmphasizesForRingLines } = useEmphasizeCvsWorker()

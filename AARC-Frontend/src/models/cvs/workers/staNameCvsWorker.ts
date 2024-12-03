@@ -7,7 +7,7 @@ import { coordTwinShrink } from "@/utils/coordUtils/coordMath";
 import { sgn } from "@/utils/sgn";
 import { defineStore } from "pinia";
 
-export const useTextCvsWorker = defineStore('textCvsWorker', ()=>{
+export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const staNameRectStore = useStaNameRectStore()
     const cs = useConfigStore()
