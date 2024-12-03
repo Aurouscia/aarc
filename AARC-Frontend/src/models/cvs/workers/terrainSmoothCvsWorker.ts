@@ -35,6 +35,7 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                     return
                 const aWidth = t.linkA.lineWidth * lineWidthBase
                 const bWidth = t.linkB.lineWidth * lineWidthBase
+                const widthDiff = Math.abs(aWidth - bWidth)
                 let aBack = bWidth / 2
                 let bBack = aWidth / 2
                 if(rel==='45' || rel === '135'){
@@ -48,8 +49,8 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                 const restriction = Math.min(t.linkA.dist/2, t.linkB.dist/2)
                 const biggerBack = Math.max(aBack, bBack)
                 const left = restriction - biggerBack
-                if(left <= 0)
-                    return
+                if(left <= widthDiff/3)
+                    return //当余量小于线条宽度之差的1/3（其实应该是1/2，这里放松了）就放弃渲染
                 const targetRadius = cs.getTurnRadiusOf(smallerWidthRatio, rel, 'middle')
                 const additionalBack = Math.min(left, targetRadius)
                 const mid = applyBias(applyBias(t.center, t.linkA.way, aBack), t.linkB.way, bBack)
