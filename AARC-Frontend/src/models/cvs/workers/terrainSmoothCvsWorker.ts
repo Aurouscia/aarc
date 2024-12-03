@@ -8,7 +8,7 @@ import { applyBias } from "@/utils/coordUtils/coordBias";
 import { coordDist } from "@/utils/coordUtils/coordDist";
 import { drawArcByThreePoints } from "@/utils/drawUtils/drawArc";
 import { isSameIdxInLine } from "@/utils/lineUtils/isRing";
-import { wayRel } from "@/utils/rayUtils/rayParallel";
+import { WayRel, wayRel } from "@/utils/rayUtils/rayParallel";
 import { defineStore } from "pinia";
 
 type TerrainLink = { lineId: number, inLineIdx:number, way: SgnCoord, dist: number, lineWidth:number }
@@ -22,8 +22,10 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
         const transitionGroups = findTerrainTransitions()
         const lineWidthBase = cs.config.lineWidth
         transitionGroups.forEach(transGroup=>{
-            const curves:{center:Coord, mid:Coord, aWay:SgnCoord, bWay:SgnCoord}[] = []
-            let smallestAdditionalBack = 1e10
+            const curves:{center:Coord, mid:Coord, aWay:SgnCoord, bWay:SgnCoord, rel:WayRel}[] = []
+            //保持同角度的圆角半径一致
+            let smallestAdditionalBack:Record<WayRel, number> 
+                = {'45':1e10, '90':1e10, '135':1e10, 'parallel':0}
             ctx.beginPath()
             ctx.fillStyle = transGroup.color
             let isFirstT = true
@@ -51,13 +53,13 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                 const targetRadius = cs.getTurnRadiusOf(smallerWidthRatio, rel, 'middle')
                 const additionalBack = Math.min(left, targetRadius)
                 const mid = applyBias(applyBias(t.center, t.linkA.way, aBack), t.linkB.way, bBack)
-                curves.push({center:t.center, mid, aWay:t.linkA.way, bWay:t.linkB.way})
-                if(additionalBack<smallestAdditionalBack)
-                    smallestAdditionalBack = additionalBack
+                curves.push({center:t.center, mid, aWay:t.linkA.way, bWay:t.linkB.way, rel})
+                if(additionalBack<smallestAdditionalBack[rel])
+                    smallestAdditionalBack[rel] = additionalBack
             })
             curves.forEach(c=>{
-                const a = applyBias(c.mid, c.aWay, smallestAdditionalBack)
-                const b = applyBias(c.mid, c.bWay, smallestAdditionalBack)
+                const a = applyBias(c.mid, c.aWay, smallestAdditionalBack[c.rel])
+                const b = applyBias(c.mid, c.bWay, smallestAdditionalBack[c.rel])
                 if(isFirstT){
                     ctx.moveTo(...c.center)
                     isFirstT = false

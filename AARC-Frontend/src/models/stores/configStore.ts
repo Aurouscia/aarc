@@ -100,11 +100,14 @@ export const useConfigStore = defineStore('config', ()=>{
             radius = justify==='outer' ? base - justifyBy : base + justifyBy
         }
         if(radius<0)
-            radius = 0 
+            radius = 0
+        //tan(67.5°)=2.4142135
+        //0.618 仅仅是我感觉比直角小点好看些，但是又不知道缩小多少合适
         else if(turnRel === '45')
-            radius /= 2.4142135*0.618 //tan(67.5°)=2.4142135
-        else if(turnRel === '135')
-            radius *= 2.4142135/0.618
+            radius /= 2.4142135*0.618 
+        else if(turnRel === '135'){
+            radius *= 2.4142135*0.618
+        }
         return radius
     }
 

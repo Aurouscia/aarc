@@ -37,7 +37,7 @@ export function wayRel(a:SgnCoord, b:SgnCoord, inverted?:boolean):WayRel{
     let close = dot > 0
     if(inverted)
         close = !close
-    if(dot > 0)
+    if(close)
         return '45'
     return '135'
 }
