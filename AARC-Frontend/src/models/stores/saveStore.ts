@@ -248,12 +248,17 @@ export const useSaveStore = defineStore('save', () => {
         const thatLines = getLinesByPt(thatPt.id)
         let keepThis = true
         if(thisLines.length == thatLines.length){
-            keepThis = (thisPt.name?.length || 0) > (thatPt?.name?.length || 0)
+            keepThis = (thisPt.name?.trim().length || 0) > (thatPt?.name?.trim().length || 0)
         }else{
             keepThis = thisLines.length > thatLines.length
         }
         let keepPt = keepThis ? thisPt : thatPt
         let delPt = keepThis ? thatPt : thisPt
+        if(!keepPt.name?.trim() && !keepPt.nameS?.trim()){
+            keepPt.name = delPt.name
+            keepPt.nameS = delPt.nameS
+            keepPt.nameP = delPt.nameP
+        }
         let delFromLines = keepThis ? thatLines : thisLines
         delFromLines.forEach(line=>{
             for(let i=0; i<line.pts.length; i++){
