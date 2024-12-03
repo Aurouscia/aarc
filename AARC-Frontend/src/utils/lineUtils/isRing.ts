@@ -1,4 +1,6 @@
+import { FormalPt } from "@/models/coord";
 import { ControlPoint, Line } from "@/models/save";
+import { isSameCoord } from "../sgn";
 
 function getPtIds(line:Line|number[]|ControlPoint[]){
     if('length' in line && line.length<=2)
@@ -18,6 +20,13 @@ export function isRing(line:Line|number[]|ControlPoint[]){
     if(ptIds.length<=2)
         return
     return ptIds[0] === ptIds[ptIds.length-1]
+}
+export function isRingByFormalPts(formalPts:FormalPt[]){
+    if(formalPts.length<=2)
+        return
+    const first = formalPts[0]
+    const last = formalPts[formalPts.length-1]
+    return isSameCoord(first.pos, last.pos)
 }
 export function getByIndexInRing(line:Line|number[], idx:number){
     const ptIds = getPtIds(line)

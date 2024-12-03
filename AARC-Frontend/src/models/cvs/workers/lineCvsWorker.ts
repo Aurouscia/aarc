@@ -2,9 +2,8 @@ import { useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, Line, LineType } from "../../save";
 import { coordRelDiff } from "@/utils/coordUtils/coordRel";
 import { applyBias } from "@/utils/coordUtils/coordBias";
-import { Coord, FormalPt, FormalRay, SgnCoord, twinPts2Ray } from "../../coord";
+import { Coord, FormalPt, FormalRay, twinPts2Ray, twinPts2SgnCoord } from "../../coord";
 import { coordFill } from "@/utils/coordUtils/coordFill";
-import { sgn } from "@/utils/sgn";
 import { coordDist } from "@/utils/coordUtils/coordDist";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useConfigStore } from "@/models/stores/configStore";
@@ -14,7 +13,7 @@ import { rayPerpendicular, rayRel } from "@/utils/rayUtils/rayParallel";
 import { rayRotate90 } from "@/utils/rayUtils/rayRotate";
 import { defineStore } from "pinia";
 import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
-import { getByIndexInRing, isRing } from "@/utils/lineUtils/isRing";
+import { getByIndexInRing, isRing, isRingByFormalPts } from "@/utils/lineUtils/isRing";
 import { drawArcByThreePoints } from "@/utils/drawUtils/drawArc";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill?:boolean}
@@ -287,41 +286,71 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         if(formalPts.length<=1){
             return;
         }
+        const isRingLine = isRingByFormalPts(formalPts)
         const pts = formalPts.map(x=>x.pos)
         const first = pts[0]
         const second = pts[1]
         ctx.beginPath()
-        ctx.moveTo(first[0], first[1])
-        let prevPt:Coord = first
-        let prevToNowRay:FormalRay = twinPts2Ray(first, second)
-        let prevDist:number = coordDist(first, second);
-        for(let i=1;i<pts.length;i++){
-            const nowPt = pts[i]
-            if(i==pts.length-1){
-                ctx.lineTo(nowPt[0], nowPt[1])
-                break;
+        if(!isRingLine){
+            ctx.moveTo(...first)
+            let prevPt:Coord = first
+            let prevToNowRay:FormalRay = twinPts2Ray(first, second)
+            let prevDist:number = coordDist(first, second);
+            for(let i=1;i<pts.length;i++){
+                const nowPt = pts[i]
+                if(i==pts.length-1){
+                    ctx.lineTo(...nowPt)
+                    break;
+                }
+                const nextPt = pts[i+1]
+                const nextDist = coordDist(nowPt, nextPt)
+                const nowToNextRay = twinPts2Ray(nowPt, nextPt)
+                const rel = rayRel(prevToNowRay, nowToNextRay)
+                const turnRadius = cs.getTurnRadiusOf(lineInfo, rel)
+                const taRadius = Math.min(turnRadius, prevDist/2, nextDist/2)
+                const prevBias = twinPts2SgnCoord(nowPt, prevPt)
+                const prevSok = applyBias(nowPt, prevBias, taRadius)
+                const nextBias = twinPts2SgnCoord(nowPt, nextPt) 
+                const nextSok = applyBias(nowPt, nextBias, taRadius)
+                ctx.lineTo(...prevSok)
+                drawArcByThreePoints(ctx, prevSok, nowPt, nextSok)
+                prevDist = nextDist;
+                prevToNowRay = nowToNextRay;
+                prevPt = nowPt;
             }
-            const nextPt = pts[i+1]
-            const nextDist = coordDist(nowPt, nextPt)
-            const nowToNextRay = twinPts2Ray(nowPt, nextPt)
-            const rel = rayRel(prevToNowRay, nowToNextRay)
-            const turnRadius = cs.getTurnRadiusOf(lineInfo, rel)
-            const taRadius = Math.min(turnRadius, prevDist/2, nextDist/2)
-            const prevBias:SgnCoord = [
-                sgn(prevPt[0] - nowPt[0]) as -1|0|1,
-                sgn(prevPt[1] - nowPt[1]) as -1|0|1,
-            ]
-            const prevSok = applyBias(nowPt, prevBias, taRadius)
-            const nextBias:SgnCoord = [
-                sgn(nextPt[0] - nowPt[0]) as -1|0|1,
-                sgn(nextPt[1] - nowPt[1]) as -1|0|1,
-            ]
-            const nextSok = applyBias(nowPt, nextBias, taRadius)
-            ctx.lineTo(...prevSok)
-            drawArcByThreePoints(ctx, prevSok, nowPt, nextSok)
-            prevDist = nextDist;
-            prevToNowRay = nowToNextRay;
-            prevPt = nowPt;
+        }else{
+            const lastButOnePt = pts[pts.length-2]
+            let prevPt:Coord = lastButOnePt
+            let prevToNowRay:FormalRay = twinPts2Ray(lastButOnePt, first)
+            let prevDist:number = coordDist(lastButOnePt, first);
+            let ringHeadStartSok:Coord = [0,0]
+            for(let i=0;i<pts.length;i++){
+                const nowPt = pts[i]
+                if(i===pts.length-1){
+                    ctx.lineTo(...ringHeadStartSok)
+                    break;
+                }
+                const nextPt = pts[i+1]
+                const nextDist = coordDist(nowPt, nextPt)
+                const nowToNextRay = twinPts2Ray(nowPt, nextPt)
+                const rel = rayRel(prevToNowRay, nowToNextRay)
+                const turnRadius = cs.getTurnRadiusOf(lineInfo, rel)
+                const taRadius = Math.min(turnRadius, prevDist/2, nextDist/2)
+                const prevBias = twinPts2SgnCoord(nowPt, prevPt)
+                const prevSok = applyBias(nowPt, prevBias, taRadius)
+                const nextBias = twinPts2SgnCoord(nowPt, nextPt) 
+                const nextSok = applyBias(nowPt, nextBias, taRadius)
+                if(i===0){
+                    ctx.moveTo(...prevSok)
+                    ringHeadStartSok = prevSok
+                }
+                else
+                    ctx.lineTo(...prevSok)
+                drawArcByThreePoints(ctx, prevSok, nowPt, nextSok)
+                prevDist = nextDist;
+                prevToNowRay = nowToNextRay;
+                prevPt = nowPt;
+            }
         }
     }
     function doRender(ctx:CanvasRenderingContext2D, lineInfo:Line, enforceNoFill?:boolean, enforceLineWidth?:number, type?:LineRenderType){
