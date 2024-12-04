@@ -42,7 +42,7 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             ctx.stroke()
         }
 
-        const rect = drawText(ctx, globalPos, align, {
+        const rect = drawText(ctx, globalPos, align, undefined, {
             text: pt.name,
             color: cs.config.staNameColor,
             font: cs.config.staNameFont,

@@ -14,7 +14,7 @@ export interface DrawTextStrokeOption{
     opacity:number
 }
 export function drawText(
-    ctx:CanvasRenderingContext2D, pos:Coord, align:SgnCoord,
+    ctx:CanvasRenderingContext2D, pos:Coord, align:SgnCoord, textAlignOverride: SgnNumber|undefined,
     main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false, task:'draw'|'measure'|'both' = 'both'): RectCoord|undefined
 {
     const [x, y] = pos
@@ -26,14 +26,15 @@ export function drawText(
     const subLines = sub.text?.split('\n').map(x=>x.trim()) || []
     const subHeight = subLines.length * sub.rowHeight
     const totalHeight = mainHeight+subHeight
-
-    ctx.textAlign = getTextAlign(xSgn)
-    const rowMargin = main.rowHeight - main.fontSize
+    const rowMargin = main.rowHeight - main.fontSize //减去文本上下的空隙（半个“行距与字体大小之差”）
     const yTop = getYTop(y, ySgn, totalHeight, rowMargin)
 
+    const mainFontStr = concatFontStr(main.font, main.fontSize)
+    const subFontStr = concatFontStr(sub.font, sub.fontSize)
     const mainMeasures:ActualBaselineResult[] = []
     const subMeasures:ActualBaselineResult[] = []
     const enumerateMainLines = (fn:(text:string, ty:number, idx:number)=>void)=>{
+        ctx.font = mainFontStr
         for(let i=0; i<mainLines.length; i++){
             const text = mainLines[i]
             const yFromTop = (i + 0.5) * main.rowHeight
@@ -46,6 +47,7 @@ export function drawText(
         }
     }
     const enumerateSubLines = (fn:(text:string, ty:number, idx:number)=>void)=>{
+        ctx.font = subFontStr
         for(let i=0; i<subLines.length; i++){
             const text = subLines[i]
             const yFromTop = (i + 0.5) * sub.rowHeight + mainHeight
@@ -57,53 +59,51 @@ export function drawText(
             fn(text, shouldUseY, i)
         }
     }
+    //先测量所有行实际宽度
+    enumerateMainLines(()=>{})
+    enumerateSubLines(()=>{})
+
+    const biggestWidth = Math.max(...mainMeasures.map(x=>x.m.width), ...subMeasures.map(x=>x.m.width))
+    let xOffset = 0
+    if(typeof textAlignOverride === 'number'){
+        ctx.textAlign = getTextAlign(textAlignOverride)
+        //如果textAlignOverride有值（意味着文本align与矩形align不一致）
+        //则计算一个offset，让align不同的文本也刚好在矩形内
+        const diff = textAlignOverride - align[0]
+        xOffset = diff * biggestWidth/2
+    }
+    else
+        //如果textAlignOverride没值（意味着文本align跟随矩形align）
+        ctx.textAlign = getTextAlign(xSgn)
+    const useX = x-xOffset
 
     const needDraw = task === 'draw' || task === 'both'
     const needMeasure = task === 'measure' || task === 'both'
-    const mainFontStr = concatFontStr(main.font, main.fontSize)
-    const subFontStr = concatFontStr(sub.font, sub.fontSize)
 
     if(stroke && needDraw){
         ctx.strokeStyle = stroke.color
         ctx.globalAlpha = stroke.opacity
         ctx.lineWidth = stroke.width
         ctx.lineJoin = 'round'
-        ctx.font = mainFontStr
         enumerateMainLines((text, ty)=>{
-            ctx.strokeText(text, x, ty)
+            ctx.strokeText(text, useX, ty)
         })
-        ctx.font = subFontStr
         enumerateSubLines((text, ty)=>{
-            ctx.strokeText(text, x, ty)
+            ctx.strokeText(text, useX, ty)
         })
         ctx.globalAlpha = 1
     }
 
-    let biggestWidth = 0
     ctx.fillStyle = main.color
-    ctx.font = mainFontStr
-    enumerateMainLines((text, ty, idx)=>{
+    enumerateMainLines((text, ty)=>{
         if(needDraw)
-            ctx.fillText(text, x, ty)
-        if(needMeasure){
-            const width = mainMeasures[idx].m.width
-            if(width > biggestWidth){
-                biggestWidth = width
-            }
-        }
+            ctx.fillText(text, useX, ty)
     })
 
     ctx.fillStyle = sub.color
-    ctx.font = subFontStr
-    enumerateSubLines((text, ty, idx)=>{
+    enumerateSubLines((text, ty)=>{
         if(needDraw)
-            ctx.fillText(text, x, ty)
-        if(needMeasure){
-            const width = subMeasures[idx].m.width
-            if(width > biggestWidth){
-                biggestWidth = width
-            }
-        }
+            ctx.fillText(text, useX, ty)
     })
 
     if(needMeasure){
@@ -113,7 +113,7 @@ export function drawText(
 
 const chineseStyleDropCapPattern = /^[0-9a-zA-Z]{1,2}(?=\s{0,1}号?线$)/
 export function drawTextForLineName(
-    ctx:CanvasRenderingContext2D, pos:Coord, align:SgnCoord,
+    ctx:CanvasRenderingContext2D, pos:Coord, align:SgnCoord, textAlignOverride:SgnNumber|undefined,
     main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false, task:'draw'|'measure'|'both' = 'both'):
     {isDropCap:boolean, rect:RectCoord|undefined}|undefined
 {
@@ -123,7 +123,7 @@ export function drawTextForLineName(
     if(!match || match.length===0)
     {
         //如果不是需要dropCap的线路名，则fallback到一般的写法
-        return {isDropCap:false, rect:drawText(ctx, pos, align, main, sub, stroke, task)}
+        return {isDropCap:false, rect:drawText(ctx, pos, align, textAlignOverride, main, sub, stroke, task)}
     }
     const needDraw = task === 'draw' || task === 'both'
     const needMeasure = task === 'measure' || task === 'both'
@@ -165,15 +165,11 @@ export function drawTextForLineName(
         ctx.fillText(lineNum, xLeft, giantBaseline.shouldUseY)
     }
 
-    let rightPartWidth = 0
     ctx.font = mainFontStr
     if(needDraw){
         ctx.font = mainFontStr
         const mainX = xLeft + giantTextWidth + giantMarginRight
         ctx.fillText(restPart, mainX, mainBaseline.shouldUseY)
-    }
-    if(needMeasure){
-        rightPartWidth = mainBaseline.m.width
     }
     if(needDraw){
         ctx.font = subFontStr

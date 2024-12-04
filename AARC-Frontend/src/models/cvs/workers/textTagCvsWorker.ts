@@ -42,10 +42,8 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             rowHeight: cs.config.textTagSubRowHeightBase * commonLineBuiltinRatio,
             text: lineInfo.nameSub
         }
-        //dropCap线路名只能渲染成文本靠左，这里统一设置文本靠左（[1, 0]）
-        //得到的矩形也是左侧同横坐标的
-        const lineNameRectAlign:SgnCoord = [0, 0]
-        const drawLineNameRes = drawTextForLineName(ctx, t.pos, lineNameRectAlign, optMain, optSub, false, 'measure')
+        const lineNameRectAlign:SgnCoord = [1, 0]
+        const drawLineNameRes = drawTextForLineName(ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, false, 'measure')
         if(drawLineNameRes?.rect){
             const rect = drawLineNameRes.rect
             const lu = rect[0]
@@ -56,7 +54,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             ctx.strokeStyle = lineInfo.color
             ctx.lineWidth = 14
             ctx.strokeRect(...lu, ...wh)
-            drawTextForLineName(ctx, t.pos, lineNameRectAlign, optMain, optSub, false, 'draw')
+            drawTextForLineName(ctx, t.pos, lineNameRectAlign, 0, optMain, optSub, false, 'draw')
         }
         
     }
