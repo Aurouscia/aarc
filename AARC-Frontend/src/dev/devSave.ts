@@ -205,8 +205,8 @@ export const devSave:Save = {
         {
             id: 103,
             pts: [7, 8, 11, 33],
-            name: "3号线",
-            nameSub: "Line 3",
+            name: "开发区线",
+            nameSub: "DevZone Line",
             color: "#ff8800",
             type: LineType.common
         }
@@ -221,6 +221,11 @@ export const devSave:Save = {
             id: 1001,
             forId: 102,
             pos: [100,200]
+        },
+        {
+            id: 1002,
+            forId: 103,
+            pos: [100,300]
         }
     ],
     config:{}

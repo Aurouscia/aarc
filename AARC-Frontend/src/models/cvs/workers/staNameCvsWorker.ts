@@ -45,12 +45,14 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
         const rect = drawText(ctx, globalPos, align, {
             text: pt.name,
             color: cs.config.staNameColor,
-            fontStr: cs.staNameFontStr,
+            font: cs.config.staNameFont,
+            fontSize: cs.config.staNameFontSize,
             rowHeight: cs.config.staNameRowHeight
         },{
             text: pt.nameS,
             color: cs.config.staNameSubColor,
-            fontStr: cs.staNameFontSubStr,
+            font: cs.config.staNameSubFont,
+            fontSize: cs.config.staNameSubFontSize,
             rowHeight: cs.config.staNameSubRowHeight
         },
         {
