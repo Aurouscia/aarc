@@ -35,20 +35,30 @@ export function drawText(
         ctx.textAlign = 'left'
     const yTop = getYTop(y, ySgn, totalHeight)
 
-    const enumerateMainLines = (fn:(text:string, ty:number)=>void)=>{
+    const mainMeasures:ActualBaselineResult[] = []
+    const subMeasures:ActualBaselineResult[] = []
+    const enumerateMainLines = (fn:(text:string, ty:number, idx:number)=>void)=>{
         for(let i=0; i<mainLines.length; i++){
             const text = mainLines[i]
             const yFromTop = (i + 0.5) * main.rowHeight
-            let ty = yTop + yFromTop
-            fn(text, ty)
+            if(!mainMeasures[i]){
+                const baseline = getTextActualCenterBaseline(ctx, yTop+yFromTop, text)
+                mainMeasures[i] = baseline
+            }
+            const shouldUseY = mainMeasures[i].shouldUseY
+            fn(text, shouldUseY, i)
         }
     }
-    const enumerateSubLines = (fn:(text:string, ty:number)=>void)=>{
+    const enumerateSubLines = (fn:(text:string, ty:number, idx:number)=>void)=>{
         for(let i=0; i<subLines.length; i++){
             const text = subLines[i]
             const yFromTop = (i + 0.5) * sub.rowHeight + mainHeight
-            let ty = yTop + yFromTop
-            fn(text, ty)
+            if(!subMeasures[i]){
+                const baseline = getTextActualCenterBaseline(ctx, yTop+yFromTop, text)
+                subMeasures[i] = baseline
+            }
+            const shouldUseY = subMeasures[i].shouldUseY
+            fn(text, shouldUseY, i)
         }
     }
 
@@ -76,11 +86,11 @@ export function drawText(
     let biggestWidth = 0
     ctx.fillStyle = main.color
     ctx.font = mainFontStr
-    enumerateMainLines((text, ty)=>{
+    enumerateMainLines((text, ty, idx)=>{
         if(needDraw)
             ctx.fillText(text, x, ty)
         if(needMeasure){
-            const width = ctx.measureText(text).width
+            const width = mainMeasures[idx].m.width
             if(width > biggestWidth){
                 biggestWidth = width
             }
@@ -89,11 +99,11 @@ export function drawText(
 
     ctx.fillStyle = sub.color
     ctx.font = subFontStr
-    enumerateSubLines((text, ty)=>{
+    enumerateSubLines((text, ty, idx)=>{
         if(needDraw)
             ctx.fillText(text, x, ty)
         if(needMeasure){
-            const width = ctx.measureText(text).width
+            const width = subMeasures[idx].m.width
             if(width > biggestWidth){
                 biggestWidth = width
             }
@@ -131,7 +141,7 @@ export function drawTextForLineName(
 
     const lineNum = match[0]
     const restPart = mainText.substring(lineNum.length).trim()
-    const fontPadding = (main.rowHeight - main.fontSize + sub.rowHeight - sub.fontSize)/2
+    const fontPadding = (main.rowHeight - main.fontSize + sub.rowHeight - sub.fontSize)
     const giantFontSize = main.fontSize + sub.fontSize + fontPadding
     const giantTextRowHeight = main.rowHeight + sub.rowHeight
     ctx.fillStyle = main.color
@@ -205,7 +215,8 @@ function getRect(x:number, y:number, xSgn:SgnNumber, ySgn:number, biggestWidth:n
     return rect
 }
 
-function getTextActualCenterBaseline(ctx:CanvasRenderingContext2D, wantMiddleAtY:number, text:string):{shouldUseY:number, m:TextMetrics}{
+type ActualBaselineResult = {shouldUseY:number, m:TextMetrics}
+function getTextActualCenterBaseline(ctx:CanvasRenderingContext2D, wantMiddleAtY:number, text:string):ActualBaselineResult{
     const m = ctx.measureText(text)
     ctx.textBaseline = 'middle'
     const fix = (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent)/2
