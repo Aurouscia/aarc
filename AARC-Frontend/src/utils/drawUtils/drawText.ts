@@ -26,8 +26,9 @@ export function drawText(
     const subLines = sub.text?.split('\n').map(x=>x.trim()) || []
     const subHeight = subLines.length * sub.rowHeight
     const totalHeight = mainHeight+subHeight
-    const rowMargin = main.rowHeight - main.fontSize //减去文本上下的空隙（半个“行距与字体大小之差”）
-    const yTop = getYTop(y, ySgn, totalHeight, rowMargin)
+    const mainRowMargin = main.rowHeight - main.fontSize
+    const subRowMargin = sub.rowHeight - sub.fontSize
+    const yTop = getYTop(y, ySgn, totalHeight, mainRowMargin, subRowMargin) //减去文本上下的空隙（半个“行距与字体大小之差”）
 
     const mainFontStr = concatFontStr(main.font, main.fontSize)
     const subFontStr = concatFontStr(sub.font, sub.fontSize)
@@ -191,14 +192,14 @@ function getTextAlign(xSgn:SgnNumber){
     else
         return 'left'
 }
-function getYTop(y:number, ySgn:SgnNumber, totalHeight:number, rowMargin:number=0){
+function getYTop(y:number, ySgn:SgnNumber, totalHeight:number, mainRowMargin:number=0, subRowMargin:number=0){
     let yTop = y;
     if(ySgn == -1){
-        yTop -= totalHeight - rowMargin/2
+        yTop -= totalHeight - subRowMargin/2
     }else if(ySgn == 0){
         yTop -= totalHeight/2
     }else{
-        yTop -= rowMargin/2
+        yTop -= mainRowMargin/2
     }
     return yTop
 }
