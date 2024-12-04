@@ -189,7 +189,7 @@ export const devSave:Save = {
         {
             id: 101,
             pts: [10, 1, 2, 3, 11, 4, 12, 10],
-            name: "一号线",
+            name: "1号线",
             nameSub: "Line 1",
             color: "#44cef6",
             type: LineType.common
@@ -197,7 +197,7 @@ export const devSave:Save = {
         {
             id: 102,
             pts: [5, 2, 6, 9],
-            name: "二号线",
+            name: "2号线",
             nameSub: "Line 2",
             color: "#009900",
             type: LineType.common
@@ -205,10 +205,22 @@ export const devSave:Save = {
         {
             id: 103,
             pts: [7, 8, 11, 33],
-            name: "三号线",
+            name: "3号线",
             nameSub: "Line 3",
             color: "#ff8800",
             type: LineType.common
+        }
+    ],
+    textTags:[
+        {
+            id: 1000,
+            forId: 101,
+            pos: [100,100]
+        },
+        {
+            id: 1001,
+            forId: 102,
+            pos: [100,200]
         }
     ],
     config:{}

@@ -5,6 +5,7 @@ export interface Save{
     idIncre: number //所有元素共用的唯一id新建时从此处取，取一个之后其自增1（初始为1）
     points: ControlPoint[]
     lines: Line[]
+    textTags: TextTag[]
     cvsSize: Coord
     config: ConfigInSave
 }
@@ -49,4 +50,23 @@ export interface Line{
     width?:number
     type:LineType
     isFilled?:boolean
+}
+
+export enum FormalRotation{
+    horizontal = 0,
+    left135 = -3,
+    left90 = -2,
+    left45 = -1,
+    right45 = 1,
+    right90 = 2,
+    right135 = 3,
+    right180 = 4
+}
+export interface TextTag{
+    id:number
+    pos:Coord
+    forId?:number
+    text?:string
+    textS?:string
+    //rot?:FormalRotation
 }

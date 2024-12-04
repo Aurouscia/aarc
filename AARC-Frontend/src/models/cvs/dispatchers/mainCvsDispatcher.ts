@@ -7,6 +7,7 @@ import { useClusterCvsWorker } from "../workers/clusterCvsWorker";
 import { defineStore } from "pinia";
 import { useTerrainSmoothCvsWorker } from "../workers/terrainSmoothCvsWorker";
 import { LineType } from "@/models/save";
+import { useTextTagCvsWorker } from "../workers/textTagCvsWorker";
 
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const envStore = useEnvStore()
@@ -17,6 +18,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const { renderClusters } = useClusterCvsWorker()
     const { renderAllPtName } = useStaNameCvsWorker()
     const { renderAllTerrainSmooth } = useTerrainSmoothCvsWorker()
+    const { renderAllTextTags } = useTextTagCvsWorker()
     function renderMainCvs(changedLines?:number[], movedStaNames?:number[]){
         console.log('绘制主画布')
         const ctx = getCtx();
@@ -27,6 +29,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         renderAllPoints(ctx)
         renderClusters(ctx)
         renderAllPtName(ctx, movedStaNames)
+        renderAllTextTags(ctx)
     }
     return { mainCvs, renderMainCvs }
 })

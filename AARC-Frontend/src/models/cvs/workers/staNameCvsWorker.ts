@@ -57,7 +57,7 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             width: cs.config.staNameFontSize/4,
             color: cs.config.bgColor,
             opacity: 0.8
-        }, needReportRect)
+        }, needReportRect ? 'both' : 'draw')
 
         if(rect){
             staNameRectStore.setStaNameRects(pt.id, rect)

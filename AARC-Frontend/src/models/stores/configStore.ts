@@ -50,7 +50,14 @@ export const configDefault:Config = {
     colorPresetArea: '#cccccc',
     colorPresetWater: '#c3e5eb',
     colorPresetGreenland: '#ceeda4',
-    colorPresetIsland: '#ffffff'
+    colorPresetIsland: '#ffffff',
+
+    textTagFont: 'microsoft YaHei',
+    textTagFontSizeBase: 30,
+    textTagRowHeightBase: 34,
+    textTagSubFont: 'microsoft YaHei',
+    textTagSubFontSizeBase: 16,
+    textTagSubRowHeightBase: 18 
 }
 
 export const useConfigStore = defineStore('config', ()=>{
@@ -77,6 +84,10 @@ export const useConfigStore = defineStore('config', ()=>{
         config.value.snapOctaClingPtPtThrs ** 2)
     const snapOctaClingPtNameThrsSq = computed<number>(()=>
         config.value.snapOctaClingPtNameThrs ** 2)
+    const textTagFontStr = (ratio:number = 1)=>
+        `${config.value.textTagFontSizeBase * ratio}px ${config.value.textTagFont}`
+    const textTagSubFontStr = (ratio:number = 1)=>
+        `${config.value.textTagSubFontSizeBase * ratio}px ${config.value.textTagSubFont}`
     
     function getPresetColor(presetType:ColorPreset){
         if(presetType == ColorPreset.water)
@@ -116,6 +127,7 @@ export const useConfigStore = defineStore('config', ()=>{
         staNameFontStr, staNameFontSubStr,
         clickPtThrsSq, clickLineThrsSq, clickLineThrs_sqrt2_sq, 
         snapOctaClingPtPtThrsSq, snapOctaClingPtNameThrsSq,
+        textTagFontStr, textTagSubFontStr,
         getPresetColor, getTurnRadiusOf
     }
 })

@@ -13,7 +13,7 @@ export interface DrawTextStrokeOption{
 }
 export function drawText(
     ctx:CanvasRenderingContext2D, pos:Coord, align:SgnCoord,
-    main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption, measure?:boolean): RectCoord|undefined
+    main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false, task:'draw'|'measure'|'both' = 'both'): RectCoord|undefined
 {
     const [x, y] = pos
     const [xSgn, ySgn] = align
@@ -55,7 +55,10 @@ export function drawText(
         }
     }
 
-    if(stroke){
+    const needDraw = task === 'draw' || task === 'both'
+    const needMeasure = task === 'measure' || task === 'both'
+
+    if(stroke && needDraw){
         ctx.strokeStyle = stroke.color
         ctx.globalAlpha = stroke.opacity
         ctx.lineWidth = stroke.width
@@ -75,8 +78,9 @@ export function drawText(
     ctx.fillStyle = main.color
     ctx.font = main.fontStr
     enumerateMainLines((text, ty)=>{
-        ctx.fillText(text, x, ty)
-        if(measure){
+        if(needDraw)
+            ctx.fillText(text, x, ty)
+        if(needMeasure){
             const width = ctx.measureText(text).width
             if(width > biggestWidth){
                 biggestWidth = width
@@ -87,8 +91,9 @@ export function drawText(
     ctx.fillStyle = sub.color
     ctx.font = sub.fontStr
     enumerateSubLines((text, ty)=>{
-        ctx.fillText(text, x, ty)
-        if(measure){
+        if(needDraw)
+            ctx.fillText(text, x, ty)
+        if(needMeasure){
             const width = ctx.measureText(text).width
             if(width > biggestWidth){
                 biggestWidth = width
@@ -96,7 +101,7 @@ export function drawText(
         }
     })
 
-    if(measure){
+    if(needMeasure){
         let leftMost = x;
         let rightMost = x;
         if(xSgn == -1){

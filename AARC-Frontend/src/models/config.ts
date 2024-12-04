@@ -45,6 +45,13 @@ export interface Config{
     colorPresetWater :string,
     colorPresetGreenland: string,
     colorPresetIsland: string
+
+    textTagFont: string,
+    textTagFontSizeBase: number,
+    textTagRowHeightBase: number,
+    textTagSubFont: string,
+    textTagSubFontSizeBase: number,
+    textTagSubRowHeightBase: number,
 }
 
 export type ConfigInSave = AllKeysOptional<Config>
