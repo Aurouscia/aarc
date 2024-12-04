@@ -33,7 +33,8 @@ export function drawText(
         ctx.textAlign = 'center'
     else
         ctx.textAlign = 'left'
-    const yTop = getYTop(y, ySgn, totalHeight)
+    const rowMargin = main.rowHeight - main.fontSize
+    const yTop = getYTop(y, ySgn, totalHeight, rowMargin)
 
     const mainMeasures:ActualBaselineResult[] = []
     const subMeasures:ActualBaselineResult[] = []
@@ -182,12 +183,14 @@ export function drawTextForLineName(
 }
 
 
-function getYTop(y:number, ySgn:SgnNumber, totalHeight:number){
+function getYTop(y:number, ySgn:SgnNumber, totalHeight:number, rowMargin:number=0){
     let yTop = y;
     if(ySgn == -1){
-        yTop -= totalHeight
+        yTop -= totalHeight - rowMargin/2
     }else if(ySgn == 0){
         yTop -= totalHeight/2
+    }else{
+        yTop -= rowMargin/2
     }
     return yTop
 }
