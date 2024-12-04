@@ -27,12 +27,7 @@ export function drawText(
     const subHeight = subLines.length * sub.rowHeight
     const totalHeight = mainHeight+subHeight
 
-    if(xSgn==-1)
-        ctx.textAlign = 'right'
-    else if(xSgn==0)
-        ctx.textAlign = 'center'
-    else
-        ctx.textAlign = 'left'
+    ctx.textAlign = getTextAlign(xSgn)
     const rowMargin = main.rowHeight - main.fontSize
     const yTop = getYTop(y, ySgn, totalHeight, rowMargin)
 
@@ -135,7 +130,7 @@ export function drawTextForLineName(
     const totalHeight = main.rowHeight + sub.rowHeight
 
     ctx.textBaseline = 'middle'
-    ctx.textAlign = 'left' //如果是dropCap线路名，无视align，文字只靠左
+    ctx.textAlign = 'left' //如果是dropCap线路名，textAlign无视参数，参数仅用来控制矩形相对坐标的位置
     const [x, y] = pos
     const [xSgn, ySgn] = align
     const yTop = getYTop(y, ySgn, totalHeight)
@@ -146,43 +141,60 @@ export function drawTextForLineName(
     const giantFontSize = main.fontSize + sub.fontSize + fontPadding
     const giantTextRowHeight = main.rowHeight + sub.rowHeight
     ctx.fillStyle = main.color
-    ctx.font = concatFontStr(main.font, giantFontSize)
+    const giantFontStr = concatFontStr(main.font, giantFontSize)
+    const mainFontStr = concatFontStr(main.font, main.fontSize)
+    const subFontStr = concatFontStr(sub.font, sub.fontSize)
+    ctx.font = giantFontStr
     const giantBaseline = getTextActualCenterBaseline(ctx, yTop+giantTextRowHeight/2, lineNum)
-    if(needDraw){
-        const giantTextPos = [...pos] as Coord
-        giantTextPos[1] = giantBaseline.shouldUseY
-        ctx.fillText(lineNum, ...giantTextPos)
-    }
+    ctx.font = mainFontStr
+    const mainBaseline = getTextActualCenterBaseline(ctx, yTop+main.rowHeight/2, restPart)
+    ctx.font = subFontStr
+    const subBaseline = getTextActualCenterBaseline(ctx, yTop+main.rowHeight+sub.rowHeight/2, subText)
+    const giantTextWidth = giantBaseline.m.width
     const giantMarginRight = giantFontSize*0.05
-    const giantTextWidth = giantBaseline.m.width + giantMarginRight
+    const mainWidthWithMargin = mainBaseline.m.width + giantMarginRight
+    const subWidthWithDoubleMargin = subBaseline.m.width + giantMarginRight * 2
+    const totalWidth = giantBaseline.m.width + Math.max(mainWidthWithMargin, subWidthWithDoubleMargin)
+    let xLeft = x
+    if(xSgn == 0)
+        xLeft -= totalWidth/2
+    else if(xSgn == -1)
+        xLeft -= totalWidth
+    if(needDraw){
+        ctx.font = giantFontStr
+        ctx.fillText(lineNum, xLeft, giantBaseline.shouldUseY)
+    }
 
     let rightPartWidth = 0
-    ctx.font = concatFontStr(main.font, main.fontSize)
-    const mainBaseline = getTextActualCenterBaseline(ctx, yTop+main.rowHeight/2, restPart)
+    ctx.font = mainFontStr
     if(needDraw){
-        const restPartPos = [...pos] as Coord
-        restPartPos[0] += giantTextWidth
-        restPartPos[1] = mainBaseline.shouldUseY
-        ctx.fillText(restPart, ...restPartPos)
+        ctx.font = mainFontStr
+        const mainX = xLeft + giantTextWidth + giantMarginRight
+        ctx.fillText(restPart, mainX, mainBaseline.shouldUseY)
     }
     if(needMeasure){
         rightPartWidth = mainBaseline.m.width
     }
-    ctx.font = concatFontStr(sub.font, sub.fontSize)
-    const subBaseline = getTextActualCenterBaseline(ctx, yTop+main.rowHeight+sub.rowHeight/2, subText)
     if(needDraw){
-        const subPartPos = [...pos] as Coord
-        subPartPos[0] += giantTextWidth + giantMarginRight //额外加一倍margin
-        subPartPos[1] = subBaseline.shouldUseY
-        ctx.fillText(subText, ...subPartPos)
+        ctx.font = subFontStr
+        const subX = xLeft + giantTextWidth + giantMarginRight*2 //额外加一倍margin
+        const subY = subBaseline.shouldUseY
+        ctx.fillText(subText, subX, subY)
     }
     if(needMeasure){
-        rightPartWidth = Math.max(rightPartWidth, subBaseline.m.width)
-        return {isDropCap: true, rect: getRect(x, y, xSgn, ySgn, giantTextWidth+rightPartWidth, totalHeight)}
+        return {isDropCap: true, rect: getRect(x, y, xSgn, ySgn, totalWidth, totalHeight)}
     }
 }
 
 
+function getTextAlign(xSgn:SgnNumber){
+    if(xSgn==-1)
+        return 'right'
+    else if(xSgn==0)
+        return 'center'
+    else
+        return 'left'
+}
 function getYTop(y:number, ySgn:SgnNumber, totalHeight:number, rowMargin:number=0){
     let yTop = y;
     if(ySgn == -1){
