@@ -20,7 +20,7 @@ const { mainCvs } = storeToRefs(mainCvsDispatcher)
 const activeCvsDispatcher = useActiveCvsDispatcher()
 const { activeCvs } = storeToRefs(activeCvsDispatcher)
 const mainCvsInsnif = computed<boolean>(()=>
-    !!envStore.activePt || !!envStore.activeLine
+    !!envStore.activePt || !!envStore.activeLine || !!envStore.activeTextTag
 )
 
 onMounted(async()=>{

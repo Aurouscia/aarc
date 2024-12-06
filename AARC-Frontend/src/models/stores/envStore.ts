@@ -5,7 +5,7 @@ import { Coord, SgnCoord } from "../coord";
 import { listenPureClick } from "@/utils/eventUtils/pureClick";
 import { eventClientCoord } from "@/utils/eventUtils/eventClientCoord";
 import { OpsBtn, OpsBtnType, useOpsStore } from "./opsStore";
-import { ColorPreset, ControlPoint, ControlPointDir, ControlPointSta, Line, LineType } from "../save";
+import { ColorPreset, ControlPoint, ControlPointDir, ControlPointSta, Line, LineType, TextTag } from "../save";
 import { useSnapStore } from "./snapStore";
 import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
 import { useNameEditStore } from "./nameEditStore";
@@ -28,6 +28,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const nameEditStore = useNameEditStore()
     const staClusterStore = useStaClusterStore()
     const activeLine = ref<Line>()
+    const activeTextTag = ref<TextTag>()
     const cursorPos = ref<Coord>()
     const cursorDir = ref<ControlPointDir>(ControlPointDir.vertical)
     const cursorOnLineAfterPtIdx = ref<number>(-1)
@@ -41,7 +42,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const { snap, snapName, snapNameStatus, snapGrid } = useSnapStore()
     const { setLinesFormalPts } = useFormalizedLineStore()
     const { setStaNameRects } = useStaNameRectStore()
-    const { onPt, onLine, onStaName, onLineExtendBtn } = useOnDetectStore()
+    const { onPt, onLine, onStaName, onLineExtendBtn, onTextTag } = useOnDetectStore()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -67,6 +68,12 @@ export const useEnvStore = defineStore('env', ()=>{
         setOpsPos(false)
     }
     
+    function cancelActive(){
+        activePt.value = undefined
+        activeLine.value = undefined
+        activeTextTag.value = undefined
+        cursorPos.value = undefined
+    }
     function pureClickHandler(clientCord:Coord, isRightBtn?:boolean){
         const coord = translateFromClient(clientCord);
         if(!coord)
@@ -86,6 +93,8 @@ export const useEnvStore = defineStore('env', ()=>{
             //重新渲染的同时，更新了相关staNameRect和FormalPts，确保接下来的点击判断使用最新数据
             pointMutated.value(rerenderParamLineIds, rerenderParamPtIds)
         }
+
+        cancelActive()
 
         //判断是否在线路延长按钮上
         const lineExtend = onLineExtendBtn(coord)
@@ -112,7 +121,6 @@ export const useEnvStore = defineStore('env', ()=>{
             //点到站名上了
             activePt.value = saveStore.getPtById(staName.id)
             activePtType.value = 'name'
-            activeLine.value = undefined
             if(namingPtChanged)
                 nameEditStore.startEditing(staName.id)
             else if(opsStore.showingOps && nameEditStore.editing){
@@ -121,7 +129,6 @@ export const useEnvStore = defineStore('env', ()=>{
                 //如果正在命名的车站没变，而且菜单未显示，则收起站名编辑
                 nameEditStore.toggleEditing(staName.id)
             }
-            cursorPos.value = undefined
             setOpsPos(false)
             //立即检查该点是否是snap位置
             if(activePt.value){
@@ -142,7 +149,6 @@ export const useEnvStore = defineStore('env', ()=>{
             //点到点上了
             activePt.value = pt
             activePtType.value = 'body'
-            activeLine.value = undefined
             cursorPos.value = [...pt.pos]
             if(isRightBtn){
                 //右键点击控制点，切换其方向
@@ -174,12 +180,19 @@ export const useEnvStore = defineStore('env', ()=>{
             //点到线上了
             const lineMatch = lineMatches[0]
             activeLine.value = saveStore.getLineById(lineMatch.lineId)
-            activePt.value = undefined
             cursorPos.value = [...lineMatch.alignedPos]
             cursorOnLineAfterPtIdx.value = lineMatch.afterPtIdx
             cursorDir.value = lineMatch.dir
             setOpsPos(lineMatch.alignedPos)
             setOpsForLine()
+            nameEditStore.endEditing()
+            return
+        }
+
+        const textTagMatch = onTextTag(coord);
+        if(textTagMatch){
+            activeTextTag.value = textTagMatch
+            setOpsPos(false)
             nameEditStore.endEditing()
             return
         }
@@ -193,9 +206,6 @@ export const useEnvStore = defineStore('env', ()=>{
                 pointMutated.value(changedLines, movedStaNames)
             }
         }
-        activePt.value = undefined
-        activeLine.value = undefined
-        cursorPos.value = undefined
         setOpsPos(false)
         movedPoint.value = false
         activePtNameSnapped.value = 'no'
@@ -513,7 +523,8 @@ export const useEnvStore = defineStore('env', ()=>{
     
     return { 
         init, activePt, activePtType, activePtNameSnapped,
-        activeLine, cursorPos, movingPoint, movedPoint,
+        activeLine, activeTextTag,
+        cursorPos, movingPoint, movedPoint,
         cvsWidth, cvsHeight, getDisplayRatio,
         pointMutated, rescaled, getActivePtOpsAvoidance,
         delLine, createLine, lineInfoChanged

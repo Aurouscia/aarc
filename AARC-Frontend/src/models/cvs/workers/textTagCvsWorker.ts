@@ -1,6 +1,7 @@
 import { SgnCoord } from "@/models/coord";
 import { Line, LineType, TextTag } from "@/models/save";
 import { useConfigStore } from "@/models/stores/configStore";
+import { useTextTagRectStore } from "@/models/stores/saveDerived/textTagRectStore";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { coordSub } from "@/utils/coordUtils/coordMath";
 import { DrawTextBodyOption, drawTextForLineName } from "@/utils/drawUtils/drawText";
@@ -9,6 +10,7 @@ import { defineStore } from "pinia";
 export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const cs = useConfigStore()
+    const textTagRectStore = useTextTagRectStore()
     function renderAllTextTags(ctx:CanvasRenderingContext2D){
         const allTags = saveStore.save?.textTags
         allTags?.forEach(t=>{
@@ -55,8 +57,9 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             ctx.lineWidth = 14
             ctx.strokeRect(...lu, ...wh)
             drawTextForLineName(ctx, t.pos, lineNameRectAlign, 0, optMain, optSub, false, 'draw')
+            textTagRectStore.setTextTagRect(t.id, rect)
         }
         
     }
-    return { renderAllTextTags }
+    return { renderAllTextTags, renderOneTextTag }
 })

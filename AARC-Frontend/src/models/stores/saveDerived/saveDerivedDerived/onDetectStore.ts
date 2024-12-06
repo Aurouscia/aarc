@@ -2,13 +2,14 @@ import { defineStore } from "pinia";
 import { useSaveStore } from "../../saveStore";
 import { Coord } from "@/models/coord";
 import { coordDistSq, coordDistSqLessThan, coordDistSqWithThrs } from "@/utils/coordUtils/coordDist";
-import { ControlPoint, ControlPointDir } from "@/models/save";
+import { ControlPoint, ControlPointDir, TextTag } from "@/models/save";
 import { useFormalizedLineStore } from "../formalizedLineStore";
 import { useConfigStore } from "../../configStore";
 import { coordOnLineOfFormalPts } from "@/utils/coordUtils/coordOnLine";
 import { useStaNameRectStore } from "../staNameRectStore";
 import { rectInside } from "@/utils/coordUtils/coordInsideRect";
 import { ExtendBtn, useLineExtendStore } from "./lineExtendStore";
+import { useTextTagRectStore } from "../textTagRectStore";
 
 export const useOnDetectStore = defineStore('onDetect', ()=>{
     const cs = useConfigStore()
@@ -16,6 +17,7 @@ export const useOnDetectStore = defineStore('onDetect', ()=>{
     const { enumerateFormalizedLines } = useFormalizedLineStore()
     const { enumerateStaNameRects } = useStaNameRectStore()
     const { enumerateLineExtendBtns } = useLineExtendStore()
+    const { enumerateTextTagRects } = useTextTagRectStore()
     function onPt(c:Coord, strictClosest?:boolean){
         if(saveStore.save?.points.length==0)
             return undefined
@@ -79,5 +81,15 @@ export const useOnDetectStore = defineStore('onDetect', ()=>{
         })
         return onLeb
     }
-    return { onPt, onLine, onStaName, onLineExtendBtn }
+    function onTextTag(c:Coord){
+        let onTextTag:TextTag|undefined;
+        enumerateTextTagRects((id, rect)=>{
+            if(rectInside(rect, c)){
+                onTextTag = saveStore.save?.textTags.find(x=>x.id===id)
+                return true;
+            }
+        })
+        return onTextTag;
+    }
+    return { onPt, onLine, onStaName, onLineExtendBtn, onTextTag }
 })
