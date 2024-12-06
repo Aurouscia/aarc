@@ -1,7 +1,9 @@
+@use 'styleVals';
+
 *{
     margin: 0px;
     padding: 0px;
-    transition: 0.2s;
+    transition: styleVals.$default-transition-time;
 }
 
 .sqrBtn{

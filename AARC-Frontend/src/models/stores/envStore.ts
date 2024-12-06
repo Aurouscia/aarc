@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from "pinia";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { Coord, SgnCoord } from "../coord";
 import { listenPureClick } from "@/utils/eventUtils/pureClick";
@@ -68,6 +68,8 @@ export const useEnvStore = defineStore('env', ()=>{
         setOpsPos(false)
     }
     
+    const somethingActive = computed<boolean>(()=>{
+        return !!activePt.value || !!activeLine.value || !!activeTextTag.value})
     function cancelActive(){
         activePt.value = undefined
         activeLine.value = undefined
@@ -523,7 +525,7 @@ export const useEnvStore = defineStore('env', ()=>{
     
     return { 
         init, activePt, activePtType, activePtNameSnapped,
-        activeLine, activeTextTag,
+        activeLine, activeTextTag, somethingActive,
         cursorPos, movingPoint, movedPoint,
         cvsWidth, cvsHeight, getDisplayRatio,
         pointMutated, rescaled, getActivePtOpsAvoidance,

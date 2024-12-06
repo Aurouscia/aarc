@@ -34,7 +34,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
 
     function renderActiveCvs(){
         //该函数应被设置为每x毫秒执行一次
-        const ctx = getCtx();
+        const ctx = getCtx(envStore.somethingActive);
         if(envStore.activeLine){
             renderLine(ctx, envStore.activeLine)
             renderLinePoints(ctx, envStore.activeLine)

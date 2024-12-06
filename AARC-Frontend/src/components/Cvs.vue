@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
-import { onMounted, nextTick, computed } from 'vue';
+import { onMounted, nextTick } from 'vue';
 import Ops from './Ops.vue';
 import Name from './NameEdit.vue';
 import { useActiveCvsDispatcher } from '@/models/cvs/dispatchers/activeCvsDispatcher';
@@ -19,9 +19,6 @@ const mainCvsDispatcher = useMainCvsDispatcher()
 const { mainCvs } = storeToRefs(mainCvsDispatcher)
 const activeCvsDispatcher = useActiveCvsDispatcher()
 const { activeCvs } = storeToRefs(activeCvsDispatcher)
-const mainCvsInsnif = computed<boolean>(()=>
-    !!envStore.activePt || !!envStore.activeLine || !!envStore.activeTextTag
-)
 
 onMounted(async()=>{
     if(cvsCont.value && cvsFrame.value){
@@ -46,8 +43,8 @@ onMounted(async()=>{
     <div class="cvsFrame" ref="cvsFrame">
         <div class="cvsCont" ref="cvsCont" :style="{backgroundColor: configStore.config.bgColor}">
             <canvas ref="baseCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
-            <canvas ref="mainCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: mainCvsInsnif}"></canvas>
-            <canvas ref="activeCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
+            <canvas ref="mainCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: envStore.somethingActive}" class="mainCvs"></canvas>
+            <canvas ref="activeCvs" :width="cvsWidth" :height="cvsHeight" :class="{invisible: !envStore.somethingActive}" class="activeCvs"></canvas>
         </div>
     </div>
     <Ops></Ops>
@@ -55,6 +52,8 @@ onMounted(async()=>{
 </template>
 
 <style scoped lang="scss">
+@use '../styleVals.scss';
+
 .cvsFrame{
     position: fixed;
     inset: 0px;
@@ -70,9 +69,21 @@ onMounted(async()=>{
         height: 100%;
         position: absolute;
         inset: 0px;
+        transition-timing-function: linear;
     }
 }
-.insnif{
-    opacity: 0.2;
+.mainCvs{
+    &.insnif{
+        transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+        opacity: 0.2;
+    }
+}
+.activeCvs{
+    transition: 0s;
+    &.invisible{
+        transition: styleVals.$default-transition-time;
+        transition-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
+        opacity: 0;
+    }
 }
 </style>
