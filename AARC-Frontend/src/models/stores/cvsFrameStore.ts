@@ -29,7 +29,9 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         const ratioY = cvsHeight.value/h
         return [ratioX*ox, ratioY*oy]
     }
-    function translateFromClient(coordClient:Coord):Coord|undefined{
+    function translateFromClient(coordClient:Coord|undefined):Coord|undefined{
+        if(!coordClient)
+            return undefined
         const sx = cvsFrame.value?.scrollLeft;
         const sy = cvsFrame.value?.scrollTop;
         if(sx===undefined || sy===undefined)

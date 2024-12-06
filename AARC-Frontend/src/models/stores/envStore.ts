@@ -16,12 +16,12 @@ import { useOnDetectStore } from "./saveDerived/saveDerivedDerived/onDetectStore
 import { useCvsFrameStore } from "./cvsFrameStore";
 
 export const useEnvStore = defineStore('env', ()=>{
-    const movingPoint = ref<boolean>(false)
-    const movedPoint = ref<boolean>(false)
     const saveStore = useSaveStore();
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const opsStore = useOpsStore();
     const activePt = ref<ControlPoint>()
+    const movingPoint = ref<boolean>(false)
+    const movedPoint = ref<boolean>(false)
     const activePtType = ref<'body'|'name'>('body')
     const activePtNameGrabbedAt = ref<Coord>([0,0])
     const activePtNameSnapped = ref<'no'|'vague'|'accu'>('no')
@@ -29,6 +29,10 @@ export const useEnvStore = defineStore('env', ()=>{
     const staClusterStore = useStaClusterStore()
     const activeLine = ref<Line>()
     const activeTextTag = ref<TextTag>()
+    const movingTextTag = ref<boolean>(false)
+    const movedTextTag = ref<boolean>(false)
+    const activeTextTagGrabbedAt = ref<Coord>([0,0])
+    const viewMoveLocked = computed<boolean>(()=>movingPoint.value || movingTextTag.value)
     const cursorPos = ref<Coord>()
     const cursorDir = ref<ControlPointDir>(ControlPointDir.vertical)
     const cursorOnLineAfterPtIdx = ref<number>(-1)
@@ -46,7 +50,7 @@ export const useEnvStore = defineStore('env', ()=>{
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
-        initScaler(viewRescaleHandler, viewMoveHandler, movingPoint)
+        initScaler(viewRescaleHandler, viewMoveHandler, viewMoveLocked)
         nameEditStore.nameInputFocusHandler = ()=>{setOpsPos(false)}
         listenPureClick(cvsCont.value, pureClickHandler)
         cvsCont.value.addEventListener('mousedown', moveStartHandler)
@@ -75,6 +79,8 @@ export const useEnvStore = defineStore('env', ()=>{
         activeLine.value = undefined
         activeTextTag.value = undefined
         cursorPos.value = undefined
+        movedPoint.value = false
+        movedTextTag.value = false
     }
     function pureClickHandler(clientCord:Coord, isRightBtn?:boolean){
         const coord = translateFromClient(clientCord);
@@ -82,8 +88,8 @@ export const useEnvStore = defineStore('env', ()=>{
             return
 
         //根据当前状态判断是否需要重新渲染主画布
-        let rerenderParamLineIds:number[]|undefined = undefined
-        let rerenderParamPtIds:number[]|undefined = undefined
+        let rerenderParamLineIds:number[] = []
+        let rerenderParamPtIds:number[] = []
         if(nameEditStore.edited && activePt.value?.id){
             rerenderParamPtIds = [activePt.value.id]
         }
@@ -91,7 +97,7 @@ export const useEnvStore = defineStore('env', ()=>{
             const lines = saveStore.getLinesByPt(activePt.value.id)
             rerenderParamLineIds = lines.map(x=>x.id)
         }
-        if(rerenderParamLineIds || rerenderParamPtIds){
+        if(rerenderParamLineIds.length>0 || rerenderParamPtIds.length>0 || movedTextTag.value){
             //重新渲染的同时，更新了相关staNameRect和FormalPts，确保接下来的点击判断使用最新数据
             pointMutated.value(rerenderParamLineIds, rerenderParamPtIds)
         }
@@ -209,7 +215,6 @@ export const useEnvStore = defineStore('env', ()=>{
             }
         }
         setOpsPos(false)
-        movedPoint.value = false
         activePtNameSnapped.value = 'no'
         nameEditStore.endEditing()
     }
@@ -235,6 +240,14 @@ export const useEnvStore = defineStore('env', ()=>{
                     activePtType.value = 'body'
                     movingPoint.value = true
                 }
+            }
+        }
+        if(activeTextTag.value){
+            const tag = onTextTag(coord)
+            if(tag && tag === activeTextTag.value){
+                movingTextTag.value = true
+                const tagGlobalPos = activeTextTag.value.pos
+                activeTextTagGrabbedAt.value = coordSub(coord, tagGlobalPos)
             }
         }
     }
@@ -281,11 +294,22 @@ export const useEnvStore = defineStore('env', ()=>{
                 movedPoint.value = true
             }
         }
+        else if(movingTextTag.value && activeTextTag.value){
+            setOpsPos(false)
+            const coord = translateFromClient(eventClientCoord(e))
+            if(!coord)
+                return;
+            const setToGlobalPos = coordSub(coord, activeTextTagGrabbedAt.value)
+            activeTextTag.value.pos = setToGlobalPos
+            movedTextTag.value = true
+        }
     }
     function moveEndHandler(){
         //手指离开屏幕时，touches为空数组，无法获取位置
         movingPoint.value = false
         activePtNameGrabbedAt.value = [0,0]
+        movingTextTag.value = false
+        activeTextTagGrabbedAt.value = [0,0]
     }
 
     function setOpsPos(coord:Coord|false){
