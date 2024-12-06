@@ -9,7 +9,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vue-tsc && vite build",
     "build-here": "vite build --outDir ./dist"
   },
   "dependencies": {
