@@ -102,6 +102,8 @@ export const useEnvStore = defineStore('env', ()=>{
             pointMutated.value(rerenderParamLineIds, rerenderParamPtIds)
         }
 
+        const activePtJustNow = activePt.value
+        //取消所有状态
         cancelActive()
 
         //判断是否在线路延长按钮上
@@ -123,12 +125,12 @@ export const useEnvStore = defineStore('env', ()=>{
 
 
         //判断是否在站名上
-        const staName = onStaName(coord)
-        const namingPtChanged = activePt.value?.id !== staName?.id
+        const staName = !isRightBtn && onStaName(coord)
         if(staName){
             //点到站名上了
             activePt.value = saveStore.getPtById(staName.id)
             activePtType.value = 'name'
+            const namingPtChanged = activePt.value?.id !== staName.id
             if(namingPtChanged)
                 nameEditStore.startEditing(staName.id)
             else if(opsStore.showingOps && nameEditStore.editing){
@@ -183,7 +185,7 @@ export const useEnvStore = defineStore('env', ()=>{
         
         //判断是否在线上
         //如果已经移动过点，这时formalPts还未更新，不应该进行点击线路判断，直接视为点击空白处
-        const lineMatches = onLine(coord);
+        const lineMatches = !isRightBtn && onLine(coord);
         if(lineMatches && lineMatches.length>0){
             //点到线上了
             const lineMatch = lineMatches[0]
@@ -206,11 +208,11 @@ export const useEnvStore = defineStore('env', ()=>{
         }
 
         //点击空白位置
-        if(activePt.value){
-            const tryMergeRes = saveStore.tryMergePt(activePt.value?.id)
+        if(activePtJustNow){
+            const tryMergeRes = saveStore.tryMergePt(activePtJustNow.id)
             if(tryMergeRes){
                 const changedLines = tryMergeRes.mutatedLines.map(x=>x.id)
-                const movedStaNames = [tryMergeRes.mergedByPt.id, activePt.value.id]
+                const movedStaNames = [tryMergeRes.mergedWithPt.id, activePtJustNow.id]
                 pointMutated.value(changedLines, movedStaNames)
             }
         }

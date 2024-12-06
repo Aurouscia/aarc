@@ -273,7 +273,7 @@ export const useSaveStore = defineStore('save', () => {
         }
         return {
             mutatedLines:delFromLines,
-            mergedByPt:keepPt
+            mergedWithPt:thatPt
         }
     }
     function isNamedPt(pt:ControlPoint){
