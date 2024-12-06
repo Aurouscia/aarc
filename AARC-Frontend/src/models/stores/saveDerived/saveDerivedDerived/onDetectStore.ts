@@ -39,17 +39,17 @@ export const useOnDetectStore = defineStore('onDetect', ()=>{
     }
     function onLine(c:Coord, exceptLines:number[] = []){
         const res:{lineId:number, alignedPos:Coord, afterPtIdx:number, dir:ControlPointDir}[] = []
-        enumerateFormalizedLines(line=>{
-            if(exceptLines.includes(line.lineId))
+        enumerateFormalizedLines((lineId, formalPts)=>{
+            if(exceptLines.includes(lineId))
                 return;
-            const onLineRes = coordOnLineOfFormalPts(c, line.pts, {
+            const onLineRes = coordOnLineOfFormalPts(c, formalPts, {
                 clickLineThrs: cs.config.clickLineThrs,
                 clickLineThrsSq: cs.clickLineThrsSq,
                 clickLineThrs_sqrt2_sq: cs.clickLineThrs_sqrt2_sq
             })
             if(onLineRes){
                 res.push({
-                    lineId: line.lineId,
+                    lineId: lineId,
                     alignedPos: onLineRes.aligned,
                     afterPtIdx: onLineRes.afterPt,
                     dir: onLineRes.dir
@@ -60,9 +60,9 @@ export const useOnDetectStore = defineStore('onDetect', ()=>{
     }
     function onStaName(c:Coord){
         let onPt:ControlPoint|undefined;
-        enumerateStaNameRects(rect=>{
-            if(rectInside(rect.rect, c)){
-                const pt = saveStore.save?.points.find(pt => pt.id == rect.ptId)
+        enumerateStaNameRects((ptId, rect)=>{
+            if(rectInside(rect, c)){
+                const pt = saveStore.save?.points.find(pt => pt.id == ptId)
                 onPt = pt;
                 return true;
             }

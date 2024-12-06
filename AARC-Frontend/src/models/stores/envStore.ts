@@ -251,7 +251,7 @@ export const useEnvStore = defineStore('env', ()=>{
                         pt.name = undefined
                         pt.nameS = undefined 
                         pt.nameP = undefined
-                        setStaNameRects(pt.id, false)
+                        setStaNameRects(pt.id, undefined)
                         nameEditStore.targetPtId = transferRes.id
                         activePt.value = transferRes
                         pt = transferRes
@@ -325,7 +325,7 @@ export const useEnvStore = defineStore('env', ()=>{
         const rmPtCb = ()=>{
             if(activePt.value){
                 saveStore.removePt(activePt.value.id);
-                setStaNameRects(activePt.value.id, false);
+                setStaNameRects(activePt.value.id, undefined);
             }
             activePt.value = undefined
             activeLine.value = undefined
@@ -404,7 +404,7 @@ export const useEnvStore = defineStore('env', ()=>{
         const idx = saveStore.save.lines.findIndex(x=>x.id==lineId)
         if(idx >= 0)
             saveStore.save.lines.splice(idx, 1)
-        setLinesFormalPts(lineId, false)
+        setLinesFormalPts(lineId, undefined)
         if(!suppressRender)
             pointMutated.value([],[])
     }

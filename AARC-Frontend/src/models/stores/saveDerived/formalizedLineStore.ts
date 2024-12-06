@@ -1,5 +1,6 @@
 import { Coord, FormalPt } from "@/models/coord";
 import { defineStore } from "pinia";
+import { useKvStoreCore } from "./common/kvStoreCore";
 
 export interface FormalizedLine{
     lineId:number,
@@ -7,44 +8,27 @@ export interface FormalizedLine{
 }
 
 export const useFormalizedLineStore = defineStore('formalizedLine', ()=>{
-    const formalizedLines:FormalizedLine[] = []
-    function setLinesFormalPts(lineId:number, pts:FormalPt[]|false){
-        if(pts===false){
-            let idx = formalizedLines.findIndex(x=>x.lineId == lineId)
-            formalizedLines.splice(idx, 1)
-            return
-        }
-        let target = formalizedLines.find(x=>x.lineId == lineId)
-        if(!target){
-            target = {lineId, pts}
-            formalizedLines.push(target)
-        }
-        else{
-            target.pts = pts
-        }
-    }
+    const { getItem, setItem, enumerateItems } = useKvStoreCore<FormalPt[]>()
+
     function findAdjacentFormatPts(ptIdx:number, lineId:number){
-        const line = formalizedLines.find(x=>x.lineId==lineId)
-        if(!line)
+        const linePts = getItem(lineId)
+        if(!linePts)
             return []
-        const idx = line?.pts.findIndex(x=>x.afterIdxEqv==ptIdx)
+        const idx = linePts.findIndex(x=>x.afterIdxEqv==ptIdx)
         if(idx===-1)
             return []
         const res:Coord[] = []
         if(idx>0){
-            res.push(line.pts[idx-1].pos)
+            res.push(linePts[idx-1].pos)
         }
-        if(idx<line.pts.length-1){
-            res.push(line.pts[idx+1].pos)
+        if(idx<linePts.length-1){
+            res.push(linePts[idx+1].pos)
         }
         return res
     }
-    function enumerateFormalizedLines(fn:(line:FormalizedLine)=>void){
-        formalizedLines.forEach(fn)
-    }
     return { 
-        setLinesFormalPts,
-        enumerateFormalizedLines,
+        setLinesFormalPts: setItem,
+        enumerateFormalizedLines: enumerateItems,
         findAdjacentFormatPts
     }
 })
