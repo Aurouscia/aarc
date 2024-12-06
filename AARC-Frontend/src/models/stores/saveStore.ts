@@ -6,6 +6,7 @@ import { isSameCoord } from "@/utils/sgn";
 import { getRangeByPred } from "@/utils/lang/getRangeByPred";
 import { checkOrder } from "@/utils/lang/checkOrder";
 import { useConfigStore } from "./configStore";
+import { indicesInArray } from "@/utils/lang/indicesInArray";
 
 export const useSaveStore = defineStore('save', () => {
     //不应直接在此删除/添加车站/线路，应通过envStore进行，避免数据不一致
@@ -95,15 +96,15 @@ export const useSaveStore = defineStore('save', () => {
             return []
         const resIds:number[] = []
         lines.forEach(line=>{
-            const idx = line.pts.indexOf(ptId)
-            if(idx==-1)
-                return
-            if(idx>0){
-                resIds.push(line.pts[idx-1])
-            }
-            if(idx<line.pts.length-1){
-                resIds.push(line.pts[idx+1])
-            }
+            const idxs = indicesInArray(line.pts, ptId)
+            idxs.forEach(idx=>{
+                if(idx==-1)
+                    return
+                else if(idx>0)
+                    resIds.push(line.pts[idx-1])
+                else if(idx<line.pts.length-1)
+                    resIds.push(line.pts[idx+1])
+            })
         })
         const res:ControlPoint[] = []
         resIds.forEach(id=>{
