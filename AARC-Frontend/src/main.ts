@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
-import './styles.scss'
+import './styles/styles.scss'
 import '@aurouscia/au-color-picker/style.css'
 
 const app = createApp(App);

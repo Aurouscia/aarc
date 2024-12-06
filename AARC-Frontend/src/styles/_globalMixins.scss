@@ -1,0 +1,6 @@
+@mixin trans-quick-in($amount: 1){
+    transition-timing-function: cubic-bezier(0, $amount, 0, $amount);
+}
+@mixin trans-slow-in($amount: 1){
+    transition-timing-function: cubic-bezier($amount, 0, $amount, 0);
+}

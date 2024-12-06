@@ -58,7 +58,8 @@ watch(somethingActive, (newVal)=>{
 </template>
 
 <style scoped lang="scss">
-@use '../styleVals.scss';
+@use '@/styles/globalValues';
+@use '@/styles/globalMixins';
 
 .cvsFrame{
     position: fixed;
@@ -79,17 +80,17 @@ watch(somethingActive, (newVal)=>{
     }
 }
 .mainCvs{
-    transition-timing-function: cubic-bezier(1, 0, 1, 0);//出现地越快越好
+    @include globalMixins.trans-quick-in(0.9);//出现地越快越好
     &.insnif{
-        transition-timing-function: cubic-bezier(0, 1, 0, 1);//消失地越慢越好
-        opacity: 0.2;
+        @include globalMixins.trans-slow-in(0.9);//消失地越慢越好
+        opacity: 0.4;
     }
 }
 .activeCvs{
     transition: 0s;//瞬间出现
     &.invisible{
-        transition: styleVals.$default-transition-time;
-        transition-timing-function: cubic-bezier(1, 0, 1, 0);//快速消失
+        transition: globalValues.$default-transition-time;
+        @include globalMixins.trans-slow-in(0.5);//慢速消失
         opacity: 0;
     }
 }

@@ -1,9 +1,9 @@
-@use 'styleVals';
+@use 'globalValues';
 
 *{
     margin: 0px;
     padding: 0px;
-    transition: styleVals.$default-transition-time;
+    transition: globalValues.$default-transition-time;
 }
 
 .sqrBtn{
