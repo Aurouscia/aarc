@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
-import { onMounted, nextTick } from 'vue';
+import { onMounted, nextTick, watch } from 'vue';
 import Ops from './Ops.vue';
 import Name from './NameEdit.vue';
 import { useActiveCvsDispatcher } from '@/models/cvs/dispatchers/activeCvsDispatcher';
@@ -11,6 +11,7 @@ import { useConfigStore } from '@/models/stores/configStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 
 const envStore = useEnvStore();
+const { somethingActive } = storeToRefs(envStore)
 const configStore = useConfigStore();
 const { cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
 const { cvsFrame, cvsCont } = storeToRefs(useCvsFrameStore())
@@ -37,6 +38,11 @@ onMounted(async()=>{
     }
 })
 
+watch(somethingActive, (newVal)=>{
+    if(newVal){
+        activeCvsDispatcher.renderActiveCvs()
+    }
+})
 </script>
 
 <template>
@@ -73,16 +79,17 @@ onMounted(async()=>{
     }
 }
 .mainCvs{
+    transition-timing-function: cubic-bezier(1, 0, 1, 0);//出现地越快越好
     &.insnif{
-        transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+        transition-timing-function: cubic-bezier(0, 1, 0, 1);//消失地越慢越好
         opacity: 0.2;
     }
 }
 .activeCvs{
-    transition: 0s;
+    transition: 0s;//瞬间出现
     &.invisible{
         transition: styleVals.$default-transition-time;
-        transition-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
+        transition-timing-function: cubic-bezier(1, 0, 1, 0);//快速消失
         opacity: 0;
     }
 }
