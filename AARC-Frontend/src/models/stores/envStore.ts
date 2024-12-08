@@ -93,11 +93,12 @@ export const useEnvStore = defineStore('env', ()=>{
         let rerenderParamLineIds:number[] = []
         let rerenderParamPtIds:number[] = []
         if(nameEditStore.edited && activePt.value?.id){
-            rerenderParamPtIds = [activePt.value.id]
+            rerenderParamPtIds.push(activePt.value.id)
         }
         if(movedPoint.value && activePt.value?.id){
             const lines = saveStore.getLinesByPt(activePt.value.id)
             rerenderParamLineIds = lines.map(x=>x.id)
+            rerenderParamPtIds.push(activePt.value.id)
         }
         if(rerenderParamLineIds.length>0 || rerenderParamPtIds.length>0 || movedTextTag.value){
             //重新渲染的同时，更新了相关staNameRect和FormalPts，确保接下来的点击判断使用最新数据
