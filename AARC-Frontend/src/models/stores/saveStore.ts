@@ -280,6 +280,13 @@ export const useSaveStore = defineStore('save', () => {
     function isNamedPt(pt:ControlPoint){
         return !!pt.name?.trim()
     }
+    
+    function removeTextTag(id:number){
+        const idx = save.value?.textTags.findIndex(x=>x.id===id)
+        if(idx !== undefined && idx !== -1){
+            save.value?.textTags.splice(idx, 1)
+        }
+    }
 
     const lineTypesRenderOrder = [
         LineType.terrain,
@@ -313,8 +320,9 @@ export const useSaveStore = defineStore('save', () => {
         save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf,
         getPtById, getPtsByIds, getLineById, getLinesByIds, getLineActualColor, linesActualColorSame, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType,
-        insertNewPtToLine, insertPtToLine, createNewLine, removePt, removePtFromLine, arrangeLinesOfType, tryMergePt,
-        isNamedPt, isLineTypeWithoutSta, isPtNoSta
+        insertNewPtToLine, insertPtToLine, createNewLine, removePt, removePtFromLine, arrangeLinesOfType, tryMergePt, isNamedPt,
+        removeTextTag,
+        isLineTypeWithoutSta, isPtNoSta
     }
 })
 

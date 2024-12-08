@@ -13,6 +13,7 @@ import { SgnCoord } from "@/models/coord";
 import { defineStore, storeToRefs } from "pinia";
 import { useEmphasizeCvsWorker } from "../workers/emphasizeCvsWorker";
 import { useTextTagCvsWorker } from "../workers/textTagCvsWorker";
+import { useDiscardAreaCvsWorker } from "../workers/discardAreaCvsWorker";
 
 export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const saveStore = useSaveStore()
@@ -28,6 +29,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const { renderCursor } = useCursorCvsWorker()
     const { renderEmphasizesForRingLines } = useEmphasizeCvsWorker()
     const { renderOneTextTag } = useTextTagCvsWorker()
+    const { renderDiscardArea } = useDiscardAreaCvsWorker()
 
     const { getActivePtOpsAvoidance } = storeToRefs(envStore)
     getActivePtOpsAvoidance.value = renderActiveCvs
@@ -78,6 +80,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
             renderOneTextTag(ctx, envStore.activeTextTag)
         }
         renderCursor(ctx)
+        renderDiscardArea(ctx)
         return lineExtendWays
     }
     return { activeCvs, renderActiveCvs }

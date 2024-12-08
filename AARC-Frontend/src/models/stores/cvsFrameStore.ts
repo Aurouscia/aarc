@@ -58,9 +58,16 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
             return;
         return [offsetCoord[0] - sx, offsetCoord[1] - sy]
     }
+    function clientCoordRatio(clientCoord:Coord, axis:'x'|'y'):number{
+        if(axis==='x')
+            return clientCoord[0] / (cvsFrame.value?.clientWidth||1)
+        else
+            return clientCoord[1] / (cvsFrame.value?.clientHeight||1)
+    }
     return {
         cvsFrame, cvsCont, initScaler, getViewCenterOffset,
         translateFromOffset, translateFromClient,
-        translateToOffset, translateToClient
+        translateToOffset, translateToClient,
+        clientCoordRatio
     }
 })

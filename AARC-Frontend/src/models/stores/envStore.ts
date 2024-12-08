@@ -14,6 +14,7 @@ import { useStaNameRectStore } from "./saveDerived/staNameRectStore";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
 import { useOnDetectStore } from "./saveDerived/saveDerivedDerived/onDetectStore";
 import { useCvsFrameStore } from "./cvsFrameStore";
+import { useDiscardAreaStore } from "./discardAreaStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const saveStore = useSaveStore();
@@ -47,6 +48,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const { setLinesFormalPts } = useFormalizedLineStore()
     const { setStaNameRects } = useStaNameRectStore()
     const { onPt, onLine, onStaName, onLineExtendBtn, onTextTag } = useOnDetectStore()
+    const discardAreaStore = useDiscardAreaStore()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -267,12 +269,14 @@ export const useEnvStore = defineStore('env', ()=>{
             let pt = activePt.value
             if(pt && coord){
                 if(activePtType.value=='body'){
+                    discardAreaStore.discardStatus(clientCoord)
                     pt.pos = coord;
                     const snapRes = snap(pt)
                     if(snapRes)
                         pt.pos = snapRes
                     cursorPos.value = coord
                 }else if(activePtType.value=='name'){
+                    discardAreaStore.discardStatus(clientCoord)
                     const transferRes = staClusterStore.tryTransferStaNameWithinCluster(pt)
                     if(transferRes){
                         pt.name = undefined
@@ -298,9 +302,11 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         else if(movingTextTag.value && activeTextTag.value){
             setOpsPos(false)
-            const coord = translateFromClient(eventClientCoord(e))
-            if(!coord)
+            const clientCoord = eventClientCoord(e)
+            const coord = translateFromClient(clientCoord)
+            if(!coord || !clientCoord)
                 return;
+            discardAreaStore.discardStatus(clientCoord)
             const setToGlobalPos = coordSub(coord, activeTextTagGrabbedAt.value)
             activeTextTag.value.pos = setToGlobalPos
             movedTextTag.value = true
@@ -312,6 +318,26 @@ export const useEnvStore = defineStore('env', ()=>{
         activePtNameGrabbedAt.value = [0,0]
         movingTextTag.value = false
         activeTextTagGrabbedAt.value = [0,0]
+        if(discardAreaStore.discarding){
+            if(activeTextTag.value){
+                saveStore.removeTextTag(activeTextTag.value.id)
+                activeTextTag.value = undefined
+            }
+            else if(activePt.value){
+                if(activePtType.value == 'body'){
+                    saveStore.removePt(activePt.value.id)
+                    activePt.value = undefined
+                }else if(activePtType.value == 'name'){
+                    activePt.value.name = undefined
+                    activePt.value.nameS = undefined
+                    activePt.value.nameP = undefined
+                    saveStore.disposedStaNameOf(activePt.value.id)
+                    activePt.value = undefined
+                }
+            }
+            pointMutated.value([], [])
+            discardAreaStore.resetDiscarding()
+        }
     }
 
     function setOpsPos(coord:Coord|false){
