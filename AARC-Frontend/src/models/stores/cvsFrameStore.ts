@@ -3,18 +3,56 @@ import { defineStore, storeToRefs } from "pinia";
 import { Ref, ref } from "vue";
 import { Coord } from "../coord";
 import { useSaveStore } from "./saveStore";
+import { minDisplayRatio } from "@/utils/consts";
 
 export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     const cvsFrame = ref<HTMLDivElement>()
     const cvsCont = ref<HTMLDivElement>()
+    const scaleLocked = ref<'free'|'max'|'min'>('free')
     const saveStore = useSaveStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     let scaler:Scaler
     function initScaler(viewScaleHandler:()=>void, viewMoveHandler:()=>void, moveLocked:Ref<boolean>){
         if(!cvsFrame.value || !cvsCont.value)
             throw Error('初始化失败，找不到cvsFrame/cvsCont DOM对象')
-        scaler = new Scaler(cvsFrame.value, cvsCont.value, viewScaleHandler, viewMoveHandler, moveLocked)
+        const viewScaleHandlerFull = ()=>{
+            updateScaleLock()//TODO：此处仅在调整大小后更新lock，实际上调整窗口尺寸也需要
+            viewScaleHandler()
+        }
+        scaler = new Scaler(cvsFrame.value, cvsCont.value, viewScaleHandlerFull, viewMoveHandler, moveLocked, scaleLocked)
         scaler.widthReset()
+    }
+    function getDisplayRatio(type:'x'|'y'|'smaller' = 'x'){
+        if(!cvsCont.value)
+            return 1;
+        const wr = cvsWidth.value / cvsCont.value.clientWidth
+        if(type == 'x'){
+            return wr
+        }
+        const hr = cvsHeight.value / cvsCont.value.clientHeight
+        if(type == 'y'){
+            return hr
+        }
+        if(type == 'smaller'){
+            return Math.min(wr, hr)
+        }
+        return 1
+    }
+    function updateScaleLock(){
+        const cw = cvsCont.value?.clientWidth || 0
+        const ch = cvsCont.value?.clientHeight || 0
+        const fw = cvsFrame.value?.clientWidth || 0
+        const fh = cvsFrame.value?.clientHeight || 0
+        if(cw <= fw && ch <= fh){
+            scaleLocked.value = 'min'
+            return
+        }
+        const r = getDisplayRatio('smaller') || 0
+        if(r < minDisplayRatio){
+            scaleLocked.value = 'max'
+            return
+        }
+        scaleLocked.value = 'free'
     }
     function getViewCenterOffset(){
         return scaler.getCenterOffset()
@@ -65,7 +103,8 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
             return clientCoord[1] / (cvsFrame.value?.clientHeight||1)
     }
     return {
-        cvsFrame, cvsCont, initScaler, getViewCenterOffset,
+        cvsFrame, cvsCont, initScaler,
+        getDisplayRatio, getViewCenterOffset,
         translateFromOffset, translateFromClient,
         translateToOffset, translateToClient,
         clientCoordRatio

@@ -6,15 +6,17 @@ export class Scaler{
     private scaleCallback: ()=>void;
     private moveCallback: ()=>void;
     private moveLocked:Ref<boolean>
+    private scaleLocked:Ref<'free'|'max'|'min'>|undefined
     private mouseDown:boolean = false;
     constructor(frame:HTMLDivElement, arena:HTMLDivElement,
-        scaleCallback:()=>void, moveCallback:()=>void, moveLocked:Ref<boolean>)
+        scaleCallback:()=>void, moveCallback:()=>void, moveLocked:Ref<boolean>, scaleLocked?:Ref<'free'|'max'|'min'>)
     {
         this.frame = frame;
         this.arena = arena;
         this.scaleCallback = scaleCallback;
         this.moveCallback = moveCallback;
         this.moveLocked = moveLocked
+        this.scaleLocked = scaleLocked
         frame.addEventListener("click",(e)=>{
             const x = e.clientX
             const y = e.clientY
@@ -159,8 +161,6 @@ export class Scaler{
         const hh = this.frame.clientHeight;
         const w = this.arena.clientWidth;
         const h = this.arena.clientHeight
-        const wr = w/ww;
-        const hr = w/hh;
         var x:number;
         var y:number;
         if(anchor){
@@ -170,10 +170,10 @@ export class Scaler{
             x = (this.frame.scrollLeft+ww/2)/w;
             y = (this.frame.scrollTop+hh/2)/h;
         }
-        if(Math.max(hr, wr) < 1 && ratio<1){
+        if(this.scaleLocked?.value === 'min' && ratio<1){
             return;
         }
-        if(Math.min(hr, wr) > 10 && ratio>1){
+        else if(this.scaleLocked?.value === 'max' && ratio>1){
             return;
         }
         const arx = this.frame.scrollLeft + ww*x;

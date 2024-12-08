@@ -40,7 +40,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const cvsFrameStore = useCvsFrameStore()
     const { cvsFrame, cvsCont } = storeToRefs(cvsFrameStore)
     const { initScaler, translateFromClient, translateToClient,
-        translateFromOffset, getViewCenterOffset } = cvsFrameStore
+        translateFromOffset, getViewCenterOffset, getDisplayRatio } = cvsFrameStore
     const pointMutated = ref<(changedLines?:number[], staNameMoved?:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])
     const getActivePtOpsAvoidance = ref<()=>SgnCoord[]>(()=>[])
@@ -530,15 +530,6 @@ export const useEnvStore = defineStore('env', ()=>{
         pointMutated.value([],[])
     }
 
-    function getDisplayRatio(soften = 1){
-        if(!cvsCont.value)
-            return 1;
-        const wr = cvsWidth.value / cvsCont.value.clientWidth
-        if(soften){
-            return 1+(wr-1)*soften
-        }
-        return wr
-    }
     function pointlessLineScan(){
         if(!saveStore.save)
             return

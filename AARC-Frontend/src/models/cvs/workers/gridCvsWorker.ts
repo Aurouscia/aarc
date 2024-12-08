@@ -5,13 +5,11 @@ import { defineStore, storeToRefs } from "pinia";
 
 export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
     const envStore = useEnvStore();
-    const { getDisplayRatio } = envStore;
     const { cvsWidth, cvsHeight } = storeToRefs(envStore)
     const { snapGridIntv } = storeToRefs(useSnapStore())
     const cs = useConfigStore()
     function renderGrid(ctx:CanvasRenderingContext2D){
-        let ratio = getDisplayRatio()
-        const linesInfo = gridLinesInfo(ratio)
+        const linesInfo = gridLinesInfo()
         snapGridIntv.value = linesInfo.subIntv
 
         ctx.lineWidth = linesInfo.subWidth
@@ -22,6 +20,8 @@ export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
         drawGrid(ctx, linesInfo.mainIntv)
     }
     function drawGrid(ctx:CanvasRenderingContext2D, intv:number){
+        if(intv <= 1)
+            return
         let x = intv;
         ctx.beginPath()
         while(x < cvsWidth.value){
@@ -37,24 +37,30 @@ export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
         }
         ctx.stroke()
     }
-    function gridLinesInfo(ratio:number):{mainIntv:number, subIntv:number, mainWidth:number, subWidth:number}{
-        const xpx = ratio*1000;
+    function gridLinesInfo():{mainIntv:number, subIntv:number, mainWidth:number, subWidth:number}{
+        const displayRatio1000 = envStore.getDisplayRatio('smaller') * 1000
         let mainIntv:number
         let subIntv:number
         let mainWidth:number = 2
         let subWidth:number = 1
-        if(xpx > 1500){
+        if(displayRatio1000 > 3000){
+            mainIntv = 500
+            subIntv = 0
+            mainWidth = 6
+        }
+        else if(displayRatio1000 > 1800){
             mainIntv = 500
             subIntv = 100
             mainWidth = 4
             subWidth = 2
-        }else if(xpx > 800){
+        }else{// if(displayRatio1000 > 1100){
             mainIntv = 100
             subIntv = 50
-        }else{
-            mainIntv = 100
-            subIntv = 25
         }
+        // else{
+        //     mainIntv = 100
+        //     subIntv = 25
+        // }
         return {
             mainIntv, subIntv,
             mainWidth, subWidth
