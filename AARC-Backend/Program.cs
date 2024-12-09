@@ -1,18 +1,19 @@
-var builder = WebApplication.CreateBuilder(args);
+using AARC.Models.Db.Context;
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+var builder = WebApplication.CreateBuilder(args);
+var c = builder.Configuration;
+
+builder.Services.AddControllers();
+builder.Services.AddDb(c);
 
 var app = builder.Build();
 
 app.UseFileServer();
-
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    name: "api",
+    pattern: "api/{controller}/{action}");
 
 app.Run();
