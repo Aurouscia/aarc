@@ -1,5 +1,6 @@
 import { SgnCoord } from "@/models/coord";
 import { Line, LineType, TextTag } from "@/models/save";
+import { useColorProcStore } from "@/models/stores/colorProcStore";
 import { useConfigStore } from "@/models/stores/configStore";
 import { useTextTagRectStore } from "@/models/stores/saveDerived/textTagRectStore";
 import { useSaveStore } from "@/models/stores/saveStore";
@@ -11,6 +12,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const cs = useConfigStore()
     const textTagRectStore = useTextTagRectStore()
+    const colorProcStore = useColorProcStore()
     function renderAllTextTags(ctx:CanvasRenderingContext2D){
         const allTags = saveStore.save?.textTags
         allTags?.forEach(t=>{
@@ -30,15 +32,16 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     }
     function renderForCommonLine(ctx:CanvasRenderingContext2D, t:TextTag, lineInfo:Line){
         const commonLineBuiltinRatio = 1.2
+        const textColor = colorProcStore.colorProcInvBinary.convert(lineInfo.color)
         const optMain:DrawTextBodyOption = {
-            color: "white",
+            color: textColor,
             font: cs.config.textTagFont,
             fontSize: cs.config.textTagFontSizeBase * commonLineBuiltinRatio,
             rowHeight: cs.config.textTagRowHeightBase * commonLineBuiltinRatio,
             text: lineInfo.name
         }
         const optSub:DrawTextBodyOption = {
-            color: "white",
+            color: textColor,
             font: cs.config.textTagSubFont,
             fontSize: cs.config.textTagSubFontSizeBase * commonLineBuiltinRatio,
             rowHeight: cs.config.textTagSubRowHeightBase * commonLineBuiltinRatio,

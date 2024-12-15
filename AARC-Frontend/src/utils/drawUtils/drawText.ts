@@ -141,7 +141,6 @@ export function drawTextForLineName(
     const fontPadding = (main.rowHeight - main.fontSize + sub.rowHeight - sub.fontSize)
     const giantFontSize = main.fontSize + sub.fontSize + fontPadding
     const giantTextRowHeight = main.rowHeight + sub.rowHeight
-    ctx.fillStyle = main.color
     const giantFontStr = concatFontStr(main.font, giantFontSize)
     const mainFontStr = concatFontStr(main.font, main.fontSize)
     const subFontStr = concatFontStr(sub.font, sub.fontSize)
@@ -163,6 +162,7 @@ export function drawTextForLineName(
         xLeft -= totalWidth
     if(needDraw){
         ctx.font = giantFontStr
+        ctx.fillStyle = main.color
         ctx.fillText(lineNum, xLeft, giantBaseline.shouldUseY)
     }
 
@@ -170,12 +170,14 @@ export function drawTextForLineName(
     if(needDraw){
         ctx.font = mainFontStr
         const mainX = xLeft + giantTextWidth + giantMarginRight
+        ctx.fillStyle = main.color
         ctx.fillText(restPart, mainX, mainBaseline.shouldUseY)
     }
     if(needDraw){
         ctx.font = subFontStr
         const subX = xLeft + giantTextWidth + giantMarginRight*2 //额外加一倍margin
         const subY = subBaseline.shouldUseY
+        ctx.fillStyle = sub.color
         ctx.fillText(subText, subX, subY)
     }
     if(needMeasure){
