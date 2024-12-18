@@ -1,9 +1,9 @@
-﻿using AARC.Services;
+﻿using AARC.Services.App.Logging;
 using Serilog;
 
-namespace AARC.Services
+namespace AARC.Services.App.Logging
 {
-    public static class Logger
+    public static class SerilogService
     {
         public static IServiceCollection AddSerilog(this IServiceCollection services, IConfiguration config)
         {

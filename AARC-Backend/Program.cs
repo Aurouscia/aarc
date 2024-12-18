@@ -1,5 +1,6 @@
 using AARC.Models.Db.Context;
-using AARC.Services;
+using AARC.Services.App;
+using AARC.Services.App.Logging;
 using Serilog;
 
 try
@@ -7,9 +8,10 @@ try
     var builder = WebApplication.CreateBuilder(args);
     var c = builder.Configuration;
 
-    builder.Services.AddSerilog(c);
+    //添加数据库
     builder.Services.AddDb(c);
-    builder.Services.AddControllers();
+    //添加应用级服务（controller、serilog、jwt等）
+    builder.Services.AddAppServices(c);
 
     var app = builder.Build();
 

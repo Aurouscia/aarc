@@ -2,7 +2,7 @@
 
 namespace AARC.Models.DbModels
 {
-    public class UserFile
+    public class UserFile : IDbModel
     {
         public int Id { get; set; }
         [MaxLength(64)]

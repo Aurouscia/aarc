@@ -2,7 +2,7 @@
 
 namespace AARC.Models.DbModels
 {
-    public class Save
+    public class Save : IDbModel
     {
         public int Id { get; set; }
         [MaxLength(64)]
