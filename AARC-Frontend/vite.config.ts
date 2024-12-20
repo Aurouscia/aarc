@@ -14,7 +14,17 @@ export default defineConfig({
   },
   build:{
     emptyOutDir:true,
-    outDir:"../AARC-Backend/wwwroot"
+    outDir:"../AARC-Backend/wwwroot",
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('@aurouscia'))
+            return 'au'
+          if (id.includes('node_modules'))
+            return 'libs'
+        }
+      }
+    }
   },
   resolve:{
     alias:{
@@ -28,5 +38,6 @@ export default defineConfig({
         api: 'modern-compiler'
       }
     }
-  }
+  },
+  envDir: "env"
 })

@@ -1,18 +1,22 @@
 <script setup lang="ts">
-import Cvs from './components/Cvs.vue';
-import Menu from './components/Menu.vue';
 import { useSaveStore } from './models/stores/saveStore';
-import { ref } from 'vue';
 import { devSave } from './dev/devSave';
+import Login from './pages/identities/Login.vue';
+import Pop from './components/common/Pop.vue';
+import Wait from './components/common/Wait.vue';
+import { useUniqueComponentsStore } from './utils/app/globalStores/uniqueComponents';
+import { storeToRefs } from 'pinia';
 
 const saveStore = useSaveStore();
+const { pop, wait } = storeToRefs(useUniqueComponentsStore())
+
 saveStore.save = devSave
-const menu = ref<InstanceType<typeof Menu>>()
 </script>
 
 <template>
-<Cvs></Cvs>
-<Menu ref="menu"></Menu>
+<Login></Login>
+<Pop ref="pop"></Pop>
+<Wait ref="wait"></Wait>
 </template>
 
 <style>

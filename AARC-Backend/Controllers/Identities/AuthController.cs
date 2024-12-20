@@ -16,6 +16,7 @@ namespace AARC.Controllers.Identities
         ILogger<AuthController> logger)
         : Controller
     {
+        public const int loginExpireHours = 24 * 7;
         public IActionResult Login(string? userName, string? password)
         {
             logger.LogInformation("登录请求：{userName}", userName);
@@ -30,7 +31,7 @@ namespace AARC.Controllers.Identities
             string domain = config["Jwt:Domain"] ?? throw new Exception("未找到配置项Jwt:Domain");
             string secret = config["Jwt:SecretKey"] ?? throw new Exception("未找到配置项Jwt:SecretKey");
 
-            int expHours = 72;
+            int expHours = loginExpireHours; //TODO:改成自己设置的
             var claims = new[]
             {
                     new Claim (JwtRegisteredClaimNames.Nbf,$"{new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()}") ,
@@ -49,12 +50,17 @@ namespace AARC.Controllers.Identities
 
             string tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
             logger.LogInformation("[{userId}]{userName}登录成功", u.Id, userName);
-            return this.ApiResp(new { token = tokenStr });
+            return this.ApiResp(new LoginResponse(tokenStr));
         }
 
         public IActionResult Info()
         {
             return this.ApiResp(userInfo.UserInfo.Value);
+        }
+
+        public class LoginResponse(string token)
+        {
+            public string Token { get; } = token;
         }
     }
 }

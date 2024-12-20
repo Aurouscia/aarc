@@ -3,8 +3,11 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import './styles/styles.scss'
 import '@aurouscia/au-color-picker/style.css'
+import { appSetup } from './utils/app/setup/appSetup'
 
-const app = createApp(App);
 const pinia = createPinia()
+const app = createApp(App).use(pinia);
 
-app.use(pinia).mount('#app')
+appSetup()
+
+app.mount('#app')

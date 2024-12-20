@@ -1,6 +1,8 @@
 using AARC.Models.Db.Context;
+using AARC.Repos;
 using AARC.Services.App;
 using AARC.Services.App.Logging;
+using AARC.Utils;
 using Serilog;
 
 try
@@ -8,30 +10,31 @@ try
     var builder = WebApplication.CreateBuilder(args);
     var c = builder.Configuration;
 
-    //Ìí¼ÓÊı¾İ¿â
+    //æ·»åŠ æ•°æ®åº“
     builder.Services.AddDb(c);
-    //Ìí¼ÓÓ¦ÓÃ¼¶·şÎñ£¨controller¡¢serilog¡¢jwtµÈ£©
+    //æ·»åŠ åº”ç”¨çº§æœåŠ¡ï¼ˆcontrollerã€serilogã€jwtç­‰ï¼‰
     builder.Services.AddAppServices(c);
+    //æ·»åŠ æ•°æ®åº“æ“ä½œæœåŠ¡
+    builder.Services.AddRepoServices();
 
     var app = builder.Build();
 
+    app.UseConfiguredCors();
     app.UseFileServer();
     app.UseRouting();
     app.UseAuthorization();
-
     app.UseSerilogRequestLogging();
-
     app.MapControllerRoute(
         name: "api",
         pattern: "api/{controller}/{action}");
 
-    Log.Information("AARCÆô¶¯³É¹¦=============================================");
+    Log.Information("AARCå¯åŠ¨æˆåŠŸ=============================================");
     app.Run();
 }
 catch (Exception ex)
 {
     if (ex is not HostAbortedException)
-        Log.Error(ex, "AARCÆô¶¯Ê§°Ü=============================================");
+        Log.Error(ex, "AARCå¯åŠ¨å¤±è´¥=============================================");
 }
 finally
 {
