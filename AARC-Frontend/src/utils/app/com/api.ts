@@ -24,11 +24,11 @@ export class Api{
         return `/api/${controller}/${action}`
     }
     auth = {
-        login: async (username:string, password:string)=>{
+        login: async (username:string, password:string, expireHrs:number)=>{
             const resp = await this.httpClient.request(
                 this.apiUrl('auth', 'login'),
                 'postForm',
-                {username, password},
+                {username, password, expireHrs},
                 '登录成功',
                 true
             )

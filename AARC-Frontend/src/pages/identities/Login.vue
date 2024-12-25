@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-//import { userTypeText } from '@/models/identities/user';
-//import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { guideInfo } from '@/utils/app/guideInfo';
 import { useUserInfoStore } from '@/utils/app/globalStores/userInfo';
@@ -11,15 +10,19 @@ import { useUniqueComponentsStore } from '@/utils/app/globalStores/uniqueCompone
 import { userTypeReadable } from './identitiesUtils';
 import { RouterLink } from 'vue-router';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
+import { useAuthLocalConfigStore } from '@/utils/app/localConfig/authLocalConfig';
 
 const props = defineProps<{
     backAfterSuccess?:string
 }>();
+const router = useRouter()
+const { readLoginExpireHrs, saveLoginExpireHrs, loginExpireHrsDefault }
+    = useAuthLocalConfigStore()
 
 const userName = ref<string>("")
 const password = ref<string>("")
-//const needExpire = ref<number>(72);
-//const setExpire = ref<boolean>(false);
+const expireHrs = ref<number>(loginExpireHrsDefault);
+const setExpire = ref<boolean>(false);
 const failedGuide = ref<string>();
 const userInfoStore = useUserInfoStore()
 const { userInfo } = storeToRefs(userInfoStore)
@@ -29,20 +32,20 @@ const { pop } = useUniqueComponentsStore()
 const { registerRoute } = useIdentitiesRoutesJump()
 
 async function Login(){
-    //authLocalConfig.expireHours = needExpire.value;
-    //saveLocalConfig(authLocalConfig);
+    saveLoginExpireHrs(expireHrs.value);
     const loginResp = await api.auth.login(
         userName.value,
-        password.value
+        password.value,
+        expireHrs.value
     )
     if (loginResp) {
         httpClient.setToken(loginResp.Token);
         userInfoStore.clearCache();
         await userInfoStore.getIdentityInfo(true);
         if (props.backAfterSuccess) {
-            //router.back()
+            router.back()
         } else {
-            //router.push("/")
+            router.push("/")
         }
     }else{
         const way = guideInfo.resetPassword || "请联系管理员重置"
@@ -61,15 +64,13 @@ const leftTimeDisplay = computed<string>(()=>{
     }
     const hours = userInfo.value.LeftHours;
     if(hours>72){
-        return Math.floor(hours/24)+'天';
+        return Math.round(hours/24)+'天';
     }
     return hours+'小时';
 })
 
-//let authLocalConfig:AuthLocalConfig = authConfigDefault();
 onMounted(async()=>{
-    //authLocalConfig = (readLocalConfig('auth') || authConfigDefault()) as AuthLocalConfig;
-    //needExpire.value = authLocalConfig.expireHours || 72;
+    expireHrs.value = readLoginExpireHrs()
     await userInfoStore.getIdentityInfo(true);
 })
 onUnmounted(()=>{
@@ -99,17 +100,17 @@ onUnmounted(()=>{
         <div class="login">
             <button @click="Login" class="confirm">登&nbsp;录</button>
         </div>
-        <!-- <div class="needExpire">
+        <div class="needExpire">
             <div @click="setExpire=!setExpire" style="cursor: pointer;">登录状态保持</div>
-            <select v-show="setExpire" v-model="needExpire">
+            <select v-show="setExpire" v-model="expireHrs">
                 <option :value="3">3小时</option>
                 <option :value="24">24小时</option>
-                <option :value="72">3天</option>
+                <option :value="168">7天</option>
                 <option :value="720">30天</option>
                 <option :value="8760">365天</option>
             </select>
-            <div v-show="setExpire" style="color:red">仅在自己的设备上选择较长时间</div>
-        </div> -->
+        </div>
+        <div v-show="setExpire" style="color:red; text-align: center;">仅在自己的设备上选择较长时间</div>
         <RouterLink class="register" :to="registerRoute()">
             注册账号
         </RouterLink>

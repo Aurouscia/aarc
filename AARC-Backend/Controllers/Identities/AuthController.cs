@@ -1,7 +1,5 @@
-﻿using AARC.Models.Db.Context;
-using AARC.Repos.Identities;
+﻿using AARC.Repos.Identities;
 using AARC.Services.App.HttpAuthInfo;
-using AARC.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,8 +15,7 @@ namespace AARC.Controllers.Identities
         ILogger<AuthController> logger)
         : Controller
     {
-        public const int loginExpireHours = 24 * 7;
-        public IActionResult Login(string? username, string? password)
+        public IActionResult Login(string? username, string? password, int expireHrs)
         {
             logger.LogInformation("登录请求：{userName}", username);
 
@@ -31,11 +28,11 @@ namespace AARC.Controllers.Identities
             string domain = config["Jwt:Domain"] ?? throw new Exception("未找到配置项Jwt:Domain");
             string secret = config["Jwt:SecretKey"] ?? throw new Exception("未找到配置项Jwt:SecretKey");
 
-            int expHours = loginExpireHours; //TODO:改成自己设置的
+            expireHrs = Math.Clamp(expireHrs, 3, 8760);
             var claims = new[]
             {
                     new Claim (JwtRegisteredClaimNames.Nbf,$"{new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()}") ,
-                    new Claim (JwtRegisteredClaimNames.Exp,$"{new DateTimeOffset(DateTime.Now.AddHours(expHours)).ToUnixTimeSeconds()}"),
+                    new Claim (JwtRegisteredClaimNames.Exp,$"{new DateTimeOffset(DateTime.Now.AddHours(expireHrs)).ToUnixTimeSeconds()}"),
                     new Claim (type:JwtRegisteredClaimNames.NameId, u.Id.ToString())
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
@@ -44,7 +41,7 @@ namespace AARC.Controllers.Identities
                 issuer: domain,
                 audience: domain,
                 claims: claims,
-                expires: DateTime.Now.AddHours(expHours),
+                expires: DateTime.Now.AddHours(expireHrs),
                 signingCredentials: creds
             );
 
