@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AARC.Utils;
+using Microsoft.EntityFrameworkCore;
 
 namespace AARC.Models.Db.Context.Specific
 {
@@ -14,6 +15,10 @@ namespace AARC.Models.Db.Context.Specific
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            var path = SqliteConnStrParser.GetDataSource(_options.ConnStr);
+            FileInfo f = new(path);
+            if (f.Directory is { } && !f.Directory.Exists)
+                f.Directory.Create();
             optionsBuilder.UseSqlite(_options.ConnStr);
         }
     }

@@ -28,10 +28,4 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Data\SqliteFiles\sqliteFilesStoredHere.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
