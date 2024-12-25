@@ -8,6 +8,6 @@ import { appSetup } from './utils/app/setup/appSetup'
 const pinia = createPinia()
 const app = createApp(App).use(pinia);
 
-appSetup()
+const router = appSetup()
 
-app.mount('#app')
+app.use(router).mount('#app')

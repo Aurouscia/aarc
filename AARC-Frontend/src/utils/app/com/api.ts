@@ -44,4 +44,16 @@ export class Api{
                 return resp.Data as HttpUserInfo
         }
     }
+    user = {
+        add: async (username:string, password:string)=>{
+            const resp = await this.httpClient.request(
+                this.apiUrl('user', 'add'),
+                'postForm',
+                {username, password},
+                '注册成功',
+                true
+            )
+            return resp.Success
+        }
+    }
 }

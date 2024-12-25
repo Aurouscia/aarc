@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useSaveStore } from './models/stores/saveStore';
 import { devSave } from './dev/devSave';
-import Login from './pages/identities/Login.vue';
 import Pop from './components/common/Pop.vue';
 import Wait from './components/common/Wait.vue';
 import { useUniqueComponentsStore } from './utils/app/globalStores/uniqueComponents';
@@ -14,7 +13,7 @@ saveStore.save = devSave
 </script>
 
 <template>
-<Login></Login>
+<RouterView></RouterView>
 <Pop ref="pop"></Pop>
 <Wait ref="wait"></Wait>
 </template>

@@ -1,4 +1,5 @@
 ﻿using AARC.Models.Db.Context;
+using AARC.Repos.Identities;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -10,21 +11,20 @@ using System.Text;
 namespace AARC.Controllers.Identities
 {
     public class AuthController(
-        AarcContext context,
+        UserRepo userRepo,
         HttpUserInfoService userInfo,
         IConfiguration config,
         ILogger<AuthController> logger)
         : Controller
     {
         public const int loginExpireHours = 24 * 7;
-        public IActionResult Login(string? userName, string? password)
+        public IActionResult Login(string? username, string? password)
         {
-            logger.LogInformation("登录请求：{userName}", userName);
+            logger.LogInformation("登录请求：{userName}", username);
 
-            if (userName is null || password is null)
+            if (username is null || password is null)
                 return this.ApiRespFailed("请填写用户名和密码");
-            string pwdMd5 = password.GetMD5();
-            var u = context.Users.Where(x => x.Name == userName && x.Password == pwdMd5).FirstOrDefault();
+            var u = userRepo.MatchUser(username, password);
             if (u is null)
                 return this.ApiRespFailed("用户名或密码错误");
 
@@ -49,7 +49,7 @@ namespace AARC.Controllers.Identities
             );
 
             string tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
-            logger.LogInformation("[{userId}]{userName}登录成功", u.Id, userName);
+            logger.LogInformation("[{userId}]{username}登录成功", u.Id, username);
             return this.ApiResp(new LoginResponse(tokenStr));
         }
 

@@ -1,5 +1,6 @@
 ﻿using AARC.Models.Db.Context;
 using AARC.Models.DbModels;
+using AARC.Utils;
 
 namespace AARC.Repos.Identities
 {
@@ -7,17 +8,25 @@ namespace AARC.Repos.Identities
         AarcContext context
         ) : Repo<User>(context)
     {
-        public bool CreateUser(
-            string? userName, string? password, out string? errmsg)
+        public User? MatchUser(string username, string password)
         {
-            userName ??= "";
+            var pwdEncrypted = UserPwdEncryption.Encrypt(password);
+            return Existing
+                .Where(x => x.Name == username && x.Password == pwdEncrypted)
+                .FirstOrDefault();
+        }
+        public bool CreateUser(
+            string? username, string? password, out string? errmsg)
+        {
+            username ??= "";
             password ??= "";
-            errmsg = CheckModel(userName, password);
+            errmsg = CheckModel(username, password);
             if(errmsg is { })
                 return false;
             User u = new() { 
-                Name = userName,
-                Password = password
+                Name = username,
+                Password = UserPwdEncryption.Encrypt(password),
+                Type = UserType.Member
             };
             base.Add(u);
             return true;

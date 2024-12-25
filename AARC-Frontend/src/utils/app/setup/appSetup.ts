@@ -1,6 +1,8 @@
 import { storeToRefs } from "pinia";
 import { HttpCallBack, HttpClient, useHttpClientStore } from "../com/httpClient";
 import { useUniqueComponentsStore } from "../globalStores/uniqueComponents";
+import { routerSetup } from "../router/routerSetup";
+import { createRouter, createWebHashHistory } from "vue-router";
 
 export function appSetup(){
     const httpClientStore = useHttpClientStore()
@@ -23,4 +25,11 @@ export function appSetup(){
         showWait
     )
     httpClientStore.init(httpClient)
+
+    const router = createRouter({
+        history: createWebHashHistory(),
+        routes:[]
+    })
+    routerSetup(router)
+    return router
 }

@@ -9,6 +9,8 @@ import { useHttpClientStore } from '@/utils/app/com/httpClient';
 import { useApiStore } from '@/utils/app/com/api';
 import { useUniqueComponentsStore } from '@/utils/app/globalStores/uniqueComponents';
 import { userTypeReadable } from './identitiesUtils';
+import { RouterLink } from 'vue-router';
+import { useIdentitiesRoutesJump } from './routes/routesJump';
 
 const props = defineProps<{
     backAfterSuccess?:string
@@ -24,7 +26,7 @@ const { userInfo } = storeToRefs(userInfoStore)
 const httpClient = useHttpClientStore().get()
 const api = useApiStore().get()
 const { pop } = useUniqueComponentsStore()
-//const router = useRouter();
+const { registerRoute } = useIdentitiesRoutesJump()
 
 async function Login(){
     //authLocalConfig.expireHours = needExpire.value;
@@ -48,8 +50,8 @@ async function Login(){
     }
 };
 async function Logout() {
-    httpClient.clearToken();
-    userInfoStore.clearCache();
+    httpClient.clearToken()
+    userInfoStore.clearCache()
     pop?.show("已经成功退出登录","success");
 }
 
@@ -108,9 +110,9 @@ onUnmounted(()=>{
             </select>
             <div v-show="setExpire" style="color:red">仅在自己的设备上选择较长时间</div>
         </div> -->
-        <!-- <div class="register" @click="jumpToRegister">
+        <RouterLink class="register" :to="registerRoute()">
             注册账号
-        </div> -->
+        </RouterLink>
         <div class="guide" style="color:red" v-if="failedGuide">{{ failedGuide }}</div>
         <div class="guide" style="color:#aaa" v-else>请在较新设备上使用新版edge或chrome系浏览器以正常使用编辑功能</div>
     </div>
@@ -125,7 +127,7 @@ onUnmounted(()=>{
     </div> -->
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .guide{
     margin: 10px;
     text-align: center;
@@ -185,6 +187,7 @@ button.logout{
     bottom: 35px;
 }
 .register{
+    display: block;
     text-align: center;
     color:gray;
     margin-top: 20px;

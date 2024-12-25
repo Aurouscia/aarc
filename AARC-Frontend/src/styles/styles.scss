@@ -5,6 +5,9 @@
     padding: 0px;
     transition: globalValues.$default-transition-time;
 }
+body{
+    background-color: white;
+}
 
 .sqrBtn{
     width: 30px;
@@ -97,5 +100,143 @@
             top: 35px;
             right: -50px;
         }
+    }
+}
+
+h1{
+    font-size: 20px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    margin-top: 20px;
+    border-bottom: 2px solid #aaa;
+    color: #666;
+    letter-spacing: 0.1em;
+    font-weight: normal;
+}
+
+
+a{
+    color: #666;
+    text-decoration: none;
+    cursor: pointer;
+    &:hover {
+        color: black;
+        text-decoration: underline;
+    }
+}
+
+table td {
+    padding: 5px;
+    background-color: #eee;
+    text-align: center;
+}
+table.index tr:hover td{
+    background-color: #ddd;
+}
+table th{
+    background-color: cornflowerblue;
+    color:white;
+    padding: 5px;
+}
+table tr.noneBackground td{
+    background:none;
+}
+  
+  
+input {
+    font-size: unset;
+    margin: 5px;
+    padding: 3px;
+    border: 1px solid #aaa;
+    box-sizing: border-box;
+    border-radius: 5px;
+}
+input[type=file]{
+    width: 200px;
+    background-color: white;
+}
+input[type=checkbox]{
+    height: 1.5em;
+    width: 1.5em;
+}
+select {
+    font-size: 18px;
+    padding: 3px;
+    vertical-align: middle;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    margin: 5px;
+}
+
+button {
+    background-color: cornflowerblue;
+    color: white;
+    padding: 5px;
+    margin: 2px;
+    border-radius: 5px;
+    border: none;
+    font-size: unset;
+    margin-bottom: 2px;
+    transition: 0.4s;
+    vertical-align: middle;
+    cursor: pointer;
+    &:hover{
+      background-color:rgb(0, 49, 139);
+    }
+}
+button.confirm {
+    background-color: cornflowerblue;
+}
+button.confirm:hover{
+    background-color:rgb(0, 49, 139);
+}
+button.ok{
+    background-color: olivedrab;
+}
+button.ok:hover{
+    background-color: green;
+}
+button.queryAdjust{
+    border: none;
+    background: none;
+    color:white;
+    margin: 0px;
+}
+button.minor{
+    background-color: white;
+    border:2px solid #aaa;
+    padding: 3px;
+    color:#aaa;
+}
+button.minor:hover{
+    color:black;
+    border-color: black;
+}
+button.cancel{
+    background-color:plum
+}
+button.cancel:hover{
+    background-color:palevioletred
+}
+button.danger{
+    background-color: red;
+}
+button.danger:hover{
+    background-color: darkred;
+}
+button.off{
+    background-color: #666;
+}
+button.off:hover{
+    background-color: #222;
+}
+button.lite{
+    background-color: transparent;
+    border: none;
+    color:#666;
+    padding: 0px;
+    margin: 0px;
+    &:hover{
+      text-decoration: underline;
     }
 }
