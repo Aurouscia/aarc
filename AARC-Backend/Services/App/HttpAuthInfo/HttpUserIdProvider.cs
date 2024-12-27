@@ -27,5 +27,12 @@ namespace AARC.Services.App.HttpAuthInfo
             }
             return 0;
         }
+        public int RequireUserId()
+        {
+            var uid = UserId.Value;
+            if (uid <= 0)
+                throw new InvalidOperationException("请登录后重试");
+            return uid;
+        }
     }
 }

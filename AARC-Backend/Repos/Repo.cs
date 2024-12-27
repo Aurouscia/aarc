@@ -12,6 +12,7 @@ namespace AARC.Repos
         public IQueryable<T> All => Set;
         public IQueryable<T> Existing => All.Where(x => !x.Deleted);
         public T? Get(int id) => Existing.Where(x=>x.Id == id).FirstOrDefault();
+        public IQueryable<T> WithId(int id) => Existing.Where(x => x.Id == id);
         protected int Add(T item, bool saveChanges = true)
         {
             item.LastActive = DateTime.Now;
@@ -35,6 +36,13 @@ namespace AARC.Repos
             context.Update(item);
             if(saveChanges)
                 context.SaveChanges();
+        }
+        protected void FakeRemove(int itemId)
+        {
+            Existing.Where(x => x.Id == itemId)
+                .ExecuteUpdate(spc => spc
+                    .SetProperty(x => x.LastActive, DateTime.Now)
+                    .SetProperty(x => x.Deleted, true));
         }
     }
 }
