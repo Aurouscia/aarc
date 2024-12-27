@@ -3,6 +3,7 @@ import { HttpCallBack, HttpClient, useHttpClientStore } from "../com/httpClient"
 import { useUniqueComponentsStore } from "../globalStores/uniqueComponents";
 import { routerSetup } from "../router/routerSetup";
 import { createRouter, createWebHashHistory } from "vue-router";
+import { useUserInfoStore } from "../globalStores/userInfo";
 
 export function appSetup(){
     const httpClientStore = useHttpClientStore()
@@ -31,5 +32,8 @@ export function appSetup(){
         routes:[]
     })
     routerSetup(router)
+
+    const userInfoStore = useUserInfoStore()
+    userInfoStore.getIdentityInfo()
     return router
 }
