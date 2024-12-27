@@ -4,7 +4,7 @@ import Register from "../Register.vue";
 import { addToRouter } from "@/utils/app/router/addToRouter";
 import { loginName, registerName } from "./routesNames";
 
-export function addIdentities(r:Router){
+export function addIdentitiesPages(r:Router){
     addToRouter(r, routes);
 }
 

@@ -7,7 +7,7 @@ import { useUserInfoStore } from '@/utils/app/globalStores/userInfo';
 import { useHttpClientStore } from '@/utils/app/com/httpClient';
 import { useApiStore } from '@/utils/app/com/api';
 import { useUniqueComponentsStore } from '@/utils/app/globalStores/uniqueComponents';
-import { userTypeReadable } from './identitiesUtils';
+import { userTypeReadable } from './models/utils';
 import { RouterLink } from 'vue-router';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
 import { useAuthLocalConfigStore } from '@/utils/app/localConfig/authLocalConfig';

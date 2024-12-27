@@ -1,6 +1,6 @@
 import { Router } from "vue-router"
 import NotFoundPage from "@/pages/NotFoundPage.vue"
-import { addIdentities } from "@/pages/identities/routes/routesInit"
+import { addIdentitiesPages } from "@/pages/identities/routes/routesInit"
 import { addSavesPages } from "@/pages/saves/routes/routesInit"
 
 export function routerSetup(router:Router){
@@ -8,6 +8,6 @@ export function routerSetup(router:Router){
         path: '/:pathMatch(.*)*',
         component: NotFoundPage
     })
-    addIdentities(router)
+    addIdentitiesPages(router)
     addSavesPages(router)
 }

@@ -1,4 +1,4 @@
-import { UserType } from "./identitesModels";
+import { UserType } from "./models";
 
 export function userTypeReadable(t:UserType){
     if(t===UserType.Admin)

@@ -2,7 +2,7 @@ import { defineStore } from "pinia"
 import { useApiStore } from "../com/api"
 import { computed, ref } from "vue"
 import { timestampS } from "@/utils/timeUtils/timestamp"
-import { HttpUserInfo, UserType } from "@/pages/identities/identitesModels"
+import { HttpUserInfo, UserType } from "@/pages/identities/models/models"
 
 
 export const useUserInfoStore = defineStore('userInfo', ()=>{

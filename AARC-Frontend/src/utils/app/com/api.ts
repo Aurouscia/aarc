@@ -1,4 +1,4 @@
-import { HttpUserInfo, LoginResponse } from "@/pages/identities/identitesModels";
+import { HttpUserInfo, LoginResponse } from "@/pages/identities/models/models";
 import { HttpClient, useHttpClientStore } from "./httpClient";
 import { defineStore } from "pinia";
 import { shallowRef } from "vue";
