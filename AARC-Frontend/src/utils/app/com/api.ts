@@ -2,6 +2,7 @@ import { HttpUserInfo, LoginResponse } from "@/pages/identities/identitesModels"
 import { HttpClient, useHttpClientStore } from "./httpClient";
 import { defineStore } from "pinia";
 import { shallowRef } from "vue";
+import { SaveDto } from "@/pages/saves/models/models";
 
 export const useApiStore = defineStore('api', ()=>{
     const httpClientStore = useHttpClientStore()
@@ -51,6 +52,56 @@ export class Api{
                 'postForm',
                 {username, password},
                 '注册成功',
+                true
+            )
+            return resp.Success
+        }
+    }
+    save = {
+        getMySaves: async()=>{
+            const resp = await this.httpClient.request(
+                this.apiUrl('save', 'getMySaves'),
+                'get'
+            )
+            if(resp.Success)
+                return resp.Data as SaveDto[]
+        },
+        add: async(saveDto:SaveDto)=>{
+            const resp = await this.httpClient.request(
+                this.apiUrl('save', 'add'),
+                'postForm',
+                saveDto,
+                '创建成功',
+                true
+            )
+            return resp.Success
+        },
+        updateInfo: async(saveDto:SaveDto)=>{
+            const resp = await this.httpClient.request(
+                this.apiUrl('save', 'updateInfo'),
+                'postForm',
+                saveDto,
+                '编辑成功',
+                true
+            )
+            return resp.Success
+        },
+        updateData: async(id:number, data:string)=>{
+            const resp = await this.httpClient.request(
+                this.apiUrl('save', 'updateData'),
+                'postForm',
+                {id, data},
+                '已保存',
+                true
+            )
+            return resp.Success
+        },
+        remove: async(id:number)=>{
+            const resp = await this.httpClient.request(
+                this.apiUrl('save', 'remove'),
+                'postForm',
+                {id},
+                '删除成功',
                 true
             )
             return resp.Success

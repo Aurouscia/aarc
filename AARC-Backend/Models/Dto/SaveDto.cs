@@ -15,13 +15,14 @@
 
         public SaveDto() { }
         public SaveDto(
-            int id, string name, string? version, int ownerId, string? intro)
+            int id, string name, string? version, int ownerId, string? intro, DateTime lastActive)
         {
             Id = id;
             Name = name;
             Version = version;
             OwnerUserId = ownerId;
-            OwnerName = intro;
+            Intro = intro;
+            LastActive = lastActive.ToString("yyyy-MM-dd HH:mm");
         }
     }
 }

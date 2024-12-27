@@ -104,7 +104,7 @@ body{
 }
 
 h1{
-    font-size: 20px;
+    font-size: 22px;
     padding-bottom: 10px;
     margin-bottom: 10px;
     margin-top: 20px;
@@ -112,6 +112,18 @@ h1{
     color: #666;
     letter-spacing: 0.1em;
     font-weight: normal;
+}
+h1.h1WithBtns{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    div{
+        display: flex;
+        align-items: center;
+        button{
+            font-size: 18px;
+        }
+    }
 }
 
 
@@ -138,13 +150,18 @@ table th{
     color:white;
     padding: 5px;
 }
-table tr.noneBackground td{
+table tr.noBg td{
     background:none;
 }
-  
-  
-input {
+table.fullWidth{
+    width: 100%;
+}
+
+input, textarea {
+    width: 200px;
     font-size: unset;
+    font-family: unset;
+    resize: none;
     margin: 5px;
     padding: 3px;
     border: 1px solid #aaa;

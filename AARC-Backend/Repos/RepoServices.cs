@@ -1,4 +1,5 @@
 ﻿using AARC.Repos.Identities;
+using AARC.Repos.Saves;
 
 namespace AARC.Repos
 {
@@ -8,6 +9,7 @@ namespace AARC.Repos
             this IServiceCollection services)
         {
             services.AddScoped<UserRepo>();
+            services.AddScoped<SaveRepo>();
             return services;
         }
     }
