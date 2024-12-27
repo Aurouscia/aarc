@@ -40,8 +40,9 @@ namespace AARC.Repos.Saves
         public bool UpdateInfo(SaveDto saveDto, out string? errmsg)
         {
             errmsg = ValidateDto(saveDto);
-            if (errmsg is { })
-                return false;
+            if (errmsg is { }) return false;
+            errmsg = ValidateAccess(saveDto.Id);
+            if (errmsg is { }) return false;
             Existing
                 .Where(x => x.Id == saveDto.Id)
                 .ExecuteUpdate(spc => spc
@@ -52,6 +53,8 @@ namespace AARC.Repos.Saves
         }
         public bool UpdateData(int id, string data, out string? errmsg)
         {
+            errmsg = ValidateAccess(id);
+            if (errmsg is { }) return false;
             Existing
                 .Where(x => x.Id == id)
                 .ExecuteUpdate(spc => spc
@@ -62,6 +65,8 @@ namespace AARC.Repos.Saves
         }
         public bool Remove(int id, out string? errmsg)
         {
+            errmsg = ValidateAccess(id);
+            if (errmsg is { }) return false;
             base.FakeRemove(id);
             errmsg = null;
             return true;
@@ -77,6 +82,14 @@ namespace AARC.Repos.Saves
                 return $"版本长度必须小于{Save.versionMaxLength}字符";
             if (saveDto.Intro?.Length > Save.introMaxLength)
                 return $"简介长度必须小于{Save.introMaxLength}字符";
+            return null;
+        }
+        private string? ValidateAccess(int saveId)
+        {
+            var ownerId = base.WithId(saveId).Select(x => x.OwnerUserId).FirstOrDefault();
+            var uid = httpUserIdProvider.RequireUserId();
+            if (uid != ownerId)
+                return "无权编辑本存档";
             return null;
         }
     }
