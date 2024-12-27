@@ -50,24 +50,26 @@ onMounted(async()=>{
         <button @click="startCreating">新建</button>
     </div>
 </h1>
+<div style="overflow-x: auto;">
 <table class="fullWidth"><tbody>
     <tr>
-        <th>名称</th>
-        <th style="width: 200px;">上次更新</th>
-        <th style="width: 150px;"></th>
+        <th style="min-width: 200px;">名称</th>
+        <th style="width: 130px;min-width: 130px">上次更新</th>
+        <th style="width: 100px;min-width: 100px"></th>
     </tr>
     <tr v-for="s in saveList">
         <td>
             {{ s.Name }}
         </td>
         <td>
-            {{ s.LastActive }}
+            <div class="lastActive">{{ s.LastActive }}</div>
         </td>
         <td>
             <button class="minor" @click="startEditingInfo(s)">信息</button>
         </td>
     </tr>
 </tbody></table>
+</div>
 <SideBar ref="saveInfoSb">
     <h1>{{ isCreatingSave ? '创建存档':'编辑信息' }}</h1>
     <table v-if="editingSave"><tbody>
@@ -93,5 +95,7 @@ onMounted(async()=>{
 </template>
 
 <style scoped lang="scss">
-
+.lastActive{
+    font-size: 14px;
+}
 </style>

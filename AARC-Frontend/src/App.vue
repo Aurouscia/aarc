@@ -13,11 +13,20 @@ saveStore.save = devSave
 </script>
 
 <template>
-<RouterView></RouterView>
+<div class="main">
+    <RouterView></RouterView>
+</div>
 <Pop ref="pop"></Pop>
 <Wait ref="wait"></Wait>
 </template>
 
-<style>
+<style scoped lang="scss">
+@use '@/styles/globalValues';
 
+.main{
+    width: calc(100vw - 2 * globalValues.$mainDivLRMargin);
+    margin: auto;
+    max-width: 1400px;
+    transition: 0s;
+}
 </style>
