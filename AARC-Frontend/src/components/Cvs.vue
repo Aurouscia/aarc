@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
-import { onMounted, nextTick, watch } from 'vue';
+import { onMounted, nextTick, watch, onBeforeUnmount } from 'vue';
 import Ops from './Ops.vue';
 import Name from './NameEdit.vue';
 import { useActiveCvsDispatcher } from '@/models/cvs/dispatchers/activeCvsDispatcher';
@@ -20,6 +20,7 @@ const mainCvsDispatcher = useMainCvsDispatcher()
 const { mainCvs } = storeToRefs(mainCvsDispatcher)
 const activeCvsDispatcher = useActiveCvsDispatcher()
 const { activeCvs } = storeToRefs(activeCvsDispatcher)
+let activeCvsRenderTimer = 0
 
 onMounted(async()=>{
     if(cvsCont.value && cvsFrame.value){
@@ -30,12 +31,16 @@ onMounted(async()=>{
     envStore.init()
     configStore.readConfigFromSave()
     mainCvsDispatcher.renderMainCvs()
-    setInterval(()=>{
+    activeCvsRenderTimer = window.setInterval(()=>{
         activeCvsDispatcher.renderActiveCvs()
     }, 50)
     document.oncontextmenu = function(e){
         e.preventDefault()
     }
+})
+onBeforeUnmount(()=>{
+    document.oncontextmenu = null
+    window.clearInterval(activeCvsRenderTimer)
 })
 
 watch(somethingActive, (newVal)=>{

@@ -17,7 +17,7 @@ const { getPresetNameByEnum, getPresetEnumByName, presets } = useColorPresetName
 
 function colorPreChanged(l:Line, presetName:string|undefined){
     l.colorPre = getPresetEnumByName(presetName)
-    setTimeout(()=>{
+    window.setTimeout(()=>{
         envStore.lineInfoChanged()
     },1)
 }

@@ -37,7 +37,7 @@ export function useSideListShared(lineType:LineType, lineTypeCalled:string){
     const editingInfoLineId = ref<number>()
     function editInfoOfLine(lineId:number){
         if(lineId!==editingInfoLineId.value){
-            setTimeout(()=>{
+            window.setTimeout(()=>{
                 editingInfoLineId.value = lineId
             },1)
         }else{
