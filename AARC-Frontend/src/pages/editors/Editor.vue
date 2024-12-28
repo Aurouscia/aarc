@@ -2,7 +2,7 @@
 import Cvs from '@/components/Cvs.vue';
 import Menu from '@/components/Menu.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
-import { useUniqueComponentsStore } from '@/utils/app/globalStores/uniqueComponents';
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { storeToRefs } from 'pinia';
 import { onBeforeMount } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router'

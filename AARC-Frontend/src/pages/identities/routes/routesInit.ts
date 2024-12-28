@@ -1,7 +1,7 @@
 import { Router } from "vue-router";
 import Login from "../Login.vue";
 import Register from "../Register.vue";
-import { addToRouter } from "@/utils/app/router/addToRouter";
+import { addToRouter } from "@/app/router/addToRouter";
 import { loginName, registerName } from "./routesNames";
 
 export function addIdentitiesPages(r:Router){

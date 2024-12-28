@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, nextTick } from 'vue';
 import { SaveDto } from './models/models';
-import { useApiStore } from '@/utils/app/com/api';
+import { useApiStore } from '@/app/com/api';
 import SideBar from '@/components/common/SideBar.vue';
 
 const saveList = ref<SaveDto[]>()

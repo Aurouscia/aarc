@@ -8,7 +8,7 @@ import TopbarBodyHorizontal from './TopbarBodyHorizontal.vue';
 import TopbarBodyVertical from './TopbarBodyVertical.vue';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
-import { useUserInfoStore } from '@/utils/app/globalStores/userInfo';
+import { useUserInfoStore } from '@/app/globalStores/userInfo';
 
 const topbarModel = ref<TopbarModel>();
 const { userInfo } = storeToRefs(useUserInfoStore())

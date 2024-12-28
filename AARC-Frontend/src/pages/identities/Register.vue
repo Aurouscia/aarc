@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useApiStore } from '@/utils/app/com/api';
-import { useUniqueComponentsStore } from '@/utils/app/globalStores/uniqueComponents';
+import { useApiStore } from '@/app/com/api';
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
 
 const userName = ref<string>("");

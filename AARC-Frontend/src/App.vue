@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Pop from './components/common/Pop.vue';
 import Wait from './components/common/Wait.vue';
-import { useUniqueComponentsStore } from './utils/app/globalStores/uniqueComponents';
+import { useUniqueComponentsStore } from './app/globalStores/uniqueComponents';
 import { storeToRefs } from 'pinia';
 import TopbarParent from './components/common/topbar/TopbarParent.vue';
 

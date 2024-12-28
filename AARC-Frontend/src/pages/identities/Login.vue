@@ -2,15 +2,15 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { guideInfo } from '@/utils/app/guideInfo';
-import { useUserInfoStore } from '@/utils/app/globalStores/userInfo';
-import { useHttpClientStore } from '@/utils/app/com/httpClient';
-import { useApiStore } from '@/utils/app/com/api';
-import { useUniqueComponentsStore } from '@/utils/app/globalStores/uniqueComponents';
+import { guideInfo } from '@/app/guideInfo';
+import { useUserInfoStore } from '@/app/globalStores/userInfo';
+import { useHttpClientStore } from '@/app/com/httpClient';
+import { useApiStore } from '@/app/com/api';
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { userTypeReadable } from './models/utils';
 import { RouterLink } from 'vue-router';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
-import { useAuthLocalConfigStore } from '@/utils/app/localConfig/authLocalConfig';
+import { useAuthLocalConfigStore } from '@/app/localConfig/authLocalConfig';
 
 const props = defineProps<{
     backAfterSuccess?:string
