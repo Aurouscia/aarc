@@ -45,7 +45,7 @@ export const useUserInfoStore = defineStore('userInfo', ()=>{
         if(stored){
             const data = JSON.parse(stored)
             if(data.update && data.info){
-                if(timestampS() - identityCacheExpireSec < (data.update as number)) //缓存未过期
+                if(timestampS() - identityCacheExpireMs < (data.update as number)) //缓存未过期
                     return data;
             }
         }
@@ -62,7 +62,7 @@ export const useUserInfoStore = defineStore('userInfo', ()=>{
 })
 
 
-const localStorageKey = "identityInfo";
+const localStorageKey = "aarcUserInfo";
 const logPrefix = "[身份信息]"
 const log = (msg:string, ...data:any[])=>console.log(`${logPrefix}${msg}`, ...data)
 const defaultValue:HttpUserInfo = {
@@ -71,5 +71,6 @@ const defaultValue:HttpUserInfo = {
     LeftHours:0,
     Type: UserType.Tourist
 }
-const identityCacheExpireSec = 60*60 //一分钟内刷新不再重复获取，直接读取缓存
+const identityCacheExpireSec = 60 //一分钟内刷新不再重复获取，直接读取缓存
+const identityCacheExpireMs = identityCacheExpireSec * 1000
 export { defaultValue as defaultIdentity }
