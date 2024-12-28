@@ -101,6 +101,7 @@ function keyHandler(e:KeyboardEvent){
     transition-timing-function: ease-in;
 }
 textarea{
+    margin: 0px;
     resize: none;
     overflow: hidden;
     display: block;
