@@ -1,20 +1,15 @@
 <script setup lang="ts">
-import { useSaveStore } from './models/stores/saveStore';
-import { devSave } from './dev/devSave';
 import Pop from './components/common/Pop.vue';
 import Wait from './components/common/Wait.vue';
 import { useUniqueComponentsStore } from './utils/app/globalStores/uniqueComponents';
 import { storeToRefs } from 'pinia';
 import TopbarParent from './components/common/topbar/TopbarParent.vue';
 
-const saveStore = useSaveStore();
-const { pop, wait } = storeToRefs(useUniqueComponentsStore())
-
-saveStore.save = devSave
+const { pop, wait, topbarShow } = storeToRefs(useUniqueComponentsStore())
 </script>
 
 <template>
-<TopbarParent></TopbarParent>
+<TopbarParent v-if="topbarShow"></TopbarParent>
 <div class="main">
     <RouterView></RouterView>
 </div>

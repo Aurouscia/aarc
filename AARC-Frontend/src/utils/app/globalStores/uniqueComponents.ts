@@ -6,5 +6,6 @@ import { ref } from "vue";
 export const useUniqueComponentsStore = defineStore('uniqueComponents', ()=>{
     const pop = ref<InstanceType<typeof Pop>>()
     const wait = ref<InstanceType<typeof Wait>>()
-    return { pop, wait }
+    const topbarShow = ref<boolean>(true)
+    return { pop, wait, topbarShow }
 })
