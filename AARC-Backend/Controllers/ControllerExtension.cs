@@ -24,5 +24,12 @@ namespace AARC.Controllers
             var resp = new ApiResponse(null, success, errmsg);
             return resp.BuildResult();
         }
+        public static ContentResult ApiResp(
+            this Controller _, object? obj, string? errmsg)
+        {
+            var success = errmsg is null;
+            var resp = new ApiResponse(obj, success, errmsg);
+            return resp.BuildResult();
+        }
     }
 }
