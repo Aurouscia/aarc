@@ -21,15 +21,17 @@ async function load() {
     if(!isNaN(saveIdNum)){
         const resp = await api.save.loadData(saveIdNum)
         try{
-            const obj = JSON.parse(resp)
+            const obj = resp ? JSON.parse(resp) : {}
             saveStore.save = ensureValidSave(obj)
+            loadComplete.value = true
         }catch{
             pop.value?.show('存档损坏，请联系管理员', 'failed')
         }
     }
-    else if(props.saveId.toLowerCase() == 'demo')
+    else if(props.saveId.toLowerCase() == 'demo'){
         saveStore.save = devSave
-    loadComplete.value = true
+        loadComplete.value = true
+    }
 }
 
 onBeforeMount(async()=>{
