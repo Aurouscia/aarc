@@ -123,16 +123,13 @@ export class HttpClient{
             let resp: ApiResponse|undefined = undefined;
             if (this.isApiResponseObj(res.data)) {
                 resp = res.data as ApiResponse;
-            } else if (type=='download') {
+            } else {
                 resp = {
                     Success: true,
                     Errmsg: '',
                     Code: 0,
                     Data: res.data,
                 }
-            }
-            else {
-                resp = defaultFailResp;
             }
             if (resp.Success) {
                 const logData = type!=='download' ? resp.Data : resp.Data?.length
@@ -170,6 +167,8 @@ export class HttpClient{
         return undefined;
     }
     private isApiResponseObj(obj:any){
+        if(!obj)
+            return false
         const ownPropNames = Object.getOwnPropertyNames(obj)
         const c = (propName:keyof ApiResponse)=>{
             return ownPropNames.includes(propName)

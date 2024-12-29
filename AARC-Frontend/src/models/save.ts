@@ -70,3 +70,35 @@ export interface TextTag{
     textS?:string
     //rot?:FormalRotation
 }
+
+
+export function ensureValidSave(obj:any){
+    if(typeof obj != 'object')
+        obj = {}
+    const ownPropNames = Object.getOwnPropertyNames(obj)
+    const fillDefault = (propName:keyof Save, defaultVal:object|(()=>object))=>{
+        if(!ownPropNames.includes(propName)){
+            if(typeof defaultVal === 'object')
+                obj[propName] = defaultVal
+            else
+                obj[propName] = defaultVal()
+        }
+    }
+    fillDefault('lines', [])
+    fillDefault('points', [])
+    fillDefault('cvsSize', [1000, 1000]),
+    fillDefault('textTags', [])
+    fillDefault('config', {})
+    fillDefault('idIncre', ()=>recaculateIdIncre(obj))
+    return obj as Save
+}
+function recaculateIdIncre(save:Save){
+    const lineIds = save.lines.map(x=>x.id)
+    const ptIds = save.points.map(x=>x.id)
+    const ttIds = save.textTags.map(x=>x.id)
+    const allIds = [...lineIds, ...ptIds, ...ttIds]
+    if(allIds.length===0)
+        return 1
+    const maxId = Math.max(...allIds)
+    return maxId + 1
+}

@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { ControlPoint, ControlPointDir, ControlPointSta, Line, LineType, Save } from "../save";
 import { Coord } from "../coord";
 import { isSameCoord } from "@/utils/sgn";
@@ -316,6 +316,11 @@ export const useSaveStore = defineStore('save', () => {
     const cvsWidth = computed<number>(()=>save.value?.cvsSize[0] || 1)
     const cvsHeight = computed<number>(()=>save.value?.cvsSize[1] || 1)
     const disposedStaNameOf = ref<(ptId:number)=>void>(()=>{})
+
+    watch(save, (newVal)=>{
+        console.log('存档加载', newVal)
+    })
+    
     return { 
         save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf,
         getPtById, getPtsByIds, getLineById, getLinesByIds, getLineActualColor, linesActualColorSame, getLineActualColorById,

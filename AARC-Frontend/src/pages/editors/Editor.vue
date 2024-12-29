@@ -4,17 +4,32 @@ import Menu from '@/components/Menu.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { storeToRefs } from 'pinia';
-import { onBeforeMount } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router'
 import { devSave } from '@/dev/devSave';
+import { useApiStore } from '@/app/com/api';
+import { ensureValidSave } from '@/models/save';
 
 const props = defineProps<{saveId:string}>()
-const { topbarShow } = storeToRefs(useUniqueComponentsStore())
+const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
 const saveStore = useSaveStore()
-parseInt(props.saveId)
+const api = useApiStore().get()
+const saveIdNum = parseInt(props.saveId)
+const loadComplete = ref(false)
 
 async function load() {
-    saveStore.save = devSave
+    if(!isNaN(saveIdNum)){
+        const resp = await api.save.loadData(saveIdNum)
+        try{
+            const obj = JSON.parse(resp)
+            saveStore.save = ensureValidSave(obj)
+        }catch{
+            pop.value?.show('存档损坏，请联系管理员', 'failed')
+        }
+    }
+    else if(props.saveId.toLowerCase() == 'demo')
+        saveStore.save = devSave
+    loadComplete.value = true
 }
 
 onBeforeMount(async()=>{
@@ -27,8 +42,8 @@ onBeforeRouteLeave(()=>{
 </script>
 
 <template>
-    <Cvs></Cvs>
-    <Menu></Menu>
+    <Cvs v-if="loadComplete"></Cvs>
+    <Menu v-if="loadComplete"></Menu>
 </template>
 
 <style scoped lang="scss">
