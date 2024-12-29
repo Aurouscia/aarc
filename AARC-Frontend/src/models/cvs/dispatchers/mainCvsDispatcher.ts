@@ -8,6 +8,7 @@ import { defineStore } from "pinia";
 import { useTerrainSmoothCvsWorker } from "../workers/terrainSmoothCvsWorker";
 import { LineType } from "@/models/save";
 import { useTextTagCvsWorker } from "../workers/textTagCvsWorker";
+import { shallowRef } from "vue";
 
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const envStore = useEnvStore()
@@ -19,7 +20,8 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const { renderAllPtName } = useStaNameCvsWorker()
     const { renderAllTerrainSmooth } = useTerrainSmoothCvsWorker()
     const { renderAllTextTags } = useTextTagCvsWorker()
-    function renderMainCvs(changedLines?:number[], movedStaNames?:number[]){
+    const afterMainCvsRendered = shallowRef<()=>void>()
+    function renderMainCvs(changedLines?:number[], movedStaNames?:number[], suppressRenderedCallback:boolean = false){
         console.log('绘制主画布')
         const ctx = getCtx();
         renderAllLines(ctx, changedLines, LineType.terrain, 'carpet')
@@ -30,6 +32,8 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         renderClusters(ctx)
         renderAllPtName(ctx, movedStaNames)
         renderAllTextTags(ctx)
+        if(!suppressRenderedCallback && afterMainCvsRendered.value)
+            afterMainCvsRendered.value()
     }
-    return { mainCvs, renderMainCvs }
+    return { mainCvs, renderMainCvs, afterMainCvsRendered }
 })

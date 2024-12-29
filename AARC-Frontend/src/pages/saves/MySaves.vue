@@ -3,9 +3,12 @@ import { onMounted, ref, nextTick } from 'vue';
 import { SaveDto } from './models/models';
 import { useApiStore } from '@/app/com/api';
 import SideBar from '@/components/common/SideBar.vue';
+import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 
 const saveList = ref<SaveDto[]>()
 const api = useApiStore().get()
+const { editorRoute } = useEditorsRoutesJump()
+
 async function load(){
     saveList.value = await api.save.getMySaves()
 }
@@ -66,6 +69,7 @@ onMounted(async()=>{
         </td>
         <td>
             <button class="minor" @click="startEditingInfo(s)">信息</button>
+            <RouterLink :to="editorRoute(s.Id)"><button>编辑</button></RouterLink>
         </td>
     </tr>
 </tbody></table>
