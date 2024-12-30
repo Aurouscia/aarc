@@ -14,7 +14,8 @@ const envStore = useEnvStore();
 const { somethingActive } = storeToRefs(envStore)
 const configStore = useConfigStore();
 const { cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
-const { cvsFrame, cvsCont } = storeToRefs(useCvsFrameStore())
+const cvsFrameStore = useCvsFrameStore()
+const { cvsFrame, cvsCont } = storeToRefs(cvsFrameStore)
 const baseCvsDispatcher = useBaseCvsDispatcher()
 const { baseCvs } = storeToRefs(baseCvsDispatcher)
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -24,10 +25,7 @@ const { activeCvs } = storeToRefs(activeCvsDispatcher)
 let activeCvsRenderTimer = 0
 
 onMounted(async()=>{
-    if(cvsCont.value && cvsFrame.value){
-        cvsCont.value.style.width = cvsWidth.value+'px'
-        cvsCont.value.style.height = cvsHeight.value+'px'
-    }
+    cvsFrameStore.setSizeToCvsContStyle()
     await nextTick()
     envStore.init()
     configStore.readConfigFromSave()

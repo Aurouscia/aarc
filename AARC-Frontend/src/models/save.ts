@@ -90,6 +90,7 @@ export function ensureValidSave(obj:any){
     fillDefault('textTags', [])
     fillDefault('config', {})
     fillDefault('idIncre', ()=>recaculateIdIncre(obj))
+    ensureValidCvsSize(obj)
     return obj as Save
 }
 function recaculateIdIncre(save:Save){
@@ -101,4 +102,12 @@ function recaculateIdIncre(save:Save){
         return 1
     const maxId = Math.max(...allIds)
     return maxId + 1
+}
+
+export const minCvsSide = 500
+export function ensureValidCvsSize(save:Save){
+    if(save.cvsSize[0] < minCvsSide)
+        save.cvsSize[0] = minCvsSide
+    if(save.cvsSize[1] < minCvsSide)
+        save.cvsSize[1] = minCvsSide
 }

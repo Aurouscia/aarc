@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { computed, CSSProperties, ref } from 'vue';
+import { computed, CSSProperties, nextTick, ref } from 'vue';
 import SideBar from './common/SideBar.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { storeToRefs } from 'pinia';
 import { dataSizeStr } from '@/utils/fileUtils/dataSizeStr';
+import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
+import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
+import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher';
+import { minCvsSide } from '@/models/save';
 
 const saveStore = useSaveStore()
 const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
+const cvsFrameStore = useCvsFrameStore()
+const baseCvsDispatcher = useBaseCvsDispatcher()
+const mainCvsDispatcher = useMainCvsDispatcher()
 const pendingChanges = ref<[number, number, number, number]>([0,0,0,0]) //上，右，下，左
 const changeIncrement = ref<number>(100)
 const cvsWidthPreview = computed(()=>{
@@ -27,7 +34,7 @@ function changeStyleOf(idx:number):CSSProperties{
     if(val>0)
         return {color:'green', fontWeight: 'bold'}
     else if(val<0)
-        return {color:'purple', fontWeight: 'bold'}
+        return {color:'plum', fontWeight: 'bold'}
     return {color:'gray', fontWeight:'normal'}
 }
 function changeTextOf(idx:number):string{
@@ -38,7 +45,6 @@ function changeTextOf(idx:number):string{
 }
 function changeIncre(idx:number, way:boolean){
     let inc = changeIncrement.value
-    console.log(typeof inc)
     if(!way)
         inc = -inc
     pendingChanges.value[idx] += inc
@@ -68,7 +74,25 @@ function abortChange(){
     pendingChanges.value = [0,0,0,0]
 }
 function applyChange(){
-    console.log(pendingChanges.value)
+    const pc = pendingChanges.value
+    const newW = cvsWidthPreview.value
+    const newH = cvsHeightPreview.value
+    let moveDownward = pc[0]
+    let moveRightward = pc[3]
+    if(newH < minCvsSide)
+        moveDownward = 0
+    if(newW < minCvsSide)
+        moveRightward = 0
+    saveStore.moveEverything([moveRightward, moveDownward])
+    saveStore.setCvsSize([newW, newH])
+    cvsFrameStore.setSizeToCvsContStyle()
+    nextTick(()=>{
+        baseCvsDispatcher.renderBaseCvs()
+        mainCvsDispatcher.renderMainCvs()
+        pendingChanges.value = [0,0,0,0]
+        sidebar.value?.fold()
+        cvsFrameStore.updateScaleLock()
+    })
 }
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
@@ -80,7 +104,7 @@ defineExpose({
 
 <template>
 <SideBar ref="sidebar" :shrink-way="'v-show'">
-    <h1>画布尺寸调整</h1>
+    <h1>画布尺寸扩展</h1>
     <div class="sizeEdit">
         <div class="yControl">
             <div class="btnPair">
@@ -128,6 +152,11 @@ defineExpose({
             <div class="incrementDisplay">{{ changeIncrement }}</div>
             <button @click="changeIncrementIncre(true)" class="off">+</button>
         </div>
+    </div>
+    <div class="explain">
+        “{{ theoreticalMemAfterChange() }}”为<b>画布理论内存占用</b>（并非导出图片尺寸），请根据自己的设备情况量力而行，避免造成闪退或卡死<br/><br/>
+        如果需要整体移动内容，可使用对侧相互抵消的扩展<br/>（例如：左侧加200，右侧减200）<br/><br/>
+        后续更新中的<a target="_blank" href="https://gitee.com/au114514/aarc/issues/IBCI7R">画布内存优化</a>将减小大型画布的内存占用
     </div>
     <div v-show="anyChangeExist" class="ops">
         <button class="cancel" @click="abortChange">放弃修改</button>
@@ -240,6 +269,21 @@ defineExpose({
     gap: 10px;
     button{
         width: 150px;
+    }
+}
+
+.explain{
+    width: 250px;
+    margin: auto;
+    margin-top: 10px;
+    border-radius: 10px;
+    background-color: #ccc;
+    color: white;
+    font-size: 14px;
+    padding: 5px;
+    a{
+        text-decoration: underline;
+        color:white;
     }
 }
 </style>

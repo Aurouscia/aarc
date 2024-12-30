@@ -102,11 +102,18 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         else
             return clientCoord[1] / (cvsFrame.value?.clientHeight||1)
     }
+    function setSizeToCvsContStyle(){
+        if(cvsCont.value && cvsFrame.value){
+            cvsCont.value.style.width = cvsWidth.value+'px'
+            cvsCont.value.style.height = cvsHeight.value+'px'
+        }
+    }
     return {
         cvsFrame, cvsCont, initScaler,
         getDisplayRatio, getViewCenterOffset,
+        updateScaleLock,
         translateFromOffset, translateFromClient,
         translateToOffset, translateToClient,
-        clientCoordRatio
+        clientCoordRatio, setSizeToCvsContStyle
     }
 })

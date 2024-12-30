@@ -1,12 +1,13 @@
 import { defineStore } from "pinia";
 import { computed, ref, watch } from "vue";
-import { ControlPoint, ControlPointDir, ControlPointSta, Line, LineType, Save } from "../save";
+import { ControlPoint, ControlPointDir, ControlPointSta, ensureValidCvsSize, Line, LineType, Save } from "../save";
 import { Coord } from "../coord";
 import { isSameCoord } from "@/utils/sgn";
 import { getRangeByPred } from "@/utils/lang/getRangeByPred";
 import { checkOrder } from "@/utils/lang/checkOrder";
 import { useConfigStore } from "./configStore";
 import { indicesInArray } from "@/utils/lang/indicesInArray";
+import { coordAdd } from "@/utils/coordUtils/coordMath";
 
 export const useSaveStore = defineStore('save', () => {
     //不应直接在此删除/添加车站/线路，应通过envStore进行，避免数据不一致
@@ -280,12 +281,24 @@ export const useSaveStore = defineStore('save', () => {
     function isNamedPt(pt:ControlPoint){
         return !!pt.name?.trim()
     }
-    
     function removeTextTag(id:number){
         const idx = save.value?.textTags.findIndex(x=>x.id===id)
         if(idx !== undefined && idx !== -1){
             save.value?.textTags.splice(idx, 1)
         }
+    }
+    function moveEverything(offset:Coord){
+        if(!save.value?.points || !save.value?.textTags)
+            throw Error('存档异常')
+        for(const pt of save.value.points){
+            pt.pos = coordAdd(pt.pos, offset)
+        }
+    }
+    function setCvsSize(newSize:Coord){
+        if(!save.value?.cvsSize)
+            throw Error('存档异常')
+        save.value.cvsSize = newSize
+        ensureValidCvsSize(save.value)
     }
 
     const lineTypesRenderOrder = [
@@ -326,7 +339,7 @@ export const useSaveStore = defineStore('save', () => {
         getPtById, getPtsByIds, getLineById, getLinesByIds, getLineActualColor, linesActualColorSame, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType,
         insertNewPtToLine, insertPtToLine, createNewLine, removePt, removePtFromLine, arrangeLinesOfType, tryMergePt, isNamedPt,
-        removeTextTag,
+        removeTextTag, moveEverything, setCvsSize,
         isLineTypeWithoutSta, isPtNoSta
     }
 })
