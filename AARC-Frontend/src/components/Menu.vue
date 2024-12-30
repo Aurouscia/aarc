@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import Lines from './sideList/Lines.vue';
-import { useSaveStore } from '@/models/stores/saveStore';
 import Terrains from './sideList/Terrains.vue';
 
 const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()
-const saveStore = useSaveStore()
 
 type SidebarNames = 'lines'|'terrains'|undefined
 const activeSidebarName = ref<SidebarNames>()
@@ -22,20 +20,19 @@ function openSidebarOf(name:SidebarNames){
     else
         terrains.value?.fold()
 }
-function fakeSave(){
-    console.log(saveStore.save)
+function saveData(){
+    emit('saveData')
 }
-
-onMounted(()=>{
-    //lines.value?.comeOut()
-})
+const emit = defineEmits<{
+    (e:'saveData'):void
+}>()
 </script>
 
 <template>
     <div class="menu">
         <div @click="openSidebarOf('lines')" class="sqrBtn withShadow">线</div>
         <div @click="openSidebarOf('terrains')" class="sqrBtn withShadow">地</div>
-        <div @click="fakeSave" class="sqrBtn withShadow">存</div>
+        <div @click="saveData" class="sqrBtn withShadow">存</div>
     </div>
     <Lines ref="lines"></Lines>
     <Terrains ref="terrains"></Terrains>
