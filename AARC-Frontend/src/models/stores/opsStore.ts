@@ -7,7 +7,9 @@ export type OpsBtnType = 'addPt'|'rmPt'|'addPtTL'|'rmPtFL'|'swPtDir'|'swPtSta'
 export interface OpsBtn{
     type:OpsBtnType,
     cb:()=>void,
-    color?:string
+    color?:string,
+    text:string,
+    textSub?:string
 }
 export const useOpsStore = defineStore('ops', ()=>{
     const clientPos = ref<Coord>()

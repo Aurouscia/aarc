@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { Coord } from '@/models/coord';
+import { useColorProcStore } from '@/models/stores/colorProcStore';
 import { OpsBtn, useOpsStore } from '@/models/stores/opsStore';
 import { storeToRefs } from 'pinia';
 import { computed, CSSProperties, ref, watch } from 'vue';
 
 const opsStore = useOpsStore()
+const { colorProcInvBinary } = useColorProcStore()
 const { clientPos, at, btns } = storeToRefs(opsStore)
 const moveMs = 4
 const dist = 12
@@ -125,12 +127,27 @@ function applyFlex(){
 <template>
 <div class="opss" :class="{sunken}" :style="opssStyle">
     <div v-for="bCol in btnsf" class="ops" :style="opsStyle">
-        <div v-for="b in bCol" @click="b.cb" :style="{backgroundColor: b.color}">{{ b.type }}</div>
+        <div v-for="b in bCol" @click="b.cb" :style="{backgroundColor: b.color, color:colorProcInvBinary.convert(b.color)}">
+            {{ b.text }}
+            <div v-if="b.textSub" class="opBtnTextSub">{{ b.textSub }}</div>
+        </div>
     </div>
 </div>
 </template>
 
 <style scoped lang="scss">
+.opBtnTextSub{
+    font-size: 8px;
+    line-height: 10px;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    position: absolute;
+    bottom: 1px;
+    left: 0px;
+    right: 0px;
+}
 .opss{
     position: fixed;
     background-color: rgba($color: #fff, $alpha: 0.85);
@@ -149,7 +166,7 @@ function applyFlex(){
     align-items: center;
     gap: 2px;
     overflow: hidden;
-    div{
+    &>div{
         width: 40px;
         height: 40px;
         background-color: #ccc;
@@ -157,6 +174,7 @@ function applyFlex(){
         user-select: none;
         line-height: 40px;
         text-align: center;
+        position: relative;
     }
 }
 .sunken{

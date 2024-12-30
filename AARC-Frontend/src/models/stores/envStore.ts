@@ -365,6 +365,7 @@ export const useEnvStore = defineStore('env', ()=>{
         const isLineTypeWithoutSta = saveStore.isLineTypeWithoutSta(relatedLineTypes)
         const onLineRes = onLine(pt.pos, relatedLineIds)
         const addToLines = onLineRes.map<OpsBtn>(l=>{
+            const lineName = saveStore.getLineById(l.lineId)?.name
             return{
                 type:'addPtTL' as OpsBtnType,
                 cb:()=>{
@@ -372,7 +373,9 @@ export const useEnvStore = defineStore('env', ()=>{
                     pointMutated.value([l.lineId, ...relatedLineIds], [pt.id])
                     setOpsForPt()
                 },
-                color: saveStore.getLineActualColorById(l.lineId)
+                color: saveStore.getLineActualColorById(l.lineId),
+                text:'加入',
+                textSub:lineName
             }
         })
         const rmFromLines = relatedLines.map(l=>{
@@ -385,7 +388,9 @@ export const useEnvStore = defineStore('env', ()=>{
                     setOpsForPt()
                     activeLine.value = undefined
                 },
-                color: saveStore.getLineActualColor(l)
+                color: saveStore.getLineActualColor(l),
+                text:'脱离',
+                textSub: l.name
             }
         })
         const rmPtCb = ()=>{
@@ -419,15 +424,19 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         let firstCol:OpsBtn[] = [{
                 type:'swPtDir',
-                cb:swDirCb
+                cb:swDirCb,
+                text:'旋转'
             },{
                 type:'rmPt',
-                cb:rmPtCb
+                cb:rmPtCb,
+                text:'移除'
             }]
         if(!isLineTypeWithoutSta){
             firstCol.splice(1, 0, {
                 type:'swPtSta',
-                cb:swSta
+                cb:swSta,
+                text:'切换',
+                textSub:'是否显示'
             })
         }
         opsStore.btns = [
@@ -459,7 +468,8 @@ export const useEnvStore = defineStore('env', ()=>{
         opsStore.btns = [[
             {
                 type:'addPt',
-                cb: insertPtCb
+                cb: insertPtCb,
+                text:'插入'
             }
         ]]
     }

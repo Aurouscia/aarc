@@ -3,7 +3,9 @@ export abstract class ColorProcBase{
     constructor(){
         this.cache = {}
     }
-    convert(inputColor:string){
+    convert(inputColor:string|undefined){
+        if(!inputColor)
+            return '#000000'
         const cached = this.cache[inputColor]
         if(cached)
             return cached
