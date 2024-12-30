@@ -39,7 +39,7 @@ const emit = defineEmits<{
         <div @click="openSidebarOf('lines')" class="sqrBtn withShadow">线</div>
         <div @click="openSidebarOf('terrains')" class="sqrBtn withShadow">地</div>
         <div @click="openSidebarOf('sizeEdit')" class="sqrBtn withShadow">布</div>
-        <div @click="saveData" class="sqrBtn withShadow">存</div>
+        <div @click="saveData" class="sqrBtn withShadow saveBtn">存</div>
     </div>
     <Lines ref="lines"></Lines>
     <Terrains ref="terrains"></Terrains>
@@ -55,5 +55,12 @@ const emit = defineEmits<{
     display: flex;
     flex-direction: column;
     gap: 10px
+}
+.saveBtn{
+    color: white;
+    background-color: olivedrab;
+    &:hover{
+        background-color: green;
+    }
 }
 </style>
