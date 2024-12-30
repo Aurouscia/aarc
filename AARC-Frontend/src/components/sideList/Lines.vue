@@ -71,5 +71,5 @@ onUnmounted(()=>{
 </template>
 
 <style scoped lang="scss">
-
+input{margin: 0px;padding: 0px;}
 </style>

@@ -176,6 +176,9 @@ input[type=checkbox]{
     height: 1.5em;
     width: 1.5em;
 }
+input[type=range]{
+    width: 120px;
+}
 select {
     font-size: 18px;
     padding: 3px;
