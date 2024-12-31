@@ -4,6 +4,7 @@ import { SaveDto } from './models/models';
 import { useApiStore } from '@/app/com/api';
 import SideBar from '@/components/common/SideBar.vue';
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
+import { appVersionCheck } from '@/app/appVersionCheck';
 
 const saveList = ref<SaveDto[]>()
 const api = useApiStore().get()
@@ -43,6 +44,7 @@ async function done(){
 
 onMounted(async()=>{
     await load()
+    await appVersionCheck()
 })
 </script>
 
