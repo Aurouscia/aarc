@@ -3,16 +3,19 @@ import { onMounted, ref } from 'vue'
 import { getTopbarData } from './model/topbarData';
 import itemsImg from '@/assets/ui/items.svg';
 import aarcLogo from '@/assets/logo/aarc.svg'
+import defaultAvatar from '@/assets/defaultAvatar.svg'
 import { TopbarModel } from './model/topbarModel';
 import TopbarBodyHorizontal from './TopbarBodyHorizontal.vue';
 import TopbarBodyVertical from './TopbarBodyVertical.vue';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
+import { useSavesRoutesJump } from '@/pages/saves/routes/routesJump';
 
 const topbarModel = ref<TopbarModel>();
 const { userInfo } = storeToRefs(useUserInfoStore())
 const router = useRouter();
+const { mySavesRoute } = useSavesRoutesJump()
 onMounted(async()=>{
     topbarModel.value = await getTopbarData();
 })
@@ -36,9 +39,9 @@ function toggleFold(){
         <TopbarBodyHorizontal :data="topbarModel"></TopbarBodyHorizontal>
     </div>
     <div class="right">
-        <div v-if="userInfo?.Id>0" class="avt">
-            <img :src="aarcLogo"/>
-        </div>
+        <RouterLink v-if="userInfo?.Id>0" :to="mySavesRoute()" class="avt">
+            <img :src="defaultAvatar"/>
+        </RouterLink>
         <div class="foldBtn">
             <img :src="itemsImg" @click="toggleFold"/>
         </div>

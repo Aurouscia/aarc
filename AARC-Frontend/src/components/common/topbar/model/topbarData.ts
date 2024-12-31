@@ -1,5 +1,6 @@
 import { mySavesName } from "@/pages/saves/routes/routesNames";
 import { TopbarModel } from "./topbarModel";
+import { loginName } from "@/pages/identities/routes/routesNames";
 
 export async function getTopbarData(): Promise<TopbarModel> {
     const model: TopbarModel = {
@@ -12,14 +13,14 @@ export async function getTopbarData(): Promise<TopbarModel> {
                 Title: "作品",
                 SubItems: [
                     {
-                        Title: "所有作品",
-                        Link: ""
-                    },
-                    {
                         Title: "我的作品",
                         Link: {name: mySavesName}
                     }
                 ]
+            },
+            {
+                Title: "登录",
+                Link: {name: loginName}
             }
         ]
     }
