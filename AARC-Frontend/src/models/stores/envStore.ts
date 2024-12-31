@@ -420,6 +420,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     pt.sta = ControlPointSta.sta
                 else
                     pt.sta = ControlPointSta.plain
+                movedPoint.value = true
             }
         }
         let firstCol:OpsBtn[] = [{
