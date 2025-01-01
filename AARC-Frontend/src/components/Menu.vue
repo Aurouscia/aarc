@@ -42,11 +42,11 @@ const emit = defineEmits<{
 
 <template>
     <div class="menu">
-        <div @click="openSidebarOf('lines')" class="sqrBtn withShadow">线</div>
-        <div @click="openSidebarOf('terrains')" class="sqrBtn withShadow">地</div>
-        <div @click="openSidebarOf('sizeEdit')" class="sqrBtn withShadow">布</div>
-        <div @click="openSidebarOf('exportPng')" class="sqrBtn withShadow">出</div>
-        <div @click="saveData" class="sqrBtn withShadow saveBtn">存</div>
+        <div @click="openSidebarOf('lines')" class="sqrBtn withShadow">线路</div>
+        <div @click="openSidebarOf('terrains')" class="sqrBtn withShadow">地形</div>
+        <div @click="openSidebarOf('sizeEdit')" class="sqrBtn withShadow">画布</div>
+        <div @click="openSidebarOf('exportPng')" class="sqrBtn withShadow">导出</div>
+        <div @click="saveData" class="sqrBtn withShadow saveBtn">保存</div>
     </div>
     <Lines ref="lines"></Lines>
     <Terrains ref="terrains"></Terrains>
@@ -62,7 +62,13 @@ const emit = defineEmits<{
     left: 5px;
     display: flex;
     flex-direction: column;
-    gap: 10px
+    gap: 10px;
+    .sqrBtn{
+        width: 36px;
+        height: 36px;
+        line-height: 36px;
+        font-size: 14px;
+    }
 }
 .saveBtn{
     color: white;
