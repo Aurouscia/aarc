@@ -63,6 +63,15 @@ namespace AARC.Repos.Saves
             errmsg = null;
             return true;
         }
+        public SaveDto? LoadInfo(int id, out string? errmsg)
+        {
+            var res = Existing
+                .Where(x => x.Id == id)
+                .Select(x => new SaveDto(x.Id, x.Name, x.Version, x.OwnerUserId, x.Intro, x.LastActive))
+                .FirstOrDefault();
+            errmsg = null;
+            return res;
+        }
         public string? LoadData(int id, out string? errmsg)
         {
             errmsg = ValidateAccess(id);
