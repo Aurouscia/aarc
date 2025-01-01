@@ -5,10 +5,12 @@ import { useApiStore } from '@/app/com/api';
 import SideBar from '@/components/common/SideBar.vue';
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { appVersionCheck } from '@/app/appVersionCheck';
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 
 const saveList = ref<SaveDto[]>()
 const api = useApiStore().get()
 const { editorRoute } = useEditorsRoutesJump()
+const { pop } = useUniqueComponentsStore()
 
 async function load(){
     saveList.value = await api.save.getMySaves()
@@ -40,6 +42,24 @@ async function done(){
         saveInfoSb.value?.fold()
         await load()
     }
+}
+
+const dangerZone = ref(false)
+const repeatCvsName = ref("")
+async function removeCurrentCvs(){
+    if(repeatCvsName.value !== editingSave.value?.Name){
+        pop?.show('请一字不差输入画布名称', 'failed')
+        return
+    }
+    const resp = await api.save.remove(editingSave.value.Id)
+    if(resp){
+        saveInfoSb.value?.fold()
+        await load()
+    }
+}
+function resetDangerZone(){
+    dangerZone.value = false
+    repeatCvsName.value = ''
 }
 
 onMounted(async()=>{
@@ -76,7 +96,7 @@ onMounted(async()=>{
     </tr>
 </tbody></table>
 </div>
-<SideBar ref="saveInfoSb">
+<SideBar ref="saveInfoSb" @extend="resetDangerZone">
     <h1>{{ isCreatingSave ? '创建存档':'编辑信息' }}</h1>
     <table v-if="editingSave"><tbody>
         <tr>
@@ -93,15 +113,31 @@ onMounted(async()=>{
         </tr>
         <tr class="noBg">
             <td colspan="2">
-                <button @click="done">{{ isCreatingSave ? '创建':'保存' }}</button>
+                <button @click="done">{{ isCreatingSave ? '创建存档':'保存更改' }}</button>
             </td>
         </tr>
     </tbody></table>
+    <div v-if="!isCreatingSave">
+        <button class="minor removeCvsBtn" @click="dangerZone = !dangerZone">危险区</button>
+        <div v-if="dangerZone" class="dangerZone">
+            <input v-model="repeatCvsName" placeholder="输入本存档名称"/>
+            <button class="danger" @click="removeCurrentCvs">删除存档</button>
+        </div>
+    </div>
 </SideBar>
 </template>
 
 <style scoped lang="scss">
+table{
+    width: 100%;
+}
 .lastActive{
     font-size: 14px;
+}
+.removeCvsBtn{
+    display: block;
+    margin: auto;
+    margin-top: 40px;
+    margin-bottom: 10px;
 }
 </style>
