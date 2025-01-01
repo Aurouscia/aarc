@@ -1,12 +1,12 @@
 import { RouteLocationRaw } from "vue-router"
-import { editorName } from "./routesNames"
+import { editorName, editorParamNameSaveId } from "./routesNames"
 
 export const useEditorsRoutesJump = ()=>{
     function editorRoute(saveId:number):RouteLocationRaw{
         return {
             name:editorName,
             params:{
-                saveId
+                [editorParamNameSaveId]: saveId
             }
         }
     }

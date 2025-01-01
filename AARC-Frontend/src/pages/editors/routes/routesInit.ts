@@ -1,7 +1,7 @@
 import { Router } from "vue-router";
 import Editor from "../Editor.vue";
 import { addToRouter } from "@/app/router/addToRouter";
-import { editorName } from "./routesNames";
+import { editorName, editorParamNameSaveId } from "./routesNames";
 
 export function addEditorsPages(r:Router){
     addToRouter(r, routes);
@@ -9,7 +9,7 @@ export function addEditorsPages(r:Router){
 
 const routes = [
     {
-        path:"/Editor/:saveId",
+        path:`/Editor/:${editorParamNameSaveId}`,
         props:true,
         component:Editor,
         name:editorName

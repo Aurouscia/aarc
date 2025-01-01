@@ -96,6 +96,17 @@ export class Api{
             )
             return resp.Success
         },
+        loadInfo: async(id:number)=>{
+            const resp = await this.httpClient.request(
+                this.apiUrl('save', 'loadInfo'),
+                'get',
+                {id},
+                undefined,
+                true
+            )
+            if(resp.Success)
+                return resp.Data as SaveDto
+        },
         loadData: async(id:number)=>{
             const resp = await this.httpClient.request(
                 this.apiUrl('save', 'loadData'),

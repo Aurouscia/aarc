@@ -2,28 +2,49 @@
 import { ref } from 'vue';
 import SideBar from './common/SideBar.vue';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
+import { useApiStore } from '@/app/com/api';
+import { useRoute } from 'vue-router';
+import { editorParamNameSaveId } from '@/pages/editors/routes/routesNames';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
+const api = useApiStore().get()
+const route = useRoute()
 let exportLock = false
 
-function downloadMainCvsAsPng() {
+async function downloadMainCvsAsPng() {
     if(exportLock)
         return
     exportLock = true
-    mainCvsDispatcher.renderMainCvs([], [], true, true)
-    var cvs = mainCvsDispatcher.mainCvs
-    if(!cvs)
-        return
-    var dataURL = cvs.toDataURL('image/png');
-    var link = document.createElement('a');
-    link.download = 'canvas.png';
-    link.href = dataURL;
-    link.click();
-    mainCvsDispatcher.renderMainCvs([], [], true, false)
+
+    const fileName = await getFileName()
+    if(fileName){
+        mainCvsDispatcher.renderMainCvs([], [], true, true)
+        var cvs = mainCvsDispatcher.mainCvs
+        if(!cvs)
+            return
+        var dataURL = cvs.toDataURL('image/png');
+        var link = document.createElement('a');
+        link.download = fileName
+        link.href = dataURL;
+        link.click();
+        mainCvsDispatcher.renderMainCvs([], [], true, false)
+    }
     window.setTimeout(()=>{
         exportLock = false
     }, 2000)
+}
+async function getFileName(){
+    let saveId = route.params[editorParamNameSaveId]
+    if(typeof saveId === 'object')
+        saveId = saveId[0] || 'err'
+    const saveIdNum = parseInt(saveId)
+    if(isNaN(saveIdNum))
+        return `${saveId}.png`
+    const info = await api.save.loadInfo(saveIdNum)
+    if(info){
+        return `${info.Name}.png`
+    }
 }
 
 defineExpose({
