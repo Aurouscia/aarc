@@ -86,11 +86,11 @@ export class Api{
             )
             return resp.Success
         },
-        updateData: async(id:number, data:string)=>{
+        updateData: async(id:number, data:string, staCount:number, lineCount:number)=>{
             const resp = await this.httpClient.request(
                 this.apiUrl('save', 'updateData'),
                 'postForm',
-                {id, data},
+                {id, data, staCount, lineCount},
                 '已保存',
                 true
             )

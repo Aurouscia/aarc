@@ -25,9 +25,9 @@ namespace AARC.Controllers.Saves
             var success = saveRepo.UpdateInfo(saveDto, out var errmsg);
             return this.ApiResp(success, errmsg);
         }
-        public IActionResult UpdateData(int id, string data)
+        public IActionResult UpdateData(int id, string data, int staCount, int lineCount)
         {
-            var success = saveRepo.UpdateData(id, data, out var errmsg);
+            var success = saveRepo.UpdateData(id, data, staCount, lineCount, out var errmsg);
             return this.ApiResp(success, errmsg);
         }
         public IActionResult LoadInfo(int id)

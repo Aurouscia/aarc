@@ -8,7 +8,7 @@ import { storeToRefs } from 'pinia';
 import { computed, onBeforeMount, onUnmounted, ref } from 'vue';
 import { devSave } from '@/dev/devSave';
 import { useApiStore } from '@/app/com/api';
-import { ensureValidSave } from '@/models/save';
+import { ControlPointSta, ensureValidSave, LineType } from '@/models/save';
 import { usePreventLeavingUnsaved } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 
@@ -48,10 +48,28 @@ async function saveData(){
         return
     }
     const data = JSON.stringify(saveStore.save)
-    const resp = await api.save.updateData(saveIdNum, data)
+    const staCount = getStaCount()
+    const lineCount = getLineCount()
+    const resp = await api.save.updateData(saveIdNum, data, staCount, lineCount)
     if(resp){
         releasePreventLeaving()
     }
+}
+function getStaCount(){
+    let staCount = 0
+    for(let s of saveStore.save?.points || []){
+        if(s.sta === ControlPointSta.sta)
+            staCount+=1
+    }
+    return staCount
+}
+function getLineCount(){
+    let lineCount = 0
+    for(let line of saveStore.save?.lines || []){
+        if(line.type === LineType.common)
+            lineCount+=1
+    }
+    return lineCount
 }
 
 onBeforeMount(async()=>{

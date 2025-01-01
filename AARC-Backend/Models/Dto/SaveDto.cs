@@ -15,7 +15,8 @@
 
         public SaveDto() { }
         public SaveDto(
-            int id, string name, string? version, int ownerId, string? intro, DateTime lastActive)
+            int id, string name, string? version, int ownerId,
+            string? intro, DateTime lastActive, int staCount, int lineCount)
         {
             Id = id;
             Name = name;
@@ -23,6 +24,8 @@
             OwnerUserId = ownerId;
             Intro = intro;
             LastActive = lastActive.ToString("yyyy-MM-dd HH:mm");
+            StaCount = staCount;
+            LineCount = lineCount;
         }
     }
 }

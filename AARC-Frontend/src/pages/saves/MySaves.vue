@@ -85,6 +85,7 @@ onMounted(async()=>{
     <tr v-for="s in saveList">
         <td>
             {{ s.Name }}
+            <div class="dataInfo">{{ s.LineCount }}线 {{ s.StaCount }}站</div>
         </td>
         <td>
             <div class="lastActive">{{ s.LastActive }}</div>
@@ -139,5 +140,9 @@ table{
     margin: auto;
     margin-top: 40px;
     margin-bottom: 10px;
+}
+.dataInfo{
+    font-size: 12px;
+    color: #333;
 }
 </style>

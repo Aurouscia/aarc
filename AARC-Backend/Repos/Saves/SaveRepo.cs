@@ -17,7 +17,9 @@ namespace AARC.Repos.Saves
             var res = base.Existing
                 .Where(x => x.OwnerUserId == uid)
                 .OrderBy(x => x.LastActive)
-                .Select(x => new SaveDto(x.Id, x.Name, x.Version, x.OwnerUserId, x.Intro, x.LastActive))
+                .Select(x => new SaveDto(
+                    x.Id, x.Name, x.Version, x.OwnerUserId,
+                    x.Intro, x.LastActive, x.StaCount, x.LineCount))
                 .ToList();
             return res;
         }
@@ -51,15 +53,19 @@ namespace AARC.Repos.Saves
                     .SetProperty(x => x.Intro, saveDto.Intro));
             return true;
         }
-        public bool UpdateData(int id, string data, out string? errmsg)
+        public bool UpdateData(
+            int id, string data,
+            int staCount, int lineCount, out string? errmsg)
         {
             errmsg = ValidateAccess(id);
             if (errmsg is { }) return false;
             Existing
                 .Where(x => x.Id == id)
                 .ExecuteUpdate(spc => spc
-                    .SetProperty(x=>x.LastActive, DateTime.Now)
-                    .SetProperty(x => x.Data, data));
+                    .SetProperty(x => x.LastActive, DateTime.Now)
+                    .SetProperty(x => x.Data, data)
+                    .SetProperty(x => x.StaCount, staCount)
+                    .SetProperty(x => x.LineCount, lineCount));
             errmsg = null;
             return true;
         }
@@ -67,7 +73,9 @@ namespace AARC.Repos.Saves
         {
             var res = Existing
                 .Where(x => x.Id == id)
-                .Select(x => new SaveDto(x.Id, x.Name, x.Version, x.OwnerUserId, x.Intro, x.LastActive))
+                .Select(x => new SaveDto(
+                    x.Id, x.Name, x.Version, x.OwnerUserId,
+                    x.Intro, x.LastActive, x.StaCount, x.LineCount))
                 .FirstOrDefault();
             errmsg = null;
             return res;
