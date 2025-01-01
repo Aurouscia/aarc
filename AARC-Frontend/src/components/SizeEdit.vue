@@ -104,7 +104,6 @@ defineExpose({
 
 <template>
 <SideBar ref="sidebar" :shrink-way="'v-show'">
-    <h1>画布尺寸扩展</h1>
     <div class="sizeEdit">
         <div class="yControl">
             <div class="btnPair">
@@ -153,14 +152,14 @@ defineExpose({
             <button @click="changeIncrementIncre(true)" class="off">+</button>
         </div>
     </div>
+    <div v-show="anyChangeExist" class="ops">
+        <button class="cancel" @click="abortChange">放弃修改</button>
+        <button class="ok" @click="applyChange">应用修改</button>
+    </div>
     <div class="explain">
         “{{ theoreticalMemAfterChange() }}”为<b>画布理论内存占用</b>（并非导出图片尺寸），请根据自己的设备情况量力而行，避免造成闪退或卡死<br/><br/>
         如果需要整体移动内容，可使用对侧相互抵消的扩展<br/>（例如：左侧加200，右侧减200）<br/><br/>
         后续更新中的<a target="_blank" href="https://gitee.com/au114514/aarc/issues/IBCI7R">画布内存优化</a>将减小大型画布的内存占用
-    </div>
-    <div v-show="anyChangeExist" class="ops">
-        <button class="cancel" @click="abortChange">放弃修改</button>
-        <button class="ok" @click="applyChange">应用修改</button>
     </div>
 </SideBar>
 </template>
@@ -261,7 +260,7 @@ defineExpose({
 }
 
 .ops{
-    margin-top: 25px;
+    margin-top: 15px;
     display: flex;
     flex-direction: column;
     justify-content: center;
