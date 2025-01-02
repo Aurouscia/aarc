@@ -4,13 +4,15 @@ import Lines from './sideList/Lines.vue';
 import Terrains from './sideList/Terrains.vue';
 import SizeEdit from './SizeEdit.vue';
 import ExportPng from './ExportPng.vue';
+import LocalConfigs from './LocalConfigs.vue';
 
 const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()
 const sizeEdit = ref<InstanceType<typeof Terrains>>()
 const exportPng = ref<InstanceType<typeof ExportPng>>()
+const localConfigs = ref<InstanceType<typeof LocalConfigs>>()
 
-type SidebarNames = 'lines'|'terrains'|'sizeEdit'|'exportPng'|undefined
+type SidebarNames = 'lines'|'terrains'|'sizeEdit'|'exportPng'|'localConfigs'|undefined
 const activeSidebarName = ref<SidebarNames>()
 
 function openSidebarOf(name:SidebarNames){
@@ -31,6 +33,10 @@ function openSidebarOf(name:SidebarNames){
         exportPng.value?.comeOut()
     else
         exportPng.value?.fold()
+    if(name==='localConfigs')
+        localConfigs.value?.comeOut()
+    else
+        localConfigs.value?.fold()
 }
 function saveData(){
     emit('saveData')
@@ -45,6 +51,7 @@ const emit = defineEmits<{
         <div @click="openSidebarOf('lines')" class="sqrBtn withShadow">线路</div>
         <div @click="openSidebarOf('terrains')" class="sqrBtn withShadow">地形</div>
         <div @click="openSidebarOf('sizeEdit')" class="sqrBtn withShadow">画布</div>
+        <div @click="openSidebarOf('localConfigs')" class="sqrBtn withShadow">设置</div>
         <div @click="openSidebarOf('exportPng')" class="sqrBtn withShadow">导出</div>
         <div @click="saveData" class="sqrBtn withShadow saveBtn">保存</div>
     </div>
@@ -52,6 +59,7 @@ const emit = defineEmits<{
     <Terrains ref="terrains"></Terrains>
     <SizeEdit ref="sizeEdit"></SizeEdit>
     <ExportPng ref="exportPng"></ExportPng>
+    <LocalConfigs ref="localConfigs"></LocalConfigs>
 </template>
 
 <style scoped lang="scss">
