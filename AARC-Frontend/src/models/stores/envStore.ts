@@ -15,6 +15,7 @@ import { useStaClusterStore } from "./saveDerived/staClusterStore";
 import { useOnDetectStore } from "./saveDerived/saveDerivedDerived/onDetectStore";
 import { useCvsFrameStore } from "./cvsFrameStore";
 import { useDiscardAreaStore } from "./discardAreaStore";
+import { useScalerLocalConfigStore } from "@/app/localConfig/scalerLocalConfig";
 
 export const useEnvStore = defineStore('env', ()=>{
     const saveStore = useSaveStore();
@@ -49,6 +50,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const { setStaNameRects } = useStaNameRectStore()
     const { onPt, onLine, onStaName, onLineExtendBtn, onTextTag } = useOnDetectStore()
     const discardAreaStore = useDiscardAreaStore()
+    const scalerLocalConfig = useScalerLocalConfigStore()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -65,10 +67,18 @@ export const useEnvStore = defineStore('env', ()=>{
     let rescaleDelayTimer = 0;
     function viewRescaleHandler(){
         setOpsPos(false)
-        window.clearTimeout(rescaleDelayTimer)
-        rescaleDelayTimer = window.setTimeout(()=>{
-            rescaled.value.forEach(f=>f())
-        }, 200)
+        if(scalerLocalConfig.steppedScaleEnabled){
+            //如果启用了步进式缩放，缩放时立即触发注册的回调
+            window.setTimeout(()=>{
+                rescaled.value.forEach(f=>f())
+            })
+        }else{
+            //如果没有启用步进式缩放，缩放停止一小段时间后触发
+            window.clearTimeout(rescaleDelayTimer)
+            rescaleDelayTimer = window.setTimeout(()=>{
+                rescaled.value.forEach(f=>f())
+            }, 200)
+        }
     }
     function viewMoveHandler(){
         setOpsPos(false)

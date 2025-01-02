@@ -86,7 +86,7 @@ export class Scaler{
             let dontUpdateTouchInfo = false
             if (this.touchDist > 0 && this.touchCx >= 0 && this.touchCy >= 0){
                 const ratio = distNow/this.touchDist
-                if (this.steppedScale?.value && (ratio > 0.8 && ratio < 1.2)){
+                if (this.steppedScale?.value && (ratio > 0.85 && ratio < 1.15)){
                     //启用了步进式缩放，且当前双指倍率不够，什么都不做
                     dontUpdateTouchInfo = true
                 }

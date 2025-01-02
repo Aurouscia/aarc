@@ -11,6 +11,7 @@ import { useTextTagCvsWorker } from "../workers/textTagCvsWorker";
 import { ref, shallowRef } from "vue";
 import { useConfigStore } from "@/models/stores/configStore";
 import { timestampMS } from "@/utils/timeUtils/timestamp";
+import { useScalerLocalConfigStore } from "@/app/localConfig/scalerLocalConfig";
 
 export interface MainCvsRenderingOptions{
     /** 这次渲染前哪些线路形状变动了？不提供即为所有 */
@@ -26,6 +27,7 @@ export interface MainCvsRenderingOptions{
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const envStore = useEnvStore()
     const cs = useConfigStore()
+    const scalerLocalConfig = useScalerLocalConfigStore()
     const { cvs: mainCvs, getCtx: getCtx } = useCvs()
     const { renderAllLines } = useLineCvsWorker()
     const { renderAllPoints } = usePointCvsWorker()
@@ -67,10 +69,14 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
             movedStaNames
         })
     }
-    // envStore.rescaled.push(()=>renderMainCvs({
-    //     changedLines:[],
-    //     movedStaNames:[],
-    //     suppressRenderedCallback:true
-    // }))
+    envStore.rescaled.push(()=>{
+        if(scalerLocalConfig.steppedScaleEnabled){
+            renderMainCvs({
+                changedLines:[],
+                movedStaNames:[],
+                suppressRenderedCallback:true
+            })
+        }
+    })
     return { mainCvs, renderMainCvs, afterMainCvsRendered }
 })
