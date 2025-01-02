@@ -41,7 +41,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const { cvsFrame, cvsCont } = storeToRefs(cvsFrameStore)
     const { initScaler, translateFromClient, translateToClient,
         translateFromOffset, getViewCenterOffset, getDisplayRatio } = cvsFrameStore
-    const pointMutated = ref<(changedLines?:number[], staNameMoved?:number[])=>void>(()=>{});
+    const rerender = ref<(changedLines?:number[], staNameMoved?:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])
     const getActivePtOpsAvoidance = ref<()=>SgnCoord[]>(()=>[])
     const { snap, snapName, snapNameStatus, snapGrid } = useSnapStore()
@@ -103,7 +103,7 @@ export const useEnvStore = defineStore('env', ()=>{
         //如果有需要重新渲染的线/点、或移动过文本标签，那么重新渲染
         if(rerenderParamLineIds.length>0 || rerenderParamPtIds.length>0 || movedTextTag.value){
             //重新渲染的同时，更新了相关staNameRect和FormalPts，确保接下来的点击判断使用最新数据
-            pointMutated.value(rerenderParamLineIds, rerenderParamPtIds)
+            rerender.value(rerenderParamLineIds, rerenderParamPtIds)
         }
 
         const activePtJustNow = activePt.value
@@ -119,7 +119,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 activePt.value = saveStore.getPtById(newPtId)
                 if (activePt.value) {
                     cursorPos.value = [...activePt.value.pos]
-                    pointMutated.value([lineExtend.lineId], [activePt.value.id])
+                    rerender.value([lineExtend.lineId], [activePt.value.id])
                     setOpsPos(false)
                     nameEditStore.startEditing(newPtId)
                 }
@@ -217,7 +217,7 @@ export const useEnvStore = defineStore('env', ()=>{
             if(tryMergeRes){
                 const changedLines = tryMergeRes.mutatedLines.map(x=>x.id)
                 const movedStaNames = [tryMergeRes.mergedWithPt.id, activePtJustNow.id]
-                pointMutated.value(changedLines, movedStaNames)
+                rerender.value(changedLines, movedStaNames)
             }
         }
         setOpsPos(false)
@@ -337,7 +337,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     activePt.value = undefined
                 }
             }
-            pointMutated.value([], [])
+            rerender.value([], [])
             discardAreaStore.resetDiscarding()
         }
     }
@@ -370,7 +370,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 type:'addPtTL' as OpsBtnType,
                 cb:()=>{
                     saveStore.insertPtToLine(pt.id, l.lineId, l.afterPtIdx, l.alignedPos, l.dir);
-                    pointMutated.value([l.lineId, ...relatedLineIds], [pt.id])
+                    rerender.value([l.lineId, ...relatedLineIds], [pt.id])
                     setOpsForPt()
                 },
                 color: saveStore.getLineActualColorById(l.lineId),
@@ -383,7 +383,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 type:'rmPtFL' as OpsBtnType,
                 cb:()=>{
                     saveStore.removePtFromLine(pt.id, l.id);
-                    pointMutated.value([l.id, ...relatedLineIds], [])
+                    rerender.value([l.id, ...relatedLineIds], [])
                     pointlessLineScan()
                     setOpsForPt()
                     activeLine.value = undefined
@@ -402,7 +402,7 @@ export const useEnvStore = defineStore('env', ()=>{
             activeLine.value = undefined
             cursorPos.value = undefined
             setOpsPos(false)
-            pointMutated.value(relatedLineIds, [])
+            rerender.value(relatedLineIds, [])
             pointlessLineScan()
         }
         const swDirCb = ()=>{
@@ -457,7 +457,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     cur = gridSnapped
                 }
                 const id = saveStore.insertNewPtToLine(activeLine.value.id, cursorOnLineAfterPtIdx.value, cur, cursorDir.value)
-                pointMutated.value([activeLine.value.id], [])
+                rerender.value([activeLine.value.id], [])
                 if(id!==undefined){
                     activePt.value = saveStore.getPtById(id)
                     activeLine.value = undefined
@@ -483,7 +483,7 @@ export const useEnvStore = defineStore('env', ()=>{
             saveStore.save.lines.splice(idx, 1)
         setLinesFormalPts(lineId, undefined)
         if(!suppressRender)
-            pointMutated.value([],[])
+            rerender.value([],[])
     }
     function createLine(type:LineType){
         if(!saveStore.save)
@@ -535,11 +535,11 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         if(newLine){
             saveStore.createNewLine(newLine)
-            pointMutated.value([newLine.id], [pt1.id, pt2.id])
+            rerender.value([newLine.id], [pt1.id, pt2.id])
         }
     }
     function lineInfoChanged(){
-        pointMutated.value([],[])
+        rerender.value([],[])
     }
 
     function pointlessLineScan(){
@@ -553,7 +553,7 @@ export const useEnvStore = defineStore('env', ()=>{
         })
         needRemoveIds.forEach(lineId=>delLine(lineId, true))
         if(needRemoveIds.length>0)
-            pointMutated.value([],[])
+            rerender.value([],[])
     }
     function ensureSpaceForNewPt(coord:Coord){
         const original:Coord = [...coord]
@@ -584,7 +584,7 @@ export const useEnvStore = defineStore('env', ()=>{
         activeLine, activeTextTag, somethingActive,
         cursorPos, movingPoint, movedPoint,
         cvsWidth, cvsHeight, getDisplayRatio,
-        pointMutated, rescaled, getActivePtOpsAvoidance,
+        rerender, rescaled, getActivePtOpsAvoidance,
         delLine, createLine, lineInfoChanged
     }
 })

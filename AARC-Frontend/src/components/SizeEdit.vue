@@ -88,7 +88,7 @@ function applyChange(){
     cvsFrameStore.setSizeToCvsContStyle()
     nextTick(()=>{
         baseCvsDispatcher.renderBaseCvs()
-        mainCvsDispatcher.renderMainCvs()
+        mainCvsDispatcher.renderMainCvs({})
         pendingChanges.value = [0,0,0,0]
         sidebar.value?.fold()
         cvsFrameStore.updateScaleLock()

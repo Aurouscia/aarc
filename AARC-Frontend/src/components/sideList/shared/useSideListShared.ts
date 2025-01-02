@@ -18,7 +18,10 @@ export function useSideListShared(lineType:LineType, lineTypeCalled:string){
     function orderChanged(){
         const orderedIds = lines.value.map(x=>x.id)
         saveStore.arrangeLinesOfType(orderedIds, lineType)
-        mainCvsDispatcher.renderMainCvs()
+        mainCvsDispatcher.renderMainCvs({
+            changedLines:[],
+            movedStaNames:[]
+        })
     }
     function createLine(){
         envStore.createLine(lineType)

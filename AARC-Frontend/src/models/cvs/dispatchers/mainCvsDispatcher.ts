@@ -11,10 +11,20 @@ import { useTextTagCvsWorker } from "../workers/textTagCvsWorker";
 import { shallowRef } from "vue";
 import { useConfigStore } from "@/models/stores/configStore";
 
+export interface MainCvsRenderingOptions{
+    /** 这次渲染前哪些线路形状变动了？不提供即为所有 */
+    changedLines?:number[],
+    /** 这次渲染前哪些站名位置移动了？不提供即为所有 */
+    movedStaNames?:number[],
+    /** 阻止“渲染后”钩子触发 */
+    suppressRenderedCallback?:boolean
+    /** 导出式渲染 */
+    forExport?:boolean
+}
+
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const envStore = useEnvStore()
     const cs = useConfigStore()
-    envStore.pointMutated = renderMainCvs
     const { cvs: mainCvs, getCtx: getCtx } = useCvs()
     const { renderAllLines } = useLineCvsWorker()
     const { renderAllPoints } = usePointCvsWorker()
@@ -23,14 +33,11 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const { renderAllTerrainSmooth } = useTerrainSmoothCvsWorker()
     const { renderAllTextTags } = useTextTagCvsWorker()
     const afterMainCvsRendered = shallowRef<()=>void>()
-    function renderMainCvs(
-            changedLines?:number[],
-            movedStaNames?:number[],
-            suppressRenderedCallback:boolean = false,
-            fillCvsBgColor?:boolean){
+    function renderMainCvs(options:MainCvsRenderingOptions){
         console.log('绘制主画布')
         const ctx = getCtx();
-        if(fillCvsBgColor){
+        const { changedLines, movedStaNames, suppressRenderedCallback, forExport } = options
+        if(forExport){
             ctx.fillStyle = cs.config.bgColor
             ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         }
@@ -45,5 +52,10 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         if(!suppressRenderedCallback && afterMainCvsRendered.value)
             afterMainCvsRendered.value()
     }
+    envStore.rerender = (changedLines, movedStaNames)=>
+        renderMainCvs({
+            changedLines,
+            movedStaNames
+        })
     return { mainCvs, renderMainCvs, afterMainCvsRendered }
 })

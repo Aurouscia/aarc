@@ -30,7 +30,7 @@ onMounted(async()=>{
     envStore.init()
     configStore.readConfigFromSave()
     baseCvsDispatcher.renderBaseCvs()
-    mainCvsDispatcher.renderMainCvs(undefined, undefined, true)
+    mainCvsDispatcher.renderMainCvs({suppressRenderedCallback:true})
     activeCvsRenderTimer = window.setInterval(()=>{
         activeCvsDispatcher.renderActiveCvs()
     }, 50)

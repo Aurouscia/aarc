@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import SideBar from './common/SideBar.vue';
-import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
+import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useApiStore } from '@/app/com/api';
 import { useRoute } from 'vue-router';
 import { editorParamNameSaveId } from '@/pages/editors/routes/routesNames';
@@ -19,7 +19,13 @@ async function downloadMainCvsAsPng() {
 
     const fileName = await getFileName()
     if(fileName){
-        mainCvsDispatcher.renderMainCvs([], [], true, true)
+        const mainRenderingOptions:MainCvsRenderingOptions = {
+            changedLines:[],
+            movedStaNames:[],
+            suppressRenderedCallback:true,
+            forExport:true
+        }
+        mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
         var cvs = mainCvsDispatcher.mainCvs
         if(!cvs)
             return
@@ -28,7 +34,9 @@ async function downloadMainCvsAsPng() {
         link.download = fileName
         link.href = dataURL;
         link.click();
-        mainCvsDispatcher.renderMainCvs([], [], true, false)
+
+        mainRenderingOptions.forExport = false
+        mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
     }
     window.setTimeout(()=>{
         exportLock = false
