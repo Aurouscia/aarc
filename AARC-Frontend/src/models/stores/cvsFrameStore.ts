@@ -4,6 +4,7 @@ import { Ref, ref } from "vue";
 import { Coord } from "../coord";
 import { useSaveStore } from "./saveStore";
 import { minDisplayRatio } from "@/utils/consts";
+import { useScalerLocalConfigStore } from "@/app/localConfig/scalerLocalConfig";
 
 export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     const cvsFrame = ref<HTMLDivElement>()
@@ -12,6 +13,7 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     const saveStore = useSaveStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     let scaler:Scaler
+    const { steppedScaleEnabled } = storeToRefs(useScalerLocalConfigStore())
     function initScaler(viewScaleHandler:()=>void, viewMoveHandler:()=>void, moveLocked:Ref<boolean>){
         if(!cvsFrame.value || !cvsCont.value)
             throw Error('初始化失败，找不到cvsFrame/cvsCont DOM对象')
@@ -19,7 +21,7 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
             updateScaleLock()//TODO：此处仅在调整大小后更新lock，实际上调整窗口尺寸也需要
             viewScaleHandler()
         }
-        scaler = new Scaler(cvsFrame.value, cvsCont.value, viewScaleHandlerFull, viewMoveHandler, moveLocked, scaleLocked)
+        scaler = new Scaler(cvsFrame.value, cvsCont.value, viewScaleHandlerFull, viewMoveHandler, moveLocked, scaleLocked, steppedScaleEnabled)
         scaler.widthReset()
     }
     function getDisplayRatio(type:'x'|'y'|'smaller' = 'x'){

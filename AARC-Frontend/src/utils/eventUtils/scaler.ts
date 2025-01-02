@@ -7,9 +7,11 @@ export class Scaler{
     private moveCallback: ()=>void;
     private moveLocked:Ref<boolean>
     private scaleLocked:Ref<'free'|'max'|'min'>|undefined
+    private steppedScale:Ref<boolean>|undefined
     private mouseDown:boolean = false;
     constructor(frame:HTMLDivElement, arena:HTMLDivElement,
-        scaleCallback:()=>void, moveCallback:()=>void, moveLocked:Ref<boolean>, scaleLocked?:Ref<'free'|'max'|'min'>)
+        scaleCallback:()=>void, moveCallback:()=>void,
+        moveLocked:Ref<boolean>, scaleLocked?:Ref<'free'|'max'|'min'>, steppedScale?:Ref<boolean>)
     {
         this.frame = frame;
         this.arena = arena;
@@ -17,6 +19,7 @@ export class Scaler{
         this.moveCallback = moveCallback;
         this.moveLocked = moveLocked
         this.scaleLocked = scaleLocked
+        this.steppedScale = steppedScale
         frame.addEventListener("click",(e)=>{
             const x = e.clientX
             const y = e.clientY
@@ -79,19 +82,28 @@ export class Scaler{
             this.touchCy = cy;
         }
         else{
-            const distNow = info.dist;
-            if (this.touchDist >= 0 && this.touchCx >= 0 && this.touchCy >= 0){
+            const distNow = info.dist
+            let dontUpdateTouchInfo = false
+            if (this.touchDist > 0 && this.touchCx >= 0 && this.touchCy >= 0){
                 const ratio = distNow/this.touchDist
-                const fw = this.frame.clientWidth;
-                const fh = this.frame.clientHeight;
-                const ax = cx / fw;
-                const ay = cy / fh;
-                this.scale(ratio, { x: ax, y: ay })
-                this.move(cx - this.touchCx, cy - this.touchCy)
+                if (this.steppedScale?.value && (ratio > 0.8 && ratio < 1.2)){
+                    //启用了步进式缩放，且当前双指倍率不够，什么都不做
+                    dontUpdateTouchInfo = true
+                }
+                else{
+                    const fw = this.frame.clientWidth;
+                    const fh = this.frame.clientHeight;
+                    const ax = cx / fw;
+                    const ay = cy / fh;
+                    this.scale(ratio, { x: ax, y: ay })
+                    this.move(cx - this.touchCx, cy - this.touchCy)
+                }
             }
-            this.touchDist = distNow;
-            this.touchCx = cx;
-            this.touchCy = cy;
+            if(!dontUpdateTouchInfo){
+                this.touchDist = distNow;
+                this.touchCx = cx;
+                this.touchCy = cy;
+            }
         }
     }
     private touchInfo(e:TouchEvent):TouchInfoRes{
