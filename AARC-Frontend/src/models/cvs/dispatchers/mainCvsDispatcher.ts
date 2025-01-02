@@ -45,7 +45,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         renderAllTerrainSmooth(ctx)
         renderAllLines(ctx, [], LineType.terrain, 'body')
         renderAllLines(ctx, changedLines, LineType.common)
-        renderAllPoints(ctx)
+        renderAllPoints(ctx, forExport)
         renderClusters(ctx)
         renderAllPtName(ctx, movedStaNames)
         renderAllTextTags(ctx)

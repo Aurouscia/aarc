@@ -7,11 +7,13 @@ import { defineStore } from "pinia";
 export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     const saveStore = useSaveStore();
     const cs = useConfigStore();
-    function renderAllPoints(ctx:CanvasRenderingContext2D){
+    function renderAllPoints(ctx:CanvasRenderingContext2D, onlyVisiblePts?:boolean){
         if(!saveStore.save)
             return
         const allPts = saveStore.save.points
         for(const pt of allPts){
+            if(onlyVisiblePts && pt.sta !== ControlPointSta.sta)
+                continue;
             renderPoint(ctx, pt)
         }
     }
