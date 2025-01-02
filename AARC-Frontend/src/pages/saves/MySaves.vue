@@ -6,6 +6,7 @@ import SideBar from '@/components/common/SideBar.vue';
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { appVersionCheck } from '@/app/appVersionCheck';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import fileDownload from 'js-file-download';
 
 const saveList = ref<SaveDto[]>()
 const api = useApiStore().get()
@@ -62,6 +63,13 @@ function resetDangerZone(){
     repeatCvsName.value = ''
 }
 
+async function downloadJson(){
+    if(!editingSave.value)
+        return
+    const json = await api.save.loadData(editingSave.value.Id)
+    fileDownload(json, `${editingSave.value.Name}.aarc.json`)
+}
+
 onMounted(async()=>{
     await load()
     await appVersionCheck()
@@ -112,12 +120,17 @@ onMounted(async()=>{
                 <textarea v-model="editingSave.Intro" placeholder="最多256字符" rows="5"></textarea>
             </td>
         </tr>
-        <tr class="noBg">
+        <tr>
             <td colspan="2">
                 <button @click="done">{{ isCreatingSave ? '创建存档':'保存更改' }}</button>
             </td>
         </tr>
     </tbody></table>
+    <hr/>
+    <div v-if="!isCreatingSave">
+        <button class="minor downloadJsonBtn" @click="downloadJson">导出工程文件</button>
+    </div>
+    <hr/>
     <div v-if="!isCreatingSave">
         <button class="minor removeCvsBtn" @click="dangerZone = !dangerZone">危险区</button>
         <div v-if="dangerZone" class="dangerZone">
@@ -129,20 +142,24 @@ onMounted(async()=>{
 </template>
 
 <style scoped lang="scss">
-table{
-    width: 100%;
+.dataInfo{
+    font-size: 12px;
+    color: #333;
 }
 .lastActive{
     font-size: 14px;
 }
+
+table{
+    width: 100%;
+}
+.downloadJsonBtn{
+    display: block;
+    margin: auto;
+}
 .removeCvsBtn{
     display: block;
     margin: auto;
-    margin-top: 40px;
     margin-bottom: 10px;
-}
-.dataInfo{
-    font-size: 12px;
-    color: #333;
 }
 </style>
