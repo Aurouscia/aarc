@@ -7,6 +7,7 @@ import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { appVersionCheck } from '@/app/appVersionCheck';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import fileDownload from 'js-file-download';
+import Loading from '@/components/common/Loading.vue';
 
 const saveList = ref<SaveDto[]>()
 const api = useApiStore().get()
@@ -84,7 +85,7 @@ onMounted(async()=>{
     </div>
 </h1>
 <div style="overflow-x: auto;">
-<table class="fullWidth"><tbody>
+<table v-if="saveList" class="fullWidth"><tbody>
     <tr>
         <th style="min-width: 200px;">名称</th>
         <th style="width: 130px;min-width: 130px">上次更新</th>
@@ -104,6 +105,7 @@ onMounted(async()=>{
         </td>
     </tr>
 </tbody></table>
+<Loading v-else></Loading>
 </div>
 <SideBar ref="saveInfoSb" @extend="resetDangerZone">
     <h1>{{ isCreatingSave ? '创建存档':'编辑信息' }}</h1>
