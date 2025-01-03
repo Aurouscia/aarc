@@ -12,7 +12,7 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     const scaleLocked = ref<'free'|'max'|'min'>('free')
     const saveStore = useSaveStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
-    let scaler:Scaler
+    let scaler:Scaler|undefined
     const { steppedScaleEnabled } = storeToRefs(useScalerLocalConfigStore())
     function initScaler(viewScaleHandler:()=>void, viewMoveHandler:()=>void, moveLocked:Ref<boolean>){
         if(!cvsFrame.value || !cvsCont.value)
@@ -57,7 +57,7 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         scaleLocked.value = 'free'
     }
     function getViewCenterOffset(){
-        return scaler.getCenterOffset()
+        return scaler?.getCenterOffset() || {x:0,y:0}
     }
     function translateFromOffset(coordOffset:Coord):Coord|undefined{
         const [ox, oy] = coordOffset;
@@ -105,10 +105,12 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
             return clientCoord[1] / (cvsFrame.value?.clientHeight||1)
     }
     function setSizeToCvsContStyle(){
+        scaler?.disposeArenaHWCache()
         if(cvsCont.value && cvsFrame.value){
             cvsCont.value.style.width = cvsWidth.value+'px'
             cvsCont.value.style.height = cvsHeight.value+'px'
         }
+        scaler?.widthReset()
     }
     return {
         cvsFrame, cvsCont, initScaler,

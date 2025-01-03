@@ -172,7 +172,7 @@ export class Scaler{
         const ww = this.frame.clientWidth;
         const hh = this.frame.clientHeight;
         const w = this.arena.clientWidth;
-        const h = this.arena.clientHeight
+        const h = w * this.getArenaHW()
         var x:number;
         var y:number;
         if(anchor){
@@ -236,6 +236,16 @@ export class Scaler{
         const x = this.frame.scrollLeft + this.frame.offsetWidth/2
         const y = this.frame.scrollTop + this.frame.offsetHeight/2
         return {x, y}
+    }
+
+    private arenaHWCache = -1
+    getArenaHW(){
+        if(this.arenaHWCache<=0)
+            this.arenaHWCache = this.arena.clientHeight/this.arena.clientWidth
+        return this.arenaHWCache
+    }
+    disposeArenaHWCache(){
+        this.arenaHWCache = -1
     }
 }
 
