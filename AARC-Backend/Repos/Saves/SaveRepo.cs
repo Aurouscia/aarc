@@ -8,7 +8,8 @@ namespace AARC.Repos.Saves
 {
     public class SaveRepo(
         AarcContext context,
-        HttpUserIdProvider httpUserIdProvider)
+        HttpUserIdProvider httpUserIdProvider,
+        HttpUserInfoService httpUserInfoService)
         : Repo<Save>(context)
     {
         public List<SaveDto> GetMySaves()
@@ -114,8 +115,10 @@ namespace AARC.Repos.Saves
         private string? ValidateAccess(int saveId)
         {
             var ownerId = base.WithId(saveId).Select(x => x.OwnerUserId).FirstOrDefault();
-            var uid = httpUserIdProvider.RequireUserId();
-            if (uid != ownerId)
+            var uinfo = httpUserInfoService.UserInfo.Value;
+            if (uinfo is null)
+                return "请登录";
+            if (uinfo.Id != ownerId && !uinfo.IsAdmin)
                 return "无权编辑本存档";
             return null;
         }

@@ -56,5 +56,6 @@ namespace AARC.Services.App.HttpAuthInfo
         public string Name { get; set; } = name;
         public int LeftHours { get; set; } = leftHours;
         public UserType Type { get; set; } = userType;
+        public bool IsAdmin => Type >= UserType.Admin;
     }
 }
