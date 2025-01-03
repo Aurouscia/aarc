@@ -101,9 +101,9 @@ export const useSaveStore = defineStore('save', () => {
             idxs.forEach(idx=>{
                 if(idx==-1)
                     return
-                else if(idx>0)
+                if(idx>0)
                     resIds.push(line.pts[idx-1])
-                else if(idx<line.pts.length-1)
+                if(idx<line.pts.length-1)
                     resIds.push(line.pts[idx+1])
             })
         })
