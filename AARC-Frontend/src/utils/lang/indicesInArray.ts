@@ -9,3 +9,21 @@ export function indicesInArray<T>(array:Array<T>, target:T, isSame?:(a:T,b:T)=>b
     }
     return res
 }
+
+export function indicesInArrayByPred<T>(array:Array<T>, match:(item:T)=>boolean){
+    const res:number[] = []
+    for(let i=0; i<array.length; i++){
+        const itemHere = array[i]
+        if(match(itemHere)){
+            res.push(i)
+        }
+    }
+    return res
+}
+
+export function removeAllByPred<T>(array:Array<T>, match:(item:T)=>boolean){
+    const indices = indicesInArrayByPred<T>(array, match)
+    for(let i = indices.length-1; i>=0; i--){
+        array.splice(indices[i], 1)
+    }
+}

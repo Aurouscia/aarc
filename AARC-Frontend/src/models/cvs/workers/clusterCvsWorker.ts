@@ -1,20 +1,15 @@
-import { ControlPoint, ControlPointDir, ControlPointSta } from "@/models/save";
+import { ControlPoint, ControlPointDir } from "@/models/save";
 import { useConfigStore } from "@/models/stores/configStore";
-import { useSaveStore } from "@/models/stores/saveStore";
-import { isZero, lessThanOrEqualTo } from "@/utils/sgn";
-import { numberCmpEpsilon } from '@/utils/consts'
-import { coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { Coord } from "@/models/coord";
 import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
 import { defineStore } from "pinia";
 
 export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
-    const saveStore = useSaveStore()
     const staClusterStore = useStaClusterStore()
     const cs = useConfigStore()
 
     function renderClusters(ctx:CanvasRenderingContext2D){
-        const crys = findAllCrystals()
+        const crys = staClusterStore.getStaClusters()
         if(!crys)
             return;
         staClusterStore.setStaClusters([...crys])
@@ -56,44 +51,6 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         })
     }
 
-    //同样朝向且紧挨着的控制点，会被汇总为一个“晶体”，用一个矩形覆盖
-    function findAllCrystals():ControlPoint[][]|undefined
-    {
-        const pts = saveStore.save?.points.filter(pt=>pt.sta == ControlPointSta.sta)
-        if(!pts)
-            return;
-        const crys:ControlPoint[][] = []
-        const belong:Record<number, ControlPoint[]|undefined> = {}
-        for(let i=0; i<pts.length-1; i++){
-            for(let j=i+1; j<pts.length; j++){
-                const a = pts[i]
-                const b = pts[j]
-                if(clinging(a, b, true)){
-                    const aBelong = belong[a.id]
-                    const bBelong = belong[b.id]
-                    if(aBelong && bBelong){
-                        aBelong.push(...bBelong)
-                        for(const pt of bBelong){
-                            belong[pt.id] = aBelong
-                        }
-                        bBelong.length = 0
-                    }else if(aBelong){
-                        aBelong.push(b)
-                        belong[b.id] = aBelong
-                    }else if(bBelong){
-                        bBelong.push(a)
-                        belong[a.id] = bBelong
-                    }else{
-                        const newCrys = [a, b]
-                        belong[a.id] = newCrys;
-                        belong[b.id] = newCrys;
-                        crys.push(newCrys)
-                    }
-                }
-            }
-        }
-        return crys.filter(c=>c.length>1)
-    }
     function crystalsToPolys(crystals:ControlPoint[][]):Coord[][]{
         const polys:Coord[][] = []
         crystals.forEach(c=>{
@@ -142,29 +99,5 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         })
         return polys
     }
-
-    const clingingDistWithEps = cs.config.snapOctaClingPtPtDist + numberCmpEpsilon
-    const clingingDistSqWithEps = clingingDistWithEps ** 2
-    function clinging(a:ControlPoint, b:ControlPoint, mustSameDir:boolean):boolean{
-        if(!coordDistSqLessThan(a.pos, b.pos, clingingDistSqWithEps)){
-            return false
-        }
-        if(mustSameDir && a.dir !== b.dir){
-            return false
-        }
-        const xDiff = Math.abs(a.pos[0] - b.pos[0])
-        const yDiff = Math.abs(a.pos[1] - b.pos[1])
-        if(lessThanOrEqualTo(Math.abs(xDiff - yDiff), clingingDistWithEps)){
-            return true
-        }
-        if(isZero(xDiff)){
-            return lessThanOrEqualTo(yDiff, clingingDistWithEps)
-        }
-        else if(isZero(yDiff)){
-            return lessThanOrEqualTo(xDiff, clingingDistWithEps)
-        }
-        return false;
-    }
-
     return { renderClusters }
 })

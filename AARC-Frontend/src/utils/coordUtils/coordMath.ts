@@ -1,10 +1,14 @@
-import { Coord } from "@/models/coord";
+import { Coord, SgnCoord } from "@/models/coord";
+import { sgnCoord } from "../sgn";
 
 export function coordAdd(a:Coord, b:Coord):Coord{
     return [a[0]+b[0], a[1]+b[1]]
 }
 export function coordSub(a:Coord, b:Coord):Coord{
     return [a[0]-b[0], a[1]-b[1]]
+}
+export function coordSubSgn(a:Coord, b:Coord):SgnCoord{
+    return sgnCoord(coordSub(a, b))
 }
 export function coordTo0DistSq(a:Coord):number{
     return a[0]**2 + a[1]**2

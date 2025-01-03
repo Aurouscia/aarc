@@ -109,6 +109,7 @@ export const useEnvStore = defineStore('env', ()=>{
             const lines = saveStore.getLinesByPt(activePt.value.id)
             rerenderParamLineIds = lines.map(x=>x.id)
             rerenderParamPtIds.push(activePt.value.id)
+            staClusterStore.updateCrystalsBecauseOf(activePt.value)
         }
         //如果有需要重新渲染的线/点、或移动过文本标签，那么重新渲染
         if(rerenderParamLineIds.length>0 || rerenderParamPtIds.length>0 || movedTextTag.value){
@@ -227,6 +228,7 @@ export const useEnvStore = defineStore('env', ()=>{
             if(tryMergeRes){
                 const changedLines = tryMergeRes.mutatedLines.map(x=>x.id)
                 const movedStaNames = [tryMergeRes.mergedWithPt.id, activePtJustNow.id]
+                staClusterStore.updateCrystalsBecauseOf(tryMergeRes.keptPt)
                 rerender.value(changedLines, movedStaNames)
             }
         }

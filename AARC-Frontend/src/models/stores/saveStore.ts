@@ -194,6 +194,7 @@ export const useSaveStore = defineStore('save', () => {
         const idx = save.value.points.findIndex(x=>x.id == ptId)
         if(idx >= 0){
             save.value.points.splice(idx, 1)
+            deletedPoint.value(ptId)
         }
         return relatedLines
     }
@@ -272,10 +273,13 @@ export const useSaveStore = defineStore('save', () => {
         const delIdx = save.value.points.findIndex(x=>x.id == delPt.id)
         if(delIdx >= 0){
             save.value.points.splice(delIdx, 1)
+            deletedPoint.value(delPt.id)
         }
         return {
             mutatedLines:delFromLines,
-            mergedWithPt:thatPt
+            mergedWithPt:thatPt,
+            keptPt:keepPt,
+            deldPt:delPt
         }
     }
     function isNamedPt(pt:ControlPoint){
@@ -329,13 +333,14 @@ export const useSaveStore = defineStore('save', () => {
     const cvsWidth = computed<number>(()=>save.value?.cvsSize[0] || 1)
     const cvsHeight = computed<number>(()=>save.value?.cvsSize[1] || 1)
     const disposedStaNameOf = ref<(ptId:number)=>void>(()=>{})
+    const deletedPoint = ref<(ptId:number)=>void>(()=>{})
 
     watch(save, (newVal)=>{
         console.log('存档加载', newVal)
     })
     
     return { 
-        save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf,
+        save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint,
         getPtById, getPtsByIds, getLineById, getLinesByIds, getLineActualColor, linesActualColorSame, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType,
         insertNewPtToLine, insertPtToLine, createNewLine, removePt, removePtFromLine, arrangeLinesOfType, tryMergePt, isNamedPt,
