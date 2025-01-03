@@ -132,7 +132,7 @@ export class HttpClient{
                 }
             }
             if (resp.Success) {
-                const logData = type!=='download' ? resp.Data : resp.Data?.length
+                const logData = (type!=='download' && resp.Data.length < 200) ? resp.Data : resp.Data.length
                 console.log(`[${type}]${resource}成功`, logData)
                 if (successMsg) {
                     this.httpCallBack('ok', successMsg)

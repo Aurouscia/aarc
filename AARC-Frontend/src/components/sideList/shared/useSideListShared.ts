@@ -15,13 +15,18 @@ export function useSideListShared(lineType:LineType, lineTypeCalled:string){
     const {
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, activeId: arrangingId
     } = useLinesArrange(65, lines, orderChanged) //65：一个线路框60高，加上5的缝隙
+
+    let orderChangeRerenderTimer = 0
     function orderChanged(){
         const orderedIds = lines.value.map(x=>x.id)
         saveStore.arrangeLinesOfType(orderedIds, lineType)
-        mainCvsDispatcher.renderMainCvs({
-            changedLines:[],
-            movedStaNames:[]
-        })
+        window.clearTimeout(orderChangeRerenderTimer)
+        orderChangeRerenderTimer = window.setTimeout(()=>{
+            mainCvsDispatcher.renderMainCvs({
+                changedLines:[],
+                movedStaNames:[]
+            })
+        }, 500)
     }
     function createLine(){
         envStore.createLine(lineType)
