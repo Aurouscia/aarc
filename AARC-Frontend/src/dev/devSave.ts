@@ -162,7 +162,7 @@ export const devSave:Save = {
             id: 57,
             pos: [1000, 850],
             dir: ControlPointDir.vertical,
-            sta: ControlPointSta.plain
+            sta: ControlPointSta.sta
         }
     ],
     lines: [

@@ -12,9 +12,7 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             return
         const allPts = saveStore.save.points
         for(const pt of allPts){
-            if(onlyVisiblePts && pt.sta !== ControlPointSta.sta)
-                continue;
-            renderPoint(ctx, pt)
+            renderPoint(ctx, pt, false, onlyVisiblePts)
         }
     }
     function renderLinePoints(ctx:CanvasRenderingContext2D, line:Line){
@@ -34,7 +32,7 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
         if(pt)
             renderPoint(ctx, pt, active)
     }
-    function renderPoint(ctx:CanvasRenderingContext2D, pt:ControlPoint, active:boolean = false){
+    function renderPoint(ctx:CanvasRenderingContext2D, pt:ControlPoint, active:boolean = false, staOnly:boolean = false){
         const pos = pt.pos;
         let markColor = '#999'
         let staType = pt.sta
@@ -42,7 +40,9 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
         const relatedLines = saveStore.getLinesByPt(pt.id)
         if(relatedLines.some(x=>saveStore.isLineTypeWithoutSta(x.type)))
             staType = ControlPointSta.plain
-        if(staType == ControlPointSta.plain || active){
+        if(staType !== ControlPointSta.sta && staOnly)
+            return
+        if(staType === ControlPointSta.plain || active){
             const dir = pt.dir === ControlPointDir.incline ? 'incline':'vertical'
             let markSize = cs.config.ptBareSize;
             let markWidth = cs.config.ptBareLineWidth;
