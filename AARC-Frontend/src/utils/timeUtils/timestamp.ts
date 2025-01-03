@@ -3,5 +3,5 @@ export function timestampS(){
 }
 
 export function timestampMS(){
-    return (new Date()).getTime()
+    return Date.now()
 }

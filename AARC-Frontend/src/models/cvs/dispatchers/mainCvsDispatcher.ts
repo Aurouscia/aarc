@@ -12,6 +12,7 @@ import { ref, shallowRef } from "vue";
 import { useConfigStore } from "@/models/stores/configStore";
 import { timestampMS } from "@/utils/timeUtils/timestamp";
 import { useScalerLocalConfigStore } from "@/app/localConfig/scalerLocalConfig";
+import { useTimeSpanClock } from "@/utils/timeUtils/timeSpanClock";
 
 export interface MainCvsRenderingOptions{
     /** 这次渲染前哪些线路形状变动了？不提供即为所有 */
@@ -38,6 +39,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const afterMainCvsRendered = shallowRef<()=>void>()
     const isRendering = ref(false)
     const logRendering = import.meta.env.VITE_LogMainCvsRendering === 'true'
+    const { tic, toc } = useTimeSpanClock(logRendering)
     function renderMainCvs(options:MainCvsRenderingOptions){
         const tStart = logRendering ? timestampMS():0
         isRendering.value = true
@@ -47,18 +49,27 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
             ctx.fillStyle = cs.config.bgColor
             ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
         }
+        tic()
         renderAllLines(ctx, changedLines, LineType.terrain, 'carpet')
+        tic('地形-地毯')
         renderAllTerrainSmooth(ctx)
+        tic('地形-平滑')
         renderAllLines(ctx, [], LineType.terrain, 'body')
+        tic('地形-本体')
         renderAllLines(ctx, changedLines, LineType.common)
+        tic('线路')
         renderAllPoints(ctx, forExport)
+        tic('点')
         renderClusters(ctx)
+        tic('集群')
         renderAllPtName(ctx, movedStaNames)
+        tic('站名')
         renderAllTextTags(ctx)
+        toc('标签')
         isRendering.value = false
         if(logRendering){
             const tEnd = logRendering ? timestampMS():0
-            console.log(`主画布渲染 [${tEnd - tStart}ms]`)
+            console.log(`[${tEnd - tStart}ms] <主画布渲染>`)
         }
         if(!suppressRenderedCallback && afterMainCvsRendered.value)
             afterMainCvsRendered.value()
