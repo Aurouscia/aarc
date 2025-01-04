@@ -346,6 +346,22 @@ export const useSaveStore = defineStore('save', () => {
         }
         return false
     }
+    function getStaCount(){
+        let staCount = 0
+        for(let s of save.value?.points || []){
+            if(s.sta === ControlPointSta.sta)
+                staCount+=1
+        }
+        return staCount
+    }
+    function getLineCount(){
+        let lineCount = 0
+        for(let line of save.value?.lines || []){
+            if(line.type === LineType.common)
+                lineCount+=1
+        }
+        return lineCount
+    }
     const cvsWidth = computed<number>(()=>save.value?.cvsSize[0] || 1)
     const cvsHeight = computed<number>(()=>save.value?.cvsSize[1] || 1)
     const disposedStaNameOf = ref<(ptId:number)=>void>(()=>{})
@@ -361,7 +377,8 @@ export const useSaveStore = defineStore('save', () => {
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType,
         insertNewPtToLine, insertPtToLine, createNewLine, removePt, removePtFromLine, arrangeLinesOfType, tryMergePt, isNamedPt,
         removeTextTag, moveEverything, setCvsSize,
-        isLineTypeWithoutSta, isPtNoSta
+        isLineTypeWithoutSta, isPtNoSta,
+        getLineCount, getStaCount
     }
 })
 

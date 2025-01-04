@@ -5,19 +5,24 @@ import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/disp
 import { useApiStore } from '@/app/com/api';
 import { useRoute } from 'vue-router';
 import { editorParamNameSaveId } from '@/pages/editors/routes/routesNames';
+import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
+import { timeStr } from '@/utils/timeUtils/timeStr';
+import { useSaveStore } from '@/models/stores/saveStore';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
+const saveStore = useSaveStore()
 const api = useApiStore().get()
 const route = useRoute()
 let exportLock = false
 
+const exportLocalConfig = useExportLocalConfigStore()
 async function downloadMainCvsAsPng() {
     if(exportLock)
         return
     exportLock = true
 
-    const fileName = await getFileName()
+    const fileName = await getExportPngFileName()
     if(fileName){
         const mainRenderingOptions:MainCvsRenderingOptions = {
             changedLines:[],
@@ -42,7 +47,7 @@ async function downloadMainCvsAsPng() {
         exportLock = false
     }, 2000)
 }
-async function getFileName(){
+async function getExportPngFileName(){
     let saveId = route.params[editorParamNameSaveId]
     if(typeof saveId === 'object')
         saveId = saveId[0] || 'err'
@@ -51,8 +56,26 @@ async function getFileName(){
         return `${saveId}.png`
     const info = await api.save.loadInfo(saveIdNum)
     if(info){
-        return `${info.Name}.png`
+        let name = ''
+        const style = exportPngFileNameStyle.value
+        if(style == 'date')
+            name = `${info.Name}-${timeStr('date')}`
+        else if(style == 'dateTime')
+            name = `${info.Name}-${timeStr('dateTime')}`
+        else if(style == 'lineCount'){
+            const lineCount = saveStore.getLineCount()
+            const staCount = saveStore.getStaCount()
+            name = `${info.Name}-${lineCount}线${staCount}站`
+        }else{
+            name = info.Name
+        }
+        return `${name}.png`
     }
+}
+const exportPngFileNameStyle = ref<string>()
+exportPngFileNameStyle.value = exportLocalConfig.readExportFileNameStyle() || 'plain'
+function exportPngFileNameStyleChanged(){
+    exportLocalConfig.saveExportFileNameStyle(exportPngFileNameStyle.value || 'plain')
 }
 
 defineExpose({
@@ -65,15 +88,29 @@ defineExpose({
 <SideBar ref="sidebar">
 <h1>导出作品</h1>
 <div class="exportOps">
+    <div class="configSelect">
+        <div style="color: #666;">文件名</div>
+        <select v-model="exportPngFileNameStyle" @change="exportPngFileNameStyleChanged">
+            <option :value="'plain'">存档名</option>
+            <option :value="'date'">日期</option>
+            <option :value="'dateTime'">日期时间</option>
+            <option :value="'lineCount'">线路站点</option>
+        </select>
+    </div>
     <button @click="downloadMainCvsAsPng" class="ok">导出为png格式</button>
     <div class="note">
-        作品导出设置（清晰度等）将后续推出
+        作品导出设置（清晰度等）将后续推出<br/>
+        当前“站点数”不准确，正在修复
     </div>
 </div>
 </SideBar>
 </template>
 
 <style scoped lang="scss">
+.configSelect{
+    display: flex;
+    align-items: center;
+}
 .exportOps{
     display: flex;
     flex-direction: column;

@@ -13,7 +13,7 @@ class ScalerLocalConfig extends LocalConfig{
     }
 }
 
-export const useScalerLocalConfigStore = defineStore('authScalerConfig',()=>{
+export const useScalerLocalConfigStore = defineStore('scalerLocalConfig',()=>{
     const cfg = new ScalerLocalConfig()
     const steppedScaleEnabled = ref(false)
     steppedScaleEnabled.value = cfg.readSteppedScaleEnabled()
