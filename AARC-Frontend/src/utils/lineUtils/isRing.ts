@@ -56,3 +56,8 @@ export function isSameIdxInLine(line:Line|number[], idxA:number, idxB:number){
     }
     return idxA === idxB
 }
+export function getMayRingLinePtIds(line:Line){
+    if(isRing(line))
+        return line.pts.slice(0, line.pts.length-1)
+    return [...line.pts]
+}

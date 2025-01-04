@@ -8,6 +8,7 @@ import { checkOrder } from "@/utils/lang/checkOrder";
 import { useConfigStore } from "./configStore";
 import { indicesInArray } from "@/utils/lang/indicesInArray";
 import { coordAdd } from "@/utils/coordUtils/coordMath";
+import { getMayRingLinePtIds } from "@/utils/lineUtils/isRing";
 
 export const useSaveStore = defineStore('save', () => {
     //不应直接在此删除/添加车站/线路，应通过envStore进行，避免数据不一致
@@ -19,6 +20,22 @@ export const useSaveStore = defineStore('save', () => {
             return res
         for(const pt of save.value.points){
             res[pt.id] = pt
+        }
+        return res
+    })
+    const ptBelongLineDict = computed<Record<number, Line[]|undefined>>(()=>{
+        const res:Record<number, Line[]|undefined> = {}
+        if(!save.value?.lines)
+            return res
+        for(const line of save.value.lines){
+            const linePts = getMayRingLinePtIds(line)
+            for(const ptId of linePts){
+                const belong = res[ptId]
+                if(belong)
+                    belong.push(line)
+                else
+                    res[ptId] = [line]
+            }
         }
         return res
     })
@@ -87,10 +104,7 @@ export const useSaveStore = defineStore('save', () => {
         return res;
     }
     function getLinesByPt(ptId:number){
-        const lines = save.value?.lines
-        if(!lines)
-            return []
-        return lines.filter(line=>line.pts.includes(ptId))
+        return ptBelongLineDict.value[ptId] || []
     }
     function getLinesByType(lineType:LineType){
         if(!save.value)
@@ -98,7 +112,7 @@ export const useSaveStore = defineStore('save', () => {
         return save.value.lines.filter(x=>x.type==lineType)
     }
     function getNeighborByPt(ptId:number){
-        const lines = save.value?.lines
+        const lines = getLinesByPt(ptId)
         const points = save.value?.points
         if(!lines)
             return []
@@ -116,14 +130,7 @@ export const useSaveStore = defineStore('save', () => {
                     resIds.push(line.pts[idx+1])
             })
         })
-        const res:ControlPoint[] = []
-        resIds.forEach(id=>{
-            const pt = points.find(pt=>pt.id == id)
-            if(pt){
-                res.push(pt)
-            }
-        })
-        return res
+        return getPtsByIds(resIds)
     }
     function getPtsInRange(center:Coord, offset:number, exceptId?:number){
         if(!save.value)
