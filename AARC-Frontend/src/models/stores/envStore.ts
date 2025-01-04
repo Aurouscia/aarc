@@ -102,6 +102,18 @@ export const useEnvStore = defineStore('env', ()=>{
         //根据当前状态判断是否需要重新渲染主画布
         let rerenderParamLineIds:number[] = []
         let rerenderParamPtIds:number[] = []
+        let mergeKept:ControlPoint|undefined = undefined
+        if(activePt.value){
+            //尝试合并控制点
+            const tryMergeRes = saveStore.tryMergePt(activePt.value.id)
+            if(tryMergeRes){
+                const changedLines = tryMergeRes.mutatedLines.map(x=>x.id)
+                const movedStaNames = [tryMergeRes.mergedWithPt.id, activePt.value.id]
+                rerenderParamLineIds.push(...changedLines)
+                rerenderParamPtIds.push(...movedStaNames)
+                mergeKept = tryMergeRes.keptPt //如果成功合并了，记录下合并中保留了哪一个
+            }
+        }
         if(nameEditStore.edited && activePt.value?.id){
             rerenderParamPtIds.push(activePt.value.id)
         }
@@ -109,6 +121,11 @@ export const useEnvStore = defineStore('env', ()=>{
             const lines = saveStore.getLinesByPt(activePt.value.id)
             rerenderParamLineIds = lines.map(x=>x.id)
             rerenderParamPtIds.push(activePt.value.id)
+        }
+        //更新车站团
+        if(mergeKept){
+            staClusterStore.updateCrystalsBecauseOf(mergeKept)
+        }else if(movedPoint.value && activePt.value){
             staClusterStore.updateCrystalsBecauseOf(activePt.value)
         }
         //如果有需要重新渲染的线/点、或移动过文本标签，那么重新渲染
@@ -117,7 +134,6 @@ export const useEnvStore = defineStore('env', ()=>{
             rerender.value(rerenderParamLineIds, rerenderParamPtIds)
         }
 
-        const activePtJustNow = activePt.value
         //取消所有状态
         cancelActive()
 
@@ -223,15 +239,6 @@ export const useEnvStore = defineStore('env', ()=>{
         }
 
         //点击空白位置
-        if(activePtJustNow){
-            const tryMergeRes = saveStore.tryMergePt(activePtJustNow.id)
-            if(tryMergeRes){
-                const changedLines = tryMergeRes.mutatedLines.map(x=>x.id)
-                const movedStaNames = [tryMergeRes.mergedWithPt.id, activePtJustNow.id]
-                staClusterStore.updateCrystalsBecauseOf(tryMergeRes.keptPt)
-                rerender.value(changedLines, movedStaNames)
-            }
-        }
         setOpsPos(false)
         activePtNameSnapped.value = 'no'
         nameEditStore.endEditing()
