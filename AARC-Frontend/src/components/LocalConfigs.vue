@@ -37,10 +37,22 @@ onMounted(()=>{
     </tr>
     <tr v-if="browserInfo">
         <td colspan="2" class="browserInfo">
-            <p>软件：{{ browserInfo.browser.name }}</p>
-            <p>引擎：{{ browserInfo.engine.name }}</p>
-            <p>平台：{{ browserInfo.platform.type }}</p>
-            <p>系统：{{ browserInfo.os.name }}</p>
+            <div>
+                软件 {{ browserInfo.browser.name }}
+                <span class="ver">{{ browserInfo.browser.version }}</span>
+            </div>
+            <div>
+                引擎 {{ browserInfo.engine.name }}
+                <span class="ver">{{ browserInfo.engine.version }}</span>
+            </div>
+            <div>
+                平台 {{ browserInfo.platform.type }}
+                <span class="ver">{{ browserInfo.platform.model }}</span>
+            </div>
+            <div>
+                系统 {{ browserInfo.os.name }}
+                <span class="ver">{{ browserInfo.os.version }}</span>
+            </div>
         </td>
     </tr>
 </tbody></table>
@@ -50,5 +62,12 @@ onMounted(()=>{
 <style scoped lang="scss">
 .browserInfo{
     text-align: left;
+    &>div{
+        margin: 10px 0px 10px 0px;
+    }
+    .ver{
+        font-size: 14px;
+        color: gray;
+    }
 }
 </style>
