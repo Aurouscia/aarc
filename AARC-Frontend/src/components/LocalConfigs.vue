@@ -32,7 +32,9 @@ onMounted(()=>{
             <input type="checkbox" v-model="steppedScaleEnabled" @change="steppedScaleChange"/>
         </td>
         <td>
-            步进式缩放(仅限触屏)
+            <b>步进式缩放</b>
+            <div class="explain">如果缩放时显示异常可开启</div>
+            <div class="explain">会降低性能和体验</div>
         </td>
     </tr>
     <tr v-if="browserInfo">
@@ -60,6 +62,10 @@ onMounted(()=>{
 </template>
 
 <style scoped lang="scss">
+.explain{
+    font-size: 14px;
+    color: #666
+}
 .browserInfo{
     text-align: left;
     &>div{
