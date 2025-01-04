@@ -9,6 +9,7 @@ import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useConfigStore } from '@/models/stores/configStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 
 const envStore = useEnvStore();
 const { somethingActive } = storeToRefs(envStore)
@@ -22,9 +23,11 @@ const mainCvsDispatcher = useMainCvsDispatcher()
 const { mainCvs } = storeToRefs(mainCvsDispatcher)
 const activeCvsDispatcher = useActiveCvsDispatcher()
 const { activeCvs } = storeToRefs(activeCvsDispatcher)
-let activeCvsRenderTimer = 0
+const { wait } = storeToRefs(useUniqueComponentsStore())
 
+let activeCvsRenderTimer = 0
 onMounted(async()=>{
+    wait.value?.setShowing(true)
     cvsFrameStore.setSizeToCvsContStyle()
     await nextTick()
     envStore.init()
@@ -37,6 +40,7 @@ onMounted(async()=>{
     document.oncontextmenu = function(e){
         e.preventDefault()
     }
+    wait.value?.setShowing(false)
 })
 onBeforeUnmount(()=>{
     document.oncontextmenu = null

@@ -13,6 +13,15 @@ export const useSaveStore = defineStore('save', () => {
     //不应直接在此删除/添加车站/线路，应通过envStore进行，避免数据不一致
     const save = ref<Save>()
     const configStore = useConfigStore()
+    const ptDict = computed<Record<number, ControlPoint|undefined>>(()=>{
+        const res:Record<number, ControlPoint|undefined> = {}
+        if(!save.value?.points)
+            return res
+        for(const pt of save.value.points){
+            res[pt.id] = pt
+        }
+        return res
+    })
 
     function getNewId() {
         if(!save.value)
@@ -22,12 +31,12 @@ export const useSaveStore = defineStore('save', () => {
         return current
     }
     function getPtById(id:number){
-        return save.value?.points.find(x=>x.id==id);
+        return ptDict.value[id]
     }
     function getPtsByIds(ids:number[]){
         const res:ControlPoint[] = [];
         ids.forEach(id=>{
-            const pt = save.value?.points.find(x=>x.id == id)
+            const pt = ptDict.value[id]
             if(pt)
                 res.push(pt)
         })
