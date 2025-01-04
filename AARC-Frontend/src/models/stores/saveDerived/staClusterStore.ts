@@ -80,11 +80,12 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             const aBelong = belong[a.id]
             const bBelong = belong[b.id]
             if (aBelong && bBelong) {
-                aBelong.push(...bBelong)
+                if(aBelong === bBelong) //四个点2x2排列时会发生
+                    return
                 for (const pt of bBelong) {
+                    aBelong.push(pt)
                     belong[pt.id] = aBelong
                 }
-                bBelong.length = 0
             } else if (aBelong) {
                 aBelong.push(b)
                 belong[b.id] = aBelong
