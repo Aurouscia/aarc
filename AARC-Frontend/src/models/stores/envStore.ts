@@ -137,23 +137,6 @@ export const useEnvStore = defineStore('env', ()=>{
         //取消所有状态
         cancelActive()
 
-        //判断是否在线路延长按钮上
-        const lineExtend = onLineExtendBtn(coord)
-        if (lineExtend) {
-            const newPtId = saveStore.insertNewPtToLine(
-                lineExtend.lineId, lineExtend.at, lineExtend.btnPos, lineExtend.btnDir)
-            if (newPtId) {
-                activePt.value = saveStore.getPtById(newPtId)
-                if (activePt.value) {
-                    cursorPos.value = [...activePt.value.pos]
-                    rerender.value([lineExtend.lineId], [activePt.value.id])
-                    setOpsPos(false)
-                    nameEditStore.startEditing(newPtId)
-                }
-            }
-            return
-        }
-
 
         //判断是否在站名上
         const staName = !isRightBtn && onStaName(coord)
@@ -274,6 +257,25 @@ export const useEnvStore = defineStore('env', ()=>{
                 const tagGlobalPos = activeTextTag.value.pos
                 activeTextTagGrabbedAt.value = coordSub(coord, tagGlobalPos)
             }
+        }
+        //判断是否在线路延长按钮上
+        const lineExtend = onLineExtendBtn(coord)
+        if (lineExtend) {
+            const newPtId = saveStore.insertNewPtToLine(
+                lineExtend.lineId, lineExtend.at, lineExtend.btnPos, lineExtend.btnDir)
+            if (newPtId) {
+                if(nameEditStore.edited)
+                    rerender.value([], [activePt.value?.id || 0])
+                activePt.value = saveStore.getPtById(newPtId)
+                if (activePt.value) {
+                    cursorPos.value = [...activePt.value.pos]
+                    setOpsPos(false)
+                    activePtType.value = 'body'
+                    movingPoint.value = true
+                    nameEditStore.startEditing(newPtId)
+                }
+            }
+            return
         }
     }
     function movingHandler(e:MouseEvent|TouchEvent){
