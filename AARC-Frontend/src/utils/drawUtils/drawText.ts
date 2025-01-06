@@ -1,5 +1,6 @@
 import { Coord, RectCoord, SgnCoord, SgnNumber } from "@/models/coord"
 import { concatFontStr } from "../lang/fontStr"
+import { splitLinesClean } from "../lang/splitLines"
 
 export interface DrawTextBodyOption{
     text?:string
@@ -21,9 +22,9 @@ export function drawText(
     const [xSgn, ySgn] = align
 
     ctx.textBaseline = 'middle'
-    const mainLines = main.text?.split('\n').map(x=>x.trim()) || []
+    const mainLines = splitLinesClean(main.text)
     const mainHeight = mainLines.length * main.rowHeight
-    const subLines = sub.text?.split('\n').map(x=>x.trim()) || []
+    const subLines = splitLinesClean(sub.text)
     const subHeight = subLines.length * sub.rowHeight
     const totalHeight = mainHeight+subHeight
     const mainRowMargin = main.rowHeight - main.fontSize
