@@ -25,6 +25,7 @@ export const useSnapStore = defineStore('snap',()=>{
             [sndh,sndh],[sndh,-sndh],[-sndh,sndh],[-sndh,-sndh]
         ]
     })
+    const snapNeighborExtendsOnlySameDir = ref<boolean>(false)
     function snap(pt:ControlPoint):Coord|undefined{
         snapLines.value = []
         snapLinesForPt.value = pt.id
@@ -117,6 +118,8 @@ export const useSnapStore = defineStore('snap',()=>{
         }
 
         neibs.forEach(n=>{
+            if(snapNeighborExtendsOnlySameDir.value && dir !== n.dir)
+                return
             const xDiff = n.pos[0] - pos[0]
             const yDiff = n.pos[1] - pos[1]
             if(dir === ControlPointDir.vertical || n.dir === ControlPointDir.vertical){
@@ -320,5 +323,8 @@ export const useSnapStore = defineStore('snap',()=>{
         }
         return pos
     }
-    return { snap, snapName, snapNameStatus, snapGrid, snapLines, snapLinesForPt, snapGridIntv }
+    return {
+        snap, snapName, snapNameStatus, snapGrid,
+        snapLines, snapLinesForPt, snapGridIntv, snapNeighborExtendsOnlySameDir
+    }
 })

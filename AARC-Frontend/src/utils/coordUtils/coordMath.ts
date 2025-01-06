@@ -13,6 +13,9 @@ export function coordSubSgn(a:Coord, b:Coord):SgnCoord{
 export function coordTo0DistSq(a:Coord):number{
     return a[0]**2 + a[1]**2
 }
+export function coordTo0Dist(a:Coord):number{
+    return Math.sqrt(coordTo0DistSq(a))
+}
 export function coordMut(a:Coord, c:number):Coord{
     return [a[0]*c, a[1]*c]
 }
@@ -21,6 +24,13 @@ export function coordCrossProduct(a:Coord, b:Coord):number{
 }
 export function coordDotProduct(a:Coord, b:Coord):number{
     return a[0]*b[0] + a[1]*b[1]
+}
+export function coordAngle(a:Coord, b:Coord):number{
+    const prod = coordDotProduct(a, b)
+    const aLength = coordTo0Dist(a)
+    const bLength = coordTo0Dist(b)
+    const arcCosParam = prod / (aLength * bLength)
+    return Math.acos(arcCosParam)
 }
 
 export function coordTwinShrink(fixed:Coord, move:Coord, by:number){

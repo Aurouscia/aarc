@@ -24,6 +24,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const activePt = ref<ControlPoint>()
     const movingPoint = ref<boolean>(false)
     const movedPoint = ref<boolean>(false)
+    const movingExtendedPointOriginated = ref<{from:ControlPoint, btnWay:SgnCoord}>()
     const activePtType = ref<'body'|'name'>('body')
     const activePtNameGrabbedAt = ref<Coord>([0,0])
     const activePtNameSnapped = ref<'no'|'vague'|'accu'>('no')
@@ -260,22 +261,28 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         //判断是否在线路延长按钮上
         const lineExtend = onLineExtendBtn(coord)
-        if (lineExtend) {
+        if (lineExtend && activePt.value) {
+            movingExtendedPointOriginated.value = {
+                btnWay: [...lineExtend.way],
+                from: activePt.value
+            }
             const newPtId = saveStore.insertNewPtToLine(
                 lineExtend.lineId, lineExtend.at, lineExtend.btnPos, lineExtend.btnDir)
             if (newPtId) {
                 if(nameEditStore.edited)
-                    rerender.value([], [activePt.value?.id || 0])
+                    rerender.value([], [activePt.value.id])
                 activePt.value = saveStore.getPtById(newPtId)
                 if (activePt.value) {
                     cursorPos.value = [...activePt.value.pos]
                     setOpsPos(false)
                     activePtType.value = 'body'
+                    movedPoint.value = true
                     movingPoint.value = true
                     nameEditStore.startEditing(newPtId)
                 }
             }
-            return
+        }else{
+            movingExtendedPointOriginated.value = undefined
         }
     }
     function movingHandler(e:MouseEvent|TouchEvent){
@@ -341,6 +348,8 @@ export const useEnvStore = defineStore('env', ()=>{
         activePtNameGrabbedAt.value = [0,0]
         movingTextTag.value = false
         activeTextTagGrabbedAt.value = [0,0]
+        movingExtendedPointOriginated.value = undefined
+        
         if(discardAreaStore.discarding){
             if(activeTextTag.value){
                 saveStore.removeTextTag(activeTextTag.value.id)
@@ -603,7 +612,7 @@ export const useEnvStore = defineStore('env', ()=>{
     return { 
         init, activePt, activePtType, activePtNameSnapped,
         activeLine, activeTextTag, somethingActive,
-        cursorPos, movingPoint, movedPoint,
+        cursorPos, movingPoint, movedPoint, movingExtendedPointOriginated,
         cvsWidth, cvsHeight, getDisplayRatio,
         rerender, rescaled, getActivePtOpsAvoidance,
         delLine, createLine, lineInfoChanged

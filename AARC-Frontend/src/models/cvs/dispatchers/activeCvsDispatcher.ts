@@ -14,6 +14,9 @@ import { defineStore, storeToRefs } from "pinia";
 import { useEmphasizeCvsWorker } from "../workers/emphasizeCvsWorker";
 import { useTextTagCvsWorker } from "../workers/textTagCvsWorker";
 import { useDiscardAreaCvsWorker } from "../workers/discardAreaCvsWorker";
+import { coordAngle, coordSub } from "@/utils/coordUtils/coordMath";
+import { numberCmpEpsilon } from "@/utils/consts";
+import { ControlPointDir } from "@/models/save";
 
 export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const saveStore = useSaveStore()
@@ -45,6 +48,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
         let lineExtendWays:SgnCoord[] = []
         const activePtId = envStore.activePt?.id;
         if(activePtId){
+            autoDirForNewExtended()
             const activePtBelongLines = saveStore.getLinesByPt(activePtId)
             if(activePtBelongLines.length>0){
                 const segRenderRes = renderSegsAroundActivePt(ctx)
@@ -82,6 +86,40 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
         renderCursor(ctx)
         renderDiscardArea(ctx)
         return lineExtendWays
+    }
+    
+    const _45SubEps = Math.PI/4 - numberCmpEpsilon
+    const _90AndEps = Math.PI/2 + numberCmpEpsilon
+    /** 正在把“延长按钮拖出来的点”拖动时，其方向会智能自动调整 */
+    function autoDirForNewExtended(){
+        if(!envStore.movingExtendedPointOriginated || !envStore.activePt){
+            //如果不是正在移动“延长按钮拖出来的点”，恢复原状
+            snapStore.snapNeighborExtendsOnlySameDir = false
+            return
+        }
+        //如果当前正在移动“延长按钮拖出来的点”，那么将线中相邻延长线snap设为“必须同方向控制点”，否则在接近45度时会鬼畜
+        snapStore.snapNeighborExtendsOnlySameDir = true
+        const ori = envStore.movingExtendedPointOriginated
+        const act = envStore.activePt
+        const currentWay = coordSub(act.pos, ori.from.pos)
+        const angle = Math.abs(coordAngle(currentWay, ori.btnWay))
+        let shouldSame = true
+        if(angle < numberCmpEpsilon){ }     //0度时，保持方向一样
+        else if(angle < _45SubEps)
+            shouldSame = false              //小于45度时，变方向
+        else if(angle > _90AndEps)          //（45-90度时保持方向一样）
+            shouldSame = false              //大于90度时，变方向
+        if(ori.from.dir === ControlPointDir.vertical){
+            if(shouldSame)
+                envStore.activePt.dir = ControlPointDir.vertical
+            else
+                envStore.activePt.dir = ControlPointDir.incline
+        }else{
+            if(shouldSame)
+                envStore.activePt.dir = ControlPointDir.incline
+            else
+                envStore.activePt.dir = ControlPointDir.vertical
+        }
     }
     return { activeCvs, renderActiveCvs }
 })
