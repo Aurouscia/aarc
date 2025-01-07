@@ -12,6 +12,7 @@ import { useNameEditStore } from "./nameEditStore";
 import { useFormalizedLineStore } from "./saveDerived/formalizedLineStore";
 import { useStaNameRectStore } from "./saveDerived/staNameRectStore";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
+import { useLineExtendStore } from "./saveDerived/saveDerivedDerived/lineExtendStore";
 import { useOnDetectStore } from "./saveDerived/saveDerivedDerived/onDetectStore";
 import { useCvsFrameStore } from "./cvsFrameStore";
 import { useDiscardAreaStore } from "./discardAreaStore";
@@ -50,6 +51,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const { setLinesFormalPts } = useFormalizedLineStore()
     const { setStaNameRects } = useStaNameRectStore()
     const { onPt, onLine, onStaName, onLineExtendBtn, onTextTag } = useOnDetectStore()
+    const { removeLineExtendBtn } = useLineExtendStore()
     const discardAreaStore = useDiscardAreaStore()
     const scalerLocalConfig = useScalerLocalConfigStore()
     function init(){
@@ -262,6 +264,7 @@ export const useEnvStore = defineStore('env', ()=>{
         //判断是否在线路延长按钮上
         const lineExtend = onLineExtendBtn(coord)
         if (lineExtend && activePt.value) {
+            removeLineExtendBtn(lineExtend)
             movingExtendedPointOriginated.value = {
                 btnWay: [...lineExtend.way],
                 from: activePt.value

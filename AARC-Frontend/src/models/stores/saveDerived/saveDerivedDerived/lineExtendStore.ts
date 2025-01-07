@@ -65,5 +65,10 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
     function getLineExtendWays():SgnCoord[]{
         return extendBtns.map(x=>[...x.way])
     }
-    return { refreshLineExtend, enumerateLineExtendBtns, getLineExtendWays }
+    function removeLineExtendBtn(lineExtend:ExtendBtn){
+        const idx = extendBtns.indexOf(lineExtend)
+        if(idx >= 0)
+            extendBtns.splice(idx, 1)
+    }
+    return { refreshLineExtend, enumerateLineExtendBtns, getLineExtendWays, removeLineExtendBtn }
 })
