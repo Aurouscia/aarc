@@ -179,6 +179,9 @@ input[type=checkbox]{
 input[type=range]{
     width: 120px;
 }
+input[type=radio]{
+    width: unset;
+}
 select {
     font-size: 18px;
     padding: 3px;
