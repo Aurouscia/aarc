@@ -221,6 +221,17 @@ export const useSaveStore = defineStore('save', () => {
         if(line)
             line.pts = line.pts.filter(pt=>pt!==ptId)
     }
+    function removeNoLinePoints(){
+        const noLinePoints:number[] = [];
+        for(const pt of save.value?.points || []){
+            if(isNamedPt(pt))
+                continue
+            const belongLines = ptBelongLineDict.value[pt.id]
+            if(!belongLines || belongLines.length == 0)
+                noLinePoints.push(pt.id)
+        }
+        noLinePoints.forEach(removePt)
+    }
     function ensureLinesOrderedByType(){
         if(!save.value)
             throw Error('找不到存档')
@@ -375,7 +386,8 @@ export const useSaveStore = defineStore('save', () => {
         save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint,
         getPtById, getPtsByIds, getLineById, getLinesByIds, getLineActualColor, linesActualColorSame, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType,
-        insertNewPtToLine, insertPtToLine, createNewLine, removePt, removePtFromLine, arrangeLinesOfType, tryMergePt, isNamedPt,
+        insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType,
+        removePt, removePtFromLine, removeNoLinePoints, tryMergePt, isNamedPt,
         removeTextTag, moveEverything, setCvsSize,
         isLineTypeWithoutSta, isPtNoSta,
         getLineCount, getStaCount

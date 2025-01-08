@@ -3,12 +3,21 @@ import { onMounted, ref } from 'vue';
 import SideBar from './common/SideBar.vue';
 import { useScalerLocalConfigStore } from '@/app/localConfig/scalerLocalConfig';
 import Bowser from 'bowser'
+import { useSaveStore } from '@/models/stores/saveStore';
+import { useEnvStore } from '@/models/stores/envStore';
 
+const saveStore = useSaveStore()
+const envStore = useEnvStore()
 const steppedScaleEnabled = ref(false)
 const scalerLocalConfig = useScalerLocalConfigStore()
 async function steppedScaleChange(){
     const enabled = steppedScaleEnabled.value
     scalerLocalConfig.saveSteppedScaleEnabled(enabled)
+}
+
+function removeNoLinePoints(){
+    saveStore.removeNoLinePoints()
+    envStore.rerender([], undefined)
 }
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
@@ -27,6 +36,15 @@ onMounted(()=>{
 <template>
 <SideBar ref="sidebar">
 <table class="fullWidth"><tbody>
+    <tr>
+        <td>
+            <button @click="removeNoLinePoints">执行</button>
+        </td>
+        <td>
+            <b>清除无线路车站</b>
+            <div class="explain">仅限无站名的车站</div>
+        </td>
+    </tr>
     <tr>
         <td>
             <input type="checkbox" v-model="steppedScaleEnabled" @change="steppedScaleChange"/>
