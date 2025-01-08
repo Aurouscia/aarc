@@ -66,19 +66,23 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             })
         }
         if(staType === ControlPointSta.sta){
+            let maxWidth = Math.max(...relatedLines.map(x=>x.width || 1))
+            if(maxWidth > 1)
+                maxWidth = 1
+            const arcRadius = cs.config.ptStaSize * maxWidth
             if(relatedLines.length==1 && !active){
                 ctx.strokeStyle = saveStore.getLineActualColor(relatedLines[0])
             }else{
                 ctx.strokeStyle = markColor
                 ctx.beginPath()
                 ctx.fillStyle = cs.config.bgColor
-                ctx.arc(pos[0], pos[1], cs.config.ptStaSize + cs.config.ptStaLineWidth, 0, 2*Math.PI)
+                ctx.arc(pos[0], pos[1], arcRadius + cs.config.ptStaLineWidth, 0, 2*Math.PI)
                 ctx.fill()
             }
             ctx.beginPath()
             ctx.lineWidth = cs.config.ptStaLineWidth
             ctx.fillStyle = cs.config.ptStaFillColor
-            ctx.arc(pos[0], pos[1], cs.config.ptStaSize, 0, 2*Math.PI)
+            ctx.arc(pos[0], pos[1], arcRadius, 0, 2*Math.PI)
             ctx.fill()
             ctx.stroke()
         }
