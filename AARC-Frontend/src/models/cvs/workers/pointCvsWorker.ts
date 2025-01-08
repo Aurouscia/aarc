@@ -35,11 +35,11 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     function renderPoint(ctx:CanvasRenderingContext2D, pt:ControlPoint, active:boolean = false, staOnly:boolean = false){
         const pos = pt.pos;
         let markColor = '#999'
-        let staType = pt.sta
         //TODO：性能优化
         const relatedLines = saveStore.getLinesByPt(pt.id)
-        if(relatedLines.some(x=>saveStore.isLineTypeWithoutSta(x.type)))
-            staType = ControlPointSta.plain
+        if(relatedLines.every(x=>saveStore.isLineTypeWithoutSta(x.type)))
+            pt.sta = ControlPointSta.plain //自动设置车站类型
+        let staType = pt.sta
         if(staType !== ControlPointSta.sta && staOnly)
             return
         if(staType === ControlPointSta.plain || active){
