@@ -51,7 +51,7 @@ onUnmounted(()=>{
                 <div class="infoEdit">
                     <div class="sqrBtn" :class="{sqrActive:editingInfoLineId===l.id}" @click="editInfoOfLine(l.id)">...</div>
                     <div v-if="editingInfoLineId===l.id" class="infoEditPanel">
-                        <LineConfig :line="l"></LineConfig>
+                        <LineConfig :line="l" :line-width-range="{min:0.5, max:3, step:0.25}"></LineConfig>
                     </div>
                 </div>
                 <div class="sqrBtn moveBtn" :class="{sqrActive:arrangingId===l.id}"

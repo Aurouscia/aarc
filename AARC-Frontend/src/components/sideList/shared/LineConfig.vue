@@ -6,7 +6,11 @@ import { onMounted, ref } from 'vue';
 const envStore = useEnvStore()
 const props = defineProps<{
     line:Line,
-    lineWidthRangeMax?:number
+    lineWidthRange:{
+        min:number,
+        max:number,
+        step:number
+    }
 }>()
 const lineWidthBinded = ref(1)
 function lineWidthChanged(){
@@ -25,7 +29,10 @@ onMounted(()=>{
     <div class="configItem">
         <div>线宽</div>
         <div class="slideBarItem">
-            <input type="range" v-model="lineWidthBinded" :min="0.5" :max="lineWidthRangeMax||2" :step="0.25" value="1"
+            <input type="range" v-model="lineWidthBinded"
+                :min="lineWidthRange.min"
+                :max="lineWidthRange.max"
+                :step="lineWidthRange.step" value="1"
                 @change="lineWidthChanged"/>
             <div>{{ lineWidthBinded || 1 }}×</div>
         </div>
