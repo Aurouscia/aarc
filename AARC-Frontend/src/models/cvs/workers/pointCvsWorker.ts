@@ -35,9 +35,8 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     function renderPoint(ctx:CanvasRenderingContext2D, pt:ControlPoint, active:boolean = false, staOnly:boolean = false){
         const pos = pt.pos;
         let markColor = '#999'
-        //TODO：性能优化
         const relatedLines = saveStore.getLinesByPt(pt.id)
-        if(relatedLines.every(x=>saveStore.isLineTypeWithoutSta(x.type)))
+        if(relatedLines.length>0 && relatedLines.every(x=>saveStore.isLineTypeWithoutSta(x.type)))
             pt.sta = ControlPointSta.plain //自动设置车站类型
         let staType = pt.sta
         if(staType !== ControlPointSta.sta && staOnly)
@@ -66,9 +65,12 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             })
         }
         if(staType === ControlPointSta.sta){
-            let maxWidth = Math.max(...relatedLines.map(x=>x.width || 1))
-            if(maxWidth > 1)
-                maxWidth = 1
+            let maxWidth = 1
+            if(relatedLines.length>0){
+                maxWidth = Math.max(...relatedLines.map(x=>x.width || 1))
+                if(maxWidth > 1)
+                    maxWidth = 1
+            }
             const arcRadius = cs.config.ptStaSize * maxWidth
             if(relatedLines.length==1 && !active){
                 ctx.strokeStyle = saveStore.getLineActualColor(relatedLines[0])
