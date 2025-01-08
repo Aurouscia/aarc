@@ -46,7 +46,8 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
             renderEmphasizesForRingLines(ctx, [envStore.activeLine])
         }
         let lineExtendWays:SgnCoord[] = []
-        const activePtId = envStore.activePt?.id;
+        lineExtendStore.clearLineExtendBtns()
+        const activePtId = envStore.activePt?.id
         if(activePtId){
             autoDirForNewExtended()
             const activePtBelongLines = saveStore.getLinesByPt(activePtId)

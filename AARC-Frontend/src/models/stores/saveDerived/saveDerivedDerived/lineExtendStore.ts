@@ -16,7 +16,7 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
     const extendBtnLengthIncline = 100 * sqrt2
     const extendBtns:ExtendBtn[] = []
     function refreshLineExtend(ptId:number, relatedFormalizedSegs:FormalizedLine[]){
-        extendBtns.length = 0
+        clearLineExtendBtns()
         const targets:{lineId:number, at:'head'|'tail'}[] = []
         saveStore.save?.lines.forEach(line=>{
             if(line.pts.length<2)
@@ -70,5 +70,8 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
         if(idx >= 0)
             extendBtns.splice(idx, 1)
     }
-    return { refreshLineExtend, enumerateLineExtendBtns, getLineExtendWays, removeLineExtendBtn }
+    function clearLineExtendBtns(){
+        extendBtns.splice(0, extendBtns.length)
+    }
+    return { refreshLineExtend, enumerateLineExtendBtns, getLineExtendWays, removeLineExtendBtn, clearLineExtendBtns }
 })
