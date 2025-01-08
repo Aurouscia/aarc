@@ -17,6 +17,9 @@ function lineWidthChanged(){
     props.line.width = lineWidthBinded.value
     envStore.lineInfoChanged()
 }
+function textTagCreateBtnClickHandler(){
+    envStore.createTextTag(props.line.id)
+}
 
 onMounted(()=>{
     lineWidthBinded.value = props.line.width || 1
@@ -41,6 +44,13 @@ onMounted(()=>{
         <div>填充</div>
         <div class="checkItem">
             <input type="checkbox" v-model="line.isFilled" @change="envStore.lineInfoChanged"/>
+        </div>
+    </div>
+    <div class="configItem">
+        <div>标签</div>
+        <div class="btnItem">
+            <button class="minor" @click="textTagCreateBtnClickHandler">生成标签</button>
+            <div class="smallNote">将标签拖到屏幕<br/>右上角即可删除</div>
         </div>
     </div>
 </div>
@@ -78,6 +88,10 @@ onMounted(()=>{
                 width: 20px;
                 height: 20px;
             }
+        }
+        .btnItem{
+            flex-grow: 1;
+            text-align: center;
         }
     }
     .configTitle{

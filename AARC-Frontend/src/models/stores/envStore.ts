@@ -575,6 +575,22 @@ export const useEnvStore = defineStore('env', ()=>{
         rerender.value([],[])
     }
 
+    function createTextTag(forLine:number){
+        const vco = getViewCenterOffset()
+        let viewCenterCoord:Coord|undefined = [vco.x, vco.y]
+        viewCenterCoord = translateFromOffset(viewCenterCoord)
+        if(!viewCenterCoord)
+            return
+        const newTag:TextTag = {
+            id: saveStore.getNewId(),
+            forId: forLine,
+            pos: viewCenterCoord
+        }
+        saveStore.save?.textTags.push(newTag)
+        movedTextTag.value = true
+        activeTextTag.value = newTag
+    }
+
     function pointlessLineScan(){
         if(!saveStore.save)
             return
@@ -618,6 +634,7 @@ export const useEnvStore = defineStore('env', ()=>{
         cursorPos, movingPoint, movedPoint, movingExtendedPointOriginated,
         cvsWidth, cvsHeight, getDisplayRatio,
         rerender, rescaled, getActivePtOpsAvoidance,
-        delLine, createLine, lineInfoChanged
+        delLine, createLine, lineInfoChanged,
+        createTextTag
     }
 })
