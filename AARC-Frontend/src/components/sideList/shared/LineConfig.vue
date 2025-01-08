@@ -50,7 +50,7 @@ onMounted(()=>{
         <div>标签</div>
         <div class="btnItem">
             <button class="minor" @click="textTagCreateBtnClickHandler">生成标签</button>
-            <div class="smallNote">将标签拖到屏幕<br/>右上角即可删除</div>
+            <div class="smallNote">将标签拖到屏幕<br/>左上角即可删除</div>
         </div>
     </div>
 </div>
