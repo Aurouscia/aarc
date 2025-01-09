@@ -16,6 +16,7 @@ const baseCvsDispatcher = useBaseCvsDispatcher()
 const mainCvsDispatcher = useMainCvsDispatcher()
 const pendingChanges = ref<[number, number, number, number]>([0,0,0,0]) //上，右，下，左
 const changeIncrement = ref<number>(100)
+const changeCompensate = ref<boolean>(false)
 const cvsWidthPreview = computed(()=>{
     let w = cvsWidth.value
     w += pendingChanges.value[1]
@@ -48,6 +49,10 @@ function changeIncre(idx:number, way:boolean){
     if(!way)
         inc = -inc
     pendingChanges.value[idx] += inc
+    if(changeCompensate.value){
+        const oppositeIdx = (idx+2) % 4
+        pendingChanges.value[oppositeIdx] -= inc
+    }
 }
 function changeIncrementIncre(way:boolean){
     let inc = 50
@@ -145,12 +150,16 @@ defineExpose({
         </div>
     </div>
     <div class="incrementEdit">
-        <div>步长</div>
-        <div class="incrementControl">
+        <div class="incTag">步长</div>
+        <div class="incCtrl">
             <button @click="changeIncrementIncre(false)" class="off">-</button>
-            <div class="incrementDisplay">{{ changeIncrement }}</div>
+            <div class="incDisplay">{{ changeIncrement }}</div>
             <button @click="changeIncrementIncre(true)" class="off">+</button>
         </div>
+    </div>
+    <div class="incrementEdit">
+        <div class="incTag">对侧补偿</div>
+        <input type="checkbox" v-model="changeCompensate"/>
     </div>
     <div v-show="anyChangeExist" class="ops">
         <button class="cancel" @click="abortChange">放弃修改</button>
@@ -158,7 +167,7 @@ defineExpose({
     </div>
     <div class="explain">
         “{{ theoreticalMemAfterChange() }}”为<b>画布理论内存占用</b>（并非导出图片尺寸），请根据自己的设备情况量力而行，避免造成闪退或卡死<br/><br/>
-        如果需要整体移动内容，可使用对侧相互抵消的扩展<br/>（例如：左侧加200，右侧减200）<br/><br/>
+        如果需要整体移动内容，可启用“对侧补偿”<br/>（例如：左侧加200，右侧减200）<br/><br/>
         后续更新中的<a target="_blank" href="https://gitee.com/au114514/aarc/issues/IBCI7R">画布内存优化</a>将减小大型画布的内存占用
     </div>
 </SideBar>
@@ -231,8 +240,9 @@ defineExpose({
 
 .incrementEdit{
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    justify-content: space-between;
     gap: 6px;
     margin: auto;
     margin-top: 10px;
@@ -244,7 +254,15 @@ defineExpose({
     button{
         @include plusMinusBtn()
     }
-    .incrementControl{
+    &>*{
+        flex-grow: 1;
+    }
+    .incTag{
+        flex-basis: 100px;
+        flex-grow: 0;
+        text-align: center;
+    }
+    .incCtrl{
         display: flex;
         align-items: center;
         justify-content: center;
@@ -252,10 +270,11 @@ defineExpose({
         padding: 5px;
         color:#999;
         border-radius: 5px;
-    }
-    .incrementDisplay{
-        width: 80px;
-        text-align: center;
+        .incDisplay{
+            width: 80px;
+            text-align: center;
+            flex-grow: 1;
+        }
     }
 }
 
