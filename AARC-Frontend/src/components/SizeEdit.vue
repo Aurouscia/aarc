@@ -8,7 +8,9 @@ import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher';
 import { minCvsSide } from '@/models/save';
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 
+const { pop } = useUniqueComponentsStore()
 const saveStore = useSaveStore()
 const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
 const cvsFrameStore = useCvsFrameStore()
@@ -88,6 +90,10 @@ function applyChange(){
     const pc = pendingChanges.value
     const newW = cvsWidthPreview.value
     const newH = cvsHeightPreview.value
+    if(newW > 10000 || newH > 10000){
+        pop?.show('目前限制边长10000', 'failed')
+        return
+    }
     let moveDownward = pc[0]
     let moveRightward = pc[3]
     if(newH < minCvsSide)
