@@ -55,14 +55,20 @@ function changeIncre(idx:number, way:boolean){
     }
 }
 function changeIncrementIncre(way:boolean){
-    let inc = 50
+    const nowVal = changeIncrement.value
+    let useBigIncInc = (way && nowVal>=200) || (!way && nowVal>200)
+    let useGiantIncInc = false
+    if(useBigIncInc){
+        useGiantIncInc = (way && nowVal>=400) || (!way && nowVal>400)
+    }
+    let inc = useGiantIncInc ? 200 : (useBigIncInc ? 100 : 50)
     if(!way)
         inc = -inc
     changeIncrement.value += inc
     if(changeIncrement.value < 50)
         changeIncrement.value = 50
-    else if(changeIncrement.value > 300)
-        changeIncrement.value = 300
+    else if(changeIncrement.value > 1000)
+        changeIncrement.value = 1000
 }
 
 function theoreticalMem(w:number, h:number){
@@ -168,6 +174,12 @@ defineExpose({
     <div class="explain">
         “{{ theoreticalMemAfterChange() }}”为<b>画布理论内存占用</b>（并非导出图片尺寸），请根据自己的设备情况量力而行，避免造成闪退或卡死<br/><br/>
         如果需要整体移动内容，可启用“对侧补偿”<br/>（例如：左侧加200，右侧减200）<br/><br/>
+        <div style="text-align: center;">
+            <b>目前推荐</b><br/>
+            手机端边长小于4000<br/>
+            电脑端边长小于8000<br/>
+        </div><br/>
+        如有卡顿请缩小画布，逐个区域绘制（超出边界的内容不会丢失）<br/>
         后续更新中的<a target="_blank" href="https://gitee.com/au114514/aarc/issues/IBCI7R">画布内存优化</a>将减小大型画布的内存占用
     </div>
 </SideBar>
