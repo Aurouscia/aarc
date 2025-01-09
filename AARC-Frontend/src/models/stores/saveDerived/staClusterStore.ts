@@ -44,7 +44,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         cleanClusters()
     }
     function updateCrystalsBecauseOf(pt:ControlPoint){
-        const pts = saveStore.save?.points.filter(pt => pt.sta == ControlPointSta.sta)
+        const pts = saveStore.save?.points.filter(pt => pt.sta === ControlPointSta.sta)
         if(!pts || !staClusters)
             return
         const pBelong = belong[pt.id] //pt曾经属于的组团
@@ -74,7 +74,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         cleanClusters()
     }
     function tryMergeTwoPoints(a:ControlPoint, b:ControlPoint){
-        if(a===b)
+        if(a===b || a.sta !== ControlPointSta.sta || b.sta !== ControlPointSta.sta)
             return
         if (ptClinging(a, b)) {
             const aBelong = belong[a.id]
