@@ -324,6 +324,9 @@ export const useSaveStore = defineStore('save', () => {
         for(const pt of save.value.points){
             pt.pos = coordAdd(pt.pos, offset)
         }
+        for(const tag of save.value.textTags){
+            tag.pos = coordAdd(tag.pos, offset)
+        }
     }
     function setCvsSize(newSize:Coord){
         if(!save.value?.cvsSize)
