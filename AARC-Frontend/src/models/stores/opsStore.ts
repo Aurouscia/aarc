@@ -3,9 +3,7 @@ import { computed, ref } from "vue"
 import { Coord, SgnCoord, waySame } from "../coord"
 
 export type OpsAt = 'lt'|'lb'|'rt'|'rb'|'l'|'r'|'t'|'b'
-export type OpsBtnType = 'addPt'|'rmPt'|'addPtTL'|'rmPtFL'|'swPtDir'|'swPtSta'
 export interface OpsBtn{
-    type:OpsBtnType,
     cb:()=>void,
     color?:string,
     text:string,

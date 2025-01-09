@@ -4,7 +4,7 @@ import { useSaveStore } from "./saveStore";
 import { Coord, SgnCoord } from "../coord";
 import { listenPureClick } from "@/utils/eventUtils/pureClick";
 import { eventClientCoord } from "@/utils/eventUtils/eventClientCoord";
-import { OpsBtn, OpsBtnType, useOpsStore } from "./opsStore";
+import { OpsBtn, useOpsStore } from "./opsStore";
 import { ColorPreset, ControlPoint, ControlPointDir, ControlPointSta, Line, LineType, TextTag } from "../save";
 import { useSnapStore } from "./snapStore";
 import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
@@ -400,7 +400,6 @@ export const useEnvStore = defineStore('env', ()=>{
         const addToLines = onLineRes.map<OpsBtn>(l=>{
             const lineName = saveStore.getLineById(l.lineId)?.name
             return{
-                type:'addPtTL' as OpsBtnType,
                 cb:()=>{
                     saveStore.insertPtToLine(pt.id, l.lineId, l.afterPtIdx, l.alignedPos, l.dir);
                     rerender.value([l.lineId, ...relatedLineIds], [pt.id])
@@ -413,7 +412,6 @@ export const useEnvStore = defineStore('env', ()=>{
         })
         const rmFromLines = relatedLines.map(l=>{
             return{
-                type:'rmPtFL' as OpsBtnType,
                 cb:()=>{
                     saveStore.removePtFromLine(pt.id, l.id);
                     rerender.value([l.id, ...relatedLineIds], [])
@@ -457,17 +455,14 @@ export const useEnvStore = defineStore('env', ()=>{
             }
         }
         let firstCol:OpsBtn[] = [{
-                type:'swPtDir',
                 cb:swDirCb,
                 text:'旋转'
             },{
-                type:'rmPt',
                 cb:rmPtCb,
                 text:'移除'
             }]
         if(!isLineTypeWithoutSta){
             firstCol.splice(1, 0, {
-                type:'swPtSta',
                 cb:swSta,
                 text:'切换',
                 textSub:'是否显示'
@@ -499,11 +494,21 @@ export const useEnvStore = defineStore('env', ()=>{
                 }
             }
         }
+        const createTagForLine = ()=>{
+            if(activeLine.value?.id){
+                const lineId = activeLine.value.id
+                activeLine.value = undefined
+                createTextTag(lineId)
+            }
+        }
         opsStore.btns = [[
             {
-                type:'addPt',
                 cb: insertPtCb,
                 text:'插入'
+            },
+            {
+                cb: createTagForLine,
+                text:'标签'
             }
         ]]
     }
