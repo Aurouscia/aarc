@@ -54,8 +54,10 @@ export const useEnvStore = defineStore('env', ()=>{
     const { removeLineExtendBtn } = useLineExtendStore()
     const discardAreaStore = useDiscardAreaStore()
     const scalerLocalConfig = useScalerLocalConfigStore()
+    let inited = false
     function init(){
-        if(!cvsCont.value || !cvsFrame.value)
+        //避免重复初始化
+        if(inited || !cvsCont.value || !cvsFrame.value)
             return
         initScaler(viewRescaleHandler, viewMoveHandler, viewMoveLocked)
         nameEditStore.nameInputFocusHandler = ()=>{setOpsPos(false)}
@@ -66,6 +68,7 @@ export const useEnvStore = defineStore('env', ()=>{
         cvsCont.value.addEventListener('touchmove', movingHandler)
         cvsCont.value.addEventListener('mouseup', moveEndHandler)
         cvsCont.value.addEventListener('touchend', moveEndHandler)
+        inited = true
     }
     let rescaleDelayTimer = 0;
     function viewRescaleHandler(){

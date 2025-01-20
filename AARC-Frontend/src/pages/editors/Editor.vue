@@ -5,7 +5,7 @@ import UnsavedLeavingWarning from '@/components/common/UnsavedLeavingWarning.vue
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { storeToRefs } from 'pinia';
-import { computed, onBeforeMount, onUnmounted, ref } from 'vue';
+import { computed, onBeforeMount, onUnmounted, ref, watch } from 'vue';
 import { devSave } from '@/dev/devSave';
 import { useApiStore } from '@/app/com/api';
 import { ensureValidSave } from '@/models/save';
@@ -16,13 +16,14 @@ const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
 const saveStore = useSaveStore()
 const api = useApiStore().get()
-const saveIdNum = parseInt(props.saveId)
+const saveIdNum = computed(()=>parseInt(props.saveId))
+let loadedSaveIdNum = 0
 const loadComplete = ref(false)
 const mainCvsDispatcher = useMainCvsDispatcher()
 const isDemo = computed(()=>props.saveId.toLowerCase() == 'demo')
 async function load() {
-    if(!isNaN(saveIdNum)){
-        const resp = await api.save.loadData(saveIdNum)
+    if(!isNaN(saveIdNum.value)){
+        const resp = await api.save.loadData(saveIdNum.value)
         try{
             const obj = resp ? JSON.parse(resp) : {}
             saveStore.save = ensureValidSave(obj)
@@ -39,25 +40,41 @@ async function load() {
             pop.value?.show('如需创作，请注册账户并新建存档', 'warning')
         }, 3000)
     }
+    loadedSaveIdNum = saveIdNum.value || 0
 }
 
 const { preventLeaving, releasePreventLeaving, showUnsavedWarning } = usePreventLeavingUnsaved()
 async function saveData(){
-    if(isNaN(saveIdNum)){
+    if(isNaN(saveIdNum.value)){
         pop.value?.show('此处不能保存', 'failed')
         return
     }
     const data = JSON.stringify(saveStore.save)
     const staCount = saveStore.getStaCount()
     const lineCount = saveStore.getLineCount()
-    const resp = await api.save.updateData(saveIdNum, data, staCount, lineCount)
+    const resp = await api.save.updateData(saveIdNum.value, data, staCount, lineCount)
     if(resp){
         releasePreventLeaving()
     }
 }
 
-onBeforeMount(async()=>{
+function setLeavingPreventing(){
     //将“主画布重新渲染”当成“存档信息变化”，当主画布重新渲染时，阻止用户离开/刷新页面/关闭页面
+    if(!isDemo.value)
+        mainCvsDispatcher.afterMainCvsRendered = preventLeaving
+    else
+        mainCvsDispatcher.afterMainCvsRendered = undefined
+}
+const cvsComponent = ref<InstanceType<typeof Cvs>>()
+watch(props, async()=>{
+    if(loadedSaveIdNum !== saveIdNum.value){
+        setLeavingPreventing()
+        await load()
+        await cvsComponent.value?.init()
+    }
+})
+onBeforeMount(async()=>{
+    setLeavingPreventing()
     if(!isDemo.value)
         mainCvsDispatcher.afterMainCvsRendered = preventLeaving
     topbarShow.value = false
@@ -70,7 +87,7 @@ onUnmounted(()=>{
 </script>
 
 <template>
-    <Cvs v-if="loadComplete"></Cvs>
+    <Cvs v-if="loadComplete" ref="cvsComponent"></Cvs>
     <Menu v-if="loadComplete" @save-data="saveData"></Menu>
     <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
 </template>

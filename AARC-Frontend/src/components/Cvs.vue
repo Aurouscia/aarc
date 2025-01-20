@@ -26,7 +26,8 @@ const { activeCvs } = storeToRefs(activeCvsDispatcher)
 const { wait } = storeToRefs(useUniqueComponentsStore())
 
 let activeCvsRenderTimer = 0
-onMounted(async()=>{
+async function init(){
+    window.clearInterval(activeCvsRenderTimer)
     wait.value?.setShowing(true)
     cvsFrameStore.setSizeToCvsContStyle()
     await nextTick()
@@ -41,6 +42,9 @@ onMounted(async()=>{
         e.preventDefault()
     }
     wait.value?.setShowing(false)
+}
+onMounted(async()=>{
+    await init()
 })
 onBeforeUnmount(()=>{
     document.oncontextmenu = null
@@ -52,6 +56,7 @@ watch(somethingActive, (newVal)=>{
         activeCvsDispatcher.renderActiveCvs()
     }
 })
+defineExpose({init})
 </script>
 
 <template>
