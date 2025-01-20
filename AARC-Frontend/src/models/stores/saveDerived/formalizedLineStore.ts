@@ -8,7 +8,7 @@ export interface FormalizedLine{
 }
 
 export const useFormalizedLineStore = defineStore('formalizedLine', ()=>{
-    const { getItem, setItem, enumerateItems } = useKvStoreCore<FormalPt[]>()
+    const { getItem, setItem, enumerateItems, clearItems } = useKvStoreCore<FormalPt[]>()
 
     function findAdjacentFormatPts(ptIdx:number, lineId:number){
         const linePts = getItem(lineId)
@@ -29,6 +29,7 @@ export const useFormalizedLineStore = defineStore('formalizedLine', ()=>{
     return { 
         setLinesFormalPts: setItem,
         enumerateFormalizedLines: enumerateItems,
-        findAdjacentFormatPts
+        findAdjacentFormatPts,
+        clearItems
     }
 })

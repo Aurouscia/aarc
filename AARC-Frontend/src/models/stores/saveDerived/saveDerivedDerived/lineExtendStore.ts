@@ -73,5 +73,7 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
     function clearLineExtendBtns(){
         extendBtns.splice(0, extendBtns.length)
     }
-    return { refreshLineExtend, enumerateLineExtendBtns, getLineExtendWays, removeLineExtendBtn, clearLineExtendBtns }
+    return {
+        refreshLineExtend, enumerateLineExtendBtns, getLineExtendWays, removeLineExtendBtn, clearLineExtendBtns, 
+        clearItems:clearLineExtendBtns }
 })

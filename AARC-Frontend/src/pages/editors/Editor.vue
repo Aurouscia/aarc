@@ -11,10 +11,12 @@ import { useApiStore } from '@/app/com/api';
 import { ensureValidSave } from '@/models/save';
 import { usePreventLeavingUnsaved } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
+import { useResetterStore } from '@/models/stores/utils/resetterStore';
 
 const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
 const saveStore = useSaveStore()
+const resetterStore = useResetterStore()
 const api = useApiStore().get()
 const saveIdNum = computed(()=>parseInt(props.saveId))
 let loadedSaveIdNum = 0
@@ -27,6 +29,7 @@ async function load() {
         try{
             const obj = resp ? JSON.parse(resp) : {}
             saveStore.save = ensureValidSave(obj)
+            resetterStore.resetDerivedStores()
             loadComplete.value = true
         }catch{
             pop.value?.show('存档损坏，请联系管理员', 'failed')
@@ -34,6 +37,7 @@ async function load() {
     }
     else if(isDemo.value){
         saveStore.save = JSON.parse(JSON.stringify(devSave))
+        resetterStore.resetDerivedStores()
         loadComplete.value = true
         pop.value?.show('此处为体验环境，不能保存', 'warning')
         window.setTimeout(()=>{

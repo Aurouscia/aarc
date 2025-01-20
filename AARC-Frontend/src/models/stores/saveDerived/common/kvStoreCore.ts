@@ -21,5 +21,12 @@ export function useKvStoreCore<TValue>(){
             }
         }
     }
-    return { getItem, setItem, enumerateItems }
+    function clearItems(){
+        for (let key in items) {
+            if (items.hasOwnProperty(key)) {
+                delete items[key];
+            }
+        }
+    }
+    return { getItem, setItem, enumerateItems, clearItems }
 }

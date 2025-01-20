@@ -155,10 +155,16 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         }
     }
 
+    function clearItems(){
+        staClusters = undefined
+        belong = {}
+    }
+
     return {
         setStaClusters,
         getStaClusters,
         updateCrystalsBecauseOf,
-        tryTransferStaNameWithinCluster
+        tryTransferStaNameWithinCluster,
+        clearItems
     }
 })
