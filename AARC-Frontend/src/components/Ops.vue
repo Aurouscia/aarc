@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Coord } from '@/models/coord';
-import { useColorProcStore } from '@/models/stores/colorProcStore';
+import { useColorProcStore } from '@/models/stores/utils/colorProcStore';
 import { OpsBtn, useOpsStore } from '@/models/stores/opsStore';
 import { storeToRefs } from 'pinia';
 import { computed, CSSProperties, ref, watch } from 'vue';

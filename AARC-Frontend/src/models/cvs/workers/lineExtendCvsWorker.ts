@@ -1,4 +1,4 @@
-import { useColorProcStore } from "@/models/stores/colorProcStore";
+import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { useConfigStore } from "@/models/stores/configStore";
 import { useLineExtendStore } from "@/models/stores/saveDerived/saveDerivedDerived/lineExtendStore";
 import { useSaveStore } from "@/models/stores/saveStore";

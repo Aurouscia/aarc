@@ -1,6 +1,6 @@
 import { SgnCoord } from "@/models/coord";
 import { Line, LineType, TextTag } from "@/models/save";
-import { useColorProcStore } from "@/models/stores/colorProcStore";
+import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { useConfigStore } from "@/models/stores/configStore";
 import { useTextTagRectStore } from "@/models/stores/saveDerived/textTagRectStore";
 import { useSaveStore } from "@/models/stores/saveStore";
