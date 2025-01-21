@@ -7,19 +7,20 @@ import { useSaveStore } from "@/models/stores/saveStore";
 import { coordSub } from "@/utils/coordUtils/coordMath";
 import { DrawTextBodyOption, drawTextForLineName } from "@/utils/drawUtils/drawText";
 import { defineStore } from "pinia";
+import { CvsContext } from "../common/cvsContext";
 
 export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const cs = useConfigStore()
     const textTagRectStore = useTextTagRectStore()
     const colorProcStore = useColorProcStore()
-    function renderAllTextTags(ctx:CanvasRenderingContext2D){
+    function renderAllTextTags(ctx:CvsContext){
         const allTags = saveStore.save?.textTags
         allTags?.forEach(t=>{
             renderOneTextTag(ctx, t)
         })
     }
-    function renderOneTextTag(ctx:CanvasRenderingContext2D, t:TextTag){
+    function renderOneTextTag(ctx:CvsContext, t:TextTag){
         if(t?.forId){
             const line = saveStore.getLineById(t.forId)
             if(line){
@@ -33,7 +34,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
 
         }
     }
-    function renderForCommonLine(ctx:CanvasRenderingContext2D, t:TextTag, lineInfo:Line){
+    function renderForCommonLine(ctx:CvsContext, t:TextTag, lineInfo:Line){
         const commonLineBuiltinRatio = 1.2
         const textColor = colorProcStore.colorProcInvBinary.convert(lineInfo.color)
         const optMain:DrawTextBodyOption = {
@@ -67,7 +68,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         }
         
     }
-    function renderForTerrainLine(ctx:CanvasRenderingContext2D, t:TextTag, lineInfo:Line){
+    function renderForTerrainLine(ctx:CvsContext, t:TextTag, lineInfo:Line){
         const terrainLineBuiltinRatio = 1.2
         //TODO：尺寸设置
         //TODO: 自动判断应该用什么颜色字体(在内部时用白色+无描边)

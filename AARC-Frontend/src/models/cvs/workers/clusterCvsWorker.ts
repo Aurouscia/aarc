@@ -3,12 +3,13 @@ import { useConfigStore } from "@/models/stores/configStore";
 import { Coord } from "@/models/coord";
 import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
 import { defineStore } from "pinia";
+import { CvsContext } from "../common/cvsContext";
 
 export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
     const staClusterStore = useStaClusterStore()
     const cs = useConfigStore()
 
-    function renderClusters(ctx:CanvasRenderingContext2D){
+    function renderClusters(ctx:CvsContext){
         const crys = staClusterStore.getStaClusters()
         if(!crys)
             return;

@@ -1,10 +1,11 @@
 import { Coord } from "@/models/coord";
 import { useEnvStore } from "@/models/stores/envStore";
 import { defineStore } from "pinia";
+import { CvsContext } from "../common/cvsContext";
 
 export const useRayCvsWorker = defineStore('rayCvsWorker', ()=>{
     const { getDisplayRatio } = useEnvStore()
-    function renderRay(ctx:CanvasRenderingContext2D, from:Coord, way:Coord){
+    function renderRay(ctx:CvsContext, from:Coord, way:Coord){
         ctx.lineWidth = 2 * getDisplayRatio()
         ctx.strokeStyle = 'green'
         ctx.beginPath()

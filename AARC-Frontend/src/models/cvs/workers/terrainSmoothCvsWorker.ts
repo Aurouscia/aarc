@@ -10,6 +10,7 @@ import { drawArcByThreePoints } from "@/utils/drawUtils/drawArc";
 import { isSameIdxInLine } from "@/utils/lineUtils/isRing";
 import { WayRel, wayRel } from "@/utils/rayUtils/rayParallel";
 import { defineStore } from "pinia";
+import { CvsContext } from "../common/cvsContext";
 
 type TerrainLink = { lineId: number, inLineIdx:number, way: SgnCoord, dist: number, lineWidth:number }
 type TerrainTransition = {center:Coord, linkA:TerrainLink, linkB:TerrainLink, color:string}
@@ -18,7 +19,7 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
     const saveStore = useSaveStore()
     const cs = useConfigStore()
     const formalizedLineStore = useFormalizedLineStore()
-    function renderAllTerrainSmooth(ctx:CanvasRenderingContext2D){
+    function renderAllTerrainSmooth(ctx:CvsContext){
         const transitionGroups = findTerrainTransitions()
         const lineWidthBase = cs.config.lineWidth
         transitionGroups.forEach(transGroup=>{

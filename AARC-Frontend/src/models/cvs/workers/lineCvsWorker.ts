@@ -15,6 +15,7 @@ import { defineStore } from "pinia";
 import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
 import { getByIndexInRing, isRing, isRingByFormalPts } from "@/utils/lineUtils/isRing";
 import { drawArcByThreePoints } from "@/utils/drawUtils/drawArc";
+import { CvsContext } from "../common/cvsContext";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill?:boolean}
 type LineRenderType = 'both'|'body'|'carpet'
@@ -24,7 +25,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     const envStore = useEnvStore();
     const formalizedLineStore = useFormalizedLineStore()
     const cs = useConfigStore();
-    function renderAllLines(ctx:CanvasRenderingContext2D, needReportFormalPtsLines?:number[], ltype?:LineType, rtype?:LineRenderType){
+    function renderAllLines(ctx:CvsContext, needReportFormalPtsLines?:number[], ltype?:LineType, rtype?:LineRenderType){
         if(!saveStore.save){
             return
         }
@@ -38,7 +39,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             renderLine(ctx, line, needReportFormalPts, rtype)
         }
     }
-    function renderLine(ctx:CanvasRenderingContext2D, line:Line, needReportFormalPts?:boolean, rtype?:LineRenderType){
+    function renderLine(ctx:CvsContext, line:Line, needReportFormalPts?:boolean, rtype?:LineRenderType){
         const pts = saveStore.getPtsByIds(line.pts)
         if(pts.length<=1)
             return;
@@ -49,7 +50,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         linkPts(ctx, formalPts, line)
         doRender(ctx, line, undefined, undefined, rtype)
     }
-    function renderSegsAroundActivePt(ctx:CanvasRenderingContext2D)
+    function renderSegsAroundActivePt(ctx:CvsContext)
         :{relatedPts:Iterable<ControlPoint>, formalizedSegs:FormalizedLine[]}
     {
         const activeId = envStore.activePt?.id;
@@ -282,7 +283,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
         })
     }
-    function linkPts(ctx:CanvasRenderingContext2D, formalPts:FormalPt[], lineInfo:Line){
+    function linkPts(ctx:CvsContext, formalPts:FormalPt[], lineInfo:Line){
         if(formalPts.length<=1){
             return;
         }
@@ -353,7 +354,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
         }
     }
-    function doRender(ctx:CanvasRenderingContext2D, lineInfo:Line, enforceNoFill?:boolean, enforceLineWidth?:number, type?:LineRenderType){
+    function doRender(ctx:CvsContext, lineInfo:Line, enforceNoFill?:boolean, enforceLineWidth?:number, type?:LineRenderType){
         const drawCarpet = !type || type==='both' || type==='carpet'
         const drawBody = !type || type==='both' || type==='body'
         if(!lineInfo.isFilled || enforceNoFill){

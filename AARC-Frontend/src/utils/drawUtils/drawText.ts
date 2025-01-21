@@ -1,6 +1,8 @@
 import { Coord, RectCoord, SgnCoord, SgnNumber } from "@/models/coord"
-import { concatFontStr } from "../lang/fontStr"
+//import { concatFontStr } from "../lang/fontStr"
 import { splitLinesClean } from "../lang/splitLines"
+import { CvsContext } from "@/models/cvs/common/cvsContext"
+import { TextMetricsSelected } from "../type/TextMetricsSelected"
 
 export interface DrawTextBodyOption{
     text?:string
@@ -15,7 +17,7 @@ export interface DrawTextStrokeOption{
     opacity:number
 }
 export function drawText(
-    ctx:CanvasRenderingContext2D, pos:Coord, align:SgnCoord, textAlignOverride: SgnNumber|undefined,
+    ctx:CvsContext, pos:Coord, align:SgnCoord, textAlignOverride: SgnNumber|undefined,
     main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false, task:'draw'|'measure'|'both' = 'both'): RectCoord|undefined
 {
     const [x, y] = pos
@@ -31,12 +33,12 @@ export function drawText(
     const subRowMargin = sub.rowHeight - sub.fontSize
     const yTop = getYTop(y, ySgn, totalHeight, mainRowMargin, subRowMargin) //减去文本上下的空隙（半个“行距与字体大小之差”）
 
-    const mainFontStr = concatFontStr(main.font, main.fontSize)
-    const subFontStr = concatFontStr(sub.font, sub.fontSize)
+    //const mainFontStr = concatFontStr(main.font, main.fontSize)
+    //const subFontStr = concatFontStr(sub.font, sub.fontSize)
     const mainMeasures:ActualBaselineResult[] = []
     const subMeasures:ActualBaselineResult[] = []
     const enumerateMainLines = (fn:(text:string, ty:number, idx:number)=>void)=>{
-        ctx.font = mainFontStr
+        ctx.font = main
         for(let i=0; i<mainLines.length; i++){
             const text = mainLines[i]
             const yFromTop = (i + 0.5) * main.rowHeight
@@ -49,7 +51,7 @@ export function drawText(
         }
     }
     const enumerateSubLines = (fn:(text:string, ty:number, idx:number)=>void)=>{
-        ctx.font = subFontStr
+        ctx.font = sub
         for(let i=0; i<subLines.length; i++){
             const text = subLines[i]
             const yFromTop = (i + 0.5) * sub.rowHeight + mainHeight
@@ -115,7 +117,7 @@ export function drawText(
 
 const chineseStyleDropCapPattern = /^[0-9a-zA-Z]{1,2}(?=\s{0,1}号?线$)/
 export function drawTextForLineName(
-    ctx:CanvasRenderingContext2D, pos:Coord, align:SgnCoord, textAlignOverride:SgnNumber|undefined,
+    ctx:CvsContext, pos:Coord, align:SgnCoord, textAlignOverride:SgnNumber|undefined,
     main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false, task:'draw'|'measure'|'both' = 'both'):
     {isDropCap:boolean, rect:RectCoord|undefined}|undefined
 {
@@ -142,14 +144,15 @@ export function drawTextForLineName(
     const fontPadding = (main.rowHeight - main.fontSize + sub.rowHeight - sub.fontSize)
     const giantFontSize = main.fontSize + sub.fontSize + fontPadding
     const giantTextRowHeight = main.rowHeight + sub.rowHeight
-    const giantFontStr = concatFontStr(main.font, giantFontSize)
-    const mainFontStr = concatFontStr(main.font, main.fontSize)
-    const subFontStr = concatFontStr(sub.font, sub.fontSize)
-    ctx.font = giantFontStr
+    //const giantFontStr = concatFontStr(main.font, giantFontSize)
+    //const mainFontStr = concatFontStr(main.font, main.fontSize)
+    //const subFontStr = concatFontStr(sub.font, sub.fontSize)
+    const giant = {font:main.font, fontSize:giantFontSize}
+    ctx.font = giant
     const giantBaseline = getTextActualCenterBaseline(ctx, yTop+giantTextRowHeight/2, lineNum)
-    ctx.font = mainFontStr
+    ctx.font = main
     const mainBaseline = getTextActualCenterBaseline(ctx, yTop+main.rowHeight/2, restPart)
-    ctx.font = subFontStr
+    ctx.font = sub
     const subBaseline = getTextActualCenterBaseline(ctx, yTop+main.rowHeight+sub.rowHeight/2, subText)
     const giantTextWidth = giantBaseline.m.width
     const giantMarginRight = giantFontSize*0.05
@@ -162,20 +165,20 @@ export function drawTextForLineName(
     else if(xSgn == -1)
         xLeft -= totalWidth
     if(needDraw){
-        ctx.font = giantFontStr
+        ctx.font = giant
         ctx.fillStyle = main.color
         ctx.fillText(lineNum, xLeft, giantBaseline.shouldUseY)
     }
 
-    ctx.font = mainFontStr
+    ctx.font = main
     if(needDraw){
-        ctx.font = mainFontStr
+        ctx.font = main
         const mainX = xLeft + giantTextWidth + giantMarginRight
         ctx.fillStyle = main.color
         ctx.fillText(restPart, mainX, mainBaseline.shouldUseY)
     }
     if(needDraw){
-        ctx.font = subFontStr
+        ctx.font = sub
         const subX = xLeft + giantTextWidth + giantMarginRight*2 //额外加一倍margin
         const subY = subBaseline.shouldUseY
         ctx.fillStyle = sub.color
@@ -230,8 +233,8 @@ function getRect(x:number, y:number, xSgn:SgnNumber, ySgn:number, biggestWidth:n
     return rect
 }
 
-type ActualBaselineResult = {shouldUseY:number, m:TextMetrics}
-function getTextActualCenterBaseline(ctx:CanvasRenderingContext2D, wantMiddleAtY:number, text:string):ActualBaselineResult{
+type ActualBaselineResult = {shouldUseY:number, m:TextMetricsSelected}
+function getTextActualCenterBaseline(ctx:CvsContext, wantMiddleAtY:number, text:string):ActualBaselineResult{
     const m = ctx.measureText(text)
     ctx.textBaseline = 'middle'
     const fix = (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent)/2

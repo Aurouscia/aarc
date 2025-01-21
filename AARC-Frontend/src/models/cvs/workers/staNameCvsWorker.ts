@@ -6,12 +6,13 @@ import { coordAdd, coordTwinShrink } from "@/utils/coordUtils/coordMath";
 import { drawText } from "@/utils/drawUtils/drawText";
 import { sgnCoord } from "@/utils/sgn";
 import { defineStore } from "pinia";
+import { CvsContext } from "../common/cvsContext";
 
 export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const staNameRectStore = useStaNameRectStore()
     const cs = useConfigStore()
-    function renderAllPtName(ctx:CanvasRenderingContext2D, needReportRectPts?:number[]){
+    function renderAllPtName(ctx:CvsContext, needReportRectPts?:number[]){
         if(!saveStore.save)
             return;
         const pts = saveStore.save.points;
@@ -20,12 +21,12 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             renderPtName(ctx, pt, needReportRect)
         })
     }
-    function renderPtNameById(ctx:CanvasRenderingContext2D, ptId:number, needReportRect?:boolean, markRoot?:'free'|'snapVague'|'snapAccu'){
+    function renderPtNameById(ctx:CvsContext, ptId:number, needReportRect?:boolean, markRoot?:'free'|'snapVague'|'snapAccu'){
         const pt = saveStore.getPtById(ptId);
         if(pt)
             return renderPtName(ctx, pt, needReportRect, markRoot)
     }
-    function renderPtName(ctx:CanvasRenderingContext2D, pt:ControlPoint, needReportRect?:boolean, markRoot?:'free'|'snapVague'|'snapAccu'){
+    function renderPtName(ctx:CvsContext, pt:ControlPoint, needReportRect?:boolean, markRoot?:'free'|'snapVague'|'snapAccu'){
         if(!pt.nameP)
             return;
         const globalPos = coordAdd(pt.pos, pt.nameP)

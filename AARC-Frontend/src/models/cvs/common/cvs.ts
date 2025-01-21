@@ -1,24 +1,26 @@
 import { ref } from "vue";
+import { CvsBlock, CvsContext } from "./cvsContext";
 
 export function useCvs(){
     const cvs = ref<HTMLCanvasElement>()
-    let ctx:CanvasRenderingContext2D|undefined = undefined;
+    let ctx:CvsContext|undefined = undefined;
     let ctxTakenFrom:HTMLCanvasElement|undefined = undefined;
-    function getCtx(){
+    const blocks = ref<CvsBlock[]>([])
+    function getCtx():CvsContext{
         if(ctx && ctxTakenFrom === cvs.value)
             return ctx;
-        const res = cvs.value?.getContext('2d')
-        if(!res)
+        const ctx2d = cvs.value?.getContext('2d')
+        if(!ctx2d)
             throw Error('获取画布上下文失败')
         ctxTakenFrom = cvs.value
-        ctx = res;
-        return res;
+        blocks.value = [new CvsBlock(1, 0, 0, ctx2d)]
+        ctx = new CvsContext(blocks)
+        return ctx;
     }
     function getCtxWithClearing(clear = true){
         const ctx = getCtx();
         if(clear){
-            const cvs = ctx.canvas;
-            ctx.clearRect(0, 0, cvs.width, cvs.height);
+            ctx.clear();
         }
         return ctx
     }

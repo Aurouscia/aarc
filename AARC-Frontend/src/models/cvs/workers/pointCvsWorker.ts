@@ -3,11 +3,12 @@ import { ControlPoint, ControlPointDir, ControlPointSta, Line } from "../../save
 import { useConfigStore } from "@/models/stores/configStore";
 import { drawCross } from "@/utils/drawUtils/drawCross";
 import { defineStore } from "pinia";
+import { CvsContext } from "../common/cvsContext";
 
 export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     const saveStore = useSaveStore();
     const cs = useConfigStore();
-    function renderAllPoints(ctx:CanvasRenderingContext2D, onlyVisiblePts?:boolean){
+    function renderAllPoints(ctx:CvsContext, onlyVisiblePts?:boolean){
         if(!saveStore.save)
             return
         const allPts = saveStore.save.points
@@ -15,24 +16,24 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             renderPoint(ctx, pt, false, onlyVisiblePts)
         }
     }
-    function renderLinePoints(ctx:CanvasRenderingContext2D, line:Line){
+    function renderLinePoints(ctx:CvsContext, line:Line){
         const ptIds = line.pts
         if(ptIds && ptIds.length>0){
             const pts = saveStore.save?.points.filter(p=>ptIds.includes(p.id))
             pts?.forEach(p=>renderPoint(ctx, p))
         }
     }
-    function renderSomePoints(ctx:CanvasRenderingContext2D, pts:Iterable<ControlPoint>, activeId:number){
+    function renderSomePoints(ctx:CvsContext, pts:Iterable<ControlPoint>, activeId:number){
         for(const pt of pts){
             renderPoint(ctx, pt, activeId == pt.id)
         }
     }
-    function renderPointById(ctx:CanvasRenderingContext2D, ptId:number, active:boolean = false){
+    function renderPointById(ctx:CvsContext, ptId:number, active:boolean = false){
         const pt = saveStore.getPtById(ptId)
         if(pt)
             renderPoint(ctx, pt, active)
     }
-    function renderPoint(ctx:CanvasRenderingContext2D, pt:ControlPoint, active:boolean = false, staOnly:boolean = false){
+    function renderPoint(ctx:CvsContext, pt:ControlPoint, active:boolean = false, staOnly:boolean = false){
         const pos = pt.pos;
         let markColor = '#999'
         const relatedLines = saveStore.getLinesByPt(pt.id)

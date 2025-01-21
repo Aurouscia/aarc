@@ -1,5 +1,6 @@
 import { Coord, SgnCoord } from "@/models/coord";
 import { applyBias } from "../coordUtils/coordBias";
+import { CvsContext } from "@/models/cvs/common/cvsContext";
 
 interface DrawCrossParams{
     pos:Coord,
@@ -10,7 +11,7 @@ interface DrawCrossParams{
         color: string
     }[]
 }
-export function drawCross(ctx:CanvasRenderingContext2D, params:DrawCrossParams){
+export function drawCross(ctx:CvsContext, params:DrawCrossParams){
     let biasA1:SgnCoord, biasA2:SgnCoord, biasB1:SgnCoord, biasB2:SgnCoord;
     const {pos, dir, armLength, repetitions} = params
     if(dir === 'incline'){

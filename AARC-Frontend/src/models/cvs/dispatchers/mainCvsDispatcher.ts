@@ -47,7 +47,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         const { changedLines, movedStaNames, suppressRenderedCallback, forExport } = options
         if(forExport){
             ctx.fillStyle = cs.config.bgColor
-            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+            ctx.clear()
         }
         tic()
         renderAllLines(ctx, changedLines, LineType.terrain, 'carpet')

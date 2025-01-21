@@ -2,13 +2,14 @@ import { useConfigStore } from "@/models/stores/configStore";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useSnapStore } from "@/models/stores/snapStore";
 import { defineStore, storeToRefs } from "pinia";
+import { CvsContext } from "../common/cvsContext";
 
 export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
     const envStore = useEnvStore();
     const { cvsWidth, cvsHeight } = storeToRefs(envStore)
     const { snapGridIntv } = storeToRefs(useSnapStore())
     const cs = useConfigStore()
-    function renderGrid(ctx:CanvasRenderingContext2D){
+    function renderGrid(ctx:CvsContext){
         const linesInfo = gridLinesInfo()
         snapGridIntv.value = linesInfo.subIntv
 
@@ -19,7 +20,7 @@ export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
         ctx.strokeStyle = cs.config.gridMainLineColor
         drawGrid(ctx, linesInfo.mainIntv)
     }
-    function drawGrid(ctx:CanvasRenderingContext2D, intv:number){
+    function drawGrid(ctx:CvsContext, intv:number){
         if(intv <= 1)
             return
         let x = intv;

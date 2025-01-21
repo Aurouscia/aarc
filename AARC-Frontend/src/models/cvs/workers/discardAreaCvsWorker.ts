@@ -1,9 +1,10 @@
 import { useDiscardAreaStore } from "@/models/stores/discardAreaStore";
 import { defineStore } from "pinia";
+import { CvsContext } from "../common/cvsContext";
 
 export const useDiscardAreaCvsWorker = defineStore('discardAreaCvsWorker',()=>{
     const discardAreaStore = useDiscardAreaStore()
-    function renderDiscardArea(ctx:CanvasRenderingContext2D){
+    function renderDiscardArea(ctx:CvsContext){
         if(!discardAreaStore.discarding)
             return
         const pts = discardAreaStore.getDiscardAreaPolyPts()

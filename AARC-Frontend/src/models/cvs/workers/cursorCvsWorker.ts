@@ -1,13 +1,14 @@
 import { useConfigStore } from "@/models/stores/configStore"
 import { useEnvStore } from "@/models/stores/envStore"
 import { defineStore, storeToRefs } from "pinia"
+import { CvsContext } from "../common/cvsContext"
 
 export const useCursorCvsWorker = defineStore('cursorCvsWorker', ()=>{
     const cs = useConfigStore()
     const envStore = useEnvStore()
     const { cursorPos } = storeToRefs(envStore)
     let angleNow = 0;
-    function renderCursor(ctx: CanvasRenderingContext2D) {
+    function renderCursor(ctx: CvsContext) {
         ctx.lineCap = 'round'
         if (!cursorPos.value)
             return;
@@ -17,7 +18,7 @@ export const useCursorCvsWorker = defineStore('cursorCvsWorker', ()=>{
         if(angleNow>2*Math.PI)
             angleNow = 0
     }
-    function renderCursorLayer(ctx:CanvasRenderingContext2D, x:number, y:number, angle:number, style:string, lineWidth:number){
+    function renderCursorLayer(ctx:CvsContext, x:number, y:number, angle:number, style:string, lineWidth:number){
         const r = 1
         ctx.strokeStyle = style
         ctx.lineWidth = lineWidth*r

@@ -4,11 +4,12 @@ import { useConfigStore } from "@/models/stores/configStore";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { isRing } from "@/utils/lineUtils/isRing";
 import { defineStore } from "pinia";
+import { CvsContext } from "../common/cvsContext";
 
 export const useEmphasizeCvsWorker = defineStore('emphasizeCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const cs = useConfigStore()
-    function renderEmphasizesForRingLines(ctx:CanvasRenderingContext2D, range:Line[]){
+    function renderEmphasizesForRingLines(ctx:CvsContext, range:Line[]){
         const targets:{color:string, pos:Coord}[] = []
         saveStore.save?.lines.forEach(line=>{
             if(!range.some(r=>r.id===line.id))
@@ -24,7 +25,7 @@ export const useEmphasizeCvsWorker = defineStore('emphasizeCvsWorker', ()=>{
             renderEmphasizeSingle(ctx, t.pos, t.color, radius)
         })
     }
-    function renderEmphasizeSingle(ctx:CanvasRenderingContext2D, coord:Coord, color:string, radius:number){
+    function renderEmphasizeSingle(ctx:CvsContext, coord:Coord, color:string, radius:number){
         ctx.beginPath()
         ctx.arc(...coord, radius, 0, 2*Math.PI)
         ctx.strokeStyle = cs.config.bgColor

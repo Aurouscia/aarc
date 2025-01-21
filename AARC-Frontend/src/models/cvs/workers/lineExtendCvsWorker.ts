@@ -4,13 +4,14 @@ import { useLineExtendStore } from "@/models/stores/saveDerived/saveDerivedDeriv
 import { useSaveStore } from "@/models/stores/saveStore";
 import { drawCross } from "@/utils/drawUtils/drawCross";
 import { defineStore } from "pinia";
+import { CvsContext } from "../common/cvsContext";
 
 export const useLineExtendCvsWorker = defineStore('lineExtendCvsWorker', ()=>{
     const { enumerateLineExtendBtns } = useLineExtendStore()
     const { colorProcLineExtend } = useColorProcStore()
     const saveStore = useSaveStore()
     const cs = useConfigStore()
-    function renderLineExtend(ctx:CanvasRenderingContext2D){
+    function renderLineExtend(ctx:CvsContext){
         enumerateLineExtendBtns((eb)=>{
             const lineColor = saveStore.getLineActualColorById(eb.lineId)
             let extendColor = colorProcLineExtend.convert(lineColor)
