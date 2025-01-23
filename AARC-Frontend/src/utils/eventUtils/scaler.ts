@@ -237,6 +237,20 @@ export class Scaler{
         const y = this.frame.scrollTop + this.frame.offsetHeight/2
         return {x, y}
     }
+    getViewRectInRatio(){
+        const fsl = this.frame.scrollLeft
+        const fst = this.frame.scrollTop
+        const fw = this.frame.clientWidth
+        const fh = this.frame.clientHeight
+        const aw = this.arena.clientWidth
+        const ah = this.arena.clientHeight
+        return {
+            left: fsl / aw,
+            right: (fsl + fw) / aw,
+            top: fst / ah,
+            bottom: (fst + fh) / ah
+        }
+    }
 
     private arenaHWCache = -1
     getArenaHW(){

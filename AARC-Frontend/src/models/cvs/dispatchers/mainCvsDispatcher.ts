@@ -1,5 +1,5 @@
 import { useEnvStore } from "@/models/stores/envStore";
-import { useCvs } from "../common/cvs";
+import { useCvs, useCvsBlocksControlStore } from "../common/cvs";
 import { useLineCvsWorker } from "../workers/lineCvsWorker";
 import { usePointCvsWorker } from "../workers/pointCvsWorker";
 import { useStaNameCvsWorker } from "../workers/staNameCvsWorker";
@@ -29,7 +29,9 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const envStore = useEnvStore()
     const cs = useConfigStore()
     const scalerLocalConfig = useScalerLocalConfigStore()
-    const { cvs: mainCvs, getCtx: getCtx } = useCvs()
+    const canvasIdPrefix = 'main'
+    const { getCtx: getCtx } = useCvs(canvasIdPrefix)
+    const cvsBlocksControlStore = useCvsBlocksControlStore()
     const { renderAllLines } = useLineCvsWorker()
     const { renderAllPoints } = usePointCvsWorker()
     const { renderClusters } = useClusterCvsWorker()
@@ -89,5 +91,12 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
             })
         }
     })
-    return { mainCvs, renderMainCvs, afterMainCvsRendered }
+    cvsBlocksControlStore.blocksReformHandler.push(()=>{
+        renderMainCvs({
+            changedLines:[],
+            movedStaNames:[],
+            suppressRenderedCallback:true
+        })
+    })
+    return { renderMainCvs, afterMainCvsRendered, canvasIdPrefix }
 })

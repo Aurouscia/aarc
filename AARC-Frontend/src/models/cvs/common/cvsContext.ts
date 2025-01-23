@@ -58,12 +58,20 @@ export class CvsContext{
     }
     measureText(text:string):TextMetricsSelected{
         const sample = this.blocks.value.at(0)
-        const m = sample?.ctx2d.measureText(text) || new TextMetrics()
+        const m = sample?.ctx2d.measureText(text)
         const scale = sample?.scale || 1
-        return {
-            width: m.width / scale,
-            actualBoundingBoxAscent: m.actualBoundingBoxAscent / scale,
-            actualBoundingBoxDescent: m.actualBoundingBoxDescent / scale
+        if(m)
+            return {
+                width: m.width / scale,
+                actualBoundingBoxAscent: m.actualBoundingBoxAscent / scale,
+                actualBoundingBoxDescent: m.actualBoundingBoxDescent / scale
+            }
+        else{
+            return {
+                width: 0,
+                actualBoundingBoxAscent:0,
+                actualBoundingBoxDescent:0
+            }
         }
     }
     clear(){

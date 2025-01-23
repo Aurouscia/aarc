@@ -10,19 +10,16 @@ import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher
 import { useConfigStore } from '@/models/stores/configStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import CvsBlocks from './CvsBlocks.vue';
 
 const envStore = useEnvStore();
 const { somethingActive } = storeToRefs(envStore)
 const configStore = useConfigStore();
-const { cvsWidth, cvsHeight } = storeToRefs(useEnvStore())
 const cvsFrameStore = useCvsFrameStore()
 const { cvsFrame, cvsCont } = storeToRefs(cvsFrameStore)
 const baseCvsDispatcher = useBaseCvsDispatcher()
-const { baseCvs } = storeToRefs(baseCvsDispatcher)
 const mainCvsDispatcher = useMainCvsDispatcher()
-const { mainCvs } = storeToRefs(mainCvsDispatcher)
 const activeCvsDispatcher = useActiveCvsDispatcher()
-const { activeCvs } = storeToRefs(activeCvsDispatcher)
 const { wait } = storeToRefs(useUniqueComponentsStore())
 
 let activeCvsRenderTimer = 0
@@ -62,9 +59,14 @@ defineExpose({init})
 <template>
     <div class="cvsFrame" ref="cvsFrame">
         <div class="cvsCont" ref="cvsCont" :style="{backgroundColor: configStore.config.bgColor}">
-            <canvas ref="baseCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
+            <!-- <canvas ref="baseCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
             <canvas ref="mainCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: envStore.somethingActive}" class="mainCvs"></canvas>
-            <canvas ref="activeCvs" :width="cvsWidth" :height="cvsHeight" :class="{invisible: !envStore.somethingActive}" class="activeCvs"></canvas>
+            <canvas ref="activeCvs" :width="cvsWidth" :height="cvsHeight" :class="{invisible: !envStore.somethingActive}" class="activeCvs"></canvas> -->
+            <CvsBlocks :canvas-id-prefix="baseCvsDispatcher.canvasIdPrefix"></CvsBlocks>
+            <CvsBlocks :canvas-id-prefix="mainCvsDispatcher.canvasIdPrefix"
+                :cvs-class-name="'mainCvs'" :insnif="envStore.somethingActive"></CvsBlocks>
+            <CvsBlocks :canvas-id-prefix="activeCvsDispatcher.canvasIdPrefix"
+                :cvs-class-name="'activeCvs'" :invisible="!envStore.somethingActive"></CvsBlocks>
         </div>
     </div>
     <Ops></Ops>
@@ -72,9 +74,6 @@ defineExpose({init})
 </template>
 
 <style scoped lang="scss">
-@use '@/styles/globalValues';
-@use '@/styles/globalMixins';
-
 .cvsFrame{
     position: fixed;
     inset: 0px;
@@ -85,27 +84,5 @@ defineExpose({init})
     position: absolute;
     width: 1000px;
     height: 1000px;
-    canvas{
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        inset: 0px;
-        transition-timing-function: linear;
-    }
-}
-.mainCvs{
-    @include globalMixins.trans-quick-in(0.9);//出现地越快越好
-    &.insnif{
-        @include globalMixins.trans-slow-in(0.9);//消失地越慢越好
-        opacity: 0.4;
-    }
-}
-.activeCvs{
-    transition: 0s;//瞬间出现
-    &.invisible{
-        transition: globalValues.$default-transition-time;
-        @include globalMixins.trans-slow-in(0.5);//慢速消失
-        opacity: 0;
-    }
 }
 </style>

@@ -23,7 +23,8 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const envStore = useEnvStore()
     const snapStore = useSnapStore()
     const lineExtendStore = useLineExtendStore()
-    const { cvs: activeCvs, getCtx } = useCvs()
+    const canvasIdPrefix = 'active'
+    const { getCtx } = useCvs(canvasIdPrefix)
     const { renderSegsAroundActivePt, renderLine } = useLineCvsWorker()
     const { renderSomePoints, renderLinePoints, renderPointById } = usePointCvsWorker()
     const { renderRay } = useRayCvsWorker()
@@ -122,5 +123,5 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
                 envStore.activePt.dir = ControlPointDir.vertical
         }
     }
-    return { activeCvs, renderActiveCvs }
+    return { renderActiveCvs, canvasIdPrefix }
 })

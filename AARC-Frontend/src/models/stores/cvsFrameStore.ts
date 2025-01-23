@@ -14,14 +14,25 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     let scaler:Scaler|undefined
     const { steppedScaleEnabled } = storeToRefs(useScalerLocalConfigStore())
+    const viewScaleHandlers = ref<(()=>void)[]>([])
+    const viewMoveHandlers = ref<(()=>void)[]>([])
+    let inited = false
     function initScaler(viewScaleHandler:()=>void, viewMoveHandler:()=>void, moveLocked:Ref<boolean>){
         if(!cvsFrame.value || !cvsCont.value)
             throw Error('初始化失败，找不到cvsFrame/cvsCont DOM对象')
+        if(inited)
+            return //避免重复初始化
+        inited = true
+        viewScaleHandlers.value = [viewScaleHandler]
+        viewMoveHandlers.value = [viewMoveHandler]
         const viewScaleHandlerFull = ()=>{
             updateScaleLock()//TODO：此处仅在调整大小后更新lock，实际上调整窗口尺寸也需要
-            viewScaleHandler()
+            viewScaleHandlers.value.forEach(h=>h())
         }
-        scaler = new Scaler(cvsFrame.value, cvsCont.value, viewScaleHandlerFull, viewMoveHandler, moveLocked, scaleLocked, steppedScaleEnabled)
+        const viewMoveHandlerFull = ()=>{
+            viewMoveHandlers.value.forEach(h=>h())
+        }
+        scaler = new Scaler(cvsFrame.value, cvsCont.value, viewScaleHandlerFull, viewMoveHandlerFull, moveLocked, scaleLocked, steppedScaleEnabled)
         scaler.widthReset()
     }
     function getDisplayRatio(type:'x'|'y'|'smaller' = 'x'){
@@ -58,6 +69,9 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     }
     function getViewCenterOffset(){
         return scaler?.getCenterOffset() || {x:0,y:0}
+    }
+    function getViewRectInRatio(){
+        return scaler?.getViewRectInRatio() || {left:0, right:0, top:0, bottom:0}
     }
     function translateFromOffset(coordOffset:Coord):Coord|undefined{
         const [ox, oy] = coordOffset;
@@ -114,10 +128,11 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     }
     return {
         cvsFrame, cvsCont, initScaler,
-        getDisplayRatio, getViewCenterOffset,
+        getDisplayRatio, getViewCenterOffset, getViewRectInRatio,
         updateScaleLock,
         translateFromOffset, translateFromClient,
         translateToOffset, translateToClient,
-        clientCoordRatio, setSizeToCvsContStyle
+        clientCoordRatio, setSizeToCvsContStyle,
+        viewMoveHandlers, viewScaleHandlers
     }
 })
