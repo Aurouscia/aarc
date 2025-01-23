@@ -68,7 +68,7 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
         viewMutateEndedTimer = window.setTimeout(()=>{
             //viewMutateLastReact = Date.now()
             refreshBlocks()
-        }, 300)
+        }, 100)
         // const now = Date.now()
         // if(now - viewMutateLastReact < 800)
         //     return
