@@ -12,6 +12,7 @@ import { ensureValidSave } from '@/models/save';
 import { usePreventLeavingUnsaved } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useResetterStore } from '@/models/stores/utils/resetterStore';
+import { useScalerLocalConfigStore } from '@/app/localConfig/scalerLocalConfig';
 
 const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
@@ -23,6 +24,7 @@ let loadedSaveIdNum = 0
 const loadComplete = ref(false)
 const mainCvsDispatcher = useMainCvsDispatcher()
 const isDemo = computed(()=>props.saveId.toLowerCase() == 'demo')
+const scalerLocalConfig = useScalerLocalConfigStore()
 async function load() {
     if(!isNaN(saveIdNum.value)){
         const resp = await api.save.loadData(saveIdNum.value)
@@ -94,8 +96,17 @@ onUnmounted(()=>{
     <Cvs v-if="loadComplete" ref="cvsComponent"></Cvs>
     <Menu v-if="loadComplete" @save-data="saveData"></Menu>
     <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
+    <div v-if="scalerLocalConfig.steppedScaleEnabled" class="steppedScaleEnabled">已启用步进式缩放</div>
 </template>
 
 <style scoped lang="scss">
-
+.steppedScaleEnabled{
+    z-index: 999;
+    position: fixed;
+    top: 0px;
+    right: 20px;
+    font-size: 14px;
+    color: #aaa;
+    text-align: right;
+}
 </style>

@@ -70,16 +70,21 @@ export const useEnvStore = defineStore('env', ()=>{
         cvsCont.value.addEventListener('touchend', moveEndHandler)
         inited = true
     }
-    let rescaleDelayTimer = 0;
+    let rescaleDelayTimer = 0
+    let rescaleSteppedLastCall = 0
     function viewRescaleHandler(){
         setOpsPos(false)
         if(scalerLocalConfig.steppedScaleEnabled){
-            //如果启用了步进式缩放，缩放时立即触发注册的回调
+            //如果启用了步进式缩放，缩放时立即触发注册的回调，限制最多50ms一次
             window.setTimeout(()=>{
+                const now = Date.now()
+                if(now - rescaleSteppedLastCall < 50)
+                    return
+                rescaleSteppedLastCall = now
                 rescaled.value.forEach(f=>f())
             })
         }else{
-            //如果没有启用步进式缩放，缩放停止一小段时间后触发
+            //如果没有启用步进式缩放，缩放停止200ms后触发
             window.clearTimeout(rescaleDelayTimer)
             rescaleDelayTimer = window.setTimeout(()=>{
                 rescaled.value.forEach(f=>f())
