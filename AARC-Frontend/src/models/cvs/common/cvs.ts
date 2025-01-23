@@ -10,7 +10,6 @@ export function useCvs(canvasIdPrefix:string){
     const { cvsWidth, cvsHeight } = storeToRefs(useSaveStore())
 
     const ctx = computed<CvsContext>(()=>{
-        bStore.blockRefreshingInit()
         blocks.value = []
         for(const b of bStore.blocksControl){
             const canvasId = `${canvasIdPrefix}${b.idx}`
@@ -39,6 +38,9 @@ export function useCvs(canvasIdPrefix:string){
 
 export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     const fStore = useCvsFrameStore()
+    fStore.viewMoveHandlers.push(viewMutateHandler)
+    fStore.viewScaleHandlers.push(viewMutateHandler)
+    
     const saveStore = useSaveStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const blocksControl = ref<{
@@ -53,14 +55,6 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     }[]>([])
     const blockSideLength = ref<number>(1000)
 
-    let blockRefreshingInited = false
-    function blockRefreshingInit(){
-        if(blockRefreshingInited)
-            return
-        blockRefreshingInited = true
-        fStore.viewMoveHandlers.push(viewMutateHandler)
-        fStore.viewScaleHandlers.push(viewMutateHandler)
-    }
     //let viewMutateLastReact = 0
     let viewMutateEndedTimer = 0
     function viewMutateHandler(){
@@ -146,7 +140,6 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     const blocksReformHandler = ref<(()=>void)[]>([])
 
     return {
-        blockRefreshingInit,
         blocksControl,
         blockSideLength,
         blocksReformHandler

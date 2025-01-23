@@ -23,8 +23,8 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         if(inited)
             return //避免重复初始化
         inited = true
-        viewScaleHandlers.value = [viewScaleHandler]
-        viewMoveHandlers.value = [viewMoveHandler]
+        viewScaleHandlers.value.push(viewScaleHandler)
+        viewMoveHandlers.value.push(viewMoveHandler)
         const viewScaleHandlerFull = ()=>{
             updateScaleLock()//TODO：此处仅在调整大小后更新lock，实际上调整窗口尺寸也需要
             viewScaleHandlers.value.forEach(h=>h())
