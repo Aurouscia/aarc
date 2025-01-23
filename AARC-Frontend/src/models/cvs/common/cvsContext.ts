@@ -4,8 +4,8 @@ export class CvsBlock{
     scale:number
     x:number
     y:number
-    ctx2d:CanvasRenderingContext2D
-    constructor(scale:number, x:number, y:number, ctx2d:CanvasRenderingContext2D){
+    ctx2d:CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D
+    constructor(scale:number, x:number, y:number, ctx2d:CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D){
         this.scale = scale
         this.x = x
         this.y = y
@@ -77,6 +77,12 @@ export class CvsContext{
         this.enumerate(b=>{
             const cvs = b.ctx2d.canvas
             b.ctx2d.clearRect(0, 0, cvs.width, cvs.height)
+        })
+    }
+    fillTotal(){
+        this.enumerate(b=>{
+            const cvs = b.ctx2d.canvas
+            b.ctx2d.fillRect(0, 0, cvs.width, cvs.height)
         })
     }
 

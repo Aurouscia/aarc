@@ -13,6 +13,7 @@ import { useConfigStore } from "@/models/stores/configStore";
 import { timestampMS } from "@/utils/timeUtils/timestamp";
 import { useScalerLocalConfigStore } from "@/app/localConfig/scalerLocalConfig";
 import { useTimeSpanClock } from "@/utils/timeUtils/timeSpanClock";
+import { CvsContext } from "../common/cvsContext";
 
 export interface MainCvsRenderingOptions{
     /** 这次渲染前哪些线路形状变动了？不提供即为所有 */
@@ -23,6 +24,8 @@ export interface MainCvsRenderingOptions{
     suppressRenderedCallback?:boolean
     /** 导出式渲染 */
     forExport?:boolean
+    /** 指定画布上下文 */
+    ctx?: CvsContext
 }
 
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
@@ -45,11 +48,11 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     function renderMainCvs(options:MainCvsRenderingOptions){
         const tStart = logRendering ? timestampMS():0
         isRendering.value = true
-        const ctx = getCtx();
+        const ctx = options.ctx || getCtx();
         const { changedLines, movedStaNames, suppressRenderedCallback, forExport } = options
         if(forExport){
             ctx.fillStyle = cs.config.bgColor
-            ctx.clear()
+            ctx.fillTotal()
         }
         tic()
         renderAllLines(ctx, changedLines, LineType.terrain, 'carpet')

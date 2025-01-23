@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import SideBar from './common/SideBar.vue';
-//import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
+import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useApiStore } from '@/app/com/api';
 import { useRoute } from 'vue-router';
 import { editorParamNameSaveId } from '@/pages/editors/routes/routesNames';
 import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
 import { timeStr } from '@/utils/timeUtils/timeStr';
 import { useSaveStore } from '@/models/stores/saveStore';
+import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
-//const mainCvsDispatcher = useMainCvsDispatcher()
+const mainCvsDispatcher = useMainCvsDispatcher()
 const saveStore = useSaveStore()
 const api = useApiStore().get()
 const route = useRoute()
@@ -22,30 +23,46 @@ async function downloadMainCvsAsPng() {
         return
     exportLock = true
 
-    await getExportPngFileName()
-    // if(fileName){
-    //     const mainRenderingOptions:MainCvsRenderingOptions = {
-    //         changedLines:[],
-    //         movedStaNames:[],
-    //         suppressRenderedCallback:true,
-    //         forExport:true
-    //     }
-    //     mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
-    //     var cvs = mainCvsDispatcher.mainCvs
-    //     if(!cvs)
-    //         return
-    //     var dataURL = cvs.toDataURL('image/png');
-    //     var link = document.createElement('a');
-    //     link.download = fileName
-    //     link.href = dataURL;
-    //     link.click();
+    const fileName = await getExportPngFileName()
+    if(fileName){
+        const cvs = new OffscreenCanvas(saveStore.cvsWidth, saveStore.cvsHeight)
+        const ctx2d = cvs.getContext('2d')!
+        const ctx = new CvsContext([new CvsBlock(1, 0, 0, ctx2d)])
+        const mainRenderingOptions:MainCvsRenderingOptions = {
+            changedLines:[],
+            movedStaNames:[],
+            suppressRenderedCallback:true,
+            forExport:true,
+            ctx
+        }
+        mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
 
-    //     mainRenderingOptions.forExport = false
-    //     mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
-    // }
-    // window.setTimeout(()=>{
-    //     exportLock = false
-    // }, 2000)
+        const pngDataUrl = await cvs.convertToBlob({ type: 'image/png' }).then(blob => {
+            return new Promise<string>((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    if(typeof reader.result == 'string')
+                        resolve(reader.result)
+                    else
+                        resolve('')
+                };
+                reader.readAsDataURL(blob);
+            });
+        })
+        if(!pngDataUrl){
+            return
+        }
+        var link = document.createElement('a');
+        link.download = fileName
+        link.href = pngDataUrl;
+        link.click();
+
+        mainRenderingOptions.forExport = false
+        mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
+    }
+    window.setTimeout(()=>{
+        exportLock = false
+    }, 2000)
 }
 async function getExportPngFileName(){
     let saveId = route.params[editorParamNameSaveId]
@@ -98,6 +115,9 @@ defineExpose({
         </select>
     </div>
     <button @click="downloadMainCvsAsPng" class="ok">导出为png格式</button>
+    <div class="note">
+        点击后请耐心等待数秒，不要反复点击<br/>
+    </div>
     <div class="note">
         作品导出设置（清晰度等）将后续推出<br/>
         当前“站点数”不准确，正在修复
