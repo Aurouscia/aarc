@@ -192,12 +192,25 @@ export class Scaler{
         const ary = this.frame.scrollTop + hh*y;
         const gx = arx/w
         const gy = ary/h
-        this.arena.style.width = w*ratio-1+'px';
-        this.arena.style.height = h*ratio-1+'px';
+        this.arena.style.width = w*ratio+'px';
+        this.arena.style.height = h*ratio+'px';
         const wGrowth = w*(ratio-1);
         const hGrowth = h*(ratio-1);
-        this.frame.scrollLeft += wGrowth*gx
-        this.frame.scrollTop += hGrowth*gy
+        let compensateScrollLeft = true
+        let compensateScrollTop = true
+        //当场地缩小时，右侧可能已经碰到边缘，此时就不再应该调整scroll
+        if(wGrowth < 0){
+            if(this.frame.clientWidth + this.frame.scrollLeft + 1 > this.arena.clientWidth)
+                compensateScrollLeft = false
+        }
+        if(hGrowth < 0){
+            if(this.frame.clientHeight + this.frame.scrollTop + 1 > this.arena.clientHeight)
+                compensateScrollTop = false
+        }
+        if(compensateScrollLeft)
+            this.frame.scrollLeft += wGrowth*gx
+        if(compensateScrollTop)
+            this.frame.scrollTop += hGrowth*gy
         this.scaleCallback();
     }
     move(increX:number,increY:number){
