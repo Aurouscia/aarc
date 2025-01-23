@@ -89,5 +89,6 @@ defineExpose({init})
     position: absolute;
     width: 1000px;
     height: 1000px;
+    overflow: hidden;
 }
 </style>

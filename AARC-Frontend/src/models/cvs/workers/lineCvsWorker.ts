@@ -29,6 +29,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         if(!saveStore.save){
             return
         }
+        ctx.lineJoin = 'round'
         const lines = saveStore.save.lines;
         for(const line of lines){
             if(ltype !== undefined){

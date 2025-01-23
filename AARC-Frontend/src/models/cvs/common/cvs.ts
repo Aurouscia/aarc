@@ -36,21 +36,22 @@ export function useCvs(canvasIdPrefix:string){
     return { getCtx: getCtxWithClearing }
 }
 
+export interface BlockControl{
+    idx:number
+    widthRatio:number
+    heightRatio:number
+    leftRatio:number
+    topRatio:number
+    canvasWidth:number
+    canvasHeight:number
+    key:number
+}
 export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     const fStore = useCvsFrameStore()
     const saveStore = useSaveStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
-    const blocksControl = ref<{
-        idx:number
-        widthRatio:number
-        heightRatio:number
-        leftRatio:number
-        topRatio:number
-        canvasWidth:number
-        canvasHeight:number
-        key:number
-    }[]>([])
-    const blockSideLength = ref<number>(1000)
+    const blocksControl = ref<BlockControl[]>([])
+    const blockSideLength = ref<number>(1500)
 
     let blocksControlInited = false
     function blocksControlInit(){
@@ -79,12 +80,12 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     const hRatioEach = computed(()=>blockSideLength.value/cvsHeight.value)
     const rectMargin = 0.001
     function refreshBlocks(suppressReformedHandler = false){
-        console.log('刷新画布块')
         const displayRatio = fStore.getDisplayRatio('smaller')
         const cont = fStore.cvsCont
         const frame = fStore.cvsFrame
         if(!frame || !cont)
             return
+        const res:BlockControl[] = []
         if(displayRatio < 1.6){
             const rect = fStore.getViewRectInRatio()
             const containedXs:number[] = []
@@ -107,13 +108,12 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
                     break;
                 tryingY++
             }
-            blocksControl.value = []
             let blockIdx = 0
             for(let xidx=0;xidx<containedXs.length;xidx++){
                 const x = containedXs[xidx]
                 for(let yidx=0;yidx<containedYs.length;yidx++){
                     const y = containedYs[yidx]
-                    blocksControl.value.push({
+                    res.push({
                         idx: blockIdx++,
                         widthRatio: wRatioEach.value,
                         heightRatio: hRatioEach.value,
@@ -129,20 +129,34 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
             const whr = cvsWidth.value/cvsHeight.value
             const canvasHeight = frame.clientHeight
             const canvasWidth = canvasHeight * whr
-            blocksControl.value = [{
+            res.push({
                 idx: 0,
                 widthRatio:1, heightRatio:1,
                 leftRatio:0, topRatio:0,
                 canvasWidth,
                 canvasHeight,
                 key:0
-            }]
-        }
-        if(!suppressReformedHandler){
-            nextTick(()=>{
-                blocksReformHandler.value.forEach(f=>f())
             })
         }
+        console.log(`刷新画布块，${res.length}`)
+        if(!suppressReformedHandler){
+            const brief = blocksControlBrief(res)
+            if(brief !== lastHandledBrief){
+                blocksControl.value = res
+                nextTick(()=>{
+                    blocksReformHandler.value.forEach(f=>f())
+                })
+            }
+            lastHandledBrief = brief
+        }else{
+            blocksControl.value = res
+            lastHandledBrief = blocksControlBrief(res)
+        }
+    }
+    let lastHandledBrief = ''
+    function blocksControlBrief(bc:BlockControl[]){
+        const briefs = bc.map(x=>`${x.widthRatio}${x.heightRatio}${x.leftRatio}${x.topRatio}`)
+        return briefs.join()
     }
 
     const blocksReformHandler = ref<(()=>void)[]>([])
