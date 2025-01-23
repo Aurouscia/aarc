@@ -118,13 +118,15 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         else
             return clientCoord[1] / (cvsFrame.value?.clientHeight||1)
     }
-    function setSizeToCvsContStyle(){
+    function initContSizeStyle(){
         scaler?.disposeArenaHWCache()
         if(cvsCont.value && cvsFrame.value){
-            cvsCont.value.style.width = cvsWidth.value+'px'
-            cvsCont.value.style.height = cvsHeight.value+'px'
+            const pxHW = cvsHeight.value / cvsWidth.value
+            const widthShould = cvsFrame.value.clientWidth
+            const heightShould = widthShould * pxHW
+            cvsCont.value.style.width = widthShould+'px'
+            cvsCont.value.style.height = heightShould+'px'
         }
-        scaler?.widthReset()
     }
     return {
         cvsFrame, cvsCont, initScaler,
@@ -132,7 +134,7 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         updateScaleLock,
         translateFromOffset, translateFromClient,
         translateToOffset, translateToClient,
-        clientCoordRatio, setSizeToCvsContStyle,
+        clientCoordRatio, initContSizeStyle,
         viewMoveHandlers, viewScaleHandlers
     }
 })

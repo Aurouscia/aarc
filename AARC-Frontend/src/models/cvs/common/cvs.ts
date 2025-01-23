@@ -38,9 +38,6 @@ export function useCvs(canvasIdPrefix:string){
 
 export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     const fStore = useCvsFrameStore()
-    fStore.viewMoveHandlers.push(viewMutateHandler)
-    fStore.viewScaleHandlers.push(viewMutateHandler)
-    
     const saveStore = useSaveStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const blocksControl = ref<{
@@ -54,6 +51,15 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
         key:number
     }[]>([])
     const blockSideLength = ref<number>(1000)
+
+    let blocksControlInited = false
+    function blocksControlInit(){
+        if(blocksControlInited)
+            return
+        blocksControlInited = true
+        fStore.viewMoveHandlers.push(viewMutateHandler)
+        fStore.viewScaleHandlers.push(viewMutateHandler)
+    }
 
     //let viewMutateLastReact = 0
     let viewMutateEndedTimer = 0
@@ -72,7 +78,7 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     const wRatioEach = computed(()=>blockSideLength.value/cvsWidth.value)
     const hRatioEach = computed(()=>blockSideLength.value/cvsHeight.value)
     const rectMargin = 0.001
-    function refreshBlocks(){
+    function refreshBlocks(suppressReformedHandler = false){
         console.log('刷新画布块')
         const displayRatio = fStore.getDisplayRatio('smaller')
         const cont = fStore.cvsCont
@@ -132,9 +138,11 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
                 key:0
             }]
         }
-        nextTick(()=>{
-            blocksReformHandler.value.forEach(f=>f())
-        })
+        if(!suppressReformedHandler){
+            nextTick(()=>{
+                blocksReformHandler.value.forEach(f=>f())
+            })
+        }
     }
 
     const blocksReformHandler = ref<(()=>void)[]>([])
@@ -142,6 +150,8 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     return {
         blocksControl,
         blockSideLength,
-        blocksReformHandler
+        blocksReformHandler,
+        blocksControlInit,
+        refreshBlocks
     }
 })

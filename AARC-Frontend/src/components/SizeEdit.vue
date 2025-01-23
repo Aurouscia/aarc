@@ -102,7 +102,7 @@ function applyChange(){
         moveRightward = 0
     saveStore.moveEverything([moveRightward, moveDownward])
     saveStore.setCvsSize([newW, newH])
-    cvsFrameStore.setSizeToCvsContStyle()
+    cvsFrameStore.initContSizeStyle()
     nextTick(()=>{
         baseCvsDispatcher.renderBaseCvs()
         mainCvsDispatcher.renderMainCvs({})

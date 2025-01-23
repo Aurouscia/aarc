@@ -93,8 +93,8 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     })
     cvsBlocksControlStore.blocksReformHandler.push(()=>{
         renderMainCvs({
-            changedLines:[],
-            movedStaNames:[],
+            changedLines:undefined,
+            movedStaNames:undefined,
             suppressRenderedCallback:true
         })
     })

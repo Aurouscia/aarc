@@ -11,6 +11,7 @@ import { useConfigStore } from '@/models/stores/configStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import CvsBlocks from './CvsBlocks.vue';
+import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 
 const envStore = useEnvStore();
 const { somethingActive } = storeToRefs(envStore)
@@ -21,17 +22,21 @@ const baseCvsDispatcher = useBaseCvsDispatcher()
 const mainCvsDispatcher = useMainCvsDispatcher()
 const activeCvsDispatcher = useActiveCvsDispatcher()
 const { wait } = storeToRefs(useUniqueComponentsStore())
+const cvsBlocksControlStore = useCvsBlocksControlStore()
 
 let activeCvsRenderTimer = 0
 async function init(){
     window.clearInterval(activeCvsRenderTimer)
     wait.value?.setShowing(true)
-    cvsFrameStore.setSizeToCvsContStyle()
+    cvsFrameStore.initContSizeStyle()
+    await nextTick()
+    cvsBlocksControlStore.refreshBlocks(true)
     await nextTick()
     envStore.init()
     configStore.readConfigFromSave()
     baseCvsDispatcher.renderBaseCvs()
     mainCvsDispatcher.renderMainCvs({suppressRenderedCallback:true})
+    cvsBlocksControlStore.blocksControlInit()
     activeCvsRenderTimer = window.setInterval(()=>{
         activeCvsDispatcher.renderActiveCvs()
     }, 50)
