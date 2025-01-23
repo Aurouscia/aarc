@@ -4,9 +4,12 @@ import { useConfigStore } from "@/models/stores/configStore";
 import { drawCross } from "@/utils/drawUtils/drawCross";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
+import { Coord } from "@/models/coord";
+import { useCvsBlocksControlStore } from "../common/cvs";
 
 export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     const saveStore = useSaveStore();
+    const cvsBlocksControlStore = useCvsBlocksControlStore()
     const cs = useConfigStore();
     function renderAllPoints(ctx:CvsContext, onlyVisiblePts?:boolean){
         if(!saveStore.save)
@@ -35,6 +38,8 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     }
     function renderPoint(ctx:CvsContext, pt:ControlPoint, active:boolean = false, staOnly:boolean = false){
         const pos = pt.pos;
+        if(checkOmittable(pos))
+            return
         let markColor = '#999'
         const relatedLines = saveStore.getLinesByPt(pt.id)
         if(relatedLines.length>0 && relatedLines.every(x=>saveStore.isLineTypeWithoutSta(x.type)))
@@ -89,6 +94,20 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             ctx.fill()
             ctx.stroke()
         }
+    }
+    function checkOmittable(pos:Coord){
+        const radius = cs.config.ptStaSize * 3
+        const { cvsWidth, cvsHeight } = saveStore
+        const { left, right, top, bottom } = cvsBlocksControlStore.blockTotalBoundary
+        if((pos[0] + radius)/cvsWidth < left)
+            return true
+        if((pos[0] - radius)/cvsWidth > right)
+            return true
+        if((pos[1] + radius)/cvsHeight < top)
+            return true
+        if((pos[1] - radius)/cvsHeight > bottom)
+            return true
+        return false
     }
     return { renderAllPoints, renderLinePoints, renderSomePoints, renderPoint, renderPointById }
 })

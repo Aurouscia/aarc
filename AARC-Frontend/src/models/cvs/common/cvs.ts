@@ -158,14 +158,36 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
         const briefs = bc.map(x=>`${x.widthRatio}${x.heightRatio}${x.leftRatio}${x.topRatio}`)
         return briefs.join()
     }
-
     const blocksReformHandler = ref<(()=>void)[]>([])
+
+    const blockTotalBoundary = computed(()=>{
+        let left = 1e10
+        let right = 0
+        let top = 1e10
+        let bottom = 0
+        for(const bc of blocksControl.value){
+            const l = bc.leftRatio
+            const r = l + bc.widthRatio
+            const t = bc.topRatio
+            const b = t + bc.heightRatio
+            if(l<left)
+                left = l
+            if(r>right)
+                right = r
+            if(t<top)
+                top = t
+            if(b>bottom)
+                bottom = b
+        }
+        return {left, right, top, bottom}
+    })
 
     return {
         blocksControl,
         blockSideLength,
         blocksReformHandler,
         blocksControlInit,
-        refreshBlocks
+        refreshBlocks,
+        blockTotalBoundary
     }
 })

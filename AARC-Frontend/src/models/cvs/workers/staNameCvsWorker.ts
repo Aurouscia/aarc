@@ -7,10 +7,12 @@ import { drawText } from "@/utils/drawUtils/drawText";
 import { sgnCoord } from "@/utils/sgn";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
+import { useCvsBlocksControlStore } from "../common/cvs";
 
 export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const staNameRectStore = useStaNameRectStore()
+    const cvsBlocksControlStore = useCvsBlocksControlStore()
     const cs = useConfigStore()
     function renderAllPtName(ctx:CvsContext, needReportRectPts?:number[]){
         if(!saveStore.save)
@@ -27,7 +29,7 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             return renderPtName(ctx, pt, needReportRect, markRoot)
     }
     function renderPtName(ctx:CvsContext, pt:ControlPoint, needReportRect?:boolean, markRoot?:'free'|'snapVague'|'snapAccu'){
-        if(!pt.nameP)
+        if(!pt.nameP || checkOmittable(pt.id))
             return;
         const globalPos = coordAdd(pt.pos, pt.nameP)
         const align = sgnCoord(pt.nameP)
@@ -77,6 +79,22 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             ctx.arc(...globalPos, 4, 0, 2*Math.PI)
             ctx.fill()
         }
+    }
+    function checkOmittable(id:number){
+        const rect = staNameRectStore.getStaNameRect(id)
+        if(!rect)
+            return false
+        const { cvsWidth, cvsHeight } = saveStore
+        const { left, right, top, bottom } = cvsBlocksControlStore.blockTotalBoundary
+        if(rect[1][0]/cvsWidth < left)
+            return true
+        if(rect[0][0]/cvsWidth > right)
+            return true
+        if(rect[1][1]/cvsHeight < top)
+            return true
+        if(rect[0][1]/cvsHeight > bottom)
+            return true
+        return false
     }
     return { renderAllPtName, renderPtName, renderPtNameById }
 })
