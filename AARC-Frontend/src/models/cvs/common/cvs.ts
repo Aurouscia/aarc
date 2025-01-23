@@ -5,12 +5,11 @@ import { defineStore, storeToRefs } from "pinia";
 import { useSaveStore } from "@/models/stores/saveStore";
 
 export function useCvs(canvasIdPrefix:string){
-    const blocks = ref<CvsBlock[]>([])
     const bStore = useCvsBlocksControlStore()
     const { cvsWidth, cvsHeight } = storeToRefs(useSaveStore())
 
     const ctx = computed<CvsContext>(()=>{
-        blocks.value = []
+        const blocks = []
         for(const b of bStore.blocksControl){
             const canvasId = `${canvasIdPrefix}${b.idx}`
             const canvas = document.getElementById(canvasId) as HTMLCanvasElement
@@ -19,7 +18,7 @@ export function useCvs(canvasIdPrefix:string){
             const mapScale = b.canvasWidth / pxColCount
             const xOffset = mapScale*(cvsWidth.value * b.leftRatio)
             const yOffset = mapScale*(cvsHeight.value * b.topRatio)
-            blocks.value.push(new CvsBlock(mapScale, xOffset, yOffset, ctx2d))
+            blocks.push(new CvsBlock(mapScale, xOffset, yOffset, ctx2d))
         }
         return new CvsContext(blocks);
     })

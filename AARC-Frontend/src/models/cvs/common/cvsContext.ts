@@ -1,5 +1,4 @@
 import { TextMetricsSelected } from "@/utils/type/TextMetricsSelected";
-import { Ref } from "vue";
 
 export class CvsBlock{
     scale:number
@@ -17,13 +16,13 @@ export class CvsBlock{
 }
 
 export class CvsContext{
-    private blocks:Ref<CvsBlock[]>
-    constructor(blocks:Ref<CvsBlock[]>){
+    private blocks:CvsBlock[]
+    constructor(blocks:CvsBlock[]){
         this.blocks = blocks
     }
 
     enumerate(func:(b:CvsBlock)=>void){
-        this.blocks.value.forEach(func)
+        this.blocks.forEach(func)
     }
     callMethod(method:'beginPath'|'closePath'|'stroke'|'fill'){
         this.enumerate(b=>b.ctx2d[method]())
@@ -57,7 +56,7 @@ export class CvsContext{
             b.ctx2d.fillText(text, b.mapX(x), b.mapY(y)))
     }
     measureText(text:string):TextMetricsSelected{
-        const sample = this.blocks.value.at(0)
+        const sample = this.blocks.at(0)
         const m = sample?.ctx2d.measureText(text)
         const scale = sample?.scale || 1
         if(m)
