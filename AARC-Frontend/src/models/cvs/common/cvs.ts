@@ -80,7 +80,7 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     const hRatioEach = computed(()=>blockSideLength.value/cvsHeight.value)
     const rectMargin = 0.001
     function refreshBlocks(suppressReformedHandler = false){
-        const displayRatio = fStore.getDisplayRatio('smaller')
+        const displayRatio = fStore.getDisplayRatio('bigger')
         const cont = fStore.cvsCont
         const frame = fStore.cvsFrame
         if(!frame || !cont)
@@ -127,7 +127,7 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
             }
         }else{
             const whr = cvsWidth.value/cvsHeight.value
-            const canvasHeight = frame.clientHeight
+            const canvasHeight = Math.min(3000, 3000/whr, cvsHeight.value)
             const canvasWidth = canvasHeight * whr
             res.push({
                 idx: 0,

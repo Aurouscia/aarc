@@ -35,7 +35,7 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         scaler = new Scaler(cvsFrame.value, cvsCont.value, viewScaleHandlerFull, viewMoveHandlerFull, moveLocked, scaleLocked, steppedScaleEnabled)
         scaler.widthReset()
     }
-    function getDisplayRatio(type:'x'|'y'|'smaller' = 'x'){
+    function getDisplayRatio(type:'x'|'y'|'smaller'|'bigger' = 'x'){
         if(!cvsCont.value)
             return 1;
         const wr = cvsWidth.value / cvsCont.value.clientWidth
@@ -48,6 +48,9 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         }
         if(type == 'smaller'){
             return Math.min(wr, hr)
+        }
+        if(type == 'bigger'){
+            return Math.max(wr, hr)
         }
         return 1
     }
