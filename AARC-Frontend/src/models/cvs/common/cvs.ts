@@ -180,6 +180,9 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
         }
         return {left, right, top, bottom}
     })
+    function clearItems(){
+        blocksControl.value = []
+    }
 
     return {
         blocksControl,
@@ -187,6 +190,7 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
         blocksReformHandler,
         blocksControlInit,
         refreshBlocks,
-        blockTotalBoundary
+        blockTotalBoundary,
+        clearItems
     }
 })

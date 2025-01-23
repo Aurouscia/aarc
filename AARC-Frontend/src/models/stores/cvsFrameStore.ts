@@ -16,13 +16,9 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     const { steppedScaleEnabled } = storeToRefs(useScalerLocalConfigStore())
     const viewScaleHandlers = ref<(()=>void)[]>([])
     const viewMoveHandlers = ref<(()=>void)[]>([])
-    let inited = false
     function initScaler(viewScaleHandler:()=>void, viewMoveHandler:()=>void, moveLocked:Ref<boolean>){
         if(!cvsFrame.value || !cvsCont.value)
             throw Error('初始化失败，找不到cvsFrame/cvsCont DOM对象')
-        if(inited)
-            return //避免重复初始化
-        inited = true
         viewScaleHandlers.value.push(viewScaleHandler)
         viewMoveHandlers.value.push(viewMoveHandler)
         const viewScaleHandlerFull = ()=>{

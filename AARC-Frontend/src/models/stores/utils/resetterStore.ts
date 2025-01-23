@@ -4,6 +4,7 @@ import { useStaClusterStore } from "../saveDerived/staClusterStore";
 import { useStaNameRectStore } from "../saveDerived/staNameRectStore";
 import { useTextTagRectStore } from "../saveDerived/textTagRectStore";
 import { useLineExtendStore } from "../saveDerived/saveDerivedDerived/lineExtendStore";
+import { useCvsBlocksControlStore } from "@/models/cvs/common/cvs";
 
 export const useResetterStore = defineStore('resetter', ()=>{
     const needClearItemsStoreUses:(()=>{clearItems:()=>void})[] = [
@@ -11,7 +12,8 @@ export const useResetterStore = defineStore('resetter', ()=>{
         useStaClusterStore,
         useStaNameRectStore,
         useTextTagRectStore,
-        useLineExtendStore
+        useLineExtendStore,
+        useCvsBlocksControlStore
     ]
 
     function resetDerivedStores(){
