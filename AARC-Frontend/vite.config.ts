@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import checker from 'vite-plugin-checker'
 import { appVersionMark } from '@aurouscia/vite-app-version'
 import { resolve } from 'path'
 
@@ -8,7 +7,6 @@ import { resolve } from 'path'
 export default defineConfig({
   plugins: [
     vue(),
-    checker({vueTsc:true}),
     appVersionMark()
   ],
   server:{
