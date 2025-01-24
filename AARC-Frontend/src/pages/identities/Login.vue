@@ -98,10 +98,13 @@ onUnmounted(()=>{
             </tr>
         </tbody></table>
         <div class="login">
-            <button @click="Login" class="confirm">登&nbsp;录</button>
+            <RouterLink class="register" :to="registerRoute()"><button class="minor">
+               注册
+            </button></RouterLink>
+            <button @click="Login" class="confirm">登录</button>
         </div>
         <div class="needExpire">
-            <div @click="setExpire=!setExpire" style="cursor: pointer;">登录状态保持</div>
+            <div @click="setExpire=!setExpire" style="cursor: pointer;text-decoration: underline;">登录状态保持</div>
             <select v-show="setExpire" v-model="expireHrs">
                 <option :value="3">3小时</option>
                 <option :value="24">24小时</option>
@@ -111,11 +114,13 @@ onUnmounted(()=>{
             </select>
         </div>
         <div v-show="setExpire" style="color:red; text-align: center;">仅在自己的设备上选择较长时间</div>
-        <RouterLink class="register" :to="registerRoute()">
-            注册账号
-        </RouterLink>
         <div class="guide" style="color:red" v-if="failedGuide">{{ failedGuide }}</div>
-        <div class="guide" style="color:#aaa" v-else>请在较新设备上使用新版edge或chrome系浏览器以正常使用编辑功能</div>
+        <div class="guide" style="font-size: 13px;" v-else>
+            <div><b>本应用对浏览器版本非常敏感</b></div>
+            <div>如果遇到异常现象，请先前往应用商店，<br/>确认你使用的浏览器<b>是否有更新</b></div>
+            <div>不要使用IE等已停止更新的旧型浏览器</div>
+            <div>如果问题仍存在，请向管理员报告</div>
+        </div>
     </div>
     <div class="loginInfo" v-if="userInfo">
         当前登录：
@@ -131,8 +136,16 @@ onUnmounted(()=>{
 <style scoped lang="scss">
 .guide{
     margin: 10px;
+    margin-top: 20px;
     text-align: center;
     border-radius: 5px;
+    color: #999;
+    div{
+        margin-bottom: 6px;
+    }
+    b{
+        color: plum;
+    }
 }
 table{
     margin:auto;
@@ -166,6 +179,7 @@ input{
 .login{
     display: flex;
     justify-content: center;
+    gap: 20px
 }
 button.logout{
     background-color: gray;
@@ -186,14 +200,5 @@ button.logout{
     margin: 0px;
     left:20px;
     bottom: 35px;
-}
-.register{
-    display: block;
-    text-align: center;
-    color:gray;
-    margin-top: 20px;
-    font-size: 16px;
-    text-decoration: underline;
-    cursor: pointer;
 }
 </style>
