@@ -8,11 +8,13 @@ import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher
 import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher';
 import { minCvsSide } from '@/models/save';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 
 const { pop } = useUniqueComponentsStore()
 const saveStore = useSaveStore()
 const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
 const cvsFrameStore = useCvsFrameStore()
+const cvsBlocksControlStore = useCvsBlocksControlStore()
 const baseCvsDispatcher = useBaseCvsDispatcher()
 const mainCvsDispatcher = useMainCvsDispatcher()
 const pendingChanges = ref<[number, number, number, number]>([0,0,0,0]) //上，右，下，左
@@ -93,11 +95,14 @@ function applyChange(){
     saveStore.setCvsSize([newW, newH])
     cvsFrameStore.initContSizeStyle()
     nextTick(()=>{
-        baseCvsDispatcher.renderBaseCvs()
-        mainCvsDispatcher.renderMainCvs({})
-        pendingChanges.value = [0,0,0,0]
-        sidebar.value?.fold()
-        cvsFrameStore.updateScaleLock()
+        cvsBlocksControlStore.refreshBlocks()
+        nextTick(()=>{
+            baseCvsDispatcher.renderBaseCvs()
+            mainCvsDispatcher.renderMainCvs({})
+            pendingChanges.value = [0,0,0,0]
+            sidebar.value?.fold()
+            cvsFrameStore.updateScaleLock()
+        })
     })
 }
 
