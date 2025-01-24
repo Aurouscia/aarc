@@ -174,6 +174,14 @@ export const useEnvStore = defineStore('env', ()=>{
             return
         }
 
+        const textTagMatch = onTextTag(coord);
+        if(textTagMatch){
+            activeTextTag.value = textTagMatch
+            setOpsPos(false)
+            nameEditStore.endEditing()
+            return
+        }
+
         //判断是否在点上
         const pt = onPt(coord, true)
         const activePtChanged = activePt.value?.id !== pt?.id
@@ -217,14 +225,6 @@ export const useEnvStore = defineStore('env', ()=>{
             cursorDir.value = lineMatch.dir
             setOpsPos(lineMatch.alignedPos)
             setOpsForLine()
-            nameEditStore.endEditing()
-            return
-        }
-
-        const textTagMatch = onTextTag(coord);
-        if(textTagMatch){
-            activeTextTag.value = textTagMatch
-            setOpsPos(false)
             nameEditStore.endEditing()
             return
         }
