@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import Lines from './sideList/Lines.vue';
-import Terrains from './sideList/Terrains.vue';
-import SizeEdit from './SizeEdit.vue';
-import ExportPng from './ExportPng.vue';
-import LocalConfigs from './LocalConfigs.vue';
+import Lines from './sidebars/sideList/Lines.vue';
+import Terrains from './sidebars/sideList/Terrains.vue';
+import SizeEdit from './sidebars/SizeEdit.vue';
+import ExportPng from './sidebars/ExportPng.vue';
+import LocalConfigs from './sidebars/LocalConfigs.vue';
 
 const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()

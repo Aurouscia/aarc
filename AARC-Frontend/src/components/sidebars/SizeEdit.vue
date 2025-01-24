@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, CSSProperties, nextTick, ref } from 'vue';
-import SideBar from './common/SideBar.vue';
+import SideBar from '../common/SideBar.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { storeToRefs } from 'pinia';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';

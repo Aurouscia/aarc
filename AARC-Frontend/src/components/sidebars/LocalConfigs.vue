@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import SideBar from './common/SideBar.vue';
+import SideBar from '../common/SideBar.vue';
 import { useScalerLocalConfigStore } from '@/app/localConfig/scalerLocalConfig';
 import Bowser from 'bowser'
 import { useSaveStore } from '@/models/stores/saveStore';

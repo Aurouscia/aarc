@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import SideBar from '../common/SideBar.vue';
+import SideBar from '../../common/SideBar.vue';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useSideListShared } from './shared/useSideListShared';
 import { LineType } from '@/models/save';
