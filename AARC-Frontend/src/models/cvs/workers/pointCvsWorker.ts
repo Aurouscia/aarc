@@ -11,12 +11,12 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     const saveStore = useSaveStore();
     const cvsBlocksControlStore = useCvsBlocksControlStore()
     const cs = useConfigStore();
-    function renderAllPoints(ctx:CvsContext, onlyVisiblePts?:boolean){
+    function renderAllPoints(ctx:CvsContext, onlyVisiblePts?:boolean, noOmit?:boolean){
         if(!saveStore.save)
             return
         const allPts = saveStore.save.points
         for(const pt of allPts){
-            renderPoint(ctx, pt, false, onlyVisiblePts)
+            renderPoint(ctx, pt, false, onlyVisiblePts, noOmit)
         }
     }
     function renderLinePoints(ctx:CvsContext, line:Line){
@@ -36,9 +36,9 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
         if(pt)
             renderPoint(ctx, pt, active)
     }
-    function renderPoint(ctx:CvsContext, pt:ControlPoint, active:boolean = false, staOnly:boolean = false){
+    function renderPoint(ctx:CvsContext, pt:ControlPoint, active = false, staOnly = false, noOmit = false){
         const pos = pt.pos;
-        if(checkOmittable(pos))
+        if(!noOmit && checkOmittable(pos))
             return
         let markColor = '#999'
         const relatedLines = saveStore.getLinesByPt(pt.id)

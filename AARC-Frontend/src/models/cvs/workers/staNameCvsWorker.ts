@@ -14,13 +14,13 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
     const staNameRectStore = useStaNameRectStore()
     const cvsBlocksControlStore = useCvsBlocksControlStore()
     const cs = useConfigStore()
-    function renderAllPtName(ctx:CvsContext, needReportRectPts?:number[]){
+    function renderAllPtName(ctx:CvsContext, needReportRectPts?:number[], noOmit?:boolean){
         if(!saveStore.save)
             return;
         const pts = saveStore.save.points;
         pts.forEach(pt=>{
             const needReportRect = !needReportRectPts || needReportRectPts.includes(pt.id)
-            renderPtName(ctx, pt, needReportRect)
+            renderPtName(ctx, pt, needReportRect, undefined, noOmit)
         })
     }
     function renderPtNameById(ctx:CvsContext, ptId:number, needReportRect?:boolean, markRoot?:'free'|'snapVague'|'snapAccu'){
@@ -28,8 +28,8 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
         if(pt)
             return renderPtName(ctx, pt, needReportRect, markRoot)
     }
-    function renderPtName(ctx:CvsContext, pt:ControlPoint, needReportRect?:boolean, markRoot?:'free'|'snapVague'|'snapAccu'){
-        if(!pt.nameP || checkOmittable(pt.id))
+    function renderPtName(ctx:CvsContext, pt:ControlPoint, needReportRect?:boolean, markRoot?:'free'|'snapVague'|'snapAccu', noOmit = false){
+        if(!pt.nameP || (!noOmit && checkOmittable(pt.id)))
             return;
         const globalPos = coordAdd(pt.pos, pt.nameP)
         const align = sgnCoord(pt.nameP)
