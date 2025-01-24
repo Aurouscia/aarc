@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { computed, ref, watch } from "vue";
-import { ControlPoint, ControlPointDir, ControlPointSta, ensureValidCvsSize, Line, LineType, Save } from "../save";
+import { ControlPoint, ControlPointDir, ControlPointSta, ensureValidCvsSize, Line, LineType, Save, saveLineCount, saveStaCount } from "../save";
 import { Coord } from "../coord";
 import { isSameCoord } from "@/utils/sgn";
 import { getRangeByPred } from "@/utils/lang/getRangeByPred";
@@ -361,20 +361,14 @@ export const useSaveStore = defineStore('save', () => {
         return false
     }
     function getStaCount(){
-        let staCount = 0
-        for(let s of save.value?.points || []){
-            if(s.sta === ControlPointSta.sta)
-                staCount+=1
-        }
-        return staCount
+        if(save.value)
+            return saveStaCount(save.value)
+        return 0
     }
     function getLineCount(){
-        let lineCount = 0
-        for(let line of save.value?.lines || []){
-            if(line.type === LineType.common)
-                lineCount+=1
-        }
-        return lineCount
+        if(save.value)
+            return saveLineCount(save.value)
+        return 0
     }
     const cvsWidth = computed<number>(()=>save.value?.cvsSize[0] || 1)
     const cvsHeight = computed<number>(()=>save.value?.cvsSize[1] || 1)

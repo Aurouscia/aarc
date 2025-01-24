@@ -8,6 +8,7 @@ import { appVersionCheck } from '@/app/appVersionCheck';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import fileDownload from 'js-file-download';
 import Loading from '@/components/common/Loading.vue';
+import { Save, saveLineCount, saveStaCount } from '@/models/save';
 
 const saveList = ref<SaveDto[]>()
 const api = useApiStore().get()
@@ -48,6 +49,10 @@ async function done(){
 
 const dangerZone = ref(false)
 const repeatCvsName = ref("")
+const jsonFileInput = ref<HTMLInputElement>()
+const jsonContent = ref<string>()
+const jsonSaveStaCount = ref<number>()
+const jsonSaveLineCount = ref<number>()
 async function removeCurrentCvs(){
     if(repeatCvsName.value !== editingSave.value?.Name){
         pop?.show('请一字不差输入画布名称', 'failed')
@@ -59,7 +64,52 @@ async function removeCurrentCvs(){
         await load()
     }
 }
+function selectReplaceJson(){
+    resetReplaceJson()
+    const f = jsonFileInput.value?.files?.item(0)
+    if(!f)
+        return
+    if(f.size > 10*1000*1000){
+        pop?.show('文件过大', 'failed')
+        return
+    }
+    const reader = new FileReader()
+    reader.onload = (e)=>{
+        const res = e.target?.result?.toString()
+        if(!res){
+            pop?.show('文件读取失败', 'failed')
+            return
+        }
+        try{
+            const obj = JSON.parse(res) as Save
+            jsonSaveStaCount.value = saveStaCount(obj)
+            jsonSaveLineCount.value = saveLineCount(obj)
+            jsonContent.value = JSON.stringify(obj)
+        }catch{
+            pop?.show('文件格式异常', 'failed')
+            resetReplaceJson()
+        }
+    }
+    reader.readAsText(f)
+}
+async function commitReplaceJson(){
+    if(!editingSave.value || !jsonContent.value)
+        return
+    const id = editingSave.value.Id
+    const data = jsonContent.value
+    const staCount = jsonSaveStaCount.value || 0
+    const lineCount = jsonSaveLineCount.value || 0
+    const resp = await api.save.updateData(id, data, staCount, lineCount)
+    if(resp)
+        resetDangerZone()
+}
+function resetReplaceJson(){
+    jsonSaveLineCount.value = undefined
+    jsonSaveStaCount.value = undefined
+    jsonContent.value = undefined
+}
 function resetDangerZone(){
+    resetReplaceJson()
     dangerZone.value = false
     repeatCvsName.value = ''
 }
@@ -128,18 +178,30 @@ onMounted(async()=>{
             </td>
         </tr>
     </tbody></table>
-    <hr/>
-    <div v-if="!isCreatingSave">
-        <button class="minor downloadJsonBtn" @click="downloadJson">导出工程文件</button>
-    </div>
-    <hr/>
-    <div v-if="!isCreatingSave">
-        <button class="minor removeCvsBtn" @click="dangerZone = !dangerZone">危险区</button>
-        <div v-if="dangerZone" class="dangerZone">
+    <table v-if="!isCreatingSave"><tbody>
+        <tr>
+            <td>
+                <button class="minor downloadJsonBtn" @click="downloadJson">导出工程文件</button>
+            </td>
+        </tr>
+    </tbody></table>
+    <table v-if="!isCreatingSave"><tbody>
+        <tr><td>
+        <button class="minor dangerZoneBtn" @click="dangerZone = !dangerZone">危险区</button>
+        <div v-show="dangerZone" class="dangerZone">
+            <input type="file" ref="jsonFileInput" accept=".json" @change="selectReplaceJson"/>
+            <div v-show="jsonContent" class="replaceJsonInfo">
+                [{{ jsonSaveLineCount }}线 {{ jsonSaveStaCount }}站]
+                <div>存档数据将被覆盖，注意核对名称</div>
+            </div>
+            <button v-show="jsonContent" class="danger" @click="commitReplaceJson">替换数据</button>
+        </div>
+        <div v-show="dangerZone" class="dangerZone">
             <input v-model="repeatCvsName" placeholder="输入本存档名称"/>
             <button class="danger" @click="removeCurrentCvs">删除存档</button>
         </div>
-    </div>
+        </td></tr>
+    </tbody></table>
 </SideBar>
 </template>
 
@@ -154,14 +216,19 @@ onMounted(async()=>{
 
 table{
     width: 100%;
+    margin-bottom: 10px;
 }
 .downloadJsonBtn{
     display: block;
     margin: auto;
 }
-.removeCvsBtn{
+.replaceJsonInfo{
+    text-align: center;
+    font-size: 14px;
+    color: #333
+}
+.dangerZoneBtn{
     display: block;
     margin: auto;
-    margin-bottom: 10px;
 }
 </style>

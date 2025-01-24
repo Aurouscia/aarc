@@ -72,6 +72,22 @@ export interface TextTag{
 }
 
 
+export function saveStaCount(save:Save){
+    let staCount = 0
+    for(let s of save.points){
+        if(s.sta === ControlPointSta.sta)
+            staCount+=1
+    }
+    return staCount
+}
+export function saveLineCount(save:Save){
+    let lineCount = 0
+    for(let line of save.lines){
+        if(line.type === LineType.common)
+            lineCount+=1
+    }
+    return lineCount
+}
 export function ensureValidSave(obj:any){
     if(typeof obj != 'object')
         obj = {}
