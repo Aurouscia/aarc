@@ -3,7 +3,7 @@ import { ControlPointDir, ControlPointSta } from "@/models/save";
 
 export const devSave:Save = {
     cvsSize: [2000, 2000],
-    idIncre: 104,
+    idIncre: 2000,
     points: [
         {
             id: 1,
@@ -226,6 +226,11 @@ export const devSave:Save = {
             id: 1002,
             forId: 103,
             pos: [100,300]
+        },
+        {
+            id: 1003,
+            forId: 151,
+            pos: [1100, 600]
         }
     ],
     config:{}

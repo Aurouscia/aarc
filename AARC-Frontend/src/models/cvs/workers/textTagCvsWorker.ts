@@ -70,9 +70,8 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     }
     function renderForTerrainLine(ctx:CvsContext, t:TextTag, lineInfo:Line){
         const terrainLineBuiltinRatio = 1.2
-        //TODO：尺寸设置
-        //TODO: 自动判断应该用什么颜色字体(在内部时用白色+无描边)
-        const textColor = saveStore.getLineActualColor(lineInfo)
+        const terrainColor = saveStore.getLineActualColor(lineInfo)
+        const textColor = colorProcStore.colorProcTerrainTag.convert(terrainColor)
         const optMain:DrawTextBodyOption = {
             color: textColor,
             font: cs.config.textTagFont,
@@ -89,8 +88,8 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         }
         const lineNameRectAlign:SgnCoord = [0, 0]
         const drawLineNameRes = drawTextForLineName(ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, {
-            width: cs.config.textTagFontSizeBase * terrainLineBuiltinRatio/8,
-            color: cs.config.bgColor,
+            width: cs.config.textTagFontSizeBase * terrainLineBuiltinRatio/4,
+            color: terrainColor,
             opacity: 1
         }, 'both')
         if(drawLineNameRes?.rect){
