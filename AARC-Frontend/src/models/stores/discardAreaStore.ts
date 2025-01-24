@@ -5,7 +5,7 @@ import { useCvsFrameStore } from "./cvsFrameStore";
 import { discardAreaSideRatio } from "@/utils/consts";
 
 export const useDiscardAreaStore = defineStore('discardArea', ()=>{
-    const discarding = ref<boolean>(false)
+    const discarding = ref<'no'|'hint'|'active'>('no')
     const cvsFrameStore = useCvsFrameStore()
     const { cvsFrame } = storeToRefs(cvsFrameStore)
     function getDiscardAreaSideLength(){
@@ -26,11 +26,11 @@ export const useDiscardAreaStore = defineStore('discardArea', ()=>{
         const sideLength = getDiscardAreaSideLength()
         const xySum = clientCoord[0] + clientCoord[1]
         const inArea = xySum < sideLength
-        discarding.value = inArea
+        discarding.value = inArea ? 'active' : 'hint'
         return inArea
     }
     function resetDiscarding(){
-        discarding.value = false
+        discarding.value = 'no'
     }
     return {
         discardStatus,

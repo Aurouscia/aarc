@@ -358,7 +358,7 @@ export const useEnvStore = defineStore('env', ()=>{
         activeTextTagGrabbedAt.value = [0,0]
         movingExtendedPointOriginated.value = undefined
         
-        if(discardAreaStore.discarding){
+        if(discardAreaStore.discarding=='active'){
             if(activeTextTag.value){
                 saveStore.removeTextTag(activeTextTag.value.id)
                 activeTextTag.value = undefined
@@ -376,8 +376,8 @@ export const useEnvStore = defineStore('env', ()=>{
                 }
             }
             rerender.value([], [])
-            discardAreaStore.resetDiscarding()
         }
+        discardAreaStore.resetDiscarding()
     }
 
     function setOpsPos(coord:Coord|false){

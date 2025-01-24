@@ -5,13 +5,14 @@ import { CvsContext } from "../common/cvsContext";
 export const useDiscardAreaCvsWorker = defineStore('discardAreaCvsWorker',()=>{
     const discardAreaStore = useDiscardAreaStore()
     function renderDiscardArea(ctx:CvsContext){
-        if(!discardAreaStore.discarding)
+        const status = discardAreaStore.discarding
+        if(status == 'no')
             return
         const pts = discardAreaStore.getDiscardAreaPolyPts()
         if(pts.length<3)
             return
         ctx.beginPath()
-        ctx.fillStyle = '#ff0000'
+        ctx.fillStyle = status == 'active' ? '#ff0000' : '#ffcccc'
         ctx.globalAlpha = 0.5
         ctx.moveTo(...pts[0])
         for(let i=1; i<pts.length; i++){
