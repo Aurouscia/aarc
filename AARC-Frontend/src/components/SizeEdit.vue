@@ -3,7 +3,6 @@ import { computed, CSSProperties, nextTick, ref } from 'vue';
 import SideBar from './common/SideBar.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { storeToRefs } from 'pinia';
-import { dataSizeStr } from '@/utils/fileUtils/dataSizeStr';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher';
@@ -73,16 +72,6 @@ function changeIncrementIncre(way:boolean){
         changeIncrement.value = 1000
 }
 
-function theoreticalMem(w:number, h:number){
-    return dataSizeStr(w*h*4*3)
-}
-function theoreticalMemNow(){
-    return theoreticalMem(cvsWidth.value, cvsHeight.value)
-}
-function theoreticalMemAfterChange(){
-    return theoreticalMem(cvsWidthPreview.value, cvsHeightPreview.value)
-}
-
 function abortChange(){
     pendingChanges.value = [0,0,0,0]
 }
@@ -90,8 +79,8 @@ function applyChange(){
     const pc = pendingChanges.value
     const newW = cvsWidthPreview.value
     const newH = cvsHeightPreview.value
-    if(newW > 10000 || newH > 10000){
-        pop?.show('目前限制边长10000', 'failed')
+    if(newW > 20000 || newH > 20000){
+        pop?.show('目前限制边长20000', 'failed')
         return
     }
     let moveDownward = pc[0]
@@ -139,11 +128,9 @@ defineExpose({
         <div class="sizeDisplay">
             <div>
                 <div class="wh">{{ `${cvsWidth}×${cvsHeight}` }}</div>
-                <div class="mem">{{ theoreticalMemNow() }}</div>
             </div>
             <div v-show="anyChangeExist" class="sizePreview">
                 <div class="wh">{{ `${cvsWidthPreview}×${cvsHeightPreview}` }}</div>
-                <div class="mem">{{ theoreticalMemAfterChange() }}</div>
             </div>
         </div>
         <div class="xControl">
@@ -176,17 +163,6 @@ defineExpose({
     <div v-show="anyChangeExist" class="ops">
         <button class="cancel" @click="abortChange">放弃修改</button>
         <button class="ok" @click="applyChange">应用修改</button>
-    </div>
-    <div class="explain">
-        “{{ theoreticalMemAfterChange() }}”为<b>画布理论内存占用</b>（并非导出图片尺寸），请根据自己的设备情况量力而行，避免造成闪退或卡死<br/><br/>
-        如果需要整体移动内容，可启用“对侧补偿”<br/>（例如：左侧加200，右侧减200）<br/><br/>
-        <div style="text-align: center;">
-            <b>目前推荐</b><br/>
-            手机端边长小于4000<br/>
-            电脑端边长小于8000<br/>
-        </div><br/>
-        如有卡顿请缩小画布，逐个区域绘制（超出边界的内容不会丢失）<br/>
-        后续更新中的<a target="_blank" href="https://gitee.com/au114514/aarc/issues/IBCI7R">画布内存优化</a>将减小大型画布的内存占用
     </div>
 </SideBar>
 </template>
