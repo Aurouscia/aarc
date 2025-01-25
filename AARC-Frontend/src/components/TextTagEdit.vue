@@ -7,14 +7,15 @@ import TextOptions from './TextOptions.vue';
 
 const textTagEditStore = useTextTagEditStore()
 const { 
-    textMain, textSub, editing, textEditorDiv, editingForType, options, edited
+    textMain, textSub, editing, textEditorDiv, targetForType, options, edited
 } = storeToRefs(textTagEditStore)
 const inputPlaceholder = computed<string|undefined>(()=>{
-    const t = editingForType.value
+    const t = targetForType.value
     if(t==='common')
         return "留空使用线路名"
     if(t==='terrain')
         return "留空使用地形名"
+    return "请输入文本"
 })
 const { 
     mainRows, mainInput,
@@ -41,7 +42,7 @@ const {
                 @focus="textTagEditStore.textInputFocusHandler"  @click="textTagEditStore.textInputClickHandler('sub')"
                 @keydown="keyHandler" class="subText" spellcheck="false"></textarea>
         </div>
-        <div v-if="!editingForType" class="optionsPart">
+        <div v-if="!targetForType" class="optionsPart">
             <TextOptions :target="options" @changed="edited=true"></TextOptions>
         </div>
     </div>

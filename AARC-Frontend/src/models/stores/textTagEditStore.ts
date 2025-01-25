@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from "pinia";
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { LineType, TextOptions, TextTag } from "../save";
 import { useConfigStore } from "./configStore";
@@ -10,6 +10,7 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
     const { deletedTextTag } = storeToRefs(saveStore)
     deletedTextTag.value = disposedTextTagHandler
     const targetId = ref<number>()
+    const targetForType = ref<'common'|'terrain'|undefined>()
     const target = ref<TextTag>()
     const textMain = ref<string>()
     const textSub = ref<string>()
@@ -25,6 +26,7 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
             return
         target.value = tt
         targetId.value = textTagId
+        targetForType.value = getTargetForType()
         textMain.value = tt.text
         textSub.value = tt.textS
         editing.value = true
@@ -71,7 +73,7 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
             return 0
         return textEditorDiv.value?.clientHeight || 0
     }
-    const editingForType = computed<'common'|'terrain'|undefined>(()=>{
+    function getTargetForType(){
         const forId = target.value?.forId
         if(!forId)
             return
@@ -82,7 +84,7 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
             if(forLine.type === LineType.terrain)
                 return 'terrain'
         }
-    })
+    }
 
     function textInputClickHandler(type:'main'|'sub'){
         if(!target.value)
@@ -98,7 +100,7 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
             options.value = target.value.textSOp
         }
     }
-    return { targetId, target, textMain, textSub, editing, edited, editingForType, options,
+    return { targetId, target, textMain, textSub, editing, edited, targetForType, options,
         startEditing, endEditing, toggleEditing, applyText,
         textInputFocusHandler, textInputClickHandler,
         textEditorDiv, getEditorDivEffectiveHeight
