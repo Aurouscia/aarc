@@ -48,9 +48,11 @@ export interface Config{
 
     textTagFont: string,
     textTagFontSizeBase: number,
+    textTagFontColorHex: string,
     textTagRowHeightBase: number,
     textTagSubFont: string,
     textTagSubFontSizeBase: number,
+    textTagSubFontColorHex: string,
     textTagSubRowHeightBase: number,
 }
 

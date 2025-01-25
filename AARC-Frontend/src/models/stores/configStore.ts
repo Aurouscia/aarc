@@ -54,10 +54,12 @@ export const configDefault:Config = {
 
     textTagFont: 'microsoft YaHei',
     textTagFontSizeBase: 30,
+    textTagFontColorHex: '#333333',
     textTagRowHeightBase: 34,
     textTagSubFont: 'microsoft YaHei',
     textTagSubFontSizeBase: 16,
-    textTagSubRowHeightBase: 18 
+    textTagSubRowHeightBase: 18,
+    textTagSubFontColorHex: '#999999'
 }
 
 export const useConfigStore = defineStore('config', ()=>{
