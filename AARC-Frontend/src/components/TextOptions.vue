@@ -24,7 +24,7 @@ const emit = defineEmits<{
 
 <template>
 <div v-if="target" class="textOptions">
-    <AuColorPicker ref="picker" @change="colorChangeHandler" @done="colorChangeHandler"
+    <AuColorPicker ref="picker" :initial="target.color" @change="colorChangeHandler" @done="colorChangeHandler"
         :entry-styles="{border:'1.5px solid #eee'}"></AuColorPicker>
     <div class="textSize">
         <input type="range" v-model="target.size" :min="0.5" :max="3" :step="0.25" @change="emit('changed')"/>
