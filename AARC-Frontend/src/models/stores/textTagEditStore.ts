@@ -1,6 +1,7 @@
 import { defineStore, storeToRefs } from "pinia";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useSaveStore } from "./saveStore";
+import { LineType } from "../save";
 
 export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
     const saveStore = useSaveStore()
@@ -63,7 +64,19 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
             return 0
         return textEditorDiv.value?.clientHeight || 0
     }
-    return { targetId, textMain, textSub, editing, edited,
+    const editingForType = computed<'common'|'terrain'|undefined>(()=>{
+        const forId = saveStore.getTextTagById(targetId.value || -1)?.forId
+        if(!forId)
+            return
+        const forLine = saveStore.getLineById(forId)
+        if(forLine){
+            if(forLine.type === LineType.common)
+                return 'common'
+            if(forLine.type === LineType.terrain)
+                return 'terrain'
+        }
+    })
+    return { targetId, textMain, textSub, editing, edited, editingForType,
         startEditing, endEditing, toggleEditing, applyText,
         textInputFocusHandler, textEditorDiv, getEditorDivEffectiveHeight
     }

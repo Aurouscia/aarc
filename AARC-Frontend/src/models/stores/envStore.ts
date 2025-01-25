@@ -144,7 +144,8 @@ export const useEnvStore = defineStore('env', ()=>{
             staClusterStore.updateCrystalsBecauseOf(activePt.value)
         }
         //如果有需要重新渲染的线/点、或移动过文本标签，那么重新渲染
-        if(rerenderParamLineIds.length>0 || rerenderParamPtIds.length>0 || movedTextTag.value){
+        if(rerenderParamLineIds.length>0 || rerenderParamPtIds.length>0 
+                || movedTextTag.value || textTagEditStore.edited){
             //重新渲染的同时，更新了相关staNameRect和FormalPts，确保接下来的点击判断使用最新数据
             rerender.value(rerenderParamLineIds, rerenderParamPtIds)
         }
