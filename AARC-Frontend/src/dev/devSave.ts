@@ -231,6 +231,14 @@ export const devSave:Save = {
             id: 1003,
             forId: 151,
             pos: [1100, 600]
+        },
+        {
+            id: 1004,
+            pos: [1100, 150],
+            text: "某市轨道交通路线图",
+            textS: "some city subway route map",
+            textOp: {size:2, color:'#008FFA'},
+            textSOp: {size:2, color:'#999999'}
         }
     ],
     config:{}

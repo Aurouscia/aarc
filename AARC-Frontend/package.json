@@ -14,10 +14,10 @@
     "toggleEnvLocal": "node env/toggleLocalEnvFile.cjs"
   },
   "dependencies": {
-    "@aurouscia/au-color-picker": "^0.4.3",
+    "@aurouscia/au-color-picker": "^0.4.5",
     "@aurouscia/au-undo-redo": "^0.2.1",
     "@aurouscia/keyboard-shortcut": "^0.0.3",
-    "@aurouscia/vite-app-version": "^0.1.1",
+    "@aurouscia/vite-app-version": "^0.1.2",
     "axios": "^1.7.9",
     "bowser": "^2.11.0",
     "color": "^4.2.3",

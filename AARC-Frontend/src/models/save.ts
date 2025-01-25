@@ -68,7 +68,16 @@ export interface TextTag{
     forId?:number
     text?:string
     textS?:string
+    textOp?:TextOptions
+    textSOp?:TextOptions
     //rot?:FormalRotation
+}
+export interface TextOptions{
+    size:number
+    color:string
+    //i?:boolean
+    //b?:boolean
+    //u?:boolean
 }
 
 

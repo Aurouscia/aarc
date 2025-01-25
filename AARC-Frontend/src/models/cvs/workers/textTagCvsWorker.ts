@@ -5,7 +5,7 @@ import { useConfigStore } from "@/models/stores/configStore";
 import { useTextTagRectStore } from "@/models/stores/saveDerived/textTagRectStore";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { coordSub } from "@/utils/coordUtils/coordMath";
-import { DrawTextBodyOption, drawTextForLineName } from "@/utils/drawUtils/drawText";
+import { drawText, DrawTextBodyOption, drawTextForLineName } from "@/utils/drawUtils/drawText";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 
@@ -31,7 +31,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
                 }
             }
         }else{
-
+            renderSingle(ctx, t)
         }
     }
     function renderForCommonLine(ctx:CvsContext, t:TextTag, lineInfo:Line){
@@ -94,6 +94,34 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         }, 'both')
         if(drawLineNameRes?.rect){
             const rect = drawLineNameRes.rect
+            textTagRectStore.setTextTagRect(t.id, rect)
+        }
+    }
+    function renderSingle(ctx:CvsContext, t:TextTag){
+        const mo = t.textOp
+        const so = t.textSOp
+        const optMain:DrawTextBodyOption = {
+            color: mo?.color || '#000',
+            font: cs.config.textTagFont,
+            fontSize: cs.config.textTagFontSizeBase * (mo?.size || 1),
+            rowHeight: cs.config.textTagRowHeightBase * (mo?.size || 1),
+            text: t.text?.trim() || '空文本标签'
+        }
+        const optSub:DrawTextBodyOption = {
+            color: so?.color || '#000',
+            font: cs.config.textTagSubFont,
+            fontSize: cs.config.textTagSubFontSizeBase * (so?.size || 1),
+            rowHeight: cs.config.textTagSubRowHeightBase * (so?.size || 1),
+            text: t.textS?.trim() || 'Empty TextTag'
+        }
+        const lineNameRectAlign:SgnCoord = [0, 0]
+        const drawLineNameResRect = drawText(ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, {
+            width: cs.config.textTagFontSizeBase * (mo?.size || 1)/4,
+            color: cs.config.bgColor,
+            opacity: 1
+        }, 'both')
+        if(drawLineNameResRect){
+            const rect = drawLineNameResRect
             textTagRectStore.setTextTagRect(t.id, rect)
         }
     }
