@@ -353,6 +353,12 @@ export const useEnvStore = defineStore('env', ()=>{
         else if(movingTextTag.value && activeTextTag.value){
             setOpsPos(false)
             const clientCoord = eventClientCoord(e)
+            if(!clientCoord)
+                return;
+            const textTagEditorHeight = textTagEditStore.getEditorDivEffectiveHeight()
+            if(clientCoord[1] < textTagEditorHeight+10){
+                textTagEditStore.endEditing()
+            }
             const coord = translateFromClient(clientCoord)
             if(!coord || !clientCoord)
                 return;
