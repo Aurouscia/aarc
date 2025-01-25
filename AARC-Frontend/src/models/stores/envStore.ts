@@ -151,6 +151,7 @@ export const useEnvStore = defineStore('env', ()=>{
         }
 
         //取消所有状态
+        const activePtIdJustNow = activePt.value?.id
         cancelActive()
 
 
@@ -161,7 +162,7 @@ export const useEnvStore = defineStore('env', ()=>{
             endEveryEditing(true)
             activePt.value = saveStore.getPtById(staName.id)
             activePtType.value = 'name'
-            const namingPtChanged = activePt.value?.id !== staName.id
+            const namingPtChanged = activePtIdJustNow !== staName.id
             if(namingPtChanged)
                 nameEditStore.startEditing(staName.id)
             else if(opsStore.showingOps && nameEditStore.editing){
@@ -194,7 +195,7 @@ export const useEnvStore = defineStore('env', ()=>{
 
         //判断是否在点上
         const pt = onPt(coord, true)
-        const activePtChanged = activePt.value?.id !== pt?.id
+        const activePtChanged = activePtIdJustNow !== pt?.id
         if(pt){
             //点到点上了
             endEveryEditing(true)
