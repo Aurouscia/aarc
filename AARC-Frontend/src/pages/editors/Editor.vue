@@ -74,9 +74,7 @@ function setLeavingPreventing(){
 const cvsComponent = ref<InstanceType<typeof Cvs>>()
 watch(props, async()=>{
     if(loadedSaveIdNum !== saveIdNum.value){
-        setLeavingPreventing()
-        await load()
-        await cvsComponent.value?.init()
+        window.location.reload()
     }
 })
 onBeforeMount(async()=>{
