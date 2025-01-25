@@ -17,6 +17,7 @@ import { useOnDetectStore } from "./saveDerived/saveDerivedDerived/onDetectStore
 import { useCvsFrameStore } from "./cvsFrameStore";
 import { useDiscardAreaStore } from "./discardAreaStore";
 import { useScalerLocalConfigStore } from "@/app/localConfig/scalerLocalConfig";
+import { useTextTagEditStore } from "./textTagEditStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const saveStore = useSaveStore();
@@ -30,6 +31,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const activePtNameGrabbedAt = ref<Coord>([0,0])
     const activePtNameSnapped = ref<'no'|'vague'|'accu'>('no')
     const nameEditStore = useNameEditStore()
+    const textTagEditStore = useTextTagEditStore()
     const staClusterStore = useStaClusterStore()
     const activeLine = ref<Line>()
     const activeTextTag = ref<TextTag>()
@@ -102,6 +104,11 @@ export const useEnvStore = defineStore('env', ()=>{
         movedPoint.value = false
         movedTextTag.value = false
     }
+    function endEveryEditing(exceptName?:boolean){
+        if(!exceptName)
+            nameEditStore.endEditing()
+        textTagEditStore.endEditing()
+    }
     function pureClickHandler(clientCord:Coord, isRightBtn?:boolean){
         const coord = translateFromClient(clientCord);
         if(!coord)
@@ -150,6 +157,7 @@ export const useEnvStore = defineStore('env', ()=>{
         const staName = !isRightBtn && onStaName(coord)
         if(staName){
             //点到站名上了
+            endEveryEditing(true)
             activePt.value = saveStore.getPtById(staName.id)
             activePtType.value = 'name'
             const namingPtChanged = activePt.value?.id !== staName.id
@@ -178,7 +186,8 @@ export const useEnvStore = defineStore('env', ()=>{
         if(textTagMatch){
             activeTextTag.value = textTagMatch
             setOpsPos(false)
-            nameEditStore.endEditing()
+            endEveryEditing()
+            textTagEditStore.startEditing(textTagMatch.id)
             return
         }
 
@@ -187,6 +196,7 @@ export const useEnvStore = defineStore('env', ()=>{
         const activePtChanged = activePt.value?.id !== pt?.id
         if(pt){
             //点到点上了
+            endEveryEditing(true)
             activePt.value = pt
             activePtType.value = 'body'
             cursorPos.value = [...pt.pos]
@@ -225,14 +235,14 @@ export const useEnvStore = defineStore('env', ()=>{
             cursorDir.value = lineMatch.dir
             setOpsPos(lineMatch.alignedPos)
             setOpsForLine()
-            nameEditStore.endEditing()
+            endEveryEditing()
             return
         }
 
         //点击空白位置
         setOpsPos(false)
         activePtNameSnapped.value = 'no'
-        nameEditStore.endEditing()
+        endEveryEditing()
     }
     function moveStartHandler(e:MouseEvent|TouchEvent){
         const clientCoord = eventClientCoord(e)

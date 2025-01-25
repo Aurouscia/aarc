@@ -3,14 +3,15 @@ import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
 import { onMounted, nextTick, watch, onBeforeUnmount } from 'vue';
 import Ops from './Ops.vue';
-import Name from './NameEdit.vue';
+import NameEdit from './NameEdit.vue';
+import TextTagEdit from './TextTagEdit.vue';
+import CvsBlocks from './CvsBlocks.vue';
 import { useActiveCvsDispatcher } from '@/models/cvs/dispatchers/activeCvsDispatcher';
 import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useConfigStore } from '@/models/stores/configStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
-import CvsBlocks from './CvsBlocks.vue';
 import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 
 const envStore = useEnvStore();
@@ -64,9 +65,6 @@ defineExpose({init})
 <template>
     <div class="cvsFrame" ref="cvsFrame">
         <div class="cvsCont" ref="cvsCont" :style="{backgroundColor: configStore.config.bgColor}">
-            <!-- <canvas ref="baseCvs" :width="cvsWidth" :height="cvsHeight"></canvas>
-            <canvas ref="mainCvs" :width="cvsWidth" :height="cvsHeight" :class="{insnif: envStore.somethingActive}" class="mainCvs"></canvas>
-            <canvas ref="activeCvs" :width="cvsWidth" :height="cvsHeight" :class="{invisible: !envStore.somethingActive}" class="activeCvs"></canvas> -->
             <CvsBlocks :canvas-id-prefix="baseCvsDispatcher.canvasIdPrefix"></CvsBlocks>
             <CvsBlocks :canvas-id-prefix="mainCvsDispatcher.canvasIdPrefix"
                 :cvs-class-name="'mainCvs'" :insnif="envStore.somethingActive"></CvsBlocks>
@@ -75,7 +73,8 @@ defineExpose({init})
         </div>
     </div>
     <Ops></Ops>
-    <Name></Name>
+    <NameEdit></NameEdit>
+    <TextTagEdit></TextTagEdit>
 </template>
 
 <style scoped lang="scss">

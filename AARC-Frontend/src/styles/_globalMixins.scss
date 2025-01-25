@@ -4,3 +4,39 @@
 @mixin trans-slow-in($amount: 1){
     transition-timing-function: cubic-bezier($amount, 0, $amount, 0);
 }
+
+@mixin bangPanel(){
+    position: fixed;
+    padding: 10px;
+    top: -10px;
+    padding-top: 20px;
+    left: 10px;
+    right: 10px;
+    max-width: 300px;
+    margin: auto;
+    border-radius: 10px;
+    background-color: #ccc;
+    box-shadow: 0px 0px 10px 0px;
+    z-index: 10;
+    transition: 0.2s;
+    transition-timing-function: ease-out;
+}
+@mixin bangPanelHidden(){
+    top: -150px;
+    transition-timing-function: ease-in;
+    max-height: 150px;
+    overflow: hidden;
+}
+@mixin editorTextarea(){
+    margin: 0px;
+    resize: none;
+    overflow: hidden;
+    display: block;
+    font-family: unset;
+    font-size: 18px;
+    border: none;
+    width: 100%;
+    background-color: white;
+    padding: 3px;
+    border-radius: 5px;
+}

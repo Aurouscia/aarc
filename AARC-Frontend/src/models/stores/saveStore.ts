@@ -149,6 +149,9 @@ export const useSaveStore = defineStore('save', () => {
             return pt.id != exceptId
         })
     }
+    function getTextTagById(textTagId:number){
+        return save.value?.textTags.find(x=>x.id === textTagId)
+    }
     function insertNewPtToLine(lineId:number, afterIdx:number|'head'|'tail', pos:Coord, dir:ControlPointDir){
         if(!save.value)
             return;
@@ -374,15 +377,16 @@ export const useSaveStore = defineStore('save', () => {
     const cvsHeight = computed<number>(()=>save.value?.cvsSize[1] || 1)
     const disposedStaNameOf = ref<(ptId:number)=>void>(()=>{})
     const deletedPoint = ref<(ptId:number)=>void>(()=>{})
+    const deletedTextTag = ref<(ptId:number)=>void>(()=>{})
 
     watch(save, (newVal)=>{
         console.log('存档加载', newVal)
     })
     
     return { 
-        save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint,
+        save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint, deletedTextTag,
         getPtById, getPtsByIds, getLineById, getLinesByIds, getLineActualColor, linesActualColorSame, getLineActualColorById,
-        getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType,
+        getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getTextTagById,
         insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType,
         removePt, removePtFromLine, removeNoLinePoints, tryMergePt, isNamedPt,
         removeTextTag, moveEverything, setCvsSize,
