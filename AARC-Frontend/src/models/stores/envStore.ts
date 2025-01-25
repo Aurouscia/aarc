@@ -603,7 +603,7 @@ export const useEnvStore = defineStore('env', ()=>{
         rerender.value([],[])
     }
 
-    function createTextTag(forLine:number){
+    function createTextTag(forLine?:number){
         const vco = getViewCenterOffset()
         let viewCenterCoord:Coord|undefined = [vco.x, vco.y]
         viewCenterCoord = translateFromOffset(viewCenterCoord)
@@ -617,6 +617,8 @@ export const useEnvStore = defineStore('env', ()=>{
         saveStore.save?.textTags.push(newTag)
         movedTextTag.value = true
         activeTextTag.value = newTag
+        if(!forLine)
+            textTagEditStore.startEditing(newTag.id)
     }
 
     function pointlessLineScan(){

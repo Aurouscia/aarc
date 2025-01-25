@@ -100,19 +100,21 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     function renderSingle(ctx:CvsContext, t:TextTag){
         const mo = t.textOp
         const so = t.textSOp
+        const mainEmpty = !t.text?.trim()
+        const subEmpty = mainEmpty && !t.textS?.trim()
         const optMain:DrawTextBodyOption = {
             color: mo?.color || '#000',
             font: cs.config.textTagFont,
             fontSize: cs.config.textTagFontSizeBase * (mo?.size || 1),
             rowHeight: cs.config.textTagRowHeightBase * (mo?.size || 1),
-            text: t.text?.trim() || '空文本标签'
+            text: !mainEmpty ? t.text?.trim() : '空文本标签'
         }
         const optSub:DrawTextBodyOption = {
             color: so?.color || '#000',
             font: cs.config.textTagSubFont,
             fontSize: cs.config.textTagSubFontSizeBase * (so?.size || 1),
             rowHeight: cs.config.textTagSubRowHeightBase * (so?.size || 1),
-            text: t.textS?.trim() || 'Empty TextTag'
+            text: !subEmpty ? t.textS?.trim(): 'Empty TextTag'
         }
         const lineNameRectAlign:SgnCoord = [0, 0]
         const drawLineNameResRect = drawText(ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, {

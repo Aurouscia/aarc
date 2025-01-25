@@ -5,12 +5,14 @@ import Terrains from './sidebars/sideList/Terrains.vue';
 import SizeEdit from './sidebars/SizeEdit.vue';
 import ExportPng from './sidebars/ExportPng.vue';
 import LocalConfigs from './sidebars/LocalConfigs.vue';
+import { useEnvStore } from '@/models/stores/envStore';
 
 const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()
 const sizeEdit = ref<InstanceType<typeof Terrains>>()
 const exportPng = ref<InstanceType<typeof ExportPng>>()
 const localConfigs = ref<InstanceType<typeof LocalConfigs>>()
+const envStore = useEnvStore()
 
 type SidebarNames = 'lines'|'terrains'|'sizeEdit'|'exportPng'|'localConfigs'|undefined
 const activeSidebarName = ref<SidebarNames>()
@@ -50,6 +52,7 @@ const emit = defineEmits<{
     <div class="menu">
         <div @click="openSidebarOf('lines')" class="sqrBtn withShadow">线路</div>
         <div @click="openSidebarOf('terrains')" class="sqrBtn withShadow">地形</div>
+        <div @click="envStore.createTextTag()" class="sqrBtn withShadow">标签</div>
         <div @click="openSidebarOf('sizeEdit')" class="sqrBtn withShadow">画布</div>
         <div @click="openSidebarOf('localConfigs')" class="sqrBtn withShadow">设置</div>
         <div @click="openSidebarOf('exportPng')" class="sqrBtn withShadow">导出</div>
