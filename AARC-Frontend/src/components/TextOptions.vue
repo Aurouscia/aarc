@@ -27,7 +27,7 @@ const emit = defineEmits<{
     <AuColorPicker ref="picker" :initial="target.color" @change="colorChangeHandler" @done="colorChangeHandler"
         :entry-styles="{border:'1.5px solid #eee'}" :panel-click-stop-propagation="true" :entry-respond-delay="1"></AuColorPicker>
     <div class="textSize">
-        <input type="range" v-model="target.size" :min="0.5" :max="3" :step="0.25" @change="emit('changed')"/>
+        <input type="range" v-model="target.size" :min="0.5" :max="5" :step="0.25" @change="emit('changed')"/>
         <input type="number" v-model="target.size" :min="0.5" :max="16" @change="emit('changed')"/>
     </div>
 </div>

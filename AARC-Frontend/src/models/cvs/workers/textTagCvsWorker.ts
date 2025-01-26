@@ -1,5 +1,5 @@
 import { SgnCoord } from "@/models/coord";
-import { Line, LineType, TextTag } from "@/models/save";
+import { Line, LineType, TextOptions, TextTag } from "@/models/save";
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { useConfigStore } from "@/models/stores/configStore";
 import { useTextTagRectStore } from "@/models/stores/saveDerived/textTagRectStore";
@@ -105,20 +105,20 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         const optMain:DrawTextBodyOption = {
             color: mo?.color || cs.config.textTagFontColorHex,
             font: cs.config.textTagFont,
-            fontSize: cs.config.textTagFontSizeBase * (mo?.size || 1),
-            rowHeight: cs.config.textTagRowHeightBase * (mo?.size || 1),
+            fontSize: cs.config.textTagFontSizeBase * getFontSize(mo),
+            rowHeight: cs.config.textTagRowHeightBase * getFontSize(mo),
             text: !mainEmpty ? t.text?.trim() : '空文本标签'
         }
         const optSub:DrawTextBodyOption = {
             color: so?.color || cs.config.textTagSubFontColorHex,
             font: cs.config.textTagSubFont,
-            fontSize: cs.config.textTagSubFontSizeBase * (so?.size || 1),
-            rowHeight: cs.config.textTagSubRowHeightBase * (so?.size || 1),
+            fontSize: cs.config.textTagSubFontSizeBase * getFontSize(so),
+            rowHeight: cs.config.textTagSubRowHeightBase * getFontSize(so),
             text: !subEmpty ? t.textS?.trim(): 'Empty TextTag'
         }
         const lineNameRectAlign:SgnCoord = [0, 0]
         const drawLineNameResRect = drawText(ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, {
-            width: cs.config.textTagFontSizeBase * (mo?.size || 1)/4,
+            width: cs.config.textTagFontSizeBase * getFontSize(mo)/4,
             color: cs.config.bgColor,
             opacity: 1
         }, 'both')
@@ -126,6 +126,16 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             const rect = drawLineNameResRect
             textTagRectStore.setTextTagRect(t.id, rect)
         }
+    }
+    function getFontSize(textOptions?:TextOptions):number{
+        const val = textOptions?.size
+        if(!val)
+            return 1
+        if(val < 0.5)
+            return 0.5
+        if(val > 16)
+            return 16
+        return val
     }
     return { renderAllTextTags, renderOneTextTag }
 })
