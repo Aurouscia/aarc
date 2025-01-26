@@ -57,7 +57,7 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
         }
         applyName()
         editing.value = false;
-        edited.value = false;
+        //edited不动，因为可能结束编辑后一段时间还要读取是否edited，需要外部读取后重置状态
     }
     function toggleEditing(ptId:number){
         if(editing.value){

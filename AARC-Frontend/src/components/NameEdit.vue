@@ -23,26 +23,16 @@ const {
 </script>
 
 <template>
-    <div class="nameEditor" :class="{hidden:!editing}" ref="nameEditorDiv">
+    <div class="nameEditor bangPanel" :class="{retracted:!editing}" ref="nameEditorDiv">
         <textarea v-model="nameMain" ref="nameMainInput" :rows="nameMainRows" @input="inputHandler('main')"
             @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler" spellcheck="false"></textarea>
         <textarea v-model="nameSub" ref="nameSubInput" :rows="nameSubRows" @input="inputHandler('sub')"
             @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler" class="subName" spellcheck="false"></textarea>
+        <div @click="nameEditStore.endEditing()" class="retractBtn sqrBtn withShadow">×</div>
     </div>
 </template>
 
 <style scoped lang="scss">
-@use '@/styles/globalMixins';
-
-.nameEditor{
-    @include globalMixins.bangPanel()
-}
-.nameEditor.hidden{
-    @include globalMixins.bangPanelHidden()
-}
-textarea{
-    @include globalMixins.editorTextarea()
-}
 textarea.subName{
     margin-top: 5px;
     font-size: 15px;

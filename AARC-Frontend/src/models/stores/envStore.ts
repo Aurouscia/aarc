@@ -105,9 +105,12 @@ export const useEnvStore = defineStore('env', ()=>{
         movedTextTag.value = false
     }
     function endEveryEditing(exceptName?:boolean){
+        //结束editing状态，将edited重置回false
         if(!exceptName)
             nameEditStore.endEditing()
         textTagEditStore.endEditing()
+        nameEditStore.edited = false
+        textTagEditStore.edited = false
     }
     function pureClickHandler(clientCord:Coord, isRightBtn?:boolean){
         const coord = translateFromClient(clientCord);

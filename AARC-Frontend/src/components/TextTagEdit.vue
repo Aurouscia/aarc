@@ -33,7 +33,7 @@ const {
 </script>
 
 <template>
-    <div class="textTagEditor" :class="{hidden:!editing}" ref="textEditorDiv">
+    <div class="textTagEditor bangPanel" :class="{retracted:!editing}" ref="textEditorDiv">
         <div class="inputPart">
             <textarea v-model="textMain" ref="mainInput" :rows="mainRows" @input="inputHandler('main')" :placeholder="inputPlaceholder"
                 @focus="textTagEditStore.textInputFocusHandler" @click="textTagEditStore.textInputClickHandler('main')"
@@ -45,14 +45,12 @@ const {
         <div v-if="!targetForType" class="optionsPart">
             <TextOptions :target="options" @changed="edited=true"></TextOptions>
         </div>
+        <div @click="textTagEditStore.endEditing()" class="retractBtn sqrBtn withShadow">×</div>
     </div>
 </template>
 
 <style scoped lang="scss">
-@use '@/styles/globalMixins';
-
 .textTagEditor{
-    @include globalMixins.bangPanel();
     max-width: 615px;
     display: flex;
     align-items: stretch;
@@ -70,12 +68,6 @@ const {
     background-color: white;
     border-radius: 5px;
     width: 300px;
-}
-.textTagEditor.hidden{
-    @include globalMixins.bangPanelHidden()
-}
-textarea{
-    @include globalMixins.editorTextarea()
 }
 textarea.subText{
     margin-top: 5px;
