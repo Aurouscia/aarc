@@ -16,8 +16,9 @@ export const useAdsCvsWorker = defineStore('adsCvsWorker',()=>{
         ctx.textBaseline = 'bottom'
         ctx.globalAlpha = 0.5
         ctx.fillStyle = 'black'
-        ctx.font = {fontSize: 26, font:'microsoft YaHei'}
-        const margin = 8
+        const fontSize = Math.max(saveStore.cvsWidth/70, 28)
+        ctx.font = {fontSize: fontSize, font:'microsoft YaHei'}
+        const margin = fontSize/3
         if(type == 'less'){
             if(textLess)            
                 ctx.fillText(textLess, margin, h-margin)
