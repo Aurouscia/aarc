@@ -57,11 +57,16 @@ const {
     display: flex;
     align-items: stretch;
     justify-content: space-between;
+    gap: 10px;
     .inputPart{
         width: 300px;
     }
 }
+.inputPart{
+    flex-shrink: 3;
+}
 .optionsPart{
+    flex-shrink: 2;
     background-color: white;
     border-radius: 5px;
     width: 300px;

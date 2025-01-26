@@ -22,7 +22,7 @@
     transition-timing-function: ease-out;
 }
 @mixin bangPanelHidden(){
-    top: -150px;
+    top: -170px;
     transition-timing-function: ease-in;
     max-height: 150px;
     overflow: hidden;

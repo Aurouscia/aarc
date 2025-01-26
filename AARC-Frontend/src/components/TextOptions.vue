@@ -32,7 +32,7 @@ const emit = defineEmits<{
     </div>
 </div>
 <div v-else class="textOptionsHint">
-    点击左侧输入框以设置文本样式
+    点击左侧输入框<br/>以设置文本样式
 </div>
 </template>
 
