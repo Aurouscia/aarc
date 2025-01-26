@@ -37,19 +37,21 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     function renderForCommonLine(ctx:CvsContext, t:TextTag, lineInfo:Line){
         const commonLineBuiltinRatio = 1.2
         const textColor = colorProcStore.colorProcInvBinary.convert(lineInfo.color)
+        const mainEmpty = !t.text?.trim()
+        const subEmpty = mainEmpty && !t.textS?.trim()
         const optMain:DrawTextBodyOption = {
             color: textColor,
             font: cs.config.textTagFont,
             fontSize: cs.config.textTagFontSizeBase * commonLineBuiltinRatio,
             rowHeight: cs.config.textTagRowHeightBase * commonLineBuiltinRatio,
-            text: t.text?.trim() || lineInfo.name
+            text: !mainEmpty ? t.text?.trim() : lineInfo.name
         }
         const optSub:DrawTextBodyOption = {
             color: textColor,
             font: cs.config.textTagSubFont,
             fontSize: cs.config.textTagSubFontSizeBase * commonLineBuiltinRatio,
             rowHeight: cs.config.textTagSubRowHeightBase * commonLineBuiltinRatio,
-            text: t.textS?.trim() || lineInfo.nameSub
+            text: !subEmpty ? t.textS?.trim() : lineInfo.nameSub
         }
         const lineNameRectAlign:SgnCoord = [1, 0]
         const drawLineNameRes = drawTextForLineName(ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, false, 'measure')
@@ -72,19 +74,21 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         const terrainLineBuiltinRatio = 1.2
         const terrainColor = saveStore.getLineActualColor(lineInfo)
         const textColor = colorProcStore.colorProcTerrainTag.convert(terrainColor)
+        const mainEmpty = !t.text?.trim()
+        const subEmpty = mainEmpty && !t.textS?.trim()
         const optMain:DrawTextBodyOption = {
             color: textColor,
             font: cs.config.textTagFont,
             fontSize: cs.config.textTagFontSizeBase * terrainLineBuiltinRatio,
             rowHeight: cs.config.textTagRowHeightBase * terrainLineBuiltinRatio,
-            text: t.text?.trim() || lineInfo.name
+            text: !mainEmpty ? t.text?.trim() : lineInfo.name
         }
         const optSub:DrawTextBodyOption = {
             color: textColor,
             font: cs.config.textTagSubFont,
             fontSize: cs.config.textTagSubFontSizeBase * terrainLineBuiltinRatio,
             rowHeight: cs.config.textTagSubRowHeightBase * terrainLineBuiltinRatio,
-            text: t.textS?.trim() || lineInfo.nameSub
+            text: !subEmpty ? t.textS?.trim() : lineInfo.nameSub
         }
         const lineNameRectAlign:SgnCoord = [0, 0]
         const drawLineNameRes = drawTextForLineName(ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, {
