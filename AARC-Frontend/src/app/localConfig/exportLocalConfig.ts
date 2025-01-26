@@ -7,9 +7,12 @@ class ExportLocalConfig extends LocalConfig{
 
 export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
     const exportFileNameStyleKey = 'exportFileNameStyle'
+    const exportWithAdsKey = 'exportWithAds'
     const cfg = new ExportLocalConfig()
     return {
         readExportFileNameStyle: ()=>cfg.readLocalConfig(exportFileNameStyleKey),
-        saveExportFileNameStyle: (style:string)=>cfg.saveLocalConfig(exportFileNameStyleKey, style)
+        saveExportFileNameStyle: (style:string)=>cfg.saveLocalConfig(exportFileNameStyleKey, style),
+        readExportWithAds: ()=>cfg.readLocalConfig(exportWithAdsKey),
+        saveExportWithAds: (ads:string)=>cfg.saveLocalConfig(exportWithAdsKey, ads)
     }
 })

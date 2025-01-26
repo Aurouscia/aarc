@@ -9,12 +9,15 @@ import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
 import { timeStr } from '@/utils/timeUtils/timeStr';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext';
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import { AdsRenderType } from '@/models/cvs/workers/adsCvsWorker';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
 const saveStore = useSaveStore()
 const api = useApiStore().get()
 const route = useRoute()
+const { pop } = useUniqueComponentsStore()
 let exportLock = false
 
 const exportLocalConfig = useExportLocalConfigStore()
@@ -33,7 +36,8 @@ async function downloadMainCvsAsPng() {
             movedStaNames:[],
             suppressRenderedCallback:true,
             forExport:true,
-            ctx
+            ctx,
+            withAds: exportWithAds.value as AdsRenderType|undefined
         }
         mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
 
@@ -95,6 +99,15 @@ function exportPngFileNameStyleChanged(){
     exportLocalConfig.saveExportFileNameStyle(exportPngFileNameStyle.value || 'plain')
 }
 
+const exportWithAds = ref<AdsRenderType>()
+exportWithAds.value = (exportLocalConfig.readExportWithAds() || 'no') as AdsRenderType
+function exportWithAdsChanged(){
+    exportLocalConfig.saveExportWithAds(exportWithAds.value || 'no')
+    if(exportWithAds.value && exportWithAds.value !== 'no'){
+        pop?.show('感谢帮助', 'success')
+    }
+}
+
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
     fold: ()=>{sidebar.value?.fold()}
@@ -114,6 +127,14 @@ defineExpose({
             <option :value="'lineCount'">线路站点</option>
         </select>
     </div>
+    <div class="configSelect">
+        <div style="color: #666;">宣传水印</div>
+        <select v-model="exportWithAds" @change="exportWithAdsChanged">
+            <option :value="'no'">无</option>
+            <option :value="'less'">简略</option>
+            <option :value="'more'">详细</option>
+        </select>
+    </div>
     <button @click="downloadMainCvsAsPng" class="ok">导出为png格式</button>
     <div class="note">
         点击后请耐心等待数秒，不要反复点击<br/>
@@ -127,14 +148,18 @@ defineExpose({
 </template>
 
 <style scoped lang="scss">
+.ok{
+    margin-top: 20px;
+}
 .configSelect{
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 .exportOps{
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
 }
 .note{
     margin-top: 30px;

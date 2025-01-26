@@ -14,6 +14,7 @@ import { timestampMS } from "@/utils/timeUtils/timestamp";
 import { useScalerLocalConfigStore } from "@/app/localConfig/scalerLocalConfig";
 import { useTimeSpanClock } from "@/utils/timeUtils/timeSpanClock";
 import { CvsContext } from "../common/cvsContext";
+import { AdsRenderType, useAdsCvsWorker } from "../workers/adsCvsWorker";
 
 export interface MainCvsRenderingOptions{
     /** 这次渲染前哪些线路形状变动了？不提供即为所有 */
@@ -26,6 +27,8 @@ export interface MainCvsRenderingOptions{
     forExport?:boolean
     /** 指定画布上下文 */
     ctx?: CvsContext
+    /** 广告水印 (no/less/more) */
+    withAds?: AdsRenderType
 }
 
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
@@ -41,6 +44,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const { renderAllPtName } = useStaNameCvsWorker()
     const { renderAllTerrainSmooth } = useTerrainSmoothCvsWorker()
     const { renderAllTextTags } = useTextTagCvsWorker()
+    const { renderAds } = useAdsCvsWorker()
     const afterMainCvsRendered = shallowRef<()=>void>()
     const isRendering = ref(false)
     const logRendering = import.meta.env.VITE_LogMainCvsRendering === 'true'
@@ -71,10 +75,13 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         tic('站名')
         renderAllTextTags(ctx)
         toc('标签')
+        if(options.withAds){
+            renderAds(ctx, options.withAds)
+        }
         isRendering.value = false
         if(logRendering){
             const tEnd = logRendering ? timestampMS():0
-            console.log(`[${tEnd - tStart}ms] <主画布渲染>`)
+            console.log(`[${tEnd - tStart}ms] <主画布渲染>----------`)
         }
         if(!suppressRenderedCallback && afterMainCvsRendered.value)
             afterMainCvsRendered.value()
