@@ -8,6 +8,7 @@ import { sgnCoord } from "@/utils/sgn";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { useCvsBlocksControlStore } from "../common/cvs";
+import { Coord } from "@/models/coord";
 
 export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
     const saveStore = useSaveStore()
@@ -29,9 +30,11 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             return renderPtName(ctx, pt, needReportRect, markRoot)
     }
     function renderPtName(ctx:CvsContext, pt:ControlPoint, needReportRect?:boolean, markRoot?:'free'|'snapVague'|'snapAccu', noOmit = false){
-        if(!pt.nameP || (!noOmit && checkOmittable(pt.id)))
+        if(!pt.nameP)
             return;
         const globalPos = coordAdd(pt.pos, pt.nameP)
+        if((!noOmit && checkOmittable(globalPos)))
+            return
         const align = sgnCoord(pt.nameP)
 
         const distSq = pt.nameP[0] ** 2 + pt.nameP[1] ** 2
@@ -80,11 +83,13 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             ctx.fill()
         }
     }
-    function checkOmittable(id:number){
-        const rect = staNameRectStore.getStaNameRect(id)
-        if(!rect)
-            return false
+    function checkOmittable(globalPos:Coord){
         const { cvsWidth, cvsHeight } = saveStore
+        const rect = [[...globalPos],[...globalPos]]
+        rect[0][0] -= 200
+        rect[1][0] += 200
+        rect[0][1] -= 75
+        rect[1][1] += 75
         const { left, right, top, bottom } = cvsBlocksControlStore.blockTotalBoundary
         if(rect[1][0]/cvsWidth < left)
             return true
