@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { guideInfo } from '@/app/guideInfo';
+
 
 </script>
 
@@ -8,7 +10,8 @@
     <p>AARC是用于绘制抽象线路图的工具，欢迎试用当前的<b>抢先体验版</b>（后续更新不会删档）</p>
     <p><b><a style="color:green" href="/#/Editor/demo">点击此处立即试用</a></b></p>
     <p style="color: #2C71BD">正式使用，请注册账户并登录、在“作品-我的作品”中点击新建，并进入编辑</p>
-    <p>本项目正在持续完善改进中，遇到任何问题或想提出建议请qq私聊我或<a href="https://gitee.com/au114514/aarc/issues" target="_blank">点击此处</a></p>
+    <p>{{ guideInfo.findHelp }}</p>
+    <p>本项目正在持续完善改进中，想提出建议请qq私聊我或<a href="https://gitee.com/au114514/aarc/issues" target="_blank">点击此处</a></p>
 </div>
 <div class="roadmap">
     <h2>近期规划</h2>
@@ -16,7 +19,7 @@
         <h3>自由插入图片</h3>
         <p>作为公司logo、特殊站标识、底图参考等</p>
     </div>
-    <div>
+    <div style="text-decoration: line-through;">
         <h3>动态清晰度</h3>
         <p>减小大型画布的内存占用，自由调整导出图片的像素</p>
     </div>

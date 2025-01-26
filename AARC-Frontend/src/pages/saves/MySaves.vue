@@ -9,6 +9,7 @@ import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import fileDownload from 'js-file-download';
 import Loading from '@/components/common/Loading.vue';
 import { Save, saveLineCount, saveStaCount } from '@/models/save';
+import { guideInfo } from '@/app/guideInfo';
 
 const saveList = ref<SaveDto[]>()
 const api = useApiStore().get()
@@ -153,6 +154,9 @@ onMounted(async()=>{
             <button class="minor" @click="startEditingInfo(s)">信息</button>
             <RouterLink :to="editorRoute(s.Id)"><button>编辑</button></RouterLink>
         </td>
+    </tr>
+    <tr v-if="guideInfo.findHelp" style="color: #aaa; font-size: 14px;">
+        <td colspan="3">{{ guideInfo.findHelp }}</td>
     </tr>
 </tbody></table>
 <Loading v-else></Loading>
