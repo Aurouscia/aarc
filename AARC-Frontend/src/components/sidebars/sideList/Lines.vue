@@ -45,8 +45,8 @@ onUnmounted(()=>{
                         :panel-click-stop-propagation="true"></AuColorPicker>
                 </div>
                 <div class="names">
-                    <input v-model="l.name" placeholder="输入线路名"/>
-                    <input v-model="l.nameSub" placeholder="输入线路副名"/>
+                    <input v-model="l.name" placeholder="输入线路名" @blur="envStore.lineInfoChanged(l)"/>
+                    <input v-model="l.nameSub" placeholder="输入线路副名" @blur="envStore.lineInfoChanged(l)"/>
                 </div>
                 <div class="infoEdit">
                     <div class="sqrBtn" :class="{sqrActive:editingInfoLineId===l.id}" @click="editInfoOfLine(l.id)">...</div>

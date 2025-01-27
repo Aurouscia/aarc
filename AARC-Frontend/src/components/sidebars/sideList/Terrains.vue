@@ -62,8 +62,8 @@ onUnmounted(()=>{
                     :panel-click-stop-propagation="true"
                     ></AuColorPickerPresetsNested>
                 <div class="names">
-                    <input v-model="l.name" placeholder="输入地形名"/>
-                    <input v-model="l.nameSub" placeholder="输入地形副名"/>
+                    <input v-model="l.name" placeholder="输入地形名" @blur="envStore.lineInfoChanged(l)"/>
+                    <input v-model="l.nameSub" placeholder="输入地形副名" @blur="envStore.lineInfoChanged(l)"/>
                 </div>
                 <div class="infoEdit">
                     <div class="sqrBtn" :class="{sqrActive:editingInfoLineId===l.id}" @click="editInfoOfLine(l.id)">...</div>
