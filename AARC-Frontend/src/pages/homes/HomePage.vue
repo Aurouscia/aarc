@@ -19,8 +19,8 @@ import { guideInfo } from '@/app/guideInfo';
         <h3>自由插入图片</h3>
         <p>作为公司logo、特殊站标识、底图参考等</p>
     </div>
-    <div style="text-decoration: line-through;">
-        <h3>动态清晰度</h3>
+    <div class="done">
+        <h3>动态清晰度（已完成✔）</h3>
         <p>减小大型画布的内存占用，自由调整导出图片的像素</p>
     </div>
     <div>
@@ -117,6 +117,11 @@ import { guideInfo } from '@/app/guideInfo';
     }
     p{
         font-size: 14px;
+    }
+    .done{
+        h3, p{
+            color: #ddd;
+        }
     }
 }
 .openSourceNote{
