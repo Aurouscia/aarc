@@ -4,8 +4,10 @@ import { storeToRefs } from 'pinia';
 import { useTwinTextarea } from './composables/useTwinTextarea';
 import { computed } from 'vue';
 import TextOptions from './TextOptions.vue';
+import { useEnvStore } from '@/models/stores/envStore';
 
 const textTagEditStore = useTextTagEditStore()
+const envStore = useEnvStore()
 const { 
     textMain, textSub, editing, textEditorDiv, targetForType, options, edited
 } = storeToRefs(textTagEditStore)
@@ -44,6 +46,9 @@ const {
         </div>
         <div v-if="!targetForType" class="optionsPart">
             <TextOptions :target="options" @changed="edited=true"></TextOptions>
+        </div>
+        <div @click="envStore.duplicateTextTag();textTagEditStore.endEditing()" class="duplicateBtn sqrBtn withShadow">
+            <div class="dupA"></div><div class="dupB"></div>
         </div>
         <div @click="textTagEditStore.endEditing()" class="retractBtn sqrBtn withShadow">×</div>
     </div>

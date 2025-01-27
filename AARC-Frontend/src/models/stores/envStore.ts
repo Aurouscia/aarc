@@ -18,6 +18,7 @@ import { useCvsFrameStore } from "./cvsFrameStore";
 import { useDiscardAreaStore } from "./discardAreaStore";
 import { useScalerLocalConfigStore } from "@/app/localConfig/scalerLocalConfig";
 import { useTextTagEditStore } from "./textTagEditStore";
+import rfdc from "rfdc";
 
 export const useEnvStore = defineStore('env', ()=>{
     const saveStore = useSaveStore();
@@ -56,6 +57,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const { removeLineExtendBtn } = useLineExtendStore()
     const discardAreaStore = useDiscardAreaStore()
     const scalerLocalConfig = useScalerLocalConfigStore()
+    const deepClone = rfdc()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
             return
@@ -623,6 +625,17 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!forLine)
             textTagEditStore.startEditing(newTag.id)
     }
+    function duplicateTextTag(){
+        const textTag = activeTextTag.value
+        if(!textTag)
+            return
+        const newTextTag = deepClone(textTag)
+        newTextTag.id = saveStore.getNewId()
+        newTextTag.pos[1] += 120
+        saveStore.save?.textTags.push(newTextTag)
+        movedTextTag.value = true
+        activeTextTag.value = newTextTag
+    }
 
     function pointlessLineScan(){
         if(!saveStore.save)
@@ -668,6 +681,6 @@ export const useEnvStore = defineStore('env', ()=>{
         cvsWidth, cvsHeight, getDisplayRatio,
         rerender, rescaled, getActivePtOpsAvoidance,
         delLine, createLine, lineInfoChanged,
-        createTextTag
+        createTextTag, duplicateTextTag
     }
 })

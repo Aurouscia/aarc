@@ -13,21 +13,45 @@
     z-index: 10;
     transition: 0.2s;
     transition-timing-function: ease-out;
+    .retractBtn,.duplicateBtn{
+        position: absolute;
+        bottom: -22px;
+        width: 27px;
+        height: 27px;
+        line-height: 27px;
+        background-color: white;
+    }
+    .retractBtn{
+        color: plum;
+        font-size: 22px;
+        font-weight: bold;
+        right: 0px;
+    }
+    .duplicateBtn{
+        $size:10px;
+        $dist:5px;
+        right: 35px;
+        .dupA,.dupB{
+            background-color: white;
+            position: absolute;
+            height: $size;
+            width: $size;
+            border: 1.5px solid #aaa;
+            border-radius: 3px;
+        }
+        .dupA{
+            left: $dist;
+            top: $dist;
+        }
+        .dupB{
+            bottom: $dist;
+            right: $dist;
+        }
+    }
 }
 .bangPanel.retracted{
-    top: -170px;
+    top: -190px;
     transition-timing-function: ease-in;
-}
-.bangPanel .retractBtn{
-    position: absolute;
-    bottom: -22px;
-    width: 25px;
-    height: 25px;
-    line-height: 25px;
-    background-color: white;
-    color: plum;
-    font-weight: bold;
-    right: 0px;
 }
 .bangPanel textarea{
     margin: 0px;
