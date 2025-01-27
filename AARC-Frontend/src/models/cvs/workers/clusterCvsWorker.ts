@@ -4,57 +4,69 @@ import { Coord } from "@/models/coord";
 import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
+import { useSaveStore } from "@/models/stores/saveStore";
 
+interface ClusterPoly{
+    coords:Coord[]
+    maxStaSize:number
+}
 export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
     const staClusterStore = useStaClusterStore()
+    const saveStore = useSaveStore()
     const cs = useConfigStore()
 
     function renderClusters(ctx:CvsContext){
-        const crys = staClusterStore.getStaClusters()
-        if(!crys)
+        const clusters = staClusterStore.getStaClusters()
+        if(!clusters)
             return;
-        staClusterStore.setStaClusters([...crys])
-        const polys = crystalsToPolys(crys)
-        const forEachPoly = (doSth:()=>void)=>{
+        staClusterStore.setStaClusters([...clusters])
+        const polys = crystalsToPolys(clusters)
+        const forEachPoly = (doSth:(size:number)=>void)=>{
             for(const p of polys){
                 ctx.beginPath();
-                const firstPos = p[0]
+                const firstPos = p.coords[0]
                 ctx.moveTo(firstPos[0], firstPos[1])
-                for(let i=1;i<p.length;i++){
-                    ctx.lineTo(p[i][0], p[i][1])
+                for(let i=1;i<p.coords.length;i++){
+                    ctx.lineTo(p.coords[i][0], p.coords[i][1])
                 }
                 ctx.closePath()
-                doSth()
+                doSth(p.maxStaSize)
             }
         }
         ctx.lineJoin = 'round'
         ctx.lineCap = 'round'
-        const rectLineWidth = (cs.config.ptStaSize + cs.config.ptStaLineWidth)* 2
         const bgColor = cs.config.bgColor;
         const exchangeColor = cs.config.ptStaExchangeLineColor;
-        ctx.lineWidth = rectLineWidth
         ctx.strokeStyle = bgColor
-        forEachPoly(()=>{
+        forEachPoly((size)=>{
+            const rectLineWidth = (cs.config.ptStaSize + cs.config.ptStaLineWidth) * size * 2
+            ctx.lineWidth = rectLineWidth
             ctx.stroke()
         })
             
-        ctx.lineWidth = rectLineWidth - cs.config.ptStaLineWidth
         ctx.strokeStyle = exchangeColor
-        forEachPoly(() => {
+        forEachPoly((size) => {
+            const rectLineWidth = ((cs.config.ptStaSize * 2) + cs.config.ptStaLineWidth) * size
+            ctx.lineWidth = rectLineWidth
             ctx.stroke()
         })
-        ctx.lineWidth = rectLineWidth - cs.config.ptStaLineWidth*3
         ctx.strokeStyle = cs.config.ptStaFillColor
         ctx.fillStyle = cs.config.ptStaFillColor
-        forEachPoly(() => {
+        forEachPoly((size) => {
+            const rectLineWidth = ((cs.config.ptStaSize * 2) - cs.config.ptStaLineWidth) * size
+            ctx.lineWidth = rectLineWidth
             ctx.fill()
             ctx.stroke()
         })
     }
 
-    function crystalsToPolys(crystals:ControlPoint[][]):Coord[][]{
-        const polys:Coord[][] = []
+    function crystalsToPolys(crystals:ControlPoint[][]):ClusterPoly[]{
+        const polys:ClusterPoly[] = []
         crystals.forEach(c=>{
+            const sizes = c.map(x=>saveStore.getLinesDecidedPtSize(x.id))
+            if(sizes.length==0)
+                return
+            const maxStaSize = Math.max(...sizes)
             if(c[0].dir === ControlPointDir.vertical){
                 let l = 1e10
                 let r = -1e10
@@ -72,7 +84,10 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
                         b = y
                 }
                 const poly:Coord[] = [[l,t], [r,t], [r,b], [l,b]]
-                polys.push(poly)
+                polys.push({
+                    coords:poly,
+                    maxStaSize
+                })
             }else{
                 let lt = 1e10
                 let rb = -1e10
@@ -95,7 +110,10 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
                 const l:Coord = [(lt+lb)/2, (lt-lb)/2]
                 const r:Coord = [(rb+rt)/2, (rb-rt)/2]
                 const b:Coord = [(rb+lb)/2, (rb-lb)/2]
-                polys.push([t,l,b,r])
+                polys.push({
+                    coords:[t,l,b,r],
+                    maxStaSize
+                })
             }
         })
         return polys
