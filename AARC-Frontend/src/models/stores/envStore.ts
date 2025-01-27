@@ -581,8 +581,8 @@ export const useEnvStore = defineStore('env', ()=>{
             newLine = {
                 id: saveStore.getNewId(),
                 pts: [pt1.id, pt2.id],
-                name: '新线路',
-                nameSub: 'NewLine',
+                name: '',
+                nameSub: '',
                 color: "#ff0000",
                 type: LineType.common
             }
@@ -590,8 +590,8 @@ export const useEnvStore = defineStore('env', ()=>{
             newLine = {
                 id: saveStore.getNewId(),
                 pts: [pt1.id, pt2.id],
-                name: '新地形',
-                nameSub: 'NewTerrain',
+                name: '',
+                nameSub: '',
                 color: "#000000",
                 type: LineType.terrain,
                 colorPre: ColorPreset.water

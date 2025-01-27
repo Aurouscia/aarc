@@ -44,7 +44,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             font: cs.config.textTagFont,
             fontSize: cs.config.textTagFontSizeBase * commonLineBuiltinRatio,
             rowHeight: cs.config.textTagRowHeightBase * commonLineBuiltinRatio,
-            text: !mainEmpty ? t.text?.trim() : lineInfo.name
+            text: !mainEmpty ? t.text?.trim() : (lineInfo.name || '未命名线路')
         }
         const optSub:DrawTextBodyOption = {
             color: textColor,
@@ -81,7 +81,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             font: cs.config.textTagFont,
             fontSize: cs.config.textTagFontSizeBase * terrainLineBuiltinRatio,
             rowHeight: cs.config.textTagRowHeightBase * terrainLineBuiltinRatio,
-            text: !mainEmpty ? t.text?.trim() : lineInfo.name
+            text: !mainEmpty ? t.text?.trim() : (lineInfo.name || '未命名地形')
         }
         const optSub:DrawTextBodyOption = {
             color: textColor,
