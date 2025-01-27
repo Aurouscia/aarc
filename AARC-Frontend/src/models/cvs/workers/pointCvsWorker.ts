@@ -47,10 +47,11 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
         let staType = pt.sta
         if(staType !== ControlPointSta.sta && staOnly)
             return
+        const sizeRatio = saveStore.getLinesDecidedPtSize(pt.id)
         if(staType === ControlPointSta.plain || active){
             const dir = pt.dir === ControlPointDir.incline ? 'incline':'vertical'
-            let markSize = cs.config.ptBareSize;
-            let markWidth = cs.config.ptBareLineWidth;
+            let markSize = cs.config.ptBareSize * sizeRatio;
+            let markWidth = cs.config.ptBareLineWidth * sizeRatio;
             if(active){
                 markSize *= 1.8
                 markColor = '#000'
@@ -71,24 +72,19 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             })
         }
         if(staType === ControlPointSta.sta){
-            let maxWidth = 1
-            if(relatedLines.length>0){
-                maxWidth = Math.max(...relatedLines.map(x=>x.width || 1))
-                if(maxWidth > 1)
-                    maxWidth = 1
-            }
-            const arcRadius = cs.config.ptStaSize * maxWidth
+            const arcRadius = cs.config.ptStaSize * sizeRatio
+            const lineWidth = cs.config.ptStaLineWidth * sizeRatio
             if(relatedLines.length==1 && !active){
                 ctx.strokeStyle = saveStore.getLineActualColor(relatedLines[0])
             }else{
                 ctx.strokeStyle = markColor
                 ctx.beginPath()
                 ctx.fillStyle = cs.config.bgColor
-                ctx.arc(pos[0], pos[1], arcRadius + cs.config.ptStaLineWidth, 0, 2*Math.PI)
+                ctx.arc(pos[0], pos[1], arcRadius + lineWidth, 0, 2*Math.PI)
                 ctx.fill()
             }
             ctx.beginPath()
-            ctx.lineWidth = cs.config.ptStaLineWidth
+            ctx.lineWidth = lineWidth
             ctx.fillStyle = cs.config.ptStaFillColor
             ctx.arc(pos[0], pos[1], arcRadius, 0, 2*Math.PI)
             ctx.fill()

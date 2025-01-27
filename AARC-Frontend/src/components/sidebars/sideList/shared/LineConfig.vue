@@ -15,7 +15,7 @@ const props = defineProps<{
 const lineWidthBinded = ref(1)
 function lineWidthChanged(){
     props.line.width = lineWidthBinded.value
-    envStore.lineInfoChanged()
+    envStore.lineInfoChanged(props.line)
 }
 function textTagCreateBtnClickHandler(){
     envStore.createTextTag(props.line.id)
@@ -43,7 +43,7 @@ onMounted(()=>{
     <div class="configItem">
         <div>填充</div>
         <div class="checkItem">
-            <input type="checkbox" v-model="line.isFilled" @change="envStore.lineInfoChanged"/>
+            <input type="checkbox" v-model="line.isFilled" @change="envStore.lineInfoChanged(line)"/>
         </div>
     </div>
     <div class="configItem">

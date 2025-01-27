@@ -17,8 +17,11 @@ export const useSnapStore = defineStore('snap',()=>{
     const snapLines = ref<FormalRay[]>([])
     const snapLinesForPt = ref<number>()
     const snapGridIntv = ref<number>()
+    const snappingNamePtId = ref<number>()
     const snapStaNameTo = computed<Coord[]>(()=>{
-        const snd = cs.config.snapOctaClingPtNameDist;
+        const ptId = snappingNamePtId.value || -1
+        const distRatio = saveStore.getLinesDecidedPtSize(ptId)
+        const snd = cs.config.snapOctaClingPtNameDist * distRatio;
         const sndh = snd * sqrt2half;
         return [
             [snd,0],[-snd,0],[0,snd],[0,-snd],
@@ -46,6 +49,7 @@ export const useSnapStore = defineStore('snap',()=>{
         if(!pt.nameP){
             return;
         }
+        snappingNamePtId.value = pt.id
         const snapClingThrsSq = cs.snapOctaClingPtNameThrsSq
         const snapRayThrs = cs.config.snapOctaRayPtNameThrs
         let [x, y] = pt.nameP

@@ -36,22 +36,19 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
         if((!noOmit && checkOmittable(globalPos)))
             return
         const align = sgnCoord(pt.nameP)
+        const fontSizeRatio = saveStore.getLinesDecidedPtSize(pt.id)
 
-        const distSq = pt.nameP[0] ** 2 + pt.nameP[1] ** 2
-        if(distSq > 1200){
+        const dist = Math.sqrt(pt.nameP[0] ** 2 + pt.nameP[1] ** 2)
+        if(dist > 35*fontSizeRatio){
             ctx.beginPath()
-            ctx.lineWidth = 2
+            ctx.lineWidth = 2*fontSizeRatio
             ctx.strokeStyle = "#999"
-            const linkStart = coordTwinShrink(globalPos, pt.pos, 18)
+            const nodeDistToCenter = cs.config.ptStaSize * 1.6 * fontSizeRatio
+            const linkStart = coordTwinShrink(globalPos, pt.pos, nodeDistToCenter)
             ctx.moveTo(linkStart[0], linkStart[1])
             ctx.lineTo(...globalPos)
             ctx.stroke()
         }
-
-        //字体尺寸比例应该跟随所属最粗线路(最大为1)
-        const belongLines = saveStore.getLinesByPt(pt.id)
-        const maxWidth = Math.max(...belongLines.map(x=>x.width || 1)) || 1
-        const fontSizeRatio = Math.min(maxWidth, 1)
 
         const rect = drawText(ctx, globalPos, align, undefined, {
             text: pt.name,
@@ -67,7 +64,7 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             rowHeight: cs.config.staNameSubRowHeight * fontSizeRatio
         },
         {
-            width: cs.config.staNameFontSize/4,
+            width: cs.config.staNameFontSize * fontSizeRatio/4,
             color: cs.config.bgColor,
             opacity: 0.8
         }, needReportRect ? 'both' : 'draw')

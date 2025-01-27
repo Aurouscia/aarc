@@ -602,8 +602,8 @@ export const useEnvStore = defineStore('env', ()=>{
             rerender.value([newLine.id], [pt1.id, pt2.id])
         }
     }
-    function lineInfoChanged(){
-        rerender.value([],[])
+    function lineInfoChanged(line:Line){
+        rerender.value([], line.pts)
     }
 
     function createTextTag(forLine?:number){

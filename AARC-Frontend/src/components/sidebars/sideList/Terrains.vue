@@ -18,13 +18,13 @@ const { getPresetNameByEnum, getPresetEnumByName, presets } = useColorPresetName
 function colorPreChanged(l:Line, presetName:string|undefined){
     l.colorPre = getPresetEnumByName(presetName)
     window.setTimeout(()=>{
-        envStore.lineInfoChanged()
+        envStore.lineInfoChanged(l)
     },1)
 }
 function colorPickerDone(l:Line, c:string){
     l.color = c
     if(!l.colorPre)
-        envStore.lineInfoChanged()
+        envStore.lineInfoChanged(l)
 }
 
 const colorPicker = ref<InstanceType<typeof AuColorPickerPresetsNested>[]>([])

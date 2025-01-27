@@ -106,6 +106,13 @@ export const useSaveStore = defineStore('save', () => {
     function getLinesByPt(ptId:number){
         return ptBelongLineDict.value[ptId] || []
     }
+    function getLinesDecidedPtSize(ptId:number){
+        const widths = getLinesByPt(ptId).filter(x=>x.type===LineType.common).map(x=>x.width || 1)
+        if(widths.length===0)
+            return 1
+        const maxWidth = Math.max(...widths)
+        return maxWidth
+    }
     function getLinesByType(lineType:LineType){
         if(!save.value)
             throw Error("找不到存档")
@@ -385,7 +392,8 @@ export const useSaveStore = defineStore('save', () => {
     
     return { 
         save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint, deletedTextTag,
-        getPtById, getPtsByIds, getLineById, getLinesByIds, getLineActualColor, linesActualColorSame, getLineActualColorById,
+        getPtById, getPtsByIds, getLineById, getLinesByIds, getLinesDecidedPtSize,
+        getLineActualColor, linesActualColorSame, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getTextTagById,
         insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType,
         removePt, removePtFromLine, removeNoLinePoints, tryMergePt, isNamedPt,

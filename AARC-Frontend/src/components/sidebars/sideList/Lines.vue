@@ -38,7 +38,7 @@ onUnmounted(()=>{
             <div v-for="l,idx in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
                 <div class="colorEdit">
                     <AuColorPicker :initial="l.color"
-                        @done="c=>{l.color=c;envStore.lineInfoChanged()}"
+                        @done="c=>{l.color=c;envStore.lineInfoChanged(l)}"
                         ref="colorPicker" :panel-base-z-index="idx"
                         :show-package-name="true"
                         :entry-respond-delay="1"
@@ -51,7 +51,7 @@ onUnmounted(()=>{
                 <div class="infoEdit">
                     <div class="sqrBtn" :class="{sqrActive:editingInfoLineId===l.id}" @click="editInfoOfLine(l.id)">...</div>
                     <div v-if="editingInfoLineId===l.id" class="infoEditPanel">
-                        <LineConfig :line="l" :line-width-range="{min:0.5, max:3, step:0.25}"></LineConfig>
+                        <LineConfig :line="l" :line-width-range="{min:0.5, max:2, step:0.25}"></LineConfig>
                     </div>
                 </div>
                 <div class="sqrBtn moveBtn" :class="{sqrActive:arrangingId===l.id}"
