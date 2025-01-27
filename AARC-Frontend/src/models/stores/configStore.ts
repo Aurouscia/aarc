@@ -3,7 +3,7 @@ import { defineStore } from "pinia"
 import { computed, ref } from "vue"
 import { Config } from "../config"
 import { useSaveStore } from "./saveStore"
-import { ColorPreset, Line } from "../save"
+import { ColorPreset, Line, LineType } from "../save"
 import { WayRel } from "@/utils/rayUtils/rayParallel"
 
 export const configDefault:Config = {
@@ -103,13 +103,15 @@ export const useConfigStore = defineStore('config', ()=>{
         return 'black'
     }
     function getTurnRadiusOf(line:Line|number, turnRel:WayRel, justify:'outer'|'middle'|'inner' = 'inner'){
-        let lineWidthRatio = typeof line == 'number' ? line : line.width
-        const base = config.value.lineTurnAreaRadius
+        let lineWidthRatio = (typeof line == 'number' ? line : line.width) || 1
+        let base = config.value.lineTurnAreaRadius;
+        if(typeof line !== 'number' && line.type===LineType.common)
+            base *= lineWidthRatio
         let radius:number
         if(justify==='middle'){
             radius = base
         }else{
-            const justifyBy = config.value.lineWidth * (lineWidthRatio || 1) / 2
+            const justifyBy = config.value.lineWidth * lineWidthRatio / 2
             radius = justify==='outer' ? base - justifyBy : base + justifyBy
         }
         if(radius<0)
