@@ -48,18 +48,23 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             ctx.stroke()
         }
 
+        //字体尺寸比例应该跟随所属最粗线路(最大为1)
+        const belongLines = saveStore.getLinesByPt(pt.id)
+        const maxWidth = Math.max(...belongLines.map(x=>x.width || 1)) || 1
+        const fontSizeRatio = Math.min(maxWidth, 1)
+
         const rect = drawText(ctx, globalPos, align, undefined, {
             text: pt.name,
             color: cs.config.staNameColor,
             font: cs.config.staNameFont,
-            fontSize: cs.config.staNameFontSize,
-            rowHeight: cs.config.staNameRowHeight
+            fontSize: cs.config.staNameFontSize * fontSizeRatio,
+            rowHeight: cs.config.staNameRowHeight * fontSizeRatio
         },{
             text: pt.nameS,
             color: cs.config.staNameSubColor,
             font: cs.config.staNameSubFont,
-            fontSize: cs.config.staNameSubFontSize,
-            rowHeight: cs.config.staNameSubRowHeight
+            fontSize: cs.config.staNameSubFontSize * fontSizeRatio,
+            rowHeight: cs.config.staNameSubRowHeight * fontSizeRatio
         },
         {
             width: cs.config.staNameFontSize/4,
