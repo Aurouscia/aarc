@@ -360,6 +360,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         const drawBody = !type || type==='both' || type==='body'
         if(!lineInfo.isFilled || enforceNoFill){
             const lineWidth = cs.config.lineWidth * (enforceLineWidth||lineInfo.width||1)
+            ctx.lineJoin = 'round'
             ctx.lineCap = 'round'
             if(drawCarpet){
                 const carpetWiden = cs.config.lineWidth * 0.5
@@ -373,6 +374,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 ctx.stroke()
             }
         }else{
+            ctx.lineJoin = 'round'
             ctx.lineCap = 'round'
             if(drawCarpet){
                 const carpetWiden = cs.config.lineWidth * 0.5
