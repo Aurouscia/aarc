@@ -11,6 +11,9 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     const saveStore = useSaveStore()
     const cs = useConfigStore()
     saveStore.deletedPoint = cleanClustersFromDeletedPt
+    
+    const configClingingDist = cs.config.snapOctaClingPtPtDist
+    const skipClingingCheckThrs = 2.5*configClingingDist
 
     let staClusters:ControlPoint[][]|undefined = undefined
     let belong: Record<number, ControlPoint[] | undefined> = {}
@@ -38,6 +41,10 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             for (let j = i + 1; j < pts.length; j++) {
                 const a = pts[i]
                 const b = pts[j]
+                if(Math.abs(a.pos[0] - b.pos[0]) > skipClingingCheckThrs)
+                    continue
+                if(Math.abs(a.pos[1] - b.pos[1]) > skipClingingCheckThrs)
+                    continue
                 tryMergeTwoPoints(a, b)
             }
         }
@@ -117,12 +124,15 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         }
     }
 
-    const clingingDist = cs.config.snapOctaClingPtPtDist
-    const clingingDistSqrBiggerByEpsilon = clingingDist**2 + numberCmpEpsilon
     function ptClinging(a:ControlPoint, b:ControlPoint):boolean{
         if(a.dir !== b.dir){
             return false
         }
+        const sizeA = saveStore.getLinesDecidedPtSize(a.id)
+        const sizeB = saveStore.getLinesDecidedPtSize(b.id)
+        const distMut = (sizeA + sizeB)/2
+        const clingingDist = configClingingDist * distMut
+        const clingingDistSqrBiggerByEpsilon = clingingDist**2 + numberCmpEpsilon
         return !!coordDistSqLessThan(a.pos, b.pos, clingingDistSqrBiggerByEpsilon)
     }
 

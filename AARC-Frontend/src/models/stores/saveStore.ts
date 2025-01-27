@@ -39,6 +39,20 @@ export const useSaveStore = defineStore('save', () => {
         }
         return res
     })
+    const ptSize = computed<Record<number, number|undefined>>(()=>{
+        const res:Record<number, number> = {}
+        if(!save.value?.points)
+            return res
+        for(const pt of save.value.points){
+            let maxWidth = 1
+            const belongLines = ptBelongLineDict.value[pt.id] || []
+            const widths = belongLines.filter(x=>x.type===LineType.common).map(x=>x.width || 1)
+            if(widths.length>0)
+                maxWidth = Math.max(...widths)
+            res[pt.id] = maxWidth
+        }
+        return res
+    })
 
     function getNewId() {
         if(!save.value)
@@ -107,11 +121,7 @@ export const useSaveStore = defineStore('save', () => {
         return ptBelongLineDict.value[ptId] || []
     }
     function getLinesDecidedPtSize(ptId:number){
-        const widths = getLinesByPt(ptId).filter(x=>x.type===LineType.common).map(x=>x.width || 1)
-        if(widths.length===0)
-            return 1
-        const maxWidth = Math.max(...widths)
-        return maxWidth
+        return ptSize.value[ptId] || 1
     }
     function getLinesByType(lineType:LineType){
         if(!save.value)
