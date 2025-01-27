@@ -11,7 +11,7 @@ export const useDiscardAreaStore = defineStore('discardArea', ()=>{
     function getDiscardAreaSideLength(){
         const w = cvsFrame.value?.clientWidth||0
         const h = cvsFrame.value?.clientHeight||0
-        return Math.min(w, h) * discardAreaSideRatio
+        return (w + h)/2 * discardAreaSideRatio
     }
     function getDiscardAreaPolyPts():Coord[]{
         const sideLength = getDiscardAreaSideLength()
