@@ -6,7 +6,7 @@ import { computed, ref } from "vue";
 import { isZero, sgn } from "@/utils/sgn";
 import { rayIntersect } from "@/utils/rayUtils/rayIntersection";
 import { applyBias } from "@/utils/coordUtils/coordBias";
-import { coordDistSq, coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
+import { coordDist, coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { useConfigStore } from "./configStore";
 import { numberCmpEpsilon, sqrt2half } from "@/utils/consts";
 
@@ -182,15 +182,15 @@ export const useSnapStore = defineStore('snap',()=>{
         return {}
     }
     function snapInterPt(pt:ControlPoint):Coord|undefined{
-        const snapDist = cs.config.snapOctaClingPtPtDist;
+        const ptSize = saveStore.getLinesDecidedPtSize(pt.id)
+        const snapDist = cs.config.snapOctaClingPtPtDist*ptSize;
         const snapThrs = cs.config.snapOctaClingPtPtThrs;
-        const snapThrsSq = cs.snapOctaClingPtPtThrsSq
         const pts = saveStore.getPtsInRange(pt.pos, snapDist + snapThrs, pt.id)
         if(pts.length==0){
             return undefined
         }
         let target:Coord|undefined = undefined
-        let minDistSq = 10000000;
+        let minDist = 10000000;
         pts.forEach(opt=>{
             const biases:SgnCoord[] = [[0,0]]
             if(pt.dir == ControlPointDir.incline || opt.dir == ControlPointDir.incline){
@@ -199,12 +199,15 @@ export const useSnapStore = defineStore('snap',()=>{
             if(pt.dir == ControlPointDir.vertical || opt.dir == ControlPointDir.vertical){
                 biases.push([0,-1],[0,1],[1,0],[-1,0])
             }
+            const optSize = saveStore.getLinesDecidedPtSize(opt.id)
+            const optSnapDist = cs.config.snapOctaClingPtPtDist*optSize
+            const finalSnapDist = (snapDist + optSnapDist)/2
             biases.forEach(b=>{
-                const biased = applyBias(opt.pos, b, snapDist)
-                const distSq = coordDistSq(pt.pos, biased)
-                if(distSq<snapThrsSq && distSq<minDistSq){
+                const biased = applyBias(opt.pos, b, finalSnapDist)
+                const dist = coordDist(pt.pos, biased)
+                if(dist<snapThrs && dist<minDist){
                     target = biased;
-                    minDistSq = distSq
+                    minDist = dist
                 }
             })
         })
