@@ -9,10 +9,12 @@ import { applyBias } from "@/utils/coordUtils/coordBias";
 import { coordDist, coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { useConfigStore } from "./configStore";
 import { numberCmpEpsilon, sqrt2half } from "@/utils/consts";
+import { useStaClusterStore } from "./saveDerived/staClusterStore";
 
 export const useSnapStore = defineStore('snap',()=>{
     const cs = useConfigStore()
     const saveStore = useSaveStore()
+    const staClusterStore = useStaClusterStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const snapLines = ref<FormalRay[]>([])
     const snapLinesForPt = ref<number>()
@@ -20,7 +22,7 @@ export const useSnapStore = defineStore('snap',()=>{
     const snappingNamePtId = ref<number>()
     const snapStaNameTo = computed<Coord[]>(()=>{
         const ptId = snappingNamePtId.value || -1
-        const distRatio = saveStore.getLinesDecidedPtSize(ptId)
+        const distRatio = staClusterStore.getMaxSizePtWithinCluster(ptId)
         const snd = cs.config.snapOctaClingPtNameDist * distRatio;
         const sndh = snd * sqrt2half;
         return [

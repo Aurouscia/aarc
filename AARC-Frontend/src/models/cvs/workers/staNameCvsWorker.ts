@@ -9,11 +9,13 @@ import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { useCvsBlocksControlStore } from "../common/cvs";
 import { Coord } from "@/models/coord";
+import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
 
 export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const staNameRectStore = useStaNameRectStore()
     const cvsBlocksControlStore = useCvsBlocksControlStore()
+    const staClusterStore = useStaClusterStore()
     const cs = useConfigStore()
     function renderAllPtName(ctx:CvsContext, needReportRectPts?:number[], noOmit?:boolean){
         if(!saveStore.save)
@@ -36,7 +38,7 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
         if((!noOmit && checkOmittable(globalPos)))
             return
         const align = sgnCoord(pt.nameP)
-        const fontSizeRatio = saveStore.getLinesDecidedPtSize(pt.id)
+        const fontSizeRatio = staClusterStore.getMaxSizePtWithinCluster(pt.id)
 
         const dist = Math.sqrt(pt.nameP[0] ** 2 + pt.nameP[1] ** 2)
         if(dist > 35*fontSizeRatio){

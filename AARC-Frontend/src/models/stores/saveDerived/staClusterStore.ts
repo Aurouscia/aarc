@@ -164,6 +164,15 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             return closestPt
         }
     }
+    function getMaxSizePtWithinCluster(ptId:number){
+        const cluster = belong[ptId]
+        if(!cluster)
+            return saveStore.getLinesDecidedPtSize(ptId)
+        const sizes = cluster.map(x=>saveStore.getLinesDecidedPtSize(x.id))
+        if(sizes.length===0)
+            return 1
+        return Math.max(...sizes)
+    }
 
     function clearItems(){
         staClusters = undefined
@@ -175,6 +184,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         getStaClusters,
         updateCrystalsBecauseOf,
         tryTransferStaNameWithinCluster,
+        getMaxSizePtWithinCluster,
         clearItems
     }
 })
