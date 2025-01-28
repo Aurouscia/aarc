@@ -38,7 +38,7 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
         if((!noOmit && checkOmittable(globalPos)))
             return
         const align = sgnCoord(pt.nameP)
-        const fontSizeRatio = staClusterStore.getMaxSizePtWithinCluster(pt.id)
+        const fontSizeRatio = staClusterStore.getMaxSizePtWithinCluster(pt.id, 'ptNameSize')
 
         const dist = Math.sqrt(pt.nameP[0] ** 2 + pt.nameP[1] ** 2)
         if(dist > 35*fontSizeRatio){

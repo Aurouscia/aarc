@@ -53,6 +53,26 @@ export const useSaveStore = defineStore('save', () => {
         }
         return res
     })
+    const ptNameSize = computed<Record<number, number|undefined>>(()=>{
+        const res:Record<number, number> = {}
+        if(!save.value?.points)
+            return res
+        for(const pt of save.value.points){
+            let maxSize = 1
+            const belongLines = ptBelongLineDict.value[pt.id] || []
+            const sizes = belongLines
+                .filter(x=>x.type===LineType.common)
+                .map(x=>{
+                    if(x.ptNameSize && x.ptNameSize>0)
+                        return x.ptNameSize
+                    return x.width || 1
+                })
+            if(sizes.length>0)
+                maxSize = Math.max(...sizes)
+            res[pt.id] = maxSize
+        }
+        return res
+    })
 
     function getNewId() {
         if(!save.value)
@@ -122,6 +142,9 @@ export const useSaveStore = defineStore('save', () => {
     }
     function getLinesDecidedPtSize(ptId:number){
         return ptSize.value[ptId] || 1
+    }
+    function getLinesDecidedPtNameSize(ptId:number){
+        return ptNameSize.value[ptId] || 1
     }
     function getLinesByType(lineType:LineType){
         if(!save.value)
@@ -402,7 +425,7 @@ export const useSaveStore = defineStore('save', () => {
     
     return { 
         save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint, deletedTextTag,
-        getPtById, getPtsByIds, getLineById, getLinesByIds, getLinesDecidedPtSize,
+        getPtById, getPtsByIds, getLineById, getLinesByIds, getLinesDecidedPtSize, getLinesDecidedPtNameSize,
         getLineActualColor, linesActualColorSame, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getTextTagById,
         insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType,

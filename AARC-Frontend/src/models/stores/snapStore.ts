@@ -22,7 +22,7 @@ export const useSnapStore = defineStore('snap',()=>{
     const snappingNamePtId = ref<number>()
     const snapStaNameTo = computed<Coord[]>(()=>{
         const ptId = snappingNamePtId.value || -1
-        const distRatio = staClusterStore.getMaxSizePtWithinCluster(ptId)
+        const distRatio = staClusterStore.getMaxSizePtWithinCluster(ptId, 'ptSize')
         const snd = cs.config.snapOctaClingPtNameDist * distRatio;
         const sndh = snd * sqrt2half;
         return [

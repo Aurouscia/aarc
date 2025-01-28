@@ -18,12 +18,18 @@ function lineWidthChanged(){
     props.line.width = lineWidthBinded.value
     envStore.lineInfoChanged(props.line, changed)
 }
+const lineStaNameSizeBinded = ref(1)
+function lineStaNameSizeChanged(){
+    props.line.ptNameSize = lineStaNameSizeBinded.value
+    envStore.lineInfoChanged(props.line)
+}
 function textTagCreateBtnClickHandler(){
     envStore.createTextTag(props.line.id)
 }
 
 onMounted(()=>{
     lineWidthBinded.value = props.line.width || 1
+    lineStaNameSizeBinded.value = props.line.ptNameSize || 0
 })
 </script>
 
@@ -39,6 +45,18 @@ onMounted(()=>{
                 :step="lineWidthRange.step" value="1"
                 @change="lineWidthChanged"/>
             <div>{{ lineWidthBinded || 1 }}×</div>
+        </div>
+    </div>
+    <div v-if="line.type===LineType.common" class="configItem">
+        <div>站名</div>
+        <div class="slideBarItem">
+            <input type="range" v-model="lineStaNameSizeBinded"
+                :min="0"
+                :max="lineWidthRange.max"
+                :step="lineWidthRange.step"
+                @change="lineStaNameSizeChanged"/>
+            <div>{{ lineStaNameSizeBinded || 0 }}×</div>
+            <div>(设为0使用线路宽度)</div>
         </div>
     </div>
     <div v-if="line.type===LineType.terrain" class="configItem">
