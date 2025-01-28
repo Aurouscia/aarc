@@ -2,10 +2,12 @@ import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { useConfigStore } from "./configStore";
+import { useStaClusterStore } from "./saveDerived/staClusterStore";
 
 export const useNameEditStore = defineStore('nameEdit', ()=>{
     const cs = useConfigStore()
     const saveStore = useSaveStore()
+    const staClusterStore = useStaClusterStore()
     const { disposedStaNameOf } = storeToRefs(saveStore)
     disposedStaNameOf.value = disposedStaNameHandler
     const targetPtId = ref<number>()
@@ -36,7 +38,8 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
             pt.name = nameMain.value
             pt.nameS = nameSub.value
             if(saveStore.isNamedPt(pt) && !pt.nameP){
-                const dist = cs.config.snapOctaClingPtNameDist
+                const ptSize = staClusterStore.getMaxSizePtWithinCluster(pt.id, 'ptSize')
+                const dist = cs.config.snapOctaClingPtNameDist * ptSize
                 pt.nameP = [0, dist]
             }
         }
