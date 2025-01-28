@@ -604,7 +604,14 @@ export const useEnvStore = defineStore('env', ()=>{
             rerender.value([newLine.id], [pt1.id, pt2.id])
         }
     }
-    function lineInfoChanged(line:Line){
+    function lineInfoChanged(line:Line, widthChanged?:boolean){
+        if(widthChanged){
+            for(const ptId of line.pts){
+                const pt = saveStore.getPtById(ptId)
+                if(pt)
+                    staClusterStore.updateCrystalsBecauseOf(pt)
+            }
+        }
         rerender.value([], line.pts)
     }
 

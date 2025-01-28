@@ -14,8 +14,9 @@ const props = defineProps<{
 }>()
 const lineWidthBinded = ref(1)
 function lineWidthChanged(){
+    const changed = (props.line.width || 1) !== (lineWidthBinded.value || 1)
     props.line.width = lineWidthBinded.value
-    envStore.lineInfoChanged(props.line)
+    envStore.lineInfoChanged(props.line, changed)
 }
 function textTagCreateBtnClickHandler(){
     envStore.createTextTag(props.line.id)
