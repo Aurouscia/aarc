@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Line } from '@/models/save';
+import { Line, LineType } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { onMounted, ref } from 'vue';
 
@@ -41,7 +41,7 @@ onMounted(()=>{
             <div>{{ lineWidthBinded || 1 }}×</div>
         </div>
     </div>
-    <div class="configItem">
+    <div v-if="line.type===LineType.terrain" class="configItem">
         <div>填充</div>
         <div class="checkItem">
             <input type="checkbox" v-model="line.isFilled" @change="envStore.lineInfoChanged(line)"/>
