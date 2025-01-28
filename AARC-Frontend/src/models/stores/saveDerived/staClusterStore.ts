@@ -121,6 +121,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         if(pBelong){
             removeAllByPred(pBelong, x=>x.id===ptId)
             belong[ptId] = undefined
+            cleanClusters()
         }
     }
 
