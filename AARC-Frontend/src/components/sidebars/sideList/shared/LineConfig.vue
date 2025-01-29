@@ -62,7 +62,7 @@ onMounted(()=>{
                 :step="lineWidthRange.step"
                 @change="lineStaNameSizeChanged"/>
             <div>{{ lineStaNameSizeBinded || 0 }}×</div>
-            <div>(设为0使用线路宽度)</div>
+            <div>(设为0使用全局设置)</div>
         </div>
     </div>
     <div v-if="line.type===LineType.common" class="configItem">
@@ -74,7 +74,7 @@ onMounted(()=>{
                 :step="lineWidthRange.step"
                 @change="lineStaSizeChanged"/>
             <div>{{ lineStaSizeBinded || 0 }}×</div>
-            <div>(设为0使用线路宽度)</div>
+            <div>(设为0使用全局设置)</div>
         </div>
     </div>
     <div v-if="line.type===LineType.terrain" class="configItem">

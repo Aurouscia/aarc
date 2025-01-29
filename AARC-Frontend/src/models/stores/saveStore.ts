@@ -9,6 +9,7 @@ import { useConfigStore } from "./configStore";
 import { indicesInArray, removeAllByIndices } from "@/utils/lang/indicesInArray";
 import { coordAdd } from "@/utils/coordUtils/coordMath";
 import { getMayRingLinePtIds } from "@/utils/lineUtils/isRing";
+import { readNumKeyedRecord } from "@/utils/lang/readNumKeyedRecord";
 
 export const useSaveStore = defineStore('save', () => {
     //不应直接在此删除/添加车站/线路，应通过envStore进行，避免数据不一致
@@ -44,18 +45,21 @@ export const useSaveStore = defineStore('save', () => {
         if(!save.value?.points)
             return res
         for(const pt of save.value.points){
-            let maxWidth = 1
+            let maxSize = 1
             const belongLines = ptBelongLineDict.value[pt.id] || []
-            const widths = belongLines
+            const sizes = belongLines
                 .filter(x=>x.type===LineType.common)
                 .map(x=>{
-                    if(x.ptSize && x.ptSize>0)
+                    if(x.ptSize && x.ptSize>0){
                         return x.ptSize
-                    return x.width || 1
+                    }
+                    const configMapped = readNumKeyedRecord(
+                        configStore.config.lineWidthMapped, x.width||1)?.staSize
+                    return configMapped || x.width || 1
                 })
-            if(widths.length>0)
-                maxWidth = Math.max(...widths)
-            res[pt.id] = maxWidth
+            if(sizes.length>0)
+                maxSize = Math.max(...sizes)
+            res[pt.id] = maxSize
         }
         return res
     })
@@ -69,9 +73,12 @@ export const useSaveStore = defineStore('save', () => {
             const sizes = belongLines
                 .filter(x=>x.type===LineType.common)
                 .map(x=>{
-                    if(x.ptNameSize && x.ptNameSize>0)
+                    if(x.ptNameSize && x.ptNameSize>0){
                         return x.ptNameSize
-                    return x.width || 1
+                    }
+                    const configMapped = readNumKeyedRecord(
+                        configStore.config.lineWidthMapped, x.width||1)?.staNameSize
+                    return configMapped || x.width || 1
                 })
             if(sizes.length>0)
                 maxSize = Math.max(...sizes)

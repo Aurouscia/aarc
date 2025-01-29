@@ -36,6 +36,7 @@ function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', val
         lwm[width][setItem] = valueNum
     else
         lwm[width][setItem] = undefined
+    envStore.rerender([], undefined)
 }
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
