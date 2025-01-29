@@ -128,7 +128,7 @@ export const useSnapStore = defineStore('snap',()=>{
                 return
             const xDiff = n.pos[0] - pos[0]
             const yDiff = n.pos[1] - pos[1]
-            if(dir === ControlPointDir.vertical || n.dir === ControlPointDir.vertical){
+            if(true){//dir === ControlPointDir.vertical || n.dir === ControlPointDir.vertical){
                 const xDiffAbs = Math.abs(xDiff)
                 const yDiffAbs = Math.abs(yDiff)
                 const dist = Math.min(xDiffAbs, yDiffAbs)
@@ -143,7 +143,7 @@ export const useSnapStore = defineStore('snap',()=>{
                     }
                 }
             }
-            if(dir === ControlPointDir.incline || n.dir === ControlPointDir.incline){
+            if(true){//dir === ControlPointDir.incline || n.dir === ControlPointDir.incline){
                 const diffdiff = xDiff*yDiff>0 ? (yDiff-xDiff) : (yDiff+xDiff)
                 const dist = Math.abs(diffdiff) * sqrt2half
                 if(dist<cs.config.snapOctaRayPtPtThrs){

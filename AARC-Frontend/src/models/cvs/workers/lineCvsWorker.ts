@@ -17,7 +17,7 @@ import { getByIndexInRing, isRing, isRingByFormalPts } from "@/utils/lineUtils/i
 import { drawArcByThreePoints } from "@/utils/drawUtils/drawArc";
 import { CvsContext } from "../common/cvsContext";
 
-interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill?:boolean}
+interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill:number}
 type LineRenderType = 'both'|'body'|'carpet'
 
 export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
@@ -173,7 +173,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         const pr = rel.posRel
         const rv = rel.rev;
         if(pr == 's')
-            return {a:a.pos, itp:[], b:b.pos};
+            return {a:a.pos, itp:[], b:b.pos, ill:0};
         const originalA = a;
         const originalB = b;
         if(rel.rev){
@@ -184,19 +184,24 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             yDiff = -yDiff
         }
         let itp:Coord[]
-        let ill = false;
+        let ill = 0;
         if(a.dir===b.dir){
-            if(a.dir==ControlPointDir.vertical && (pr=='l'||pr=='u')){
-                ill = false
-            }else if(a.dir==ControlPointDir.incline && (pr=='lu'||pr=='ur')){
-                ill = false
-            }else{
-                ill = true
-            }
             if(a.dir==ControlPointDir.incline){
                 itp = coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'midVert')
             }else{
                 itp = coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'midInc')
+            }
+            
+            if(itp.length==0){
+                if(a.dir==ControlPointDir.vertical && (pr=='lu'||pr=='ur')
+                    ||a.dir==ControlPointDir.incline && (pr=='l'||pr=='u'))
+                {
+                    ill = 2     //×-×
+                }else{
+                    ill = 0     //+-+
+                }
+            }else{
+                ill = 1
             }
         }
         else if(a.dir==ControlPointDir.incline){
@@ -228,8 +233,10 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             if(i>0 && i<segs.length-1){
                 const prevSeg = segs[i-1]
                 const nextSeg = segs[i+1]
-                if(!prevSeg.ill && !nextSeg.ill){
-                    const prevRef = prevSeg.itp.length==0 ? prevSeg.a : prevSeg.itp[0]
+                const prevHelps = prevSeg.ill < thisSeg.ill
+                const nextHelps = nextSeg.ill < thisSeg.ill
+                if(prevHelps && nextHelps){
+                    const prevRef = prevSeg.itp.length==0 ? prevSeg.a : prevSeg.itp[prevSeg.itp.length-1]
                     const prevRay = twinPts2Ray(prevRef, prevSeg.b)
                     const nextRef = nextSeg.itp.length==0 ? nextSeg.b : nextSeg.itp[0]
                     const nextRay = twinPts2Ray(nextRef, nextSeg.a)
@@ -246,23 +253,23 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                     if(!thisRef){
                         thisRay = {source:thisTip, way:[...neibRay.way]}
                         rayRotate90(thisRay)
+                        return rayIntersect(neibRay, thisRay, true)
                     }else{
                         thisRefToShareDist = coordDist(thisRef, share)
                         thisRay = twinPts2Ray(thisRef, share)
                         thisRay.source = thisTip
-                    }
-                    if(rayPerpendicular(neibRay, thisRay)){
-                        return rayIntersect(neibRay, thisRay, true)
-                    }else if(thisRefToShareDist < cs.config.lineTurnAreaRadius){
-                        rayRotate90(thisRay)
-                        return rayIntersect(neibRay, thisRay, true)
+                        if(rayPerpendicular(neibRay, thisRay)){
+                            return rayIntersect(neibRay, thisRay, true)
+                        }
                     }
                 }
                 let itsc:Coord|undefined
                 if(i==segs.length-1){
                     const prevSeg = segs[i-1]
-                    if(!prevSeg.ill){
-                        const neibRef = prevSeg.itp.length==0 ? prevSeg.a : prevSeg.itp[0]
+                    const canHelp = prevSeg.ill<=thisSeg.ill && prevSeg.ill < 2
+                    const needHelp = thisSeg.ill>0
+                    if(needHelp && canHelp){
+                        const neibRef = prevSeg.itp.length==0 ? prevSeg.a : prevSeg.itp[prevSeg.itp.length-1]
                         const share = thisSeg.a
                         const thisRef = thisSeg.itp.length>1 ? thisSeg.itp[0] : null
                         const thisTip = thisSeg.b
@@ -270,7 +277,9 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                     }
                 }else if(i==0){
                     const nextSeg = segs[i+1]
-                    if(!nextSeg.ill){
+                    const canHelp = nextSeg.ill<=thisSeg.ill && nextSeg.ill < 2
+                    const needHelp = thisSeg.ill>0
+                    if(canHelp && needHelp){
                         const neibRef = nextSeg.itp.length==0 ? nextSeg.b : nextSeg.itp[0]
                         const share = thisSeg.b
                         const thisRef = thisSeg.itp.length>1 ? thisSeg.itp[1] : null
