@@ -325,6 +325,10 @@ export const useSaveStore = defineStore('save', () => {
         }
         const thisLines = getLinesByPt(thisPt.id)
         const thatLines = getLinesByPt(thatPt.id)
+        const thisLinesContainsNoneCommon = thisLines.some(x=>x.type!==LineType.common)
+        const thatLinesContainsNoneCommon = thatLines.some(x=>x.type!==LineType.common)
+        if(thisLinesContainsNoneCommon !== thatLinesContainsNoneCommon)
+            return
         let keepThis = true
         if(thisLines.length == thatLines.length){
             keepThis = (thisPt.name?.trim().length || 0) > (thatPt?.name?.trim().length || 0)
