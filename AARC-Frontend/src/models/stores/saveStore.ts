@@ -6,7 +6,7 @@ import { isSameCoord } from "@/utils/sgn";
 import { getRangeByPred } from "@/utils/lang/getRangeByPred";
 import { checkOrder } from "@/utils/lang/checkOrder";
 import { useConfigStore } from "./configStore";
-import { indicesInArray } from "@/utils/lang/indicesInArray";
+import { indicesInArray, removeAllByIndices } from "@/utils/lang/indicesInArray";
 import { coordAdd } from "@/utils/coordUtils/coordMath";
 import { getMayRingLinePtIds } from "@/utils/lineUtils/isRing";
 
@@ -344,11 +344,16 @@ export const useSaveStore = defineStore('save', () => {
         }
         let delFromLines = keepThis ? thatLines : thisLines
         delFromLines.forEach(line=>{
+            const keepPtInLineIdx = line.pts.indexOf(keepPt.id)
+            const needDelIdxs:number[] = []
             for(let i=0; i<line.pts.length; i++){
                 if(line.pts[i] === delPt.id){
+                    if(keepPtInLineIdx >= 0 && Math.abs(keepPtInLineIdx - i) === 1)
+                        needDelIdxs.push(i)
                     line.pts[i] = keepPt.id
                 }
             }
+            removeAllByIndices(line.pts, needDelIdxs)
         })
         const delIdx = save.value.points.findIndex(x=>x.id == delPt.id)
         if(delIdx >= 0){
