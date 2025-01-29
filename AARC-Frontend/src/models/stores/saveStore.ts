@@ -46,7 +46,13 @@ export const useSaveStore = defineStore('save', () => {
         for(const pt of save.value.points){
             let maxWidth = 1
             const belongLines = ptBelongLineDict.value[pt.id] || []
-            const widths = belongLines.filter(x=>x.type===LineType.common).map(x=>x.width || 1)
+            const widths = belongLines
+                .filter(x=>x.type===LineType.common)
+                .map(x=>{
+                    if(x.ptSize && x.ptSize>0)
+                        return x.ptSize
+                    return x.width || 1
+                })
             if(widths.length>0)
                 maxWidth = Math.max(...widths)
             res[pt.id] = maxWidth

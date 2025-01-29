@@ -23,6 +23,11 @@ function lineStaNameSizeChanged(){
     props.line.ptNameSize = lineStaNameSizeBinded.value
     envStore.lineInfoChanged(props.line)
 }
+const lineStaSizeBinded = ref(1)
+function lineStaSizeChanged(){
+    props.line.ptSize = lineStaSizeBinded.value
+    envStore.lineInfoChanged(props.line)
+}
 function textTagCreateBtnClickHandler(){
     envStore.createTextTag(props.line.id)
 }
@@ -30,6 +35,7 @@ function textTagCreateBtnClickHandler(){
 onMounted(()=>{
     lineWidthBinded.value = props.line.width || 1
     lineStaNameSizeBinded.value = props.line.ptNameSize || 0
+    lineStaSizeBinded.value = props.line.ptSize || 0
 })
 </script>
 
@@ -56,6 +62,18 @@ onMounted(()=>{
                 :step="lineWidthRange.step"
                 @change="lineStaNameSizeChanged"/>
             <div>{{ lineStaNameSizeBinded || 0 }}×</div>
+            <div>(设为0使用线路宽度)</div>
+        </div>
+    </div>
+    <div v-if="line.type===LineType.common" class="configItem">
+        <div>车站</div>
+        <div class="slideBarItem">
+            <input type="range" v-model="lineStaSizeBinded"
+                :min="0"
+                :max="lineWidthRange.max"
+                :step="lineWidthRange.step"
+                @change="lineStaSizeChanged"/>
+            <div>{{ lineStaSizeBinded || 0 }}×</div>
             <div>(设为0使用线路宽度)</div>
         </div>
     </div>

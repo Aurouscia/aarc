@@ -49,6 +49,7 @@ export interface Line{
     colorPre?:ColorPreset
     width?:number
     ptNameSize?:number
+    ptSize?:number
     type:LineType
     isFilled?:boolean
 }
