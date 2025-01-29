@@ -5,9 +5,14 @@ import { useScalerLocalConfigStore } from '@/app/localConfig/scalerLocalConfig';
 import Bowser from 'bowser'
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useEnvStore } from '@/models/stores/envStore';
+import { useConfigStore } from '@/models/stores/configStore';
+import { storeToRefs } from 'pinia';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore()
+const configStore = useConfigStore()
+const { config } = storeToRefs(configStore)
+
 const steppedScaleEnabled = ref(false)
 const scalerLocalConfig = useScalerLocalConfigStore()
 async function steppedScaleChange(){
@@ -20,6 +25,19 @@ function removeNoLinePoints(){
     envStore.rerender([], undefined)
 }
 
+function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', value?:string){
+    if(!config.value.lineWidthMapped)
+        config.value.lineWidthMapped = {}
+    const valueNum = value ? parseFloat(value) : NaN
+    const lwm = config.value.lineWidthMapped
+    if(!lwm[width])
+        lwm[width] = {}
+    if(!isNaN(valueNum))
+        lwm[width][setItem] = valueNum
+    else
+        lwm[width][setItem] = undefined
+}
+
 const sidebar = ref<InstanceType<typeof SideBar>>()
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
@@ -28,6 +46,9 @@ defineExpose({
 
 const browserInfo = ref<ReturnType<typeof Bowser.parse>>()
 onMounted(()=>{
+    if(!config.value.lineWidthMapped){
+        config.value.lineWidthMapped = {}
+    }
     steppedScaleEnabled.value = scalerLocalConfig.readSteppedScaleEnabled()
     browserInfo.value = Bowser.parse(navigator.userAgent)
 })
@@ -35,6 +56,30 @@ onMounted(()=>{
 
 <template>
 <SideBar ref="sidebar">
+<table class="fullWidth lineWidthMapped"><tbody>
+    <tr>
+        <td class="explain" colspan="3">
+            设置特定宽度的线路使用的<br/>车站尺寸/站名大小<br/>
+            (会被线路单独设置覆盖)
+        </td>
+    </tr>
+    <tr>
+        <th></th>
+        <th>车站</th>
+        <th>站名</th>
+    </tr>
+    <tr v-for="width in ['0.5', '0.75', '1', '1.25', '1.5', '1.75', '2']">
+        <td>{{ width }}</td>
+        <td>
+            <input :value="config.lineWidthMapped[width]?.staSize" :placeholder="width"
+                @blur="e=>applyLineWidthMapped(width, 'staSize', (e.target as HTMLInputElement).value)"/>
+        </td>
+        <td>
+            <input :value="config.lineWidthMapped[width]?.staNameSize" :placeholder="width"
+                @blur="e=>applyLineWidthMapped(width, 'staNameSize', (e.target as HTMLInputElement).value)"/>
+        </td>
+    </tr>
+</tbody></table>
 <table class="fullWidth"><tbody>
     <tr>
         <td>
@@ -80,6 +125,14 @@ onMounted(()=>{
 </template>
 
 <style scoped lang="scss">
+.lineWidthMapped{
+    input{
+        width: 80px;
+        &::placeholder {
+            color: #aaa;
+        }
+    }
+}
 .explain{
     font-size: 14px;
     color: #666

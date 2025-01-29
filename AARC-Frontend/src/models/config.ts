@@ -5,6 +5,7 @@ export interface Config{
 
     lineWidth: number,
     lineTurnAreaRadius: number,
+    lineWidthMapped: LineWidthMappedConfig
 
     ptBareSize: number,
     ptBareLineWidth: number,
@@ -55,5 +56,9 @@ export interface Config{
     textTagSubFontColorHex: string,
     textTagSubRowHeightBase: number,
 }
+export type LineWidthMappedConfig = Record<string, {
+    staSize?:number,
+    staNameSize?:number
+}|undefined>
 
 export type ConfigInSave = AllKeysOptional<Config>

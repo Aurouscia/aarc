@@ -5,12 +5,15 @@ import { Config } from "../config"
 import { useSaveStore } from "./saveStore"
 import { ColorPreset, Line, LineType } from "../save"
 import { WayRel } from "@/utils/rayUtils/rayParallel"
+import rfdc from "rfdc"
+import { removeKeyIfSame } from "@/utils/lang/removeKeyIfSame"
 
 export const configDefault:Config = {
     bgColor: '#ffffff',
 
     lineWidth: 14,
     lineTurnAreaRadius: 30,
+    lineWidthMapped: {},
 
     ptBareSize: 12,
     ptBareLineWidth: 3,
@@ -63,13 +66,20 @@ export const configDefault:Config = {
 }
 
 export const useConfigStore = defineStore('config', ()=>{
-    const config = ref<Config>(configDefault)
+    const deepClone = rfdc()
+    const config = ref<Config>(deepClone(configDefault))
     const saveStore = useSaveStore()
     function readConfigFromSave(){
         if(!saveStore.save?.config)
             return;
         const sc = saveStore.save.config;
         Object.assign(config.value, sc)
+    }
+    function writeConfigToSave(){
+        const configNow = deepClone(config.value)
+        removeKeyIfSame(configNow, deepClone(configDefault))
+        if(saveStore.save)
+            saveStore.save.config = configNow
     }
 
     const staNameFontStr = computed<string>(()=>
@@ -127,7 +137,7 @@ export const useConfigStore = defineStore('config', ()=>{
     }
 
     return { 
-        config, readConfigFromSave,
+        config, readConfigFromSave, writeConfigToSave,
         staNameFontStr, staNameFontSubStr,
         clickPtThrsSq, clickLineThrsSq, clickLineThrs_sqrt2_sq, 
         snapOctaClingPtPtThrsSq, snapOctaClingPtNameThrsSq,

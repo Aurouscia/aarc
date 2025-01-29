@@ -13,10 +13,13 @@ import { usePreventLeavingUnsaved } from '@/utils/eventUtils/preventLeavingUnsav
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useResetterStore } from '@/models/stores/utils/resetterStore';
 import { useScalerLocalConfigStore } from '@/app/localConfig/scalerLocalConfig';
+import rfdc from 'rfdc';
+import { useConfigStore } from '@/models/stores/configStore';
 
 const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
 const saveStore = useSaveStore()
+const configStore = useConfigStore()
 const resetterStore = useResetterStore()
 const api = useApiStore().get()
 const saveIdNum = computed(()=>parseInt(props.saveId))
@@ -49,9 +52,15 @@ async function load() {
     loadedSaveIdNum = saveIdNum.value || 0
 }
 
+const deepClone = rfdc()
 const { preventLeaving, releasePreventLeaving, showUnsavedWarning } = usePreventLeavingUnsaved()
 async function saveData(){
+    configStore.writeConfigToSave()
     if(isNaN(saveIdNum.value)){
+        if(import.meta.env.DEV){
+            const saveCopy = deepClone(saveStore.save)
+            console.log(saveCopy)
+        }
         pop.value?.show('此处不能保存', 'failed')
         return
     }
