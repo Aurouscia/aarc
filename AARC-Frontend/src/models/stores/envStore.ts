@@ -139,7 +139,7 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         if(movedPoint.value && activePt.value?.id){
             const lines = saveStore.getLinesByPt(activePt.value.id)
-            rerenderParamLineIds = lines.map(x=>x.id)
+            rerenderParamLineIds.push(...lines.map(x=>x.id))
             rerenderParamPtIds.push(activePt.value.id)
         }
         //更新车站团
