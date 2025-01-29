@@ -248,14 +248,12 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             else{
                 const func = (neibRef:Coord, share:Coord, thisRef:Coord|null, thisTip:Coord)=>{
                     const neibRay = twinPts2Ray(neibRef, share)
-                    let thisRefToShareDist = 1e10; 
                     let thisRay:FormalRay;
                     if(!thisRef){
                         thisRay = {source:thisTip, way:[...neibRay.way]}
                         rayRotate90(thisRay)
                         return rayIntersect(neibRay, thisRay, true)
                     }else{
-                        thisRefToShareDist = coordDist(thisRef, share)
                         thisRay = twinPts2Ray(thisRef, share)
                         thisRay.source = thisTip
                         if(rayPerpendicular(neibRay, thisRay)){

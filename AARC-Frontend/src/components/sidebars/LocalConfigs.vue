@@ -7,6 +7,7 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useConfigStore } from '@/models/stores/configStore';
 import { storeToRefs } from 'pinia';
+import { clamp } from '@/utils/lang/clamp';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore()
@@ -33,7 +34,7 @@ function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', val
     if(!lwm[width])
         lwm[width] = {}
     if(!isNaN(valueNum))
-        lwm[width][setItem] = valueNum
+        lwm[width][setItem] = clamp(valueNum, 0.1, 3)
     else
         lwm[width][setItem] = undefined
     envStore.rerender([], undefined)
