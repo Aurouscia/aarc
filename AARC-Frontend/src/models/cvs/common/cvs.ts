@@ -140,7 +140,7 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
         console.log(`刷新画布块，${res.length}`)
         if(!suppressReformedHandler){
             const brief = blocksControlBrief(res)
-            if(brief !== lastHandledBrief){
+            if(brief !== lastHandledBrief || res.length===1){
                 blocksControl.value = res
                 nextTick(()=>{
                     blocksReformHandler.value.forEach(f=>f())
