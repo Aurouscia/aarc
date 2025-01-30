@@ -61,7 +61,7 @@ onMounted(()=>{
 <table class="fullWidth lineWidthMapped"><tbody>
     <tr>
         <td class="explain" colspan="3">
-            设置特定宽度的线路使用的<br/>车站尺寸/站名大小<br/>
+            设置特定宽度的线路对应的<br/>车站尺寸/站名大小<br/>
             (会被线路单独设置覆盖)
         </td>
     </tr>
@@ -79,6 +79,13 @@ onMounted(()=>{
         <td>
             <input :value="config.lineWidthMapped[width]?.staNameSize" :placeholder="width"
                 @blur="e=>applyLineWidthMapped(width, 'staNameSize', (e.target as HTMLInputElement).value)"/>
+        </td>
+    </tr>
+    <tr>
+        <td class="explain" colspan="3">
+            调小车站尺寸可能会造成<br/>
+            换乘站脱离，请保存后刷新<br/>
+            并重新拼合脱离处
         </td>
     </tr>
 </tbody></table>
