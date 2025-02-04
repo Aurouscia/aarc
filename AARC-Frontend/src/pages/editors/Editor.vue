@@ -15,6 +15,7 @@ import { useResetterStore } from '@/models/stores/utils/resetterStore';
 import { useScalerLocalConfigStore } from '@/app/localConfig/scalerLocalConfig';
 import rfdc from 'rfdc';
 import { useConfigStore } from '@/models/stores/configStore';
+import { useUserInfoStore } from '@/app/globalStores/userInfo';
 
 const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
@@ -22,6 +23,7 @@ const saveStore = useSaveStore()
 const configStore = useConfigStore()
 const resetterStore = useResetterStore()
 const api = useApiStore().get()
+const userInfoStore = useUserInfoStore()
 const saveIdNum = computed(()=>parseInt(props.saveId))
 let loadedSaveIdNum = 0
 const loadComplete = ref(false)
@@ -30,6 +32,7 @@ const isDemo = computed(()=>props.saveId.toLowerCase() == 'demo')
 const scalerLocalConfig = useScalerLocalConfigStore()
 async function load() {
     if(!isNaN(saveIdNum.value)){
+        await checkLoginLeftTime()
         const resp = await api.save.loadData(saveIdNum.value)
         try{
             const obj = resp ? JSON.parse(resp) : {}
@@ -70,6 +73,15 @@ async function saveData(){
     const resp = await api.save.updateData(saveIdNum.value, data, staCount, lineCount)
     if(resp){
         releasePreventLeaving()
+    }
+}
+async function checkLoginLeftTime(){
+    const userInfo = await userInfoStore.getIdentityInfo()
+    if(userInfo.LeftHours <= 3){
+        pop.value?.show('登录即将过期\n尽快重新登录', 'warning')
+        window.setTimeout(()=>{
+            pop.value?.show('否则将无法保存', 'warning')
+        }, 3000)
     }
 }
 
