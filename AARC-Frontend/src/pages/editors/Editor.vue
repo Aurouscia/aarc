@@ -16,6 +16,7 @@ import { useScalerLocalConfigStore } from '@/app/localConfig/scalerLocalConfig';
 import rfdc from 'rfdc';
 import { useConfigStore } from '@/models/stores/configStore';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
+import { ShortcutListener } from '@aurouscia/keyboard-shortcut'
 
 const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
@@ -108,16 +109,19 @@ watch(props, async()=>{
         window.location.reload()
     }
 })
+const saveShortcutListener = new ShortcutListener(saveData, 's', true)
 onBeforeMount(async()=>{
     setLeavingPreventing()
     if(!isDemo.value)
         mainCvsDispatcher.afterMainCvsRendered = preventLeaving
     topbarShow.value = false
     await load()
+    saveShortcutListener.startListen()
 })
 onUnmounted(()=>{
     mainCvsDispatcher.afterMainCvsRendered = undefined
     topbarShow.value = true
+    saveShortcutListener.dispose()
 })
 </script>
 
