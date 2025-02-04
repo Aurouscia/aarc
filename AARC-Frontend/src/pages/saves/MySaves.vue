@@ -193,6 +193,9 @@ onMounted(async()=>{
         <tr><td>
         <button class="minor dangerZoneBtn" @click="dangerZone = !dangerZone">危险区</button>
         <div v-show="dangerZone" class="dangerZone">
+            <div class="dangerOpName">
+                替换存档数据
+            </div>
             <input type="file" ref="jsonFileInput" accept=".json" @change="selectReplaceJson"/>
             <div v-show="jsonContent" class="replaceJsonInfo">
                 [{{ jsonSaveLineCount }}线 {{ jsonSaveStaCount }}站]
@@ -201,8 +204,9 @@ onMounted(async()=>{
             <button v-show="jsonContent" class="danger" @click="commitReplaceJson">替换数据</button>
         </div>
         <div v-show="dangerZone" class="dangerZone">
+            <div class="dangerOpName">删除存档</div>
             <input v-model="repeatCvsName" placeholder="输入本存档名称"/>
-            <button class="danger" @click="removeCurrentCvs">删除存档</button>
+            <button v-show="repeatCvsName" class="danger" @click="removeCurrentCvs">删除存档</button>
         </div>
         </td></tr>
     </tbody></table>
@@ -234,5 +238,9 @@ table{
 .dangerZoneBtn{
     display: block;
     margin: auto;
+}
+.dangerOpName{
+    text-align: center;
+    color: red;
 }
 </style>
