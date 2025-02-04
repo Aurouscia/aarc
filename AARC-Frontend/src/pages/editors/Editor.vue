@@ -32,7 +32,9 @@ const isDemo = computed(()=>props.saveId.toLowerCase() == 'demo')
 const scalerLocalConfig = useScalerLocalConfigStore()
 async function load() {
     if(!isNaN(saveIdNum.value)){
-        await checkLoginLeftTime()
+        const refuseToLoad = await checkLoginLeftTime()
+        if(refuseToLoad)
+            return
         const resp = await api.save.loadData(saveIdNum.value)
         try{
             const obj = resp ? JSON.parse(resp) : {}
@@ -77,7 +79,15 @@ async function saveData(){
 }
 async function checkLoginLeftTime(){
     const userInfo = await userInfoStore.getIdentityInfo()
-    if(userInfo.LeftHours <= 3){
+    if(userInfo.LeftHours === 0){
+        pop.value?.show('请登录', 'failed')
+        return true
+    }
+    else if(userInfo.LeftHours <= 1){
+        pop.value?.show('登录即将过期\n尽快重新登录', 'failed')
+        return true
+    }
+    else if(userInfo.LeftHours <= 3){
         pop.value?.show('登录即将过期\n尽快重新登录', 'warning')
         window.setTimeout(()=>{
             pop.value?.show('否则将无法保存', 'warning')
