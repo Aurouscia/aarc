@@ -65,7 +65,7 @@ defineExpose({ show })
         width: (-rightDefault) + 'px',
         top: height*index + top + 'px'
          }" :class="box.type">
-         <div>
+        <div>
             {{ box.msg }}
         </div>
     </div>
@@ -88,7 +88,8 @@ defineExpose({ show })
 .box div{
     max-width: 180px;
     color:white;
-    word-break: break-all;;
+    word-break: break-all;
+    white-space: pre-wrap;
 }
 .success{
     background-color: #339933;
