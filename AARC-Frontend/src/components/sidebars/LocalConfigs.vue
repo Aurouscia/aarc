@@ -14,13 +14,6 @@ const envStore = useEnvStore()
 const configStore = useConfigStore()
 const { config } = storeToRefs(configStore)
 
-const steppedScaleEnabled = ref(false)
-const scalerLocalConfig = useScalerLocalConfigStore()
-async function steppedScaleChange(){
-    const enabled = steppedScaleEnabled.value
-    scalerLocalConfig.saveSteppedScaleEnabled(enabled)
-}
-
 const showLineWidthMapped = ref(false)
 function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', value?:string){
     if(!config.value.lineWidthMapped)
@@ -36,24 +29,30 @@ function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', val
     envStore.rerender([], undefined)
 }
 
-const sidebar = ref<InstanceType<typeof SideBar>>()
-defineExpose({
-    comeOut: ()=>{sidebar.value?.extend()},
-    fold: ()=>{sidebar.value?.fold()}
-})
-
 const showOthers = ref(false)
 function removeNoLinePoints(){
     saveStore.removeNoLinePoints()
     envStore.rerender([], undefined)
 }
+const steppedScaleEnabled = ref(false)
+const scalerLocalConfig = useScalerLocalConfigStore()
+async function steppedScaleChange(){
+    const enabled = steppedScaleEnabled.value
+    scalerLocalConfig.saveSteppedScaleEnabled(enabled)
+}
 const browserInfo = ref<ReturnType<typeof Bowser.parse>>()
+
 onMounted(()=>{
     if(!config.value.lineWidthMapped){
         config.value.lineWidthMapped = {}
     }
     steppedScaleEnabled.value = scalerLocalConfig.readSteppedScaleEnabled()
     browserInfo.value = Bowser.parse(navigator.userAgent)
+})
+const sidebar = ref<InstanceType<typeof SideBar>>()
+defineExpose({
+    comeOut: ()=>{sidebar.value?.extend()},
+    fold: ()=>{sidebar.value?.fold()}
 })
 </script>
 
@@ -63,7 +62,8 @@ onMounted(()=>{
     <div class="shownStatusIcon">{{ showLineWidthMapped ? '×':'+' }}</div>
     <div>线宽对应车站尺寸</div>
 </h2>
-<table v-show="showLineWidthMapped" class="fullWidth lineWidthMapped"><tbody>
+<table v-show="showLineWidthMapped" class="fullWidth lineWidthMapped">
+    <tbody>
     <tr>
         <td class="explain" colspan="3">
             设置特定宽度的线路对应的<br/>车站尺寸/站名大小<br/>
@@ -94,11 +94,13 @@ onMounted(()=>{
         </td>
     </tr>
 </tbody></table>
+
 <h2 :class="{sectorShown:showOthers}" @click="showOthers = !showOthers">
     <div class="shownStatusIcon">{{ showOthers ? '×':'+' }}</div>
     <div>杂项</div>
 </h2>
-<table v-show="showOthers" class="fullWidth"><tbody>
+<table v-show="showOthers" class="fullWidth">
+    <tbody>
     <tr>
         <td>
             <button @click="removeNoLinePoints">执行</button>
