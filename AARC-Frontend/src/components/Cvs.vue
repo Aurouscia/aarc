@@ -48,8 +48,10 @@ async function init(){
 }
 const bgRefImageStyle = computed<CSSProperties>(()=>{
     const bgRefImage = configStore.config.bgRefImage
+    const opacityNum = bgRefImage.opacity ? parseInt(bgRefImage.opacity.toString()) : NaN
     return {
         position: 'absolute',
+        opacity: !isNaN(opacityNum) ? `${opacityNum/100}` : undefined,
         left: typeof bgRefImage.left=='number' ? `${bgRefImage.left}%` : undefined,
         top: typeof bgRefImage.top=='number' ? `${bgRefImage.top}%` : undefined,
         right: typeof bgRefImage.right=='number' ? `${bgRefImage.right}%` : undefined,

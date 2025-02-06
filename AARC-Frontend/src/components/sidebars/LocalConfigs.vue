@@ -31,8 +31,9 @@ function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', val
     envStore.rerender([], undefined)
 }
 
-const showBgImage = ref(false)
-function applyBgImage(type:'url'|'left'|'top'|'right'|'bottom', value?:string){
+const showBgRefImage = ref(false)
+const bgRefImageOpacityDefault = 50
+function applyBgImage(type:'url'|'opacity'|'left'|'top'|'right'|'bottom', value?:string){
     if(!config.value.bgRefImage)
         return
     const bri = config.value.bgRefImage
@@ -47,7 +48,11 @@ function applyBgImage(type:'url'|'left'|'top'|'right'|'bottom', value?:string){
         let valueNum = value ? parseFloat(value) : NaN
         if(isNaN(valueNum))
             return
-        bri[type] = clamp(valueNum, -200, 200)
+        if(type == 'opacity')
+            valueNum = clamp(valueNum, 0, 100)
+        else
+            valueNum = clamp(valueNum, -200, 200)
+        bri[type] = valueNum
         preventLeaving()
     }
 }
@@ -71,8 +76,9 @@ onMounted(()=>{
     }
     if(!config.value.bgRefImage){
         config.value.bgRefImage = {
-            left:0,
-            right:0
+            left: 0,
+            right: 0,
+            opacity: bgRefImageOpacityDefault
         }
     }
     steppedScaleEnabled.value = scalerLocalConfig.readSteppedScaleEnabled()
@@ -124,11 +130,11 @@ defineExpose({
     </tr>
 </tbody></table>
 
-<h2 :class="{sectorShown:showBgImage}" @click="showBgImage =!showBgImage">
-    <div class="shownStatusIcon">{{ showBgImage? '×':'+' }}</div>
+<h2 :class="{sectorShown:showBgRefImage}" @click="showBgRefImage =!showBgRefImage">
+    <div class="shownStatusIcon">{{ showBgRefImage? '×':'+' }}</div>
     <div>背景参考图</div>
 </h2>
-<table v-show="showBgImage" class="fullWidth bgRefImage">
+<table v-show="showBgRefImage" class="fullWidth bgRefImage">
     <tbody>
     <tr>
         <td class="explain" colspan="2">
@@ -141,6 +147,14 @@ defineExpose({
         <td colspan="2">
             <b>图片链接</b>
             <input v-model="config.bgRefImage.url" @blur="e=>applyBgImage('url', (e.target as HTMLInputElement).value)"/>
+        </td>
+    </tr>
+    <tr>
+        <td>不透<br/>明度</td>
+        <td>
+            <input v-model="config.bgRefImage.opacity" type="range" :min="0" :max="100" :step="5"
+                @blur="e=>applyBgImage('opacity', (e.target as HTMLInputElement).value)"/><br/>
+            {{ config.bgRefImage.opacity || bgRefImageOpacityDefault }}%
         </td>
     </tr>
     <tr>

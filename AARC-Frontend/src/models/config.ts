@@ -63,6 +63,7 @@ export type LineWidthMappedConfig = Record<string, {
 }|undefined>
 export type BgRefImageConfig = {
     url?: string,
+    opacity?: number,
     left?: number,
     right?: number,
     top?: number,
