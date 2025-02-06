@@ -21,11 +21,7 @@ async function steppedScaleChange(){
     scalerLocalConfig.saveSteppedScaleEnabled(enabled)
 }
 
-function removeNoLinePoints(){
-    saveStore.removeNoLinePoints()
-    envStore.rerender([], undefined)
-}
-
+const showLineWidthMapped = ref(false)
 function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', value?:string){
     if(!config.value.lineWidthMapped)
         config.value.lineWidthMapped = {}
@@ -46,6 +42,11 @@ defineExpose({
     fold: ()=>{sidebar.value?.fold()}
 })
 
+const showOthers = ref(false)
+function removeNoLinePoints(){
+    saveStore.removeNoLinePoints()
+    envStore.rerender([], undefined)
+}
 const browserInfo = ref<ReturnType<typeof Bowser.parse>>()
 onMounted(()=>{
     if(!config.value.lineWidthMapped){
@@ -58,7 +59,11 @@ onMounted(()=>{
 
 <template>
 <SideBar ref="sidebar">
-<table class="fullWidth lineWidthMapped"><tbody>
+<h2 :class="{sectorShown:showLineWidthMapped}" @click="showLineWidthMapped = !showLineWidthMapped">
+    <div class="shownStatusIcon">{{ showLineWidthMapped ? '×':'+' }}</div>
+    <div>线宽对应车站尺寸</div>
+</h2>
+<table v-show="showLineWidthMapped" class="fullWidth lineWidthMapped"><tbody>
     <tr>
         <td class="explain" colspan="3">
             设置特定宽度的线路对应的<br/>车站尺寸/站名大小<br/>
@@ -89,7 +94,11 @@ onMounted(()=>{
         </td>
     </tr>
 </tbody></table>
-<table class="fullWidth"><tbody>
+<h2 :class="{sectorShown:showOthers}" @click="showOthers = !showOthers">
+    <div class="shownStatusIcon">{{ showOthers ? '×':'+' }}</div>
+    <div>杂项</div>
+</h2>
+<table v-show="showOthers" class="fullWidth"><tbody>
     <tr>
         <td>
             <button @click="removeNoLinePoints">执行</button>
@@ -134,6 +143,31 @@ onMounted(()=>{
 </template>
 
 <style scoped lang="scss">
+h2{
+    display: flex;
+    align-items: center;
+    color: #999;
+    font-size: 20px;
+    gap: 10px;
+    margin: 5px;
+    border-top: 1px solid #ccc;
+    padding-top: 5px;
+    cursor: pointer;
+    &.sectorShown{
+        font-weight: bold;
+        color: black
+    }
+    .shownStatusIcon{
+        width: 20px;
+        height: 20px;
+        font-size: 16px;
+        line-height: 20px;
+        font-weight: bold;
+        text-align: center;
+        border: 1px solid #999;
+        border-radius: 5px;
+    }
+}
 .lineWidthMapped{
     input{
         width: 80px;

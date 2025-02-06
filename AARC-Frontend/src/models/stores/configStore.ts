@@ -10,6 +10,7 @@ import { removeKeyIfSame } from "@/utils/lang/removeKeyIfSame"
 
 export const configDefault:Config = {
     bgColor: '#ffffff',
+    bgRefImage: {},
 
     lineWidth: 14,
     lineTurnAreaRadius: 30,

@@ -2,6 +2,7 @@ import { AllKeysOptional } from "@/utils/type/AllKeysOptional"
 
 export interface Config{
     bgColor: string,
+    bgRefImage: BgRefImageConfig,
 
     lineWidth: number,
     lineTurnAreaRadius: number,
@@ -60,5 +61,12 @@ export type LineWidthMappedConfig = Record<string, {
     staSize?:number,
     staNameSize?:number
 }|undefined>
+export type BgRefImageConfig = {
+    url?: string,
+    left?: number,
+    right?: number,
+    top?: number,
+    bottom?: number,
+}
 
 export type ConfigInSave = AllKeysOptional<Config>
