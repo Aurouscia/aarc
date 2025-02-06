@@ -108,18 +108,18 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         }
     }
     function cleanClusters(){
-        if(staClusters)
+        if(staClusters){
+            for(const c of staClusters){
+                if(c.length == 1){
+                    belong[c[0].id] = undefined
+                }
+            }
             removeAllByPred<ControlPoint[]>(staClusters, x => x.length<=1)
+        }
         for(const ptId of Object.keys(belong)){
             const ptIdNum = parseInt(ptId)
             if(belong[ptIdNum] && !belong[ptIdNum].some(x=>x.id === ptIdNum))
                 belong[ptIdNum] = undefined
-        }
-        for(const c of staClusters||[]){
-            removeAllByPred(c, (pt)=>{
-                const ptBelong = belong[pt.id]
-                return !ptBelong || ptBelong !== c
-            })
         }
     }
     function cleanClustersFromDeletedPt(ptId:number){
