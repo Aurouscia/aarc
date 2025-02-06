@@ -127,7 +127,11 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         if(pBelong){
             removeAllByPred(pBelong, x=>x.id===ptId)
             belong[ptId] = undefined
-            cleanClusters()
+            if(pBelong.length > 1){
+                updateCrystalsBecauseOf(pBelong[0])
+            }else{
+                cleanClusters()
+            }
         }
     }
 
