@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
-import { onMounted, nextTick, watch, onBeforeUnmount } from 'vue';
+import { onMounted, nextTick, watch, onBeforeUnmount, computed, CSSProperties } from 'vue';
 import Ops from './Ops.vue';
 import NameEdit from './NameEdit.vue';
 import TextTagEdit from './TextTagEdit.vue';
@@ -46,6 +46,17 @@ async function init(){
     }
     wait.value?.setShowing(false)
 }
+const bgRefImageStyle = computed<CSSProperties>(()=>{
+    const bgRefImage = configStore.config.bgRefImage
+    return {
+        position: 'absolute',
+        left: typeof bgRefImage.left=='number' ? `${bgRefImage.left}%` : undefined,
+        top: typeof bgRefImage.top=='number' ? `${bgRefImage.top}%` : undefined,
+        right: typeof bgRefImage.right=='number' ? `${bgRefImage.right}%` : undefined,
+        bottom: typeof bgRefImage.bottom=='number' ? `${bgRefImage.bottom}%` : undefined,
+    }
+})
+
 onMounted(async()=>{
     await init()
 })
@@ -65,6 +76,9 @@ defineExpose({init})
 <template>
     <div class="cvsFrame" ref="cvsFrame">
         <div class="cvsCont" ref="cvsCont" :style="{backgroundColor: configStore.config.bgColor}">
+            <div v-if="configStore.config.bgRefImage.url" class="bgRefImageDiv" :style="bgRefImageStyle">
+                <img :src="configStore.config.bgRefImage.url"/>
+            </div>
             <CvsBlocks :canvas-id-prefix="baseCvsDispatcher.canvasIdPrefix"></CvsBlocks>
             <CvsBlocks :canvas-id-prefix="mainCvsDispatcher.canvasIdPrefix"
                 :cvs-class-name="'mainCvs'" :insnif="envStore.somethingActive"></CvsBlocks>
@@ -89,5 +103,11 @@ defineExpose({init})
     width: 1000px;
     height: 1000px;
     overflow: hidden;
+}
+.bgRefImageDiv{
+    img{
+        width: 100%;
+        height: 100%;
+    }
 }
 </style>

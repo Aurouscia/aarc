@@ -29,6 +29,25 @@ function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', val
     envStore.rerender([], undefined)
 }
 
+const showBgImage = ref(false)
+function applyBgImage(type:'url'|'left'|'top'|'right'|'bottom', value?:string){
+    if(!config.value.bgRefImage)
+        return
+    const bri = config.value.bgRefImage
+    if(type == 'url'){
+        bri.url = value
+    }else{
+        if(!value?.trim()){
+            bri[type] = undefined
+            return
+        }
+        let valueNum = value ? parseFloat(value) : NaN
+        if(isNaN(valueNum))
+            return
+        bri[type] = clamp(valueNum, -200, 200)
+    }
+}
+
 const showOthers = ref(false)
 function removeNoLinePoints(){
     saveStore.removeNoLinePoints()
@@ -46,6 +65,12 @@ onMounted(()=>{
     if(!config.value.lineWidthMapped){
         config.value.lineWidthMapped = {}
     }
+    if(!config.value.bgRefImage){
+        config.value.bgRefImage = {
+            left:0,
+            right:0
+        }
+    }
     steppedScaleEnabled.value = scalerLocalConfig.readSteppedScaleEnabled()
     browserInfo.value = Bowser.parse(navigator.userAgent)
 })
@@ -57,7 +82,7 @@ defineExpose({
 </script>
 
 <template>
-<SideBar ref="sidebar">
+<SideBar ref="sidebar" :enforce-y-scroll="true">
 <h2 :class="{sectorShown:showLineWidthMapped}" @click="showLineWidthMapped = !showLineWidthMapped">
     <div class="shownStatusIcon">{{ showLineWidthMapped ? '×':'+' }}</div>
     <div>线宽对应车站尺寸</div>
@@ -95,6 +120,53 @@ defineExpose({
     </tr>
 </tbody></table>
 
+<h2 :class="{sectorShown:showBgImage}" @click="showBgImage =!showBgImage">
+    <div class="shownStatusIcon">{{ showBgImage? '×':'+' }}</div>
+    <div>背景参考图</div>
+</h2>
+<table v-show="showBgImage" class="fullWidth bgRefImage">
+    <tbody>
+    <tr>
+        <td class="explain" colspan="2">
+            用于参考的底图，仅在编辑器内显示<br/>
+            需要先上传图片到互联网<br/>
+            再复制链接到此处
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <b>图片链接</b>
+            <input v-model="config.bgRefImage.url" @blur="e=>applyBgImage('url', (e.target as HTMLInputElement).value)"/>
+        </td>
+    </tr>
+    <tr>
+        <td>位置<br/>偏移</td>
+        <td>
+            <div class="bgRefImageOffsets">
+                <div>
+                    左<input v-model="config.bgRefImage.left" type="number" @blur="e=>applyBgImage('left', (e.target as HTMLInputElement).value)"/>%
+                </div>
+                <div>
+                    右<input v-model="config.bgRefImage.right" type="number" @blur="e=>applyBgImage('right', (e.target as HTMLInputElement).value)"/>%
+                </div>
+                <div>
+                    上<input v-model="config.bgRefImage.top" type="number" @blur="e=>applyBgImage('top', (e.target as HTMLInputElement).value)"/>%
+                </div>
+                <div>
+                    下<input v-model="config.bgRefImage.bottom" type="number" @blur="e=>applyBgImage('bottom', (e.target as HTMLInputElement).value)"/>%
+                </div>
+            </div>
+            <div class="explain">
+                底图相对画布边缘偏移百分比<br/>
+                正数表示向内，负数表示向外<br/>
+                （建议上/下留空一个<br/>
+                以保证长宽比正确）
+            </div>
+        </td>
+    </tr>
+</tbody>
+</table>
+
 <h2 :class="{sectorShown:showOthers}" @click="showOthers = !showOthers">
     <div class="shownStatusIcon">{{ showOthers ? '×':'+' }}</div>
     <div>杂项</div>
@@ -116,6 +188,7 @@ defineExpose({
         </td>
         <td>
             <b>步进式缩放</b>
+            <div class="explain">仅本设备有效</div>
             <div class="explain">如果缩放时显示异常可开启</div>
             <div class="explain">会降低性能和体验</div>
         </td>
@@ -155,6 +228,7 @@ h2{
     border-top: 1px solid #ccc;
     padding-top: 5px;
     cursor: pointer;
+    user-select: none;
     &.sectorShown{
         font-weight: bold;
         color: black
@@ -178,6 +252,19 @@ h2{
         }
     }
 }
+.bgRefImage{
+    .bgRefImageOffsets{
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        input{
+            width: 80px;
+            &::placeholder {
+                color: #aaa;
+            }
+        }
+    }
+}
 .explain{
     font-size: 14px;
     color: #666
@@ -191,5 +278,8 @@ h2{
         font-size: 14px;
         color: gray;
     }
+}
+td{
+    min-width: 40px;
 }
 </style>
