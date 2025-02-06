@@ -8,11 +8,13 @@ import { useEnvStore } from '@/models/stores/envStore';
 import { useConfigStore } from '@/models/stores/configStore';
 import { storeToRefs } from 'pinia';
 import { clamp } from '@/utils/lang/clamp';
+import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 
 const saveStore = useSaveStore()
-const envStore = useEnvStore()
+const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
 const configStore = useConfigStore()
 const { config } = storeToRefs(configStore)
+const { preventLeaving } = usePreventLeavingUnsavedStore() //无需rerender的地方需要手动调用“阻止未保存离开”
 
 const showLineWidthMapped = ref(false)
 function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', value?:string){
@@ -36,6 +38,7 @@ function applyBgImage(type:'url'|'left'|'top'|'right'|'bottom', value?:string){
     const bri = config.value.bgRefImage
     if(type == 'url'){
         bri.url = value
+        preventLeaving()
     }else{
         if(!value?.trim()){
             bri[type] = undefined
@@ -45,6 +48,7 @@ function applyBgImage(type:'url'|'left'|'top'|'right'|'bottom', value?:string){
         if(isNaN(valueNum))
             return
         bri[type] = clamp(valueNum, -200, 200)
+        preventLeaving()
     }
 }
 
