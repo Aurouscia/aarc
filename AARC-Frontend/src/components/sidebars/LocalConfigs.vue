@@ -147,6 +147,10 @@ defineExpose({
         <td colspan="2">
             <b>图片链接</b>
             <input v-model="config.bgRefImage.url" @blur="e=>applyBgImage('url', (e.target as HTMLInputElement).value)"/>
+            <div class="explain">
+                复杂svg图片将导致缩放卡顿<br/>
+                建议使用png/jpg格式
+            </div>
         </td>
     </tr>
     <tr>
