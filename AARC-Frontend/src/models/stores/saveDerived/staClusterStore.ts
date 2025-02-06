@@ -115,6 +115,12 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             if(belong[ptIdNum] && !belong[ptIdNum].some(x=>x.id === ptIdNum))
                 belong[ptIdNum] = undefined
         }
+        for(const c of staClusters||[]){
+            removeAllByPred(c, (pt)=>{
+                const ptBelong = belong[pt.id]
+                return !ptBelong || ptBelong !== c
+            })
+        }
     }
     function cleanClustersFromDeletedPt(ptId:number){
         const pBelong = belong[ptId]
