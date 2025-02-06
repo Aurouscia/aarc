@@ -1,7 +1,8 @@
+import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
-export function usePreventLeavingUnsaved(){
+export const usePreventLeavingUnsavedStore = defineStore('preventLeavingUnsaved', ()=>{
     const router = useRouter();
     const preventingLeaving = ref<boolean>(false);
     const showUnsavedWarning = ref<boolean>(false);
@@ -35,4 +36,4 @@ export function usePreventLeavingUnsaved(){
         preventingLeaving.value = false;
     }
     return { preventLeaving, releasePreventLeaving, preventingLeaving, showUnsavedWarning }
-}
+})

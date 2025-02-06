@@ -9,7 +9,7 @@ import { computed, onBeforeMount, onUnmounted, ref, watch } from 'vue';
 import { devSave } from '@/dev/devSave';
 import { useApiStore } from '@/app/com/api';
 import { ensureValidSave } from '@/models/save';
-import { usePreventLeavingUnsaved } from '@/utils/eventUtils/preventLeavingUnsaved';
+import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useResetterStore } from '@/models/stores/utils/resetterStore';
 import { useScalerLocalConfigStore } from '@/app/localConfig/scalerLocalConfig';
@@ -59,7 +59,9 @@ async function load() {
 }
 
 const deepClone = rfdc()
-const { preventLeaving, releasePreventLeaving, showUnsavedWarning, preventingLeaving } = usePreventLeavingUnsaved()
+const preventLeaveStore = usePreventLeavingUnsavedStore()
+const { preventLeaving, releasePreventLeaving } = preventLeaveStore
+const { preventingLeaving, showUnsavedWarning } = storeToRefs(preventLeaveStore)
 async function saveData(){
     configStore.writeConfigToSave()
     if(isNaN(saveIdNum.value)){
