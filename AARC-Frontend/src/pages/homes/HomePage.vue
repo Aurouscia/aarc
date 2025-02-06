@@ -19,6 +19,10 @@ import { guideInfo } from '@/app/guideInfo';
         <h3>自由插入图片</h3>
         <p>作为公司logo、特殊站标识、底图参考等</p>
     </div>
+    <div>
+        <h3>画廊</h3>
+        <p>展示全站所有最新作品（略缩图）</p>
+    </div>
     <div class="done">
         <h3>动态清晰度（已完成✔）</h3>
         <p>减小大型画布的内存占用，自由调整导出图片的像素</p>
@@ -27,7 +31,7 @@ import { guideInfo } from '@/app/guideInfo';
         <h3>支线整理</h3>
         <p>把同一线路系统的各支线合并整理</p>
     </div>
-    <div>
+    <div class="done">
         <h3>旧版迁移</h3>
         <p>将旧版绘图器存档转换为新版的</p>
     </div>
