@@ -33,7 +33,7 @@ function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', val
 
 const showBgRefImage = ref(false)
 const bgRefImageOpacityDefault = 50
-function applyBgImage(type:'url'|'opacity'|'left'|'top'|'right'|'bottom', value?:string){
+function applyBgImage(type:'url'|'opacity'|'left'|'top'|'right'|'bottom'|'width'|'height', value?:string){
     if(!config.value.bgRefImage)
         return
     const bri = config.value.bgRefImage
@@ -50,8 +50,6 @@ function applyBgImage(type:'url'|'opacity'|'left'|'top'|'right'|'bottom', value?
             return
         if(type == 'opacity')
             valueNum = clamp(valueNum, 0, 100)
-        else
-            valueNum = clamp(valueNum, -200, 200)
         bri[type] = valueNum
         preventLeaving()
     }
@@ -166,22 +164,29 @@ defineExpose({
         <td>
             <div class="bgRefImageOffsets">
                 <div>
-                    左<input v-model="config.bgRefImage.left" type="number" @blur="e=>applyBgImage('left', (e.target as HTMLInputElement).value)"/>%
+                    左<input v-model="config.bgRefImage.left" type="number" @blur="e=>applyBgImage('left', (e.target as HTMLInputElement).value)"/>
                 </div>
                 <div>
-                    右<input v-model="config.bgRefImage.right" type="number" @blur="e=>applyBgImage('right', (e.target as HTMLInputElement).value)"/>%
+                    右<input v-model="config.bgRefImage.right" type="number" @blur="e=>applyBgImage('right', (e.target as HTMLInputElement).value)"/>
                 </div>
                 <div>
-                    上<input v-model="config.bgRefImage.top" type="number" @blur="e=>applyBgImage('top', (e.target as HTMLInputElement).value)"/>%
+                    上<input v-model="config.bgRefImage.top" type="number" @blur="e=>applyBgImage('top', (e.target as HTMLInputElement).value)"/>
                 </div>
                 <div>
-                    下<input v-model="config.bgRefImage.bottom" type="number" @blur="e=>applyBgImage('bottom', (e.target as HTMLInputElement).value)"/>%
+                    下<input v-model="config.bgRefImage.bottom" type="number" @blur="e=>applyBgImage('bottom', (e.target as HTMLInputElement).value)"/>
+                </div>
+                <div>
+                    宽<input v-model="config.bgRefImage.width" type="number" @blur="e=>applyBgImage('width', (e.target as HTMLInputElement).value)"/>
+                </div>
+                <div>
+                    高<input v-model="config.bgRefImage.height" type="number" @blur="e=>applyBgImage('height', (e.target as HTMLInputElement).value)"/>
                 </div>
             </div>
             <div class="explain">
-                底图相对画布边缘偏移百分比<br/>
+                底图相对画布边缘偏移像素数<br/>
                 正数表示向内，负数表示向外<br/>
-                （建议上/下留空一个<br/>
+                （建议上/下/高只填一个<br/>
+                左/右/宽只填两个<br/>
                 以保证长宽比正确）
             </div>
         </td>

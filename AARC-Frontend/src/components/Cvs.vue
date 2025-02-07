@@ -13,9 +13,11 @@ import { useConfigStore } from '@/models/stores/configStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
+import { useSaveStore } from '@/models/stores/saveStore';
 
 const envStore = useEnvStore();
 const { somethingActive } = storeToRefs(envStore)
+const { cvsWidth, cvsHeight } = storeToRefs(useSaveStore())
 const configStore = useConfigStore();
 const cvsFrameStore = useCvsFrameStore()
 const { cvsFrame, cvsCont } = storeToRefs(cvsFrameStore)
@@ -49,14 +51,30 @@ async function init(){
 const bgRefImageStyle = computed<CSSProperties>(()=>{
     const bgRefImage = configStore.config.bgRefImage
     const opacityNum = bgRefImage.opacity ? parseInt(bgRefImage.opacity.toString()) : NaN
-    return {
+    const res:CSSProperties = {
         position: 'absolute',
         opacity: !isNaN(opacityNum) ? `${opacityNum/100}` : undefined,
-        left: typeof bgRefImage.left=='number' ? `${bgRefImage.left}%` : undefined,
-        top: typeof bgRefImage.top=='number' ? `${bgRefImage.top}%` : undefined,
-        right: typeof bgRefImage.right=='number' ? `${bgRefImage.right}%` : undefined,
-        bottom: typeof bgRefImage.bottom=='number' ? `${bgRefImage.bottom}%` : undefined,
     }
+    if(typeof bgRefImage.left === 'number'){
+        res.left = `${bgRefImage.left/cvsWidth.value*100}%`
+    }
+    if(typeof bgRefImage.right === 'number'){
+        res.right = `${bgRefImage.right/cvsWidth.value*100}%`
+    }
+    if(typeof bgRefImage.top === 'number'){
+        res.top = `${bgRefImage.top/cvsHeight.value*100}%`
+    }
+    if(typeof bgRefImage.bottom === 'number'){
+        res.bottom = `${bgRefImage.bottom/cvsHeight.value*100}%`
+    }
+    if(typeof bgRefImage.width === 'number'){
+        res.width = `${bgRefImage.width/cvsWidth.value*100}%`
+    }
+    if(typeof bgRefImage.height === 'number'){
+        res.height = `${bgRefImage.height/cvsHeight.value*100}%`
+    }
+    
+    return res
 })
 
 onMounted(async()=>{

@@ -68,6 +68,8 @@ export type BgRefImageConfig = {
     right?: number,
     top?: number,
     bottom?: number,
+    width?: number,
+    height?: number,
 }
 
 export type ConfigInSave = AllKeysOptional<Config>
