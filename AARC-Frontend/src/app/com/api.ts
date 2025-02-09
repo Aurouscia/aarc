@@ -58,6 +58,14 @@ export class Api{
         }
     }
     save = {
+        getNewestSaves: async()=>{
+            const resp = await this.httpClient.request(
+                this.apiUrl('save', 'getNewestSaves'),
+                'get'
+            )
+            if(resp.Success)
+                return resp.Data as SaveDto[]
+        },
         getMySaves: async()=>{
             const resp = await this.httpClient.request(
                 this.apiUrl('save', 'getMySaves'),
