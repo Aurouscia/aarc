@@ -1,5 +1,6 @@
 ﻿using AARC.Models.Dto;
 using AARC.Repos.Saves;
+using AARC.Services.Files;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +8,8 @@ namespace AARC.Controllers.Saves
 {
     [Authorize]
     public class SaveController(
-        SaveRepo saveRepo
+        SaveRepo saveRepo,
+        SaveMiniatureFileService saveMiniatureFileService
         ) : Controller
     {
         public IActionResult GetMySaves()
@@ -29,6 +31,11 @@ namespace AARC.Controllers.Saves
         {
             var success = saveRepo.UpdateData(id, data, staCount, lineCount, out var errmsg);
             return this.ApiResp(success, errmsg);
+        }
+        public IActionResult UpdateMiniature(int id, IFormFile mini)
+        {
+            saveMiniatureFileService.Write(mini.OpenReadStream(), id);
+            return this.ApiResp();
         }
         public IActionResult LoadInfo(int id)
         {

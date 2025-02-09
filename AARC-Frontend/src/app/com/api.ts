@@ -96,6 +96,14 @@ export class Api{
             )
             return resp.Success
         },
+        updateMiniature: async(id:number, mini:Blob)=>{
+            const resp = await this.httpClient.request(
+                this.apiUrl('save', 'updateMiniature'),
+                'postForm',
+                {id, mini},
+            )
+            return resp.Success
+        },
         loadInfo: async(id:number)=>{
             const resp = await this.httpClient.request(
                 this.apiUrl('save', 'loadInfo'),

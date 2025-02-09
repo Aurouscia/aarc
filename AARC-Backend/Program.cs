@@ -1,7 +1,7 @@
 using AARC.Models.Db.Context;
 using AARC.Repos;
 using AARC.Services.App;
-using AARC.Services.App.Logging;
+using AARC.Services.Files;
 using AARC.Utils;
 using Serilog;
 
@@ -9,6 +9,7 @@ try
 { 
     var builder = WebApplication.CreateBuilder(args);
     var c = builder.Configuration;
+    var e = builder.Environment;
 
     //添加数据库
     builder.Services.AddDb(c);
@@ -16,11 +17,14 @@ try
     builder.Services.AddAppServices(c);
     //添加数据库操作服务
     builder.Services.AddRepoServices();
+    //添加文件存储服务
+    builder.Services.AddFilesServices();
 
     var app = builder.Build();
 
     app.UseConfiguredCors();
     app.UseFileServer();
+    app.UseAppendedStaticFiles(e);
     app.UseRouting();
     app.UseAuthorization();
     app.UseSerilogRequestLogging();

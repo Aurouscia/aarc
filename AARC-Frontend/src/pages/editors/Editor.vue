@@ -17,6 +17,7 @@ import rfdc from 'rfdc';
 import { useConfigStore } from '@/models/stores/configStore';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { ShortcutListener } from '@aurouscia/keyboard-shortcut'
+import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
 
 const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
@@ -29,6 +30,7 @@ const saveIdNum = computed(()=>parseInt(props.saveId))
 let loadedSaveIdNum = 0
 const loadComplete = ref(false)
 const mainCvsDispatcher = useMainCvsDispatcher()
+const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const isDemo = computed(()=>props.saveId.toLowerCase() == 'demo')
 const scalerLocalConfig = useScalerLocalConfigStore()
 async function load() {
@@ -79,6 +81,9 @@ async function saveData(){
     if(resp){
         releasePreventLeaving()
     }
+    const miniCvs = miniatureCvsDispatcher.renderMiniatureCvs(256, 2)
+    const miniBlob = await miniCvs.convertToBlob()
+    await api.save.updateMiniature(saveIdNum.value, miniBlob)
 }
 async function checkLoginLeftTime(){
     const userInfo = await userInfoStore.getIdentityInfo()
