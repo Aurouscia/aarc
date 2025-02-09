@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Data\Miniatures\1\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
@@ -27,6 +26,15 @@
 	<PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
 	<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Data\Miniatures\此处用于存储略缩图.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\SqliteFiles\此处用于存储sqlite文件.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

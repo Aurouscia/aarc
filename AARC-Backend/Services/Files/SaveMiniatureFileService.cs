@@ -49,6 +49,9 @@ namespace AARC.Services.Files
         {
             var root = Path.Combine(
                 contentPath, SaveMiniatureFileService.miniFileBaseDir);
+            var dirInfo = new DirectoryInfo(root);
+            if (!dirInfo.Exists)
+                dirInfo.Create();
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(root),
