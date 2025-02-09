@@ -17,7 +17,7 @@ namespace AARC.Repos.Saves
             var uid = httpUserIdProvider.RequireUserId();
             var res = base.Existing
                 .Where(x => x.OwnerUserId == uid)
-                .OrderBy(x => x.LastActive)
+                .OrderByDescending(x => x.LastActive)
                 .Select(x => new SaveDto(
                     x.Id, x.Name, x.Version, x.OwnerUserId,
                     x.Intro, x.LastActive, x.StaCount, x.LineCount))
