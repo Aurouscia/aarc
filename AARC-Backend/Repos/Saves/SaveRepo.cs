@@ -94,12 +94,11 @@ namespace AARC.Repos.Saves
         }
         public string? LoadData(int id, out string? errmsg)
         {
-            errmsg = ValidateAccess(id);
-            if (errmsg is { }) return null;
             var res = Existing
                 .Where(x => x.Id == id)
                 .Select(x => x.Data)
                 .FirstOrDefault();
+            errmsg = null;
             return res;
         }
         public bool Remove(int id, out string? errmsg)
