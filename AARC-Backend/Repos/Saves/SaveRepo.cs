@@ -12,6 +12,17 @@ namespace AARC.Repos.Saves
         HttpUserInfoService httpUserInfoService)
         : Repo<Save>(context)
     {
+        public List<SaveDto> GetNewestSaves()
+        {
+            var res = base.Existing
+                .OrderByDescending(x => x.LastActive)
+                .Select(x => new SaveDto(
+                    x.Id, x.Name, x.Version, x.OwnerUserId,
+                    x.Intro, x.LastActive, x.StaCount, x.LineCount))
+                .Take(8)
+                .ToList();
+            return res;
+        }
         public List<SaveDto> GetMySaves()
         {
             var uid = httpUserIdProvider.RequireUserId();

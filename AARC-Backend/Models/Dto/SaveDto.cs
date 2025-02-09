@@ -4,6 +4,7 @@
     {
         public int Id { get; set; }
         public string? Name { get; set; }
+        public string? MiniUrl { get; set; }
         public string? Version { get; set; }
         public int OwnerUserId { get; set; }
         public string? OwnerName { get; set; }

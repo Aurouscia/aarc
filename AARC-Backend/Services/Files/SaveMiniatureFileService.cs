@@ -25,24 +25,21 @@ namespace AARC.Services.Files
             input.Close();
             dist.Close();
         }
-        public string[] GetUrls(List<int> ids)
+        public string? GetUrl(int id)
         {
-            var res = new string[ids.Count];
-            for(int i = 0; i < ids.Count; i++)
+            string idStr = id.ToString();
+            var cvsDirPath = Path.Combine(miniFileBaseDir, idStr);
+            var cvsDir = new DirectoryInfo(cvsDirPath);
+            if (cvsDir.Exists)
             {
-                var id = ids[i];
-                var cvsDirPath = Path.Combine(miniFileBaseDir, id.ToString());
-                var cvsDir = new DirectoryInfo(cvsDirPath);
-                if (cvsDir.Exists)
-                {
-                    var newestName = cvsDir.EnumerateFiles()
-                        .OrderByDescending(x => x.CreationTime)
-                        .Select(x => x.Name)
-                        .FirstOrDefault();
-                    res[i] = newestName ?? "";
-                }
+                var newestName = cvsDir.EnumerateFiles()
+                    .OrderByDescending(x => x.CreationTime)
+                    .Select(x => x.Name)
+                    .FirstOrDefault();
+                if (newestName is { })
+                    return string.Join('/', miniFileAccessPath, idStr, newestName);
             }
-            return res;
+            return null;
         }
     }
     public static class SaveMiniatureFileMapping
