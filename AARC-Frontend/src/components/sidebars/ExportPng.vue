@@ -65,7 +65,7 @@ async function downloadMiniatureCvsAsPng() {
     exportLock = true
     const fileName = await getExportPngFileName(true)
     if(fileName){
-        const cvs = miniatureCvsDispatcher.renderMiniatureCvs(256, 4)
+        const cvs = miniatureCvsDispatcher.renderMiniatureCvs(256, 2)
         const pngDataUrl = await cvsToDataUrl(cvs)
         if(!pngDataUrl){
             return

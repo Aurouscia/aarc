@@ -31,7 +31,7 @@ export const useMiniatureCvsDispatcher = defineStore('miniatureCvsDispatcher', (
         ])
         ctx.fillStyle = 'white'
         ctx.fillTotal()
-        lineSimplifiedCvsWorker.renderAllLines(ctx, lineWidth)
+        lineSimplifiedCvsWorker.renderAllLines(ctx, lineWidth/ratio)
         return cvs
     }
     return {
