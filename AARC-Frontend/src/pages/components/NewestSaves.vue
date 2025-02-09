@@ -75,7 +75,7 @@ onMounted(async()=>{
         }
         @media screen and (min-width: 1000px) {
             width: $blockWidthPC;
-            &>img{
+            & img{
                 width: $blockWidthPC;
                 height: $blockWidthPC;
             }
