@@ -3,8 +3,10 @@ import { useApiStore } from '@/app/com/api';
 import { SaveDto } from '../saves/models/models';
 import { onMounted, ref } from 'vue';
 import defaultMini from '@/assets/logo/aarc.svg'
+import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 
 const api = useApiStore().get()
+const { editorRoute } = useEditorsRoutesJump()
 const list = ref<SaveDto[]>([])
 async function load(){
     const resp = await api.save.getNewestSaves()
@@ -20,7 +22,9 @@ onMounted(async()=>{
 <template>
 <div class="newestSaves">
     <div v-for="s in list" :key="s.Id">
-        <img :src="s.MiniUrl || defaultMini"/>
+        <RouterLink :to="editorRoute(s.Id)">
+            <img :src="s.MiniUrl || defaultMini"/>
+        </RouterLink>
         <div class="cvsName">{{ s.Name }}</div>
         <div class="cvsOwner">{{ s.OwnerName }}</div>
     </div>
@@ -35,7 +39,7 @@ onMounted(async()=>{
     max-width: 100%;
     overflow-x: auto;
     justify-content: space-around;
-    padding: 5px 0px 5px 0px;
+    padding: 15px;
     gap: 15px;
     $blockWidthMobile: 128px;
     $blockWidthPC: 256px;
@@ -47,17 +51,23 @@ onMounted(async()=>{
         flex-direction: column;
         align-items: center;
         gap: 5px;
-        &>img{
+        & img{
             width: $blockWidthMobile;
             height: $blockWidthMobile;
-            border-radius: 5px;
+            border-radius: 15px;
             object-fit: contain;
+            box-shadow: 0px 0px 0px 0px black;
+            &:hover{
+                transform: scale(1.03);
+                box-shadow: 0px 0px 10px 0px black;
+            }
         }
         .cvsName, .cvsOwner{
             max-width: 90%;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            user-select: none;
         }
         .cvsOwner{
             font-size: 0.8em;
