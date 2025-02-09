@@ -33,6 +33,7 @@ const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const isDemo = computed(()=>props.saveId.toLowerCase() == 'demo')
 const scalerLocalConfig = useScalerLocalConfigStore()
+const savingDisabledWarning = ref<string>()
 async function load() {
     if(!isNaN(saveIdNum.value)){
         const refuseToLoad = await checkLoginLeftTime()
@@ -47,12 +48,18 @@ async function load() {
         }catch{
             pop.value?.show('存档损坏，请联系管理员', 'failed')
         }
+        const ownerId = (await api.save.loadInfo(saveIdNum.value))?.OwnerUserId || -1
+        const iden = await userInfoStore.getIdentityInfo()
+        if(iden.Id !== ownerId){
+            savingDisabledWarning.value = '非存档所有者，仅供浏览，不能保存'
+        }
     }
     else if(isDemo.value){
         saveStore.save = JSON.parse(JSON.stringify(devSave))
         resetterStore.resetDerivedStores()
         loadComplete.value = true
         pop.value?.show('此处为体验环境，不能保存', 'warning')
+        savingDisabledWarning.value = '此处为体验环境，不能保存'
         window.setTimeout(()=>{
             pop.value?.show('如需创作，请注册账户并新建存档', 'warning')
         }, 3000)
@@ -87,16 +94,18 @@ async function saveData(){
 }
 async function checkLoginLeftTime(){
     const userInfo = await userInfoStore.getIdentityInfo()
+    const nearExpireMsg = '登录即将过期\n尽快重新登录'
     if(userInfo.LeftHours === 0){
         pop.value?.show('请登录', 'failed')
         return true
     }
     else if(userInfo.LeftHours <= 1){
-        pop.value?.show('登录即将过期\n尽快重新登录', 'failed')
+        pop.value?.show(nearExpireMsg, 'failed')
         return true
     }
-    else if(userInfo.LeftHours <= 3){
-        pop.value?.show('登录即将过期\n尽快重新登录', 'warning')
+    else if(userInfo.LeftHours <= 6){
+        pop.value?.show(nearExpireMsg, 'warning')
+        savingDisabledWarning.value = nearExpireMsg
         window.setTimeout(()=>{
             pop.value?.show('否则将无法保存', 'warning')
         }, 3000)
@@ -137,6 +146,7 @@ onUnmounted(()=>{
     <Menu v-if="loadComplete" @save-data="saveData" :preventing-leaving="preventingLeaving"></Menu>
     <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
     <div v-if="scalerLocalConfig.steppedScaleEnabled" class="steppedScaleEnabled">已启用步进式缩放</div>
+    <div v-if="savingDisabledWarning" class="savingDisabledWarning">{{ savingDisabledWarning }}</div>
 </template>
 
 <style scoped lang="scss">
@@ -148,5 +158,20 @@ onUnmounted(()=>{
     font-size: 14px;
     color: #aaa;
     text-align: right;
+}
+.savingDisabledWarning{
+    z-index: 999;
+    position: fixed;
+    bottom: 15px;
+    left: 0px;
+    right: 0px;
+    width: fit-content;
+    margin: auto;
+    text-align: center;
+    color: white;
+    padding: 3px;
+    border-radius: 3px;
+    background-color: orange;
+    font-weight: bold;
 }
 </style>
