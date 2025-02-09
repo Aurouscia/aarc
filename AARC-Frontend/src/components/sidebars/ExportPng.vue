@@ -11,9 +11,11 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { AdsRenderType } from '@/models/cvs/workers/adsCvsWorker';
+import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
+const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const saveStore = useSaveStore()
 const api = useApiStore().get()
 const route = useRoute()
@@ -41,18 +43,7 @@ async function downloadMainCvsAsPng() {
         }
         mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
 
-        const pngDataUrl = await cvs.convertToBlob({ type: 'image/png' }).then(blob => {
-            return new Promise<string>((resolve) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    if(typeof reader.result == 'string')
-                        resolve(reader.result)
-                    else
-                        resolve('')
-                };
-                reader.readAsDataURL(blob);
-            });
-        })
+        const pngDataUrl = await cvsToDataUrl(cvs)
         if(!pngDataUrl){
             return
         }
@@ -68,7 +59,27 @@ async function downloadMainCvsAsPng() {
         exportLock = false
     }, 2000)
 }
-async function getExportPngFileName(){
+async function downloadMiniatureCvsAsPng() {
+    if(exportLock)
+        return
+    exportLock = true
+    const fileName = await getExportPngFileName(true)
+    if(fileName){
+        const cvs = miniatureCvsDispatcher.renderMiniatureCvs(256, 4)
+        const pngDataUrl = await cvsToDataUrl(cvs)
+        if(!pngDataUrl){
+            return
+        }
+        var link = document.createElement('a');
+        link.download = fileName
+        link.href = pngDataUrl;
+        link.click();
+    }
+    window.setTimeout(()=>{
+        exportLock = false
+    }, 1000)
+}
+async function getExportPngFileName(isMini?:boolean){
     let saveId = route.params[editorParamNameSaveId]
     if(typeof saveId === 'object')
         saveId = saveId[0] || 'err'
@@ -90,6 +101,9 @@ async function getExportPngFileName(){
         }else{
             name = info.Name
         }
+        if(isMini){
+            name = `${name}-mini`
+        }
         return `${name}.png`
     }
 }
@@ -98,13 +112,27 @@ exportPngFileNameStyle.value = exportLocalConfig.readExportFileNameStyle() || 'p
 function exportPngFileNameStyleChanged(){
     exportLocalConfig.saveExportFileNameStyle(exportPngFileNameStyle.value || 'plain')
 }
+async function cvsToDataUrl(cvs:OffscreenCanvas):Promise<string>{
+    return await cvs.convertToBlob({ type: 'image/png' }).then(blob => {
+        return new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                if(typeof reader.result =='string')
+                    resolve(reader.result)
+                else
+                    resolve('')
+            };
+            reader.readAsDataURL(blob);
+        });
+    })
+}
 
 const exportWithAds = ref<AdsRenderType>()
 exportWithAds.value = (exportLocalConfig.readExportWithAds() || 'no') as AdsRenderType
 function exportWithAdsChanged(){
     exportLocalConfig.saveExportWithAds(exportWithAds.value || 'no')
     if(exportWithAds.value && exportWithAds.value !== 'no'){
-        pop?.show('感谢帮助', 'success')
+        pop?.show('感谢支持', 'success')
     }
 }
 
@@ -135,7 +163,8 @@ defineExpose({
             <option :value="'more'">详细</option>
         </select>
     </div>
-    <button @click="downloadMainCvsAsPng" class="ok">导出为png格式</button>
+    <button @click="downloadMainCvsAsPng" class="ok">导出为图片</button>
+    <button @click="downloadMiniatureCvsAsPng" class="minor">导出为缩略图</button>
     <div class="note">
         点击后请耐心等待数秒，不要反复点击<br/>
     </div>
