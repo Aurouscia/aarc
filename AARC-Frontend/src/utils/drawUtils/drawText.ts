@@ -115,7 +115,7 @@ export function drawText(
     }
 }
 
-const chineseStyleDropCapPattern = /^[0-9a-zA-Z]{1,2}(?=\s{0,1}号?线$)/
+const chineseStyleDropCapPattern = /^[0-9a-zA-Z]{1,3}(?=\s?号?环?线$)/
 export function drawTextForLineName(
     ctx:CvsContext, pos:Coord, align:SgnCoord, textAlignOverride:SgnNumber|undefined,
     main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false, task:'draw'|'measure'|'both' = 'both'):
