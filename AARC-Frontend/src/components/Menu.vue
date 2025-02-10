@@ -6,16 +6,16 @@ import SizeEdit from './sidebars/SizeEdit.vue';
 import ExportPng from './sidebars/ExportPng.vue';
 import LocalConfigs from './sidebars/LocalConfigs.vue';
 import { useEnvStore } from '@/models/stores/envStore';
+import { storeToRefs } from 'pinia';
+import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 
-defineProps<{
-    preventingLeaving:boolean
-}>()
 const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()
 const sizeEdit = ref<InstanceType<typeof Terrains>>()
 const exportPng = ref<InstanceType<typeof ExportPng>>()
 const localConfigs = ref<InstanceType<typeof LocalConfigs>>()
 const envStore = useEnvStore()
+const { preventingLeaving, unsavedForALongTime } = storeToRefs(usePreventLeavingUnsavedStore())
 
 type SidebarNames = 'lines'|'terrains'|'sizeEdit'|'exportPng'|'localConfigs'|undefined
 const activeSidebarName = ref<SidebarNames>()
@@ -60,7 +60,7 @@ const emit = defineEmits<{
         <div @click="openSidebarOf('localConfigs')" class="sqrBtn withShadow">设置</div>
         <div @click="openSidebarOf('exportPng')" class="sqrBtn withShadow">导出</div>
         <div @click="saveData" class="sqrBtn withShadow saveBtn">
-            <div v-show="preventingLeaving" class="saveRedDot"></div>
+            <div v-show="preventingLeaving" class="saveRedDot" :class="{unsavedForALongTime}"></div>
             保存
         </div>
     </div>
@@ -104,6 +104,30 @@ const emit = defineEmits<{
         position: absolute;
         right: -6px;
         top: -6px;
+        &.unsavedForALongTime{
+            width: 20px;
+            height: 20px;
+            right: -10px;
+            top: -10px;
+            animation: fadeOutIn 1s infinite;
+        }
+        @keyframes fadeOutIn {
+            0% {
+                opacity: 1;
+            }
+            45%{
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.1;
+            }
+            95% {
+                opacity: 0.1;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
     }
 }
 </style>

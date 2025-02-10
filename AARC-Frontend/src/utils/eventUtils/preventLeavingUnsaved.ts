@@ -2,10 +2,13 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
+const aLongTimeForUnsavedStatusMs = 3*60*1000 //三分钟
 export const usePreventLeavingUnsavedStore = defineStore('preventLeavingUnsaved', ()=>{
     const router = useRouter();
     const preventingLeaving = ref<boolean>(false);
     const showUnsavedWarning = ref<boolean>(false);
+    const unsavedForALongTime = ref<boolean>(false);
+    let lastSaved:number = 0;
     function leavingHandler(){
         return "未保存"
     }
@@ -22,6 +25,8 @@ export const usePreventLeavingUnsavedStore = defineStore('preventLeavingUnsaved'
             return false;
         });
         preventingLeaving.value = true;
+        lastSaved = Date.now()
+        unsavedForALongTime.value = false;
     }
     function releasePreventLeaving(){
         if(!preventingLeaving.value){
@@ -34,6 +39,17 @@ export const usePreventLeavingUnsavedStore = defineStore('preventLeavingUnsaved'
             removeRouteGuard = undefined;
         }
         preventingLeaving.value = false;
+        lastSaved = Date.now()
+        unsavedForALongTime.value = false;
     }
-    return { preventLeaving, releasePreventLeaving, preventingLeaving, showUnsavedWarning }
+    window.setInterval(()=>{
+        if(!preventingLeaving.value){
+            unsavedForALongTime.value = false
+            return
+        }else{
+            const now = Date.now()
+            unsavedForALongTime.value = now-lastSaved > aLongTimeForUnsavedStatusMs
+        }
+    }, 1000)
+    return { preventLeaving, releasePreventLeaving, preventingLeaving, showUnsavedWarning, unsavedForALongTime }
 })

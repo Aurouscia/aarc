@@ -68,7 +68,7 @@ async function load() {
 const deepClone = rfdc()
 const preventLeaveStore = usePreventLeavingUnsavedStore()
 const { preventLeaving, releasePreventLeaving } = preventLeaveStore
-const { preventingLeaving, showUnsavedWarning } = storeToRefs(preventLeaveStore)
+const { showUnsavedWarning } = storeToRefs(preventLeaveStore)
 async function saveData(){
     configStore.writeConfigToSave()
     if(isNaN(saveIdNum.value)){
@@ -138,7 +138,7 @@ onUnmounted(()=>{
 
 <template>
     <Cvs v-if="loadComplete" ref="cvsComponent"></Cvs>
-    <Menu v-if="loadComplete" @save-data="saveData" :preventing-leaving="preventingLeaving"></Menu>
+    <Menu v-if="loadComplete" @save-data="saveData"></Menu>
     <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
     <div v-if="scalerLocalConfig.steppedScaleEnabled" class="steppedScaleEnabled">已启用步进式缩放</div>
     <div v-if="savingDisabledWarning" class="savingDisabledWarning">{{ savingDisabledWarning }}</div>
