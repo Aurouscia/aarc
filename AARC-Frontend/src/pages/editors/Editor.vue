@@ -36,9 +36,7 @@ const scalerLocalConfig = useScalerLocalConfigStore()
 const savingDisabledWarning = ref<string>()
 async function load() {
     if(!isNaN(saveIdNum.value)){
-        const refuseToLoad = await checkLoginLeftTime()
-        if(refuseToLoad)
-            return
+        await checkLoginLeftTime()
         const resp = await api.save.loadData(saveIdNum.value)
         try{
             const obj = resp ? JSON.parse(resp) : {}
@@ -50,7 +48,7 @@ async function load() {
         }
         const ownerId = (await api.save.loadInfo(saveIdNum.value))?.OwnerUserId || -1
         const iden = await userInfoStore.getIdentityInfo()
-        if(iden.Id !== ownerId){
+        if(iden.Id>0 && iden.Id !== ownerId){
             savingDisabledWarning.value = '非存档所有者，仅供浏览，不能保存'
         }
     }
@@ -95,13 +93,10 @@ async function saveData(){
 async function checkLoginLeftTime(){
     const userInfo = await userInfoStore.getIdentityInfo()
     const nearExpireMsg = '登录即将过期\n尽快重新登录'
+    const noLoginMsg = '当前没有登录\n不能保存'
     if(userInfo.LeftHours === 0){
-        pop.value?.show('请登录', 'failed')
-        return true
-    }
-    else if(userInfo.LeftHours <= 1){
-        pop.value?.show(nearExpireMsg, 'failed')
-        return true
+        pop.value?.show(noLoginMsg, 'warning')
+        savingDisabledWarning.value = noLoginMsg
     }
     else if(userInfo.LeftHours <= 6){
         pop.value?.show(nearExpireMsg, 'warning')
@@ -173,5 +168,6 @@ onUnmounted(()=>{
     border-radius: 3px;
     background-color: orange;
     font-weight: bold;
+    box-shadow: 0px 0px 10px 3px black;
 }
 </style>
