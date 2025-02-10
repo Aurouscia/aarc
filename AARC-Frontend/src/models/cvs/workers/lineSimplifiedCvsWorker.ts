@@ -13,7 +13,12 @@ export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker',
             if(!lineInfo)
                 return
             const poss = pts.map(x=>x.pos)
-            renderLine(ctx, lineInfo, poss, lineWidth)
+            let lineWidthHere = lineWidth
+            const lineOptionsWidthRatio = Math.max(lineInfo.width || 1, 1)
+            if(lineInfo.type === LineType.terrain){
+                lineWidthHere = lineOptionsWidthRatio * lineWidth
+            }
+            renderLine(ctx, lineInfo, poss, lineWidthHere)
         }
         const targets:{lineInfo:Line, pts:FormalPt[]}[] = []
         formalizedLineStore.enumerateFormalizedLines((lineId, pts)=>{
