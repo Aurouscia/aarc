@@ -4,9 +4,11 @@ import { useSaveStore } from "@/models/stores/saveStore";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { Line, LineType } from "@/models/save";
+import { useConfigStore } from "@/models/stores/configStore";
 
 export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker', ()=>{
     const saveStore = useSaveStore()
+    const cs = useConfigStore()
     const formalizedLineStore = useFormalizedLineStore()
     function renderAllLines(ctx:CvsContext, lineWidth:number){
         const render = (lineInfo:Line, pts:FormalPt[])=>{
@@ -14,9 +16,9 @@ export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker',
                 return
             const poss = pts.map(x=>x.pos)
             let lineWidthHere = lineWidth
-            const lineOptionsWidthRatio = Math.max(lineInfo.width || 1, 1)
             if(lineInfo.type === LineType.terrain){
-                lineWidthHere = lineOptionsWidthRatio * lineWidth
+                const originalWidth = cs.config.lineWidth * (lineInfo.width||1)
+                lineWidthHere = Math.max(lineWidth, originalWidth)
             }
             renderLine(ctx, lineInfo, poss, lineWidthHere)
         }
