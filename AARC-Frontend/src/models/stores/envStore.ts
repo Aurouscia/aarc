@@ -379,6 +379,12 @@ export const useEnvStore = defineStore('env', ()=>{
         activePtNameGrabbedAt.value = [0,0]
         movingTextTag.value = false
         activeTextTagGrabbedAt.value = [0,0]
+        if(movingExtendedPointOriginated.value){
+            const mergeRes = saveStore.tryMergePt(movingExtendedPointOriginated.value.from.id)
+            if(mergeRes){
+                rerender.value([], [])
+            }
+        }
         movingExtendedPointOriginated.value = undefined
         
         if(discardAreaStore.discarding=='active'){
