@@ -380,7 +380,9 @@ export const useEnvStore = defineStore('env', ()=>{
         movingTextTag.value = false
         activeTextTagGrabbedAt.value = [0,0]
         if(movingExtendedPointOriginated.value){
-            const mergeRes = saveStore.tryMergePt(movingExtendedPointOriginated.value.from.id)
+            const extendFrom = movingExtendedPointOriginated.value.from
+            staClusterStore.updateCrystalsBecauseOf(extendFrom)
+            const mergeRes = saveStore.tryMergePt(extendFrom.id)
             if(mergeRes){
                 rerender.value([], [])
             }
