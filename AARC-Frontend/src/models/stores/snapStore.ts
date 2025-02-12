@@ -34,17 +34,26 @@ export const useSnapStore = defineStore('snap',()=>{
     function snap(pt:ControlPoint):Coord|undefined{
         snapLines.value = []
         snapLinesForPt.value = pt.id
-        const interPtRes = snapInterPt(pt)
+        const interPtNoBias = !snapInterPtEnabled.value
+        const interPtRes = snapInterPt(pt, interPtNoBias)
         if(interPtRes){
             return interPtRes
         }
-        const { snapRes:neibRes, freeAxis } = snapNeighborExtends(pt)
-        if(neibRes && !freeAxis){
-            return neibRes
+        let neibRes:Coord|undefined = undefined
+        let freeAxis:SgnCoord|undefined = undefined
+        if(snapNeighborExtendsEnabled.value){
+            const neibExtend = snapNeighborExtends(pt)
+            neibRes = neibExtend.snapRes
+            freeAxis = neibExtend.freeAxis
+            if(neibRes && (!freeAxis || !snapGridEnabled.value)){
+                return neibRes
+            }
         }
-        const gridRes = snapGrid(neibRes || pt.pos, freeAxis)
-        if(gridRes){
-            return gridRes
+        if(snapGridEnabled.value){
+            const gridRes = snapGrid(neibRes || pt.pos, freeAxis)
+            if(gridRes){
+                return gridRes
+            }
         }
     }
     function snapName(pt:ControlPoint):{to:Coord,type:'vague'|'accu'}|undefined{
@@ -183,7 +192,7 @@ export const useSnapStore = defineStore('snap',()=>{
         }
         return {}
     }
-    function snapInterPt(pt:ControlPoint):Coord|undefined{
+    function snapInterPt(pt:ControlPoint, noBias:boolean):Coord|undefined{
         const ptSize = saveStore.getLinesDecidedPtSize(pt.id)
         const snapDist = cs.config.snapOctaClingPtPtDist*ptSize;
         const snapThrs = cs.config.snapOctaClingPtPtThrs;
@@ -195,11 +204,13 @@ export const useSnapStore = defineStore('snap',()=>{
         let minDist = 10000000;
         pts.forEach(opt=>{
             const biases:SgnCoord[] = [[0,0]]
-            if(pt.dir == ControlPointDir.incline || opt.dir == ControlPointDir.incline){
-                biases.push([-1,-1],[-1,1],[1,-1],[1,1])
-            }
-            if(pt.dir == ControlPointDir.vertical || opt.dir == ControlPointDir.vertical){
-                biases.push([0,-1],[0,1],[1,0],[-1,0])
+            if(!noBias){
+                if(pt.dir == ControlPointDir.incline || opt.dir == ControlPointDir.incline){
+                    biases.push([-1,-1],[-1,1],[1,-1],[1,1])
+                }
+                if(pt.dir == ControlPointDir.vertical || opt.dir == ControlPointDir.vertical){
+                    biases.push([0,-1],[0,1],[1,0],[-1,0])
+                }
             }
             const optSize = saveStore.getLinesDecidedPtSize(opt.id)
             const optSnapDist = cs.config.snapOctaClingPtPtDist*optSize
@@ -332,8 +343,13 @@ export const useSnapStore = defineStore('snap',()=>{
         }
         return pos
     }
+
+    const snapInterPtEnabled = ref(true)
+    const snapNeighborExtendsEnabled = ref(true)
+    const snapGridEnabled = ref(true)
     return {
         snap, snapName, snapNameStatus, snapGrid,
-        snapLines, snapLinesForPt, snapGridIntv, snapNeighborExtendsOnlySameDir
+        snapLines, snapLinesForPt, snapGridIntv, snapNeighborExtendsOnlySameDir,
+        snapInterPtEnabled, snapNeighborExtendsEnabled, snapGridEnabled
     }
 })

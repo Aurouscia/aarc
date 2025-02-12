@@ -8,6 +8,14 @@ import LocalConfigs from './sidebars/LocalConfigs.vue';
 import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
+import { useSnapStore } from '@/models/stores/snapStore';
+import foldImg from '@/assets/ui/fold.svg';
+import snapGridImg from '@/assets/ui/editor/snapGrid.svg';
+import snapGridEnabledImg from '@/assets/ui/editor/snapGridEnabled.svg';
+import snapInterPtImg from '@/assets/ui/editor/snapInterPt.svg';
+import snapInterPtEnabledImg from '@/assets/ui/editor/snapInterPtEnabled.svg';
+import snapNeighborExtendImg from '@/assets/ui/editor/snapNeighborExtend.svg';
+import snapNeighborExtendEnabledImg from '@/assets/ui/editor/snapNeighborExtendEnabled.svg';
 
 const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()
@@ -16,6 +24,12 @@ const exportPng = ref<InstanceType<typeof ExportPng>>()
 const localConfigs = ref<InstanceType<typeof LocalConfigs>>()
 const envStore = useEnvStore()
 const { preventingLeaving, unsavedForALongTime } = storeToRefs(usePreventLeavingUnsavedStore())
+const { 
+    snapNeighborExtendsEnabled:snee,
+    snapInterPtEnabled:sipe,
+    snapGridEnabled:sge 
+} = storeToRefs(useSnapStore())
+const anotherMenuFolded = ref(true)
 
 type SidebarNames = 'lines'|'terrains'|'sizeEdit'|'exportPng'|'localConfigs'|undefined
 const activeSidebarName = ref<SidebarNames>()
@@ -69,9 +83,68 @@ const emit = defineEmits<{
     <SizeEdit ref="sizeEdit"></SizeEdit>
     <ExportPng ref="exportPng"></ExportPng>
     <LocalConfigs ref="localConfigs"></LocalConfigs>
+    <div class="anotherMenu" :class="{anotherMenuFolded}">
+        <div class="foldBtn sqrBtn withShadow" @click="anotherMenuFolded=!anotherMenuFolded">
+            <img :src="foldImg"/>
+        </div>
+        <div @click="snee=!snee" :class="{snapEnabled:snee}" class="sqrBtn withShadow">
+            <img :src="snee ? snapNeighborExtendEnabledImg : snapNeighborExtendImg"/>
+        </div>
+        <div @click="sipe=!sipe" :class="{snapEnabled:sipe}" class="sqrBtn withShadow">
+            <img :src="sipe ? snapInterPtEnabledImg : snapInterPtImg"/>
+        </div>
+        <div @click="sge=!sge" :class="{snapEnabled:sge}" class="sqrBtn withShadow">
+            <img :src="sge ? snapGridEnabledImg : snapGridImg"/>
+        </div>
+    </div>
 </template>
 
 <style scoped lang="scss">
+.anotherMenu{
+    z-index: 1000;
+    position: fixed;
+    right: 5px;
+    bottom: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    .sqrBtn{
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        font-size: 12px;
+    }
+    .snapEnabled{
+        box-shadow: 0px 0px 8px 0px green;
+    }
+    .foldBtn{
+        position: absolute;
+        left: -38px;
+        bottom: 0px;
+        width: 30px;
+        height: 30px;
+        background-color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        img{
+            width: 70%;
+            height: 70%;
+            transition: 0.2s;
+            transform: rotate(270deg);
+        }
+    }
+}
+.anotherMenuFolded{
+    right: -35px;
+    .foldBtn{
+        opacity: 0.4;
+        img{
+            transform: rotate(90deg);
+        }
+    }
+}
+
 .menu{
     z-index: 1002;
     position: fixed;
