@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import Lines from './sidebars/sideList/Lines.vue';
 import Terrains from './sidebars/sideList/Terrains.vue';
 import SizeEdit from './sidebars/SizeEdit.vue';
@@ -16,6 +16,7 @@ import snapInterPtImg from '@/assets/ui/editor/snapInterPt.svg';
 import snapInterPtEnabledImg from '@/assets/ui/editor/snapInterPtEnabled.svg';
 import snapNeighborExtendImg from '@/assets/ui/editor/snapNeighborExtend.svg';
 import snapNeighborExtendEnabledImg from '@/assets/ui/editor/snapNeighborExtendEnabled.svg';
+import { useRouter } from 'vue-router';
 
 const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()
@@ -23,6 +24,7 @@ const sizeEdit = ref<InstanceType<typeof Terrains>>()
 const exportPng = ref<InstanceType<typeof ExportPng>>()
 const localConfigs = ref<InstanceType<typeof LocalConfigs>>()
 const envStore = useEnvStore()
+const router = useRouter()
 const { preventingLeaving, unsavedForALongTime } = storeToRefs(usePreventLeavingUnsavedStore())
 const { 
     snapNeighborExtendsEnabled:snee,
@@ -33,6 +35,17 @@ const anotherMenuFolded = ref(true)
 
 type SidebarNames = 'lines'|'terrains'|'sizeEdit'|'exportPng'|'localConfigs'|undefined
 const activeSidebarName = ref<SidebarNames>()
+
+const saveBtnMode = computed<'save'|'leave'>(()=>{
+    if(preventingLeaving.value)
+        return 'save'
+    return 'leave'
+})
+const saveBtnText = computed<'保存'|'离开'>(()=>{
+    if(saveBtnMode.value == 'save')
+        return '保存'
+    return '离开'
+})
 
 function openSidebarOf(name:SidebarNames){
     activeSidebarName.value = name
@@ -58,7 +71,10 @@ function openSidebarOf(name:SidebarNames){
         localConfigs.value?.fold()
 }
 function saveData(){
-    emit('saveData')
+    if(saveBtnMode.value=='save')
+        emit('saveData')
+    else if(saveBtnMode.value=='leave')
+        router.back()
 }
 const emit = defineEmits<{
     (e:'saveData'):void
@@ -75,7 +91,7 @@ const emit = defineEmits<{
         <div @click="openSidebarOf('exportPng')" class="sqrBtn withShadow">导出</div>
         <div @click="saveData" class="sqrBtn withShadow saveBtn">
             <div v-show="preventingLeaving" class="saveRedDot" :class="{unsavedForALongTime}"></div>
-            保存
+            {{ saveBtnText }}
         </div>
     </div>
     <Lines ref="lines"></Lines>
