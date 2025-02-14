@@ -5,6 +5,7 @@ export interface Save{
     idIncre: number //所有元素共用的唯一id新建时从此处取，取一个之后其自增1（初始为1）
     points: ControlPoint[]
     lines: Line[]
+    lineStyles?: LineStyle[]
     textTags: TextTag[]
     cvsSize: Coord
     config: ConfigInSave
@@ -42,7 +43,7 @@ export enum LineType{
 }
 export interface Line{
     id:number
-    pts: number[]
+    pts:number[]
     name:string
     nameSub:string
     color:string
@@ -52,6 +53,17 @@ export interface Line{
     ptSize?:number
     type:LineType
     isFilled?:boolean
+    style?:number
+}
+export interface LineStyle{
+    id:number
+    name?:string
+    layers:{
+        color?:string
+        width?:number
+        opacity?:number
+        dash?:string
+    }[]
 }
 
 export enum FormalRotation{
@@ -117,6 +129,7 @@ export function ensureValidSave(obj:any){
     fillDefault('textTags', [])
     fillDefault('config', {})
     fillDefault('idIncre', ()=>recaculateIdIncre(obj))
+    fillDefault('lineStyles', ()=>defaultLineStyles(obj))
     ensureValidCvsSize(obj)
     return obj as Save
 }
@@ -129,6 +142,25 @@ function recaculateIdIncre(save:Save){
         return 1
     const maxId = Math.max(...allIds)
     return maxId + 1
+}
+function defaultLineStyles(save:Save):LineStyle[]{
+    return [
+        {
+            id: save.idIncre++,
+            name: '快线',
+            layers:[
+                {color:'#FFFFFF', width:0.3, opacity:1}
+            ]
+        },
+        {
+            id: save.idIncre++,
+            name: '铁路',
+            layers:[
+                {color:'#FFFFFF', width:0.8},
+                {color:undefined, width:0.8, opacity:1, dash:'2 2'}
+            ]
+        }
+    ]
 }
 
 export const minCvsSide = 500

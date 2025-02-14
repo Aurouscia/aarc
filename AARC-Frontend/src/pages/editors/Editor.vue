@@ -53,7 +53,7 @@ async function load() {
         }
     }
     else if(isDemo.value){
-        saveStore.save = JSON.parse(JSON.stringify(devSave))
+        saveStore.save = ensureValidSave(deepClone(devSave))
         resetterStore.resetDerivedStores()
         loadComplete.value = true
         pop.value?.show('此处为体验环境，不能保存', 'warning')

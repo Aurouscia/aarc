@@ -9,12 +9,15 @@ import { useConfigStore } from '@/models/stores/configStore';
 import { storeToRefs } from 'pinia';
 import { clamp } from '@/utils/lang/clamp';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
+import LineStyles from './configItems/LineStyles.vue';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
 const configStore = useConfigStore()
 const { config } = storeToRefs(configStore)
 const { preventLeaving } = usePreventLeavingUnsavedStore() //无需rerender的地方需要手动调用“阻止未保存离开”
+
+const showLineStyles = ref(false)
 
 const showLineWidthMapped = ref(false)
 function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', value?:string){
@@ -91,6 +94,12 @@ defineExpose({
 
 <template>
 <SideBar ref="sidebar" :enforce-y-scroll="true">
+<h2 :class="{sectorShown:showLineStyles}" @click="showLineStyles = !showLineStyles">
+    <div class="shownStatusIcon">{{ showLineStyles ? '×':'+' }}</div>
+    <div>线路风格</div>
+</h2>
+<LineStyles v-show="showLineStyles"></LineStyles>
+
 <h2 :class="{sectorShown:showLineWidthMapped}" @click="showLineWidthMapped = !showLineWidthMapped">
     <div class="shownStatusIcon">{{ showLineWidthMapped ? '×':'+' }}</div>
     <div>线宽对应车站尺寸</div>
