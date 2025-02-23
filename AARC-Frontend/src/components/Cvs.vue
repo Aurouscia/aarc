@@ -34,7 +34,7 @@ async function init(){
     cvsFrameStore.initContSizeStyle()
     await nextTick()
     envStore.init()
-    cvsBlocksControlStore.refreshBlocks(true)
+    cvsBlocksControlStore.refreshBlocks('suppress')
     await nextTick()
     configStore.readConfigFromSave()
     baseCvsDispatcher.renderBaseCvs()

@@ -78,7 +78,7 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     const wRatioEach = computed(()=>blockSideLength.value/cvsWidth.value)
     const hRatioEach = computed(()=>blockSideLength.value/cvsHeight.value)
     const rectMargin = 0.001
-    function refreshBlocks(suppressReformedHandler = false){
+    function refreshBlocks(callReformedHandler:'auto'|'suppress'|'enforce' = 'auto'){
         const displayRatio = fStore.getDisplayRatio('bigger')
         const cont = fStore.cvsCont
         const frame = fStore.cvsFrame
@@ -138,9 +138,9 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
             })
         }
         console.log(`刷新画布块，${res.length}`)
-        if(!suppressReformedHandler){
+        if(callReformedHandler!=='suppress'){
             const brief = blocksControlBrief(res)
-            if(brief !== lastHandledBrief || res.length===1){
+            if(brief !== lastHandledBrief || callReformedHandler==='enforce'){
                 blocksControl.value = res
                 nextTick(()=>{
                     blocksReformHandler.value.forEach(f=>f())
