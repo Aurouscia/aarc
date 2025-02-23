@@ -8,10 +8,15 @@ import { ref } from 'vue';
 const saveStore = useSaveStore()
 const { save } = storeToRefs(saveStore)
 const showDetail = ref<Record<number, boolean|undefined>>({})
+const colorPicker = ref<InstanceType<typeof AuColorPicker>[]>([])
+function clickContainer(){
+    //点击“其他地方”关闭颜色选择器
+    colorPicker.value.forEach(cp=>cp.closePanel())
+}
 </script>
 
 <template>
-<div class="lineStyles">
+<div class="lineStyles" @click="clickContainer">
     <div v-for="s in save?.lineStyles">
         <div class="preview">
             <canvas :width="200" :height="30"></canvas>
@@ -27,8 +32,12 @@ const showDetail = ref<Record<number, boolean|undefined>>({})
                         <h3>颜色</h3>
                         <div class="colorConfig">
                             <div class="leftPart">
-                                <AuColorPicker v-if="layer.color" :initial="layer.color" @done="c=>layer.color=c"
-                                    :entry-styles="{boxShadow:'0px 0px 2px 0px black'}"></AuColorPicker>
+                                <AuColorPicker v-if="layer.color"
+                                    ref="colorPicker"
+                                    :initial="layer.color" @done="c=>layer.color=c"
+                                    :entry-styles="{border:'1px solid black'}" :pos="-85"
+                                    :entry-respond-delay="1"
+                                    :panel-click-stop-propagation="true"></AuColorPicker>
                                 <div v-else class="following">跟随线路颜色</div>
                             </div>
                             <button v-if="layer.color" class="lite" @click="layer.color=undefined">跟随线路</button>
