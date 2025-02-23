@@ -78,10 +78,13 @@ function renderPreviewCvsOf(lineStyle:LineStyle){
         ctx.beginPath()
         ctx.lineWidth = layerWidth
         ctx.globalAlpha = layer.opacity || 1
-        ctx.strokeStyle = layer.color || dynaColor
+        if(layer.colorMode==='line')
+            ctx.strokeStyle = dynaColor
+        else
+            ctx.strokeStyle = layer.color || 'white'
         const dashNums = parseDash(layer.dash)
         for(let i=0;i<dashNums.length;i++){
-            dashNums[i] = dashNums[i]*layerWidth
+            dashNums[i] = dashNums[i]*cvsLineWidthBase
         }
         ctx.setLineDash(dashNums)
         ctx.moveTo(...cvsLeftCoord)
@@ -134,16 +137,16 @@ onUnmounted(()=>{
                         <h3>颜色</h3>
                         <div class="colorConfig">
                             <div class="leftPart">
-                                <AuColorPicker v-if="layer.color"
+                                <AuColorPicker v-if="!layer.colorMode || layer.colorMode==='fixed'"
                                     ref="colorPicker"
                                     :initial="layer.color" @done="c=>layer.color=c"
                                     :entry-styles="{border:'1px solid black'}" :pos="-85"
                                     :entry-respond-delay="1"
                                     :panel-click-stop-propagation="true"></AuColorPicker>
-                                <div v-else class="following">跟随线路颜色</div>
+                                <div v-else-if="layer.colorMode==='line'" class="following">跟随线路颜色</div>
                             </div>
-                            <button v-if="layer.color" class="lite" @click="layer.color=undefined">跟随线路</button>
-                            <button v-else class="lite" @click="layer.color='#FFFFFF'">取消跟随</button>
+                            <button v-if="layer.colorMode!=='line'" class="lite" @click="layer.colorMode='line'">跟随线路</button>
+                            <button v-else class="lite" @click="layer.colorMode='fixed'">取消跟随</button>
                         </div>
                     </div>
                     <div>

@@ -60,6 +60,7 @@ export interface LineStyle{
     name?:string
     layers:{
         color?:string
+        colorMode?:'fixed'|'line' //undefined默认为fixed
         width?:number
         opacity?:number
         dash?:string
@@ -156,7 +157,7 @@ function defaultLineStyles(save:Save):LineStyle[]{
             id: save.idIncre++,
             name: '铁路',
             layers:[
-                {color:undefined, width:0.7, opacity:1, dash:'4 4'},
+                {colorMode:'line', width:0.7, opacity:1, dash:'4 4'},
                 {color:'#FFFFFF', width:0.7}
             ]
         }
