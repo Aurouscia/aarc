@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { LineStyle } from '@/models/save';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { moveUpInArray } from '@/utils/lang/moveUpInArray';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
@@ -12,6 +13,17 @@ const colorPicker = ref<InstanceType<typeof AuColorPicker>[]>([])
 function clickContainer(){
     //点击“其他地方”关闭颜色选择器
     colorPicker.value.forEach(cp=>cp.closePanel())
+}
+function delLayer(lineStyle:LineStyle, layerIdx:number){
+    if(window.confirm('确认删除该层级')){
+        lineStyle.layers.splice(layerIdx, 1)
+    }
+}
+function addLayer(lineStyle:LineStyle){
+    lineStyle.layers.push({
+        width:0.5,
+        opacity:1
+    })
 }
 </script>
 
@@ -68,11 +80,11 @@ function clickContainer(){
                     </div>
                     <div class="ops">
                         <button v-if="idx>0" class="lite lsMoveUp" @click="moveUpInArray(s.layers, idx)">上移</button>
-                        <button class="lite lsDelete">删除</button>
+                        <button class="lite lsDelete" @click="delLayer(s, idx)">删除</button>
                     </div>
                 </div>
                 <div class="ops">
-                    <button class="lite">新增层级</button>
+                    <button class="lite" @click="addLayer(s)">新增层级</button>
                 </div>
             </div>
         </div>
@@ -158,7 +170,7 @@ function clickContainer(){
                 }
                 &>.ops{
                     button.lsMoveUp{
-                        color: cornflowerblue
+                        color: #999;
                     }
                     button.lsDelete{
                         color: plum
