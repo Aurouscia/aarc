@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { Coord } from '@/models/coord';
 import { LineStyle } from '@/models/save';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { moveUpInArray } from '@/utils/lang/moveUpInArray';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { CSSProperties, onMounted, onUnmounted, ref } from 'vue';
 
 const saveStore = useSaveStore()
 const { save } = storeToRefs(saveStore)
@@ -25,13 +26,102 @@ function addLayer(lineStyle:LineStyle){
         opacity:1
     })
 }
+
+function cvsEleId(styleId:number){
+    return `lineStylePreviewCvs_${styleId}`
+}
+const cvsWidth = 400
+const cvsHeight = 60
+const cvsStyle:CSSProperties = {
+    width: '200px',
+    height: '30px'
+}
+const cvsCenterY = cvsHeight/2
+const cvsLineWidthBase = cvsHeight/3
+const cvsLRMargin = cvsWidth/10
+const cvsLeftX = cvsLRMargin
+const cvsRightX = cvsWidth - cvsLRMargin
+const cvsLeftCoord:Coord = [cvsLeftX, cvsCenterY]
+const cvsRightCoord:Coord = [cvsRightX, cvsCenterY]
+const previewColors = ['red', 'green', 'blue']
+let previewColorIdx = 0
+function renderPreviewCvs(){
+    if(!save.value?.lineStyles)
+        return
+    for(const s of save.value?.lineStyles){
+        renderPreviewCvsOf(s)
+    }
+}
+function renderPreviewCvsOf(lineStyle:LineStyle){
+    const layers = lineStyle.layers
+    if(!layers)
+        return
+    const cvs = document.getElementById(cvsEleId(lineStyle.id)) as HTMLCanvasElement|null
+    const ctx = cvs?.getContext('2d')
+    if(!cvs || !ctx)
+        return
+    const dynaColor = previewColors[previewColorIdx]
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, cvsWidth, cvsHeight)
+    ctx.beginPath()
+    ctx.lineWidth = cvsLineWidthBase
+    ctx.globalAlpha = 1
+    ctx.strokeStyle = dynaColor
+    ctx.setLineDash([])
+    ctx.lineCap = 'butt'
+    ctx.moveTo(...cvsLeftCoord)
+    ctx.lineTo(...cvsRightCoord)
+    ctx.stroke()
+    for(let i=layers.length-1; i>=0; i--){
+        const layer = layers[i]
+        const layerWidth = cvsLineWidthBase * (layer.width||1)
+        ctx.beginPath()
+        ctx.lineWidth = layerWidth
+        ctx.globalAlpha = layer.opacity || 1
+        ctx.strokeStyle = layer.color || dynaColor
+        const dashNums = parseDash(layer.dash)
+        for(let i=0;i<dashNums.length;i++){
+            dashNums[i] = dashNums[i]*layerWidth
+        }
+        ctx.setLineDash(dashNums)
+        ctx.moveTo(...cvsLeftCoord)
+        ctx.lineTo(...cvsRightCoord)
+        ctx.stroke()
+    }
+}
+function parseDash(dashStr?:string):number[]{
+    const res:number[] = []
+    if(!dashStr)
+        return res
+    const parts = dashStr.split(' ')
+    for(const p of parts){
+        const pNum = parseFloat(p)
+        if(!isNaN(pNum))
+            res.push(pNum)
+    }
+    return res
+}
+
+let timer = 0
+onMounted(()=>{
+    timer = window.setInterval(()=>{
+        previewColorIdx++
+        if(previewColorIdx>=previewColors.length){
+            previewColorIdx = 0
+        }
+        renderPreviewCvs()
+    }, 1000)
+})
+onUnmounted(()=>{
+    window.clearInterval(timer)
+})
 </script>
 
 <template>
 <div class="lineStyles" @click="clickContainer">
     <div v-for="s in save?.lineStyles">
         <div class="preview">
-            <canvas :width="200" :height="30"></canvas>
+            <canvas :width="cvsWidth" :height="cvsHeight" :style="cvsStyle" :id="cvsEleId(s.id)"></canvas>
             <div @click="showDetail[s.id] = !showDetail[s.id]" class="sqrBtn withShadow">...</div>
         </div>
         <div v-if="showDetail[s.id]" class="detail">
@@ -107,6 +197,9 @@ function addLayer(lineStyle:LineStyle){
             justify-content: space-between;
             align-items: center;
             height: 40px;
+            canvas{
+                border-radius: 10px;
+            }
         }
         h3{
             font-size: 16px;

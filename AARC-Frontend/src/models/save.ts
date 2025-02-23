@@ -156,8 +156,8 @@ function defaultLineStyles(save:Save):LineStyle[]{
             id: save.idIncre++,
             name: '铁路',
             layers:[
-                {color:'#FFFFFF', width:0.8},
-                {color:undefined, width:0.8, opacity:1, dash:'2 2'}
+                {color:undefined, width:0.7, opacity:1, dash:'4 4'},
+                {color:'#FFFFFF', width:0.7}
             ]
         }
     ]
