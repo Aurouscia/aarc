@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Line, LineType } from '@/models/save';
+import { Line, LineStyle, LineType } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { storeToRefs } from 'pinia';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const envStore = useEnvStore()
 const { save } = storeToRefs(useSaveStore())
@@ -22,6 +22,15 @@ function lineWidthChanged(){
     envStore.lineInfoChanged(props.line, changed)
 }
 const lineStyleBinded = ref<number>() //0为默认值（无样式）
+const selectableLineStyles = computed<LineStyle[]>(()=>{
+    return save.value?.lineStyles?.map(x=>{
+        const copy = {...x}
+        if(!copy.name){
+            copy.name = '未命名样式'
+        }
+        return copy
+    }) || []
+})
 function lineStyleChanged(){
     props.line.style = lineStyleBinded.value
     envStore.lineInfoChanged(props.line)
@@ -67,10 +76,11 @@ onMounted(()=>{
         <div class="selectItem">
             <select v-model="lineStyleBinded" @change="lineStyleChanged">
                 <option :value="0">默认</option>
-                <option v-for="style in save?.lineStyles" :value="style.id">
+                <option v-for="style in selectableLineStyles" :value="style.id">
                     {{ style.name }}
                 </option>
             </select>
+            <div>(可在设置-线路样式<br/>自定义更多选项)</div>
         </div>
     </div>
     <div v-if="line.type===LineType.common" class="configItem">
@@ -133,10 +143,6 @@ onMounted(()=>{
             flex-direction: column;
             align-items: center;
             gap: 0px;
-            div{
-                color: gray;
-                font-size: 12px;
-            }
         }
         .checkItem{
             flex-grow: 1;
@@ -154,7 +160,14 @@ onMounted(()=>{
             flex-grow: 1;
             text-align: center;
             select{
-                max-width: 150px;
+                max-width: 120px;
+                font-size: 14px;
+            }
+        }
+        .slideBarItem, .selectItem{
+            div{
+                color: gray;
+                font-size: 12px;
             }
         }
     }

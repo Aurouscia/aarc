@@ -1,5 +1,5 @@
-export function moveUpInArray<T>(array:T[], moveUpIdx:number){
-    if(moveUpIdx<=0 || moveUpIdx>=array.length){
+export function moveUpInArray<T>(array:T[]|undefined, moveUpIdx:number){
+    if(!array || moveUpIdx<=0 || moveUpIdx>=array.length){
         return
     }
     let temp = array[moveUpIdx]

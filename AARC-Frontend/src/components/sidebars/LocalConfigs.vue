@@ -98,7 +98,7 @@ defineExpose({
     <div class="shownStatusIcon">{{ showLineStyles ? '×':'+' }}</div>
     <div>线路风格</div>
 </h2>
-<LineStyles v-show="showLineStyles"></LineStyles>
+<LineStyles v-if="showLineStyles"></LineStyles>
 
 <h2 :class="{sectorShown:showLineWidthMapped}" @click="showLineWidthMapped = !showLineWidthMapped">
     <div class="shownStatusIcon">{{ showLineWidthMapped ? '×':'+' }}</div>

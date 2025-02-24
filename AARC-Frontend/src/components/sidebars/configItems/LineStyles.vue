@@ -22,12 +22,30 @@ function delLayer(lineStyle:LineStyle, layerIdx:number){
     }
 }
 function addLayer(lineStyle:LineStyle){
-    lineStyle.layers.push({
+    lineStyle.layers.unshift(getDefaultLayer())
+}
+function delStyle(lineStyle:LineStyle){
+    if(window.confirm(`确认删除样式 ${lineStyle.name || ''}`)){
+        const idx = save.value?.lineStyles?.findIndex(x=>x.id === lineStyle.id)
+        if(idx!==undefined && idx>=0){
+            save.value?.lineStyles?.splice(idx, 1)
+        }
+    }
+}
+function addStyle(){
+    const newId = saveStore.getNewId()
+    save.value?.lineStyles?.push({
+        id:newId,
+        layers:[getDefaultLayer()]
+    })
+}
+function getDefaultLayer():LineStyle['layers'][number]{
+    return {
         color: '#FFFFFF',
-        colorMode: 'line',
+        colorMode: 'fixed',
         width:0.5,
         opacity:1
-    })
+    }
 }
 
 function cvsEleId(styleId:number){
@@ -72,8 +90,16 @@ function renderPreviewCvsOf(lineStyle:LineStyle){
     strokeStyledLine(ctx, lineStyle, cvsLineWidthBase, dynaColor)
 }
 
+const styleNameMaxLength = 8
+function checkStyleName(s:LineStyle){
+    if(s.name && s.name.length > styleNameMaxLength){
+        s.name = s.name.substring(0, styleNameMaxLength)
+    }
+}
+
 let timer = 0
 onMounted(()=>{
+    renderPreviewCvs()
     timer = window.setInterval(()=>{
         previewColorIdx++
         if(previewColorIdx>=previewColors.length){
@@ -89,14 +115,14 @@ onUnmounted(()=>{
 
 <template>
 <div class="lineStyles" @click="clickContainer">
-    <div v-for="s in save?.lineStyles">
+    <div v-for="s,sIdx in save?.lineStyles" :key="s.id">
         <div class="preview">
             <canvas :width="cvsWidth" :height="cvsHeight" :style="cvsStyle" :id="cvsEleId(s.id)"></canvas>
             <div @click="showDetail[s.id] = !showDetail[s.id]" class="sqrBtn withShadow">...</div>
         </div>
         <div v-if="showDetail[s.id]" class="detail">
             <div class="name">
-                <h3>名称</h3><input v-model="s.name" placeholder="风格名称"/>
+                <h3>名称</h3><input v-model="s.name" placeholder="风格名称(必填)" @blur="checkStyleName(s)"/>
             </div>
             <div class="layers">
                 <div v-for="layer,idx in s.layers" class="layer">
@@ -143,11 +169,16 @@ onUnmounted(()=>{
                         <button class="lite lsDelete" @click="delLayer(s, idx)">删除</button>
                     </div>
                 </div>
-                <div class="ops">
-                    <button class="lite" @click="addLayer(s)">新增层级</button>
-                </div>
+            </div>
+            <div class="ops">
+                <button class="ok" @click="addLayer(s)">+层级</button>
+                <button v-if="sIdx>0" class="minor" @click="moveUpInArray(save?.lineStyles, sIdx)">上移</button>
+                <button class="cancel" @click="delStyle(s)">删除</button>
             </div>
         </div>
+    </div>
+    <div class="newStyle">
+        <button class="ok" @click="addStyle">+新建样式</button>
     </div>
 </div>
 </template>
@@ -158,7 +189,7 @@ onUnmounted(()=>{
     background-color: #eee;
     padding: 5px;
     &>div{
-        border: 1.5px solid #666;
+        border: 2px solid #666;
         border-radius: 10px;
         margin: 10px 0px 10px 0px;
         padding: 5px;
@@ -240,16 +271,19 @@ onUnmounted(()=>{
                     }
                 }
             }
-            .ops{
-                margin: 10px 0px 0px 0px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                button{
-                    color: olivedrab
-                }
-            }
         }
+        .ops{
+            margin: 10px 0px 0px 0px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+    }
+    &>.newStyle{
+        border: none;
+        display: flex;
+        justify-content: center;
     }
 }
 </style>
