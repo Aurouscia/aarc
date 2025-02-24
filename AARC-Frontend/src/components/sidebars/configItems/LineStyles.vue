@@ -192,7 +192,6 @@ onUnmounted(()=>{
 
 <style scoped lang="scss">
 .lineStyles{
-    width: 100%;
     background-color: #eee;
     padding: 5px;
     &>div{
@@ -204,7 +203,7 @@ onUnmounted(()=>{
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 40px;
+            height: 30px;
             canvas{
                 border-radius: 10px;
             }
@@ -240,7 +239,7 @@ onUnmounted(()=>{
                         justify-content: space-between;
                         align-items: center;
                         .leftPart{
-                            width: 140px;
+                            width: 120px;
                             display: flex;
                             justify-content: center;
                         }
@@ -263,10 +262,13 @@ onUnmounted(()=>{
                         .numberView{
                             width: 40px;
                         }
+                        input[type=range]{
+                            width: 120px;
+                        }
                     }
                     .dashConfigInput{
                         margin: 0px;
-                        width: 150px;
+                        width: 120px;
                     }
                 }
                 &>.ops{
