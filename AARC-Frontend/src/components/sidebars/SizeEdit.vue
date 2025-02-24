@@ -9,6 +9,7 @@ import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher
 import { minCvsSide } from '@/models/save';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
+import Notice from '../common/Notice.vue';
 
 const { pop } = useUniqueComponentsStore()
 const saveStore = useSaveStore()
@@ -31,6 +32,11 @@ const cvsHeightPreview = computed(()=>{
     w += pendingChanges.value[0]
     w += pendingChanges.value[2]
     return w
+})
+const tooBigWarnThrs = 20000
+const tooBigRefuseThrs = 40000
+const cvsPreviewTooBig = computed<boolean>(()=>{
+    return cvsWidthPreview.value > tooBigWarnThrs || cvsHeightPreview.value > tooBigWarnThrs 
 })
 const anyChangeExist = computed(()=>pendingChanges.value.some(x=>x!==0))
 function changeStyleOf(idx:number):CSSProperties{
@@ -81,8 +87,8 @@ function applyChange(){
     const pc = pendingChanges.value
     const newW = cvsWidthPreview.value
     const newH = cvsHeightPreview.value
-    if(newW > 20000 || newH > 20000){
-        pop?.show('目前限制边长20000', 'failed')
+    if(newW > tooBigRefuseThrs || newH > tooBigRefuseThrs){
+        pop?.show(`边长限制${tooBigRefuseThrs}`, 'failed')
         return
     }
     let moveDownward = pc[0]
@@ -169,6 +175,9 @@ defineExpose({
         <button class="cancel" @click="abortChange">放弃修改</button>
         <button class="ok" @click="applyChange">应用修改</button>
     </div>
+    <Notice v-if="cvsPreviewTooBig" :type="'info'">
+        过大的画布会导致<br/>导出的图片难以分享
+    </Notice>
 </SideBar>
 </template>
 
@@ -278,7 +287,7 @@ defineExpose({
 }
 
 .ops{
-    margin-top: 15px;
+    margin: 15px 0px 15px 0px;
     display: flex;
     flex-direction: column;
     justify-content: center;
