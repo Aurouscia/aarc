@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { Line, LineType } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
+import { useSaveStore } from '@/models/stores/saveStore';
+import { storeToRefs } from 'pinia';
 import { onMounted, ref } from 'vue';
 
 const envStore = useEnvStore()
+const { save } = storeToRefs(useSaveStore())
 const props = defineProps<{
     line:Line,
     lineWidthRange:{
@@ -17,6 +20,11 @@ function lineWidthChanged(){
     const changed = (props.line.width || 1) !== (lineWidthBinded.value || 1)
     props.line.width = lineWidthBinded.value
     envStore.lineInfoChanged(props.line, changed)
+}
+const lineStyleBinded = ref<number>() //0为默认值（无样式）
+function lineStyleChanged(){
+    props.line.style = lineStyleBinded.value
+    envStore.lineInfoChanged(props.line)
 }
 const lineStaNameSizeBinded = ref(1)
 function lineStaNameSizeChanged(){
@@ -34,6 +42,7 @@ function textTagCreateBtnClickHandler(){
 
 onMounted(()=>{
     lineWidthBinded.value = props.line.width || 1
+    lineStyleBinded.value = props.line.style || 0
     lineStaNameSizeBinded.value = props.line.ptNameSize || 0
     lineStaSizeBinded.value = props.line.ptSize || 0
 })
@@ -51,6 +60,17 @@ onMounted(()=>{
                 :step="lineWidthRange.step" value="1"
                 @change="lineWidthChanged"/>
             <div>{{ lineWidthBinded || 1 }}×</div>
+        </div>
+    </div>
+    <div v-if="line.type===LineType.common" class="configItem">
+        <div>样式</div>
+        <div class="selectItem">
+            <select v-model="lineStyleBinded" @change="lineStyleChanged">
+                <option :value="0">默认</option>
+                <option v-for="style in save?.lineStyles" :value="style.id">
+                    {{ style.name }}
+                </option>
+            </select>
         </div>
     </div>
     <div v-if="line.type===LineType.common" class="configItem">
@@ -129,6 +149,13 @@ onMounted(()=>{
         .btnItem{
             flex-grow: 1;
             text-align: center;
+        }
+        .selectItem{
+            flex-grow: 1;
+            text-align: center;
+            select{
+                max-width: 150px;
+            }
         }
     }
     .configTitle{

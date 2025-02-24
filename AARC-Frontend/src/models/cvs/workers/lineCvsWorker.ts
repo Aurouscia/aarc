@@ -16,6 +16,7 @@ import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
 import { getByIndexInRing, isRing, isRingByFormalPts } from "@/utils/lineUtils/isRing";
 import { drawArcByThreePoints } from "@/utils/drawUtils/drawArc";
 import { CvsContext } from "../common/cvsContext";
+import { strokeStyledLine } from "../common/strokeStyledLine";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill:number}
 type LineRenderType = 'both'|'body'|'carpet'
@@ -376,9 +377,15 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 ctx.stroke()
             }
             if(drawBody){
-                ctx.lineWidth = lineWidth
-                ctx.strokeStyle = saveStore.getLineActualColor(lineInfo)
-                ctx.stroke()
+                const lineColor = saveStore.getLineActualColor(lineInfo)
+                const itsStyle = saveStore.save?.lineStyles?.find(x=>x.id===lineInfo.style)
+                if(itsStyle){
+                    strokeStyledLine(ctx, itsStyle, lineWidth, lineColor)
+                }else{
+                    ctx.lineWidth = lineWidth
+                    ctx.strokeStyle = lineColor
+                    ctx.stroke()
+                }
             }
         }else{
             ctx.lineJoin = 'round'

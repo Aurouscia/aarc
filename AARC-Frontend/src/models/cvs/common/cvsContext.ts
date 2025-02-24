@@ -73,6 +73,11 @@ export class CvsContext{
             }
         }
     }
+    setLineDash(segments:Iterable<number>){
+        this.enumerate(b=>{
+            b.ctx2d.setLineDash(segments)
+        })
+    }
     clear(){
         this.enumerate(b=>{
             const cvs = b.ctx2d.canvas

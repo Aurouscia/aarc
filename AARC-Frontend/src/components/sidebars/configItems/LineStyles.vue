@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Coord } from '@/models/coord';
+import { strokeStyledLine } from '@/models/cvs/common/strokeStyledLine';
 import { LineStyle } from '@/models/save';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { moveUpInArray } from '@/utils/lang/moveUpInArray';
@@ -66,45 +67,9 @@ function renderPreviewCvsOf(lineStyle:LineStyle){
     ctx.fillStyle = 'white'
     ctx.fillRect(0, 0, cvsWidth, cvsHeight)
     ctx.beginPath()
-    ctx.lineWidth = cvsLineWidthBase
-    ctx.globalAlpha = 1
-    ctx.strokeStyle = dynaColor
-    ctx.setLineDash([])
-    ctx.lineCap = 'butt'
     ctx.moveTo(...cvsLeftCoord)
     ctx.lineTo(...cvsRightCoord)
-    ctx.stroke()
-    for(let i=layers.length-1; i>=0; i--){
-        const layer = layers[i]
-        const layerWidth = cvsLineWidthBase * (layer.width||1)
-        ctx.beginPath()
-        ctx.lineWidth = layerWidth
-        ctx.globalAlpha = layer.opacity || 1
-        if(layer.colorMode==='line')
-            ctx.strokeStyle = dynaColor
-        else
-            ctx.strokeStyle = layer.color || 'white'
-        const dashNums = parseDash(layer.dash)
-        for(let i=0;i<dashNums.length;i++){
-            dashNums[i] = dashNums[i]*cvsLineWidthBase
-        }
-        ctx.setLineDash(dashNums)
-        ctx.moveTo(...cvsLeftCoord)
-        ctx.lineTo(...cvsRightCoord)
-        ctx.stroke()
-    }
-}
-function parseDash(dashStr?:string):number[]{
-    const res:number[] = []
-    if(!dashStr)
-        return res
-    const parts = dashStr.split(' ')
-    for(const p of parts){
-        const pNum = parseFloat(p)
-        if(!isNaN(pNum))
-            res.push(pNum)
-    }
-    return res
+    strokeStyledLine(ctx, lineStyle, cvsLineWidthBase, dynaColor)
 }
 
 let timer = 0
