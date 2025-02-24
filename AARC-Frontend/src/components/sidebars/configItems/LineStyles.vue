@@ -22,6 +22,8 @@ function delLayer(lineStyle:LineStyle, layerIdx:number){
 }
 function addLayer(lineStyle:LineStyle){
     lineStyle.layers.push({
+        color: '#FFFFFF',
+        colorMode: 'line',
         width:0.5,
         opacity:1
     })
