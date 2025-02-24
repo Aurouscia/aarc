@@ -8,6 +8,8 @@ import { moveUpInArray } from '@/utils/lang/moveUpInArray';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
 import { storeToRefs } from 'pinia';
 import { CSSProperties, onMounted, onUnmounted, ref } from 'vue';
+import { hsl } from 'color-convert'
+import { timestampMS } from '@/utils/timeUtils/timestamp';
 
 const saveStore = useSaveStore()
 const { save } = storeToRefs(saveStore)
@@ -66,16 +68,16 @@ const cvsLeftX = cvsLRMargin
 const cvsRightX = cvsWidth - cvsLRMargin
 const cvsLeftCoord:Coord = [cvsLeftX, cvsCenterY]
 const cvsRightCoord:Coord = [cvsRightX, cvsCenterY]
-const previewColors = ['red', 'green', 'blue']
-let previewColorIdx = 0
 function renderPreviewCvs(){
     if(!save.value?.lineStyles)
         return
+    const hue = timestampMS()/20 % 360
+    const dynaColor = '#'+hsl.hex([hue, 80, 50])
     for(const s of save.value?.lineStyles){
-        renderPreviewCvsOf(s)
+        renderPreviewCvsOf(s, dynaColor)
     }
 }
-function renderPreviewCvsOf(lineStyle:LineStyle){
+function renderPreviewCvsOf(lineStyle:LineStyle, dynaColor:string){
     const layers = lineStyle.layers
     if(!layers)
         return
@@ -83,7 +85,6 @@ function renderPreviewCvsOf(lineStyle:LineStyle){
     const ctx = cvs?.getContext('2d')
     if(!cvs || !ctx)
         return
-    const dynaColor = previewColors[previewColorIdx]
     ctx.fillStyle = 'white'
     ctx.fillRect(0, 0, cvsWidth, cvsHeight)
     ctx.beginPath()
@@ -108,12 +109,8 @@ let timer = 0
 onMounted(()=>{
     renderPreviewCvs()
     timer = window.setInterval(()=>{
-        previewColorIdx++
-        if(previewColorIdx>=previewColors.length){
-            previewColorIdx = 0
-        }
         renderPreviewCvs()
-    }, 1000)
+    }, 100)
 })
 onUnmounted(()=>{
     window.clearInterval(timer)
@@ -138,7 +135,7 @@ onUnmounted(()=>{
                         <div class="colorConfig">
                             <div class="leftPart">
                                 <AuColorPicker v-if="!layer.colorMode || layer.colorMode==='fixed'"
-                                    ref="colorPicker"
+                                    ref="colorPicker" @change="c=>layer.color=c"
                                     :initial="layer.color" @done="c=>{layer.color=c;rr()}"
                                     :entry-styles="{border:'1px solid black'}" :pos="-85"
                                     :entry-respond-delay="1"
