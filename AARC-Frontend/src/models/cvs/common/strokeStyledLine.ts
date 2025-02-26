@@ -15,9 +15,15 @@ export function strokeStyledLine(
     ctx.stroke()
     for(let i=lineStyle.layers.length-1; i>=0; i--){
         const layer = lineStyle.layers[i]
-        const layerWidth = lineWidthBase * (layer.width||1)
-        ctx.lineWidth = layerWidth
-        ctx.globalAlpha = layer.opacity || 1
+        //被input设置的width和opacity是字符串形式的数字，此处应该使用双等号判断是否为0，三等号判断将始终为false
+        if(!layer.width || layer.width==0){
+            continue
+        }
+        if(!layer.opacity || layer.opacity==0){
+            continue
+        }
+        ctx.lineWidth = lineWidthBase * layer.width
+        ctx.globalAlpha = layer.opacity
         if(layer.colorMode==='line')
             ctx.strokeStyle = dynaColor
         else
@@ -29,6 +35,7 @@ export function strokeStyledLine(
         ctx.setLineDash(dashNums)
         ctx.stroke()
     }
+    //容易忘记初始化的属性必须复位
     ctx.setLineDash([])
     ctx.globalAlpha = 1
 }
