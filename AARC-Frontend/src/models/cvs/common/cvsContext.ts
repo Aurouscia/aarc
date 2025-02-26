@@ -73,9 +73,9 @@ export class CvsContext{
             }
         }
     }
-    setLineDash(segments:Iterable<number>){
+    setLineDash(segments:Array<number>){
         this.enumerate(b=>{
-            b.ctx2d.setLineDash(segments)
+            b.ctx2d.setLineDash(segments.map(x=>x*b.scale))
         })
     }
     clear(){
