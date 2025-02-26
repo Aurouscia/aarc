@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useApiStore } from '@/app/com/api';
@@ -12,6 +12,7 @@ import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { AdsRenderType } from '@/models/cvs/workers/adsCvsWorker';
 import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
+import Bowser from 'bowser';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -30,9 +31,10 @@ async function downloadMainCvsAsPng() {
 
     const fileName = await getExportPngFileName()
     if(fileName){
-        const cvs = new OffscreenCanvas(saveStore.cvsWidth, saveStore.cvsHeight)
+        const { scale, cvsWidth, cvsHeight } = getExportRenderSize()
+        const cvs = new OffscreenCanvas(cvsWidth, cvsHeight)
         const ctx2d = cvs.getContext('2d')!
-        const ctx = new CvsContext([new CvsBlock(1, 0, 0, ctx2d)])
+        const ctx = new CvsContext([new CvsBlock(scale, 0, 0, ctx2d)])
         const mainRenderingOptions:MainCvsRenderingOptions = {
             changedLines:[],
             movedStaNames:[],
@@ -107,6 +109,28 @@ async function getExportPngFileName(isMini?:boolean){
         return `${name}.png`
     }
 }
+function getExportRenderSize():{scale:number, cvsWidth:number, cvsHeight:number}{
+    const epr = parseInt(exportPixelRestrict.value||'')
+    const asIs = ()=>{
+        return{
+            scale:1,
+            cvsWidth:saveStore.cvsWidth,
+            cvsHeight:saveStore.cvsHeight
+        }
+    }
+    if(isNaN(epr) || epr<=100){
+        return asIs()
+    }
+    const biggerSide = Math.max(saveStore.cvsWidth, saveStore.cvsHeight)
+    if(biggerSide <= epr)
+        return asIs()
+    const scale = epr/biggerSide
+    return {
+        scale,
+        cvsWidth: saveStore.cvsWidth*scale,
+        cvsHeight: saveStore.cvsHeight*scale
+    }
+}
 const exportPngFileNameStyle = ref<string>()
 exportPngFileNameStyle.value = exportLocalConfig.readExportFileNameStyle() || 'plain'
 function exportPngFileNameStyleChanged(){
@@ -136,6 +160,16 @@ function exportWithAdsChanged(){
     }
 }
 
+const exportPixelRestrict = ref<string>()
+exportPixelRestrict.value = exportLocalConfig.readExportPixelRestrict()||''
+function exportPixelRestrictChanged(){
+    exportLocalConfig.saveExportPixelRestrict(exportPixelRestrict.value||'')
+}
+
+const browserInfo = ref<ReturnType<typeof Bowser.parse>>()
+browserInfo.value = Bowser.parse(navigator.userAgent)
+const isApple = computed<boolean>(()=>browserInfo.value?.engine.name?.toLowerCase()=='webkit')
+
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
     fold: ()=>{sidebar.value?.fold()}
@@ -146,8 +180,8 @@ defineExpose({
 <SideBar ref="sidebar">
 <h1>导出作品</h1>
 <div class="exportOps">
-    <div class="configSelect">
-        <div style="color: #666;">文件名</div>
+    <div class="configItem">
+        <div class="itemName">文件名</div>
         <select v-model="exportPngFileNameStyle" @change="exportPngFileNameStyleChanged">
             <option :value="'plain'">存档名</option>
             <option :value="'date'">日期</option>
@@ -155,8 +189,12 @@ defineExpose({
             <option :value="'lineCount'">线路站点</option>
         </select>
     </div>
-    <div class="configSelect">
-        <div style="color: #666;">宣传水印</div>
+    <div class="configItem">
+        <div class="itemName">像素上限</div>
+        <input v-model="exportPixelRestrict" @change="exportPixelRestrictChanged" type="number"/>
+    </div>
+    <div class="configItem">
+        <div class="itemName">宣传水印</div>
         <select v-model="exportWithAds" @change="exportWithAdsChanged">
             <option :value="'no'">无</option>
             <option :value="'less'">简略</option>
@@ -169,8 +207,13 @@ defineExpose({
         点击后请耐心等待数秒，不要反复点击<br/>
     </div>
     <div class="note">
-        作品导出设置（清晰度等）将后续推出<br/>
-        当前“站点数”不准确，正在修复
+        若导出失败，可能由于系统/浏览器限制，<br/>
+        导致只能导出模糊的图片<br/>
+        请尝试设置<b>“像素上限”</b>为4000，若仍然失败则逐步调低直至导出成功<br/>
+        <b v-if="isApple" style="color:plum">
+            苹果系统疑似有4000的上限<br/>
+        </b>
+        若需要清晰的图片请换用其他设备
     </div>
 </div>
 </SideBar>
@@ -180,10 +223,20 @@ defineExpose({
 .ok{
     margin-top: 20px;
 }
-.configSelect{
+.configItem{
     display: flex;
     align-items: center;
     justify-content: space-between;
+    .itemName{
+        color:#666;
+    }
+    input{
+        max-width: 120px;
+    }
+}
+.explainItem{
+    color: #333;
+    font-size: 14px;
 }
 .exportOps{
     display: flex;
