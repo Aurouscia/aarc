@@ -22,7 +22,7 @@ const saveStore = useSaveStore()
 const api = useApiStore().get()
 const route = useRoute()
 const { pop } = useUniqueComponentsStore()
-const imgDataUrl = ref<string>()
+const exported = ref<boolean>(false)
 let exportLock = false
 
 const exportLocalConfig = useExportLocalConfigStore()
@@ -30,6 +30,7 @@ async function downloadMainCvsAsPng() {
     if(exportLock)
         return
     exportLock = true
+    exported.value = false
 
     const fileName = await getExportPngFileName()
     if(fileName){
@@ -51,11 +52,14 @@ async function downloadMainCvsAsPng() {
         if(!pngDataUrl){
             return
         }
-        imgDataUrl.value = pngDataUrl
-        var link = document.createElement('a');
-        link.download = fileName
-        link.href = pngDataUrl;
-        link.click();
+        var link = getDownloadAnchor()
+        if(link && 'href' in link){
+            exported.value = true
+            link.href = pngDataUrl;
+            if('download' in link)
+                link.download = fileName
+            link.click();
+        }
 
         mainRenderingOptions.forExport = false
         mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
@@ -68,6 +72,7 @@ async function downloadMiniatureCvsAsPng() {
     if(exportLock)
         return
     exportLock = true
+    exported.value = false
     const fileName = await getExportPngFileName(true)
     if(fileName){
         const cvs = miniatureCvsDispatcher.renderMiniatureCvs(256, 2)
@@ -75,11 +80,14 @@ async function downloadMiniatureCvsAsPng() {
         if(!pngDataUrl){
             return
         }
-        imgDataUrl.value = pngDataUrl
-        var link = document.createElement('a');
-        link.download = fileName
-        link.href = pngDataUrl;
-        link.click();
+        var link = getDownloadAnchor()
+        if(link && 'href' in link){
+            exported.value = true
+            link.href = pngDataUrl;
+            if('download' in link)
+                link.download = fileName
+            link.click();
+        }
     }
     window.setTimeout(()=>{
         exportLock = false
@@ -155,6 +163,11 @@ async function cvsToDataUrl(cvs:OffscreenCanvas):Promise<string>{
     })
 }
 
+const downloadAnchorElementId = 'downloadAnchor'
+function getDownloadAnchor(){
+    return document.getElementById(downloadAnchorElementId)
+}
+
 const exportWithAds = ref<AdsRenderType>()
 exportWithAds.value = (exportLocalConfig.readExportWithAds() || 'no') as AdsRenderType
 function exportWithAdsChanged(){
@@ -181,7 +194,7 @@ defineExpose({
 </script>
 
 <template>
-<SideBar ref="sidebar" @extend="enableContextMenu()" @fold="disableContextMenu();imgDataUrl=undefined">
+<SideBar ref="sidebar" @extend="enableContextMenu()" @fold="disableContextMenu();exported=false">
 <h1>导出作品</h1>
 <div class="exportOps">
     <div class="configItem">
@@ -207,9 +220,8 @@ defineExpose({
     </div>
     <button @click="downloadMainCvsAsPng" class="ok">导出为图片</button>
     <button @click="downloadMiniatureCvsAsPng" class="minor">导出为缩略图</button>
-    <div v-if="imgDataUrl" class="note">
-        <img :src="imgDataUrl" class="downloadBackup"/><br/>
-        若点击导出后没有开始下载，请右键/长按这个图片，手动保存到本地
+    <div v-show="exported" class="note">
+        若点击导出后没有开始下载<br/>请尝试<a :id="downloadAnchorElementId" class="downloadAnchor">点击此处</a>
     </div>
     <div class="note">
         若导出失败，可能由于系统/浏览器限制，<br/>
@@ -253,13 +265,9 @@ defineExpose({
     font-size: 14px;
     color: #999;
     text-align: center;
-    .downloadBackup{
-        margin: 5px auto 5px auto;
-        border: 1px solid black;
-        border-radius: 5px;
-        width: 100px;
-        height: 100px;
-        object-fit: contain;
+    .downloadAnchor{
+        color: cornflowerblue;
+        text-decoration: underline;
     }
 }
 </style>
