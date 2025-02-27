@@ -14,6 +14,7 @@ import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 import { useSaveStore } from '@/models/stores/saveStore';
+import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 
 const envStore = useEnvStore();
 const { somethingActive } = storeToRefs(envStore)
@@ -43,9 +44,7 @@ async function init(){
     activeCvsRenderTimer = window.setInterval(()=>{
         activeCvsDispatcher.renderActiveCvs()
     }, 50)
-    document.oncontextmenu = function(e){
-        e.preventDefault()
-    }
+    disableContextMenu()
     wait.value?.setShowing(false)
 }
 const bgRefImageStyle = computed<CSSProperties>(()=>{
@@ -81,7 +80,7 @@ onMounted(async()=>{
     await init()
 })
 onBeforeUnmount(()=>{
-    document.oncontextmenu = null
+    enableContextMenu()
     window.clearInterval(activeCvsRenderTimer)
 })
 
