@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { useScalerLocalConfigStore } from '@/app/localConfig/scalerLocalConfig';
 import Bowser from 'bowser'
@@ -71,6 +71,13 @@ async function steppedScaleChange(){
 }
 const browserInfo = ref<ReturnType<typeof Bowser.parse>>()
 
+const visibilityChangedTimes = ref(0)
+function visibilityChangedHandler(){
+    if(document.visibilityState==='visible'){
+        visibilityChangedTimes.value += 1
+    }
+}
+
 onMounted(()=>{
     if(!config.value.lineWidthMapped){
         config.value.lineWidthMapped = {}
@@ -84,7 +91,12 @@ onMounted(()=>{
     }
     steppedScaleEnabled.value = scalerLocalConfig.readSteppedScaleEnabled()
     browserInfo.value = Bowser.parse(navigator.userAgent)
+    document.addEventListener('visibilitychange', visibilityChangedHandler)
 })
+onUnmounted(()=>{
+    document.removeEventListener('visibilitychange', visibilityChangedHandler)
+})
+
 const sidebar = ref<InstanceType<typeof SideBar>>()
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
@@ -247,6 +259,12 @@ defineExpose({
                 系统 {{ browserInfo.os.name }}
                 <span class="ver">{{ browserInfo.os.version }}</span>
             </div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            visibilityChanged：
+            {{ visibilityChangedTimes }}
         </td>
     </tr>
 </tbody></table>
