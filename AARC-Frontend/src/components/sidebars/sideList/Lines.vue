@@ -12,7 +12,7 @@ const {
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
     arrangingId, editingInfoLineId, editInfoOfLine,
     createLine,
-    wantDelLine, wantDelLineWithSta, delLineStart, delLineAbort, delLineExe
+    wantDelLine, delLineStart, delLineAbort, delLineExe
 } = useSideListShared(LineType.common, '线路')
 
 const colorPicker = ref<InstanceType<typeof AuColorPicker>[]>([])
@@ -70,7 +70,7 @@ onUnmounted(()=>{
             </div>
         </div>
     </SideBar>
-    <LineDelPrompt :params="{wantDelLine, wantDelLineWithSta}" @abort="delLineAbort" @exe="delLineExe"></LineDelPrompt>
+    <LineDelPrompt :line-name="wantDelLine?.name" @abort="delLineAbort" @exe="delLineExe"></LineDelPrompt>
 </template>
 
 <style scoped lang="scss">

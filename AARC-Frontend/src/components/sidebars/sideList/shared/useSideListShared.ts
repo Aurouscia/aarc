@@ -32,8 +32,8 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
         envStore.createLine(lineType)
         init()
     }
-    function delLine(line:Line){
-        envStore.delLine(line.id)
+    function delLine(line:Line, withSta:boolean){
+        envStore.delLine(line.id, false, withSta)
         init()
     }
     function init(){
@@ -52,18 +52,15 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
     }
 
     const wantDelLine = ref<Line>()
-    const wantDelLineWithSta = ref<boolean>(false)
     function delLineStart(l:Line){
         wantDelLine.value = l
     }
     function delLineAbort(){
-        wantDelLineWithSta.value = false
         wantDelLine.value = undefined
     }
-    function delLineExe(){
+    function delLineExe(withSta:boolean){
         if(wantDelLine.value){
-            delLine(wantDelLine.value)
-            wantDelLineWithSta.value = false
+            delLine(wantDelLine.value, withSta)
             wantDelLine.value = undefined
         }
     }
@@ -73,6 +70,6 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
         arrangingId, editingInfoLineId, editInfoOfLine,
         createLine, 
-        wantDelLine, wantDelLineWithSta, delLineStart, delLineAbort, delLineExe
+        wantDelLine, delLineStart, delLineAbort, delLineExe
     }
 }

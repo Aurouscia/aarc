@@ -549,12 +549,28 @@ export const useEnvStore = defineStore('env', ()=>{
         ]]
     }
 
-    function delLine(lineId:number, suppressRender?:boolean){
+    function delLine(lineId:number, suppressRender:boolean = false, delWithSta:boolean = false){
         if(!saveStore.save)
             return
         const idx = saveStore.save.lines.findIndex(x=>x.id==lineId)
-        if(idx >= 0)
+        if(idx >= 0){
+            if(delWithSta){
+                const pts = saveStore.save.lines.at(idx)?.pts
+                if(pts){
+                    for(const pt of pts){
+                        const belongLines = saveStore.getLinesByPt(pt)
+                        if(belongLines.length<=1){
+                            const ptIdx = saveStore.save.points.findIndex(x=>x.id == pt)
+                            if(ptIdx>=0){
+                                saveStore.deletedPoint(pt)
+                                saveStore.save.points.splice(ptIdx, 1)
+                            }
+                        }
+                    }
+                }
+            }
             saveStore.save.lines.splice(idx, 1)
+        }
         setLinesFormalPts(lineId, undefined)
         if(!suppressRender)
             rerender.value([],[])
