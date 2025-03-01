@@ -1,5 +1,5 @@
 export function timestampS(){
-    return Math.round(timestampMS())
+    return Math.round(timestampMS()/1000)
 }
 
 export function timestampMS(){

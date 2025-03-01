@@ -155,7 +155,7 @@ onUnmounted(()=>{
 <style scoped lang="scss">
 .cachePreventer{
     position: relative;
-    z-index: 999;
+    z-index: -1;
 }
 .steppedScaleEnabled{
     z-index: 999;

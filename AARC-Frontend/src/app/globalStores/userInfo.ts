@@ -1,7 +1,7 @@
 import { defineStore } from "pinia"
 import { useApiStore } from "../com/api"
 import { computed, ref } from "vue"
-import { timestampS } from "@/utils/timeUtils/timestamp"
+import { timestampMS } from "@/utils/timeUtils/timestamp"
 import { HttpUserInfo, UserType } from "@/pages/identities/models/models"
 
 
@@ -45,14 +45,14 @@ export const useUserInfoStore = defineStore('userInfo', ()=>{
         if(stored){
             const data = JSON.parse(stored)
             if(data.update && data.info){
-                if(timestampS() - identityCacheExpireMs < (data.update as number)) //缓存未过期
+                if(timestampMS() - identityCacheExpireMs < (data.update as number)) //缓存未过期
                     return data;
             }
         }
     }
     function setCache(info:HttpUserInfo){
         const stored = {
-            update: timestampS(),
+            update: timestampMS(),
             info: info
         };
         localStorage.setItem(localStorageKey, JSON.stringify(stored));
