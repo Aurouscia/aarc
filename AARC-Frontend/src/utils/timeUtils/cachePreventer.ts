@@ -18,7 +18,7 @@ export function useCachePreventer(inputEleId:string){
         }
     }
     function cachePreventStop(){
-        window.clearInterval(inputEleId)
+        window.clearInterval(timer)
     }
     return {
         cachePreventStart,

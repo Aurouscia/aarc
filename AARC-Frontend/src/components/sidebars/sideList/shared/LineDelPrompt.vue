@@ -2,10 +2,12 @@
 import Prompt from '@/components/common/Prompt.vue';
 import { ref } from 'vue';
 
-defineProps<{
-    lineName:string|undefined
+const props = defineProps<{
+    lineName:string|undefined,
+    withStaDefault?:boolean,
+    ptCalled:string
 }>()
-const withSta = ref(false)
+const withSta = ref<boolean>(props.withStaDefault)
 const emit = defineEmits<{
     (e:'abort'):void
     (e:'exe', withSta:boolean):void
@@ -17,7 +19,7 @@ const emit = defineEmits<{
         <div class="promptDel">
             <div class="promptDeltitle">确定删除 {{ lineName }}</div>
             <div class="promptDelSta">
-                <input type="checkbox" v-model="withSta"/> 同时删除其车站
+                <input type="checkbox" v-model="withSta"/> 同时删除其{{ ptCalled }}
             </div>
             <div class="promptDelBtns">
                 <button class="minor" @click="emit('abort'); withSta=false">取消</button>

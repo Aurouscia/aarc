@@ -6,11 +6,13 @@ import { useSideListShared } from './shared/useSideListShared';
 import LineConfig from './shared/LineConfig.vue';
 import { AuColorPickerPresetsNested } from '@aurouscia/au-color-picker';
 import { useColorPresetNames } from './shared/useColorPresetNames';
+import LineDelPrompt from './shared/LineDelPrompt.vue';
 
 const { 
     sidebar, init, lines: terrains, envStore,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
-    createLine, delLine, editingInfoLineId, editInfoOfLine
+    createLine, editingInfoLineId, editInfoOfLine,
+    wantDelLine, delLineStart, delLineAbort, delLineExe
 } = useSideListShared(LineType.terrain, '地形')
 
 const { getPresetNameByEnum, getPresetEnumByName, presets } = useColorPresetNames()
@@ -76,7 +78,7 @@ onUnmounted(()=>{
                     @touchstart="e => mouseDownLineArrange(e, l.id)">
                     ⇅
                 </div>
-                <div class="sqrBtn" @click="delLine(l)">
+                <div class="sqrBtn" @click="delLineStart(l)">
                     ×
                 </div>
             </div>
@@ -85,6 +87,8 @@ onUnmounted(()=>{
             </div>
         </div>
     </SideBar>
+    <LineDelPrompt :line-name="wantDelLine?.name" :pt-called="'节点'" :with-sta-default="true"
+        @abort="delLineAbort" @exe="delLineExe"></LineDelPrompt>
 </template>
 
 <style scoped lang="scss">
