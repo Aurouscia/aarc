@@ -6,7 +6,7 @@ import { useLinesArrange } from "@/utils/eventUtils/linesArrange"
 import SideBar from "@/components/common/SideBar.vue"
 import { ref } from "vue"
 
-export function useSideListShared(lineType:LineType, lineTypeCalled:string){
+export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
     const saveStore = useSaveStore()
     const envStore = useEnvStore()
     const mainCvsDispatcher = useMainCvsDispatcher()
@@ -33,10 +33,8 @@ export function useSideListShared(lineType:LineType, lineTypeCalled:string){
         init()
     }
     function delLine(line:Line){
-        if(window.confirm(`确定删除${lineTypeCalled}"${line.name}"？`)){
-            envStore.delLine(line.id)
-            init()
-        }
+        envStore.delLine(line.id)
+        init()
     }
     function init(){
         lines.value = saveStore.getLinesByType(lineType)
@@ -53,10 +51,28 @@ export function useSideListShared(lineType:LineType, lineTypeCalled:string){
         }
     }
 
+    const wantDelLine = ref<Line>()
+    const wantDelLineWithSta = ref<boolean>(false)
+    function delLineStart(l:Line){
+        wantDelLine.value = l
+    }
+    function delLineAbort(){
+        wantDelLineWithSta.value = false
+        wantDelLine.value = undefined
+    }
+    function delLineExe(){
+        if(wantDelLine.value){
+            delLine(wantDelLine.value)
+            wantDelLineWithSta.value = false
+            wantDelLine.value = undefined
+        }
+    }
+
     return {
         sidebar, lines, init, envStore, saveStore,
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
         arrangingId, editingInfoLineId, editInfoOfLine,
-        createLine, delLine
+        createLine, 
+        wantDelLine, wantDelLineWithSta, delLineStart, delLineAbort, delLineExe
     }
 }

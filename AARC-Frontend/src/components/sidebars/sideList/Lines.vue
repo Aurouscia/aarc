@@ -5,12 +5,14 @@ import { useSideListShared } from './shared/useSideListShared';
 import { LineType } from '@/models/save';
 import LineConfig from './shared/LineConfig.vue';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
+import LineDelPrompt from './shared/LineDelPrompt.vue';
 
 const { 
     sidebar, init, lines, envStore,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
     arrangingId, editingInfoLineId, editInfoOfLine,
-    createLine, delLine
+    createLine,
+    wantDelLine, wantDelLineWithSta, delLineStart, delLineAbort, delLineExe
 } = useSideListShared(LineType.common, '线路')
 
 const colorPicker = ref<InstanceType<typeof AuColorPicker>[]>([])
@@ -59,7 +61,7 @@ onUnmounted(()=>{
                     @touchstart="e => mouseDownLineArrange(e, l.id)">
                     ⇅
                 </div>
-                <div class="sqrBtn" @click="delLine(l)">
+                <div class="sqrBtn" @click="delLineStart(l)">
                     ×
                 </div>
             </div>
@@ -68,6 +70,7 @@ onUnmounted(()=>{
             </div>
         </div>
     </SideBar>
+    <LineDelPrompt :params="{wantDelLine, wantDelLineWithSta}" @abort="delLineAbort" @exe="delLineExe"></LineDelPrompt>
 </template>
 
 <style scoped lang="scss">
