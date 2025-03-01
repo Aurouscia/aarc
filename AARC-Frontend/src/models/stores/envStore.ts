@@ -567,6 +567,7 @@ export const useEnvStore = defineStore('env', ()=>{
         viewCenterCoord = translateFromOffset(viewCenterCoord)
         if(!viewCenterCoord)
             return
+        ensureCoordInCanvas(viewCenterCoord)
         const pt1Pos:Coord = [...viewCenterCoord]
         const pt2Pos:Coord = [...viewCenterCoord]
         pt1Pos[0] -= 50
@@ -629,6 +630,7 @@ export const useEnvStore = defineStore('env', ()=>{
         viewCenterCoord = translateFromOffset(viewCenterCoord)
         if(!viewCenterCoord)
             return
+        ensureCoordInCanvas(viewCenterCoord)
         const newTag:TextTag = {
             id: saveStore.getNewId(),
             forId: forLine,
@@ -686,6 +688,14 @@ export const useEnvStore = defineStore('env', ()=>{
             safty--;
             if(safty<=0)
                 break;
+        }
+    }
+    function ensureCoordInCanvas(coord:Coord, margin = 100){
+        if(coord[1] >= cvsHeight.value - margin){
+            coord[1] = cvsHeight.value - margin
+        }
+        if(coord[0] >= cvsWidth.value - margin){
+            coord[0] = cvsWidth.value - margin
         }
     }
     
