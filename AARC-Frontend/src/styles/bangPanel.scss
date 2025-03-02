@@ -22,10 +22,14 @@
         background-color: white;
     }
     .retractBtn{
-        color: plum;
-        font-size: 22px;
-        font-weight: bold;
         right: 0px;
+        img{
+            transform: rotate(180deg);
+            width: 80%;
+            height: 80%;
+            margin-top: 10%;
+            margin-left: 10%;
+        }
     }
     .duplicateBtn{
         $size:10px;

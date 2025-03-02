@@ -5,6 +5,7 @@ import { useTwinTextarea } from './composables/useTwinTextarea';
 import { computed } from 'vue';
 import TextOptions from './TextOptions.vue';
 import { useEnvStore } from '@/models/stores/envStore';
+import foldImg from '@/assets/ui/fold.svg'
 
 const textTagEditStore = useTextTagEditStore()
 const envStore = useEnvStore()
@@ -50,7 +51,9 @@ const {
         <div @click="envStore.duplicateTextTag();textTagEditStore.endEditing()" class="duplicateBtn sqrBtn withShadow">
             <div class="dupA"></div><div class="dupB"></div>
         </div>
-        <div @click="textTagEditStore.endEditing()" class="retractBtn sqrBtn withShadow">×</div>
+        <div @click="textTagEditStore.endEditing()" class="retractBtn sqrBtn withShadow">
+            <img :src="foldImg"/>
+        </div>
     </div>
 </template>
 

@@ -2,6 +2,7 @@
 import { useNameEditStore } from '@/models/stores/nameEditStore';
 import { storeToRefs } from 'pinia';
 import { useTwinTextarea } from './composables/useTwinTextarea';
+import foldImg from '@/assets/ui/fold.svg'
 
 const nameEditStore = useNameEditStore()
 const { nameMain, nameSub, editing, nameEditorDiv } = storeToRefs(nameEditStore)
@@ -30,7 +31,9 @@ const {
         <textarea v-model="nameSub" ref="nameSubInput" :rows="nameSubRows" @input="inputHandler('sub')"
             @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler" class="subName"
             spellcheck="false" placeholder="请输入外语站名/副站名"></textarea>
-        <div @click="nameEditStore.endEditing()" class="retractBtn sqrBtn withShadow">×</div>
+        <div @click="nameEditStore.endEditing()" class="retractBtn sqrBtn withShadow">
+            <img :src="foldImg"/>
+        </div>
     </div>
 </template>
 
