@@ -25,9 +25,11 @@ const {
 <template>
     <div class="nameEditor bangPanel" :class="{retracted:!editing}" ref="nameEditorDiv">
         <textarea v-model="nameMain" ref="nameMainInput" :rows="nameMainRows" @input="inputHandler('main')"
-            @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler" spellcheck="false"></textarea>
+            @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler"
+            spellcheck="false" placeholder="请输入站名"></textarea>
         <textarea v-model="nameSub" ref="nameSubInput" :rows="nameSubRows" @input="inputHandler('sub')"
-            @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler" class="subName" spellcheck="false"></textarea>
+            @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler" class="subName"
+            spellcheck="false" placeholder="请输入外语站名/副站名"></textarea>
         <div @click="nameEditStore.endEditing()" class="retractBtn sqrBtn withShadow">×</div>
     </div>
 </template>
