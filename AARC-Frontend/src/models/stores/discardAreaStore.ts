@@ -13,14 +13,21 @@ export const useDiscardAreaStore = defineStore('discardArea', ()=>{
         const h = cvsFrame.value?.clientHeight||0
         return (w + h)/2 * discardAreaSideRatio
     }
-    function getDiscardAreaPolyPts():Coord[]{
+    function getDiscardAreaInfo():{poly:Coord[], origin:Coord, size:number}{
         const sideLength = getDiscardAreaSideLength()
-        const polyPtsClientCoords:Coord[] = [
-            [sideLength, 0],
-            [0, 0],
-            [0, sideLength]
-        ]
-        return polyPtsClientCoords.map(x=>cvsFrameStore.translateFromClient(x)||[0,0])
+        const originClient:Coord = [0, 0]
+        const rightClient:Coord = [sideLength, 0]
+        const lowClient:Coord = [0, sideLength]
+        const origin = cvsFrameStore.translateFromClient(originClient) || [0,0]
+        const right = cvsFrameStore.translateFromClient(rightClient) || [0,0]
+        const low = cvsFrameStore.translateFromClient(lowClient) || [0,0]
+        const size = right[0]-origin[0]
+        const poly = [origin, low, right]
+        return {
+            poly,
+            origin,
+            size
+        }
     }
     function discardStatus(clientCoord:Coord){
         const sideLength = getDiscardAreaSideLength()
@@ -35,7 +42,7 @@ export const useDiscardAreaStore = defineStore('discardArea', ()=>{
     return {
         discardStatus,
         discarding,
-        getDiscardAreaPolyPts,
+        getDiscardAreaInfo,
         resetDiscarding
     }
 })
