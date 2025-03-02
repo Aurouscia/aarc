@@ -5,7 +5,6 @@ import Terrains from './sidebars/sideList/Terrains.vue';
 import SizeEdit from './sidebars/SizeEdit.vue';
 import ExportPng from './sidebars/ExportPng.vue';
 import LocalConfigs from './sidebars/LocalConfigs.vue';
-import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { useSnapStore } from '@/models/stores/snapStore';
@@ -17,13 +16,14 @@ import snapInterPtEnabledImg from '@/assets/ui/editor/snapInterPtEnabled.svg';
 import snapNeighborExtendImg from '@/assets/ui/editor/snapNeighborExtend.svg';
 import snapNeighborExtendEnabledImg from '@/assets/ui/editor/snapNeighborExtendEnabled.svg';
 import { useRouter } from 'vue-router';
+import ToolBox from './sidebars/ToolBox.vue';
 
 const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()
+const toolBox = ref<InstanceType<typeof ToolBox>>()
 const sizeEdit = ref<InstanceType<typeof Terrains>>()
 const exportPng = ref<InstanceType<typeof ExportPng>>()
 const localConfigs = ref<InstanceType<typeof LocalConfigs>>()
-const envStore = useEnvStore()
 const router = useRouter()
 const { preventingLeaving, unsavedForALongTime } = storeToRefs(usePreventLeavingUnsavedStore())
 const { 
@@ -33,7 +33,7 @@ const {
 } = storeToRefs(useSnapStore())
 const anotherMenuFolded = ref(true)
 
-type SidebarNames = 'lines'|'terrains'|'sizeEdit'|'exportPng'|'localConfigs'|undefined
+type SidebarNames = 'lines'|'terrains'|'sizeEdit'|'exportPng'|'localConfigs'|'toolBox'|undefined
 const activeSidebarName = ref<SidebarNames>()
 
 const saveBtnMode = computed<'save'|'leave'>(()=>{
@@ -69,6 +69,10 @@ function openSidebarOf(name:SidebarNames){
         localConfigs.value?.comeOut()
     else
         localConfigs.value?.fold()
+    if(name==='toolBox')
+        toolBox.value?.comeOut()
+    else
+        toolBox.value?.fold()
 }
 function saveData(){
     if(saveBtnMode.value=='save')
@@ -85,7 +89,7 @@ const emit = defineEmits<{
     <div class="menu">
         <div @click="openSidebarOf('lines')" class="sqrBtn withShadow">线路</div>
         <div @click="openSidebarOf('terrains')" class="sqrBtn withShadow">地形</div>
-        <div @click="envStore.createTextTag()" class="sqrBtn withShadow">标签</div>
+        <div @click="openSidebarOf('toolBox')" class="sqrBtn withShadow">工具</div>
         <div @click="openSidebarOf('sizeEdit')" class="sqrBtn withShadow">画布</div>
         <div @click="openSidebarOf('localConfigs')" class="sqrBtn withShadow">设置</div>
         <div @click="openSidebarOf('exportPng')" class="sqrBtn withShadow">导出</div>
@@ -96,6 +100,7 @@ const emit = defineEmits<{
     </div>
     <Lines ref="lines"></Lines>
     <Terrains ref="terrains"></Terrains>
+    <ToolBox ref="toolBox"></ToolBox>
     <SizeEdit ref="sizeEdit"></SizeEdit>
     <ExportPng ref="exportPng"></ExportPng>
     <LocalConfigs ref="localConfigs"></LocalConfigs>
