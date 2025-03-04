@@ -1,10 +1,11 @@
-import { ControlPoint, ControlPointDir } from "@/models/save";
+import { ControlPoint } from "@/models/save";
 import { useConfigStore } from "@/models/stores/configStore";
 import { Coord } from "@/models/coord";
 import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { useSaveStore } from "@/models/stores/saveStore";
+import { sqrt2half } from "@/utils/consts";
 
 interface ClusterPoly{
     coords:Coord[]
@@ -20,7 +21,7 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         if(!clusters)
             return;
         staClusterStore.setStaClusters([...clusters])
-        const polys = crystalsToPolys(clusters)
+        const polys = clustersToPolys(clusters)
         const forEachPoly = (doSth:(size:number)=>void)=>{
             for(const p of polys){
                 ctx.beginPath();
@@ -60,63 +61,70 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         })
     }
 
-    function crystalsToPolys(crystals:ControlPoint[][]):ClusterPoly[]{
+    function clustersToPolys(clusters:ControlPoint[][]):ClusterPoly[]{
         const polys:ClusterPoly[] = []
-        crystals.forEach(c=>{
+        clusters.forEach(c=>{
             const sizes = c.map(x=>saveStore.getLinesDecidedPtSize(x.id))
             if(sizes.length==0)
                 return
             const maxStaSize = Math.max(...sizes)
-            if(c[0].dir === ControlPointDir.vertical){
-                let l = 1e10
-                let r = -1e10
-                let t = 1e10
-                let b = -1e10
-                for(let i=0; i<c.length; i++){
-                    const [x,y] = c[i].pos
-                    if(x < l)
-                        l = x
-                    if(x > r)
-                        r = x
-                    if(y < t)
-                        t = y
-                    if(y > b)
-                        b = y
-                }
-                const poly:Coord[] = [[l,t], [r,t], [r,b], [l,b]]
-                polys.push({
-                    coords:poly,
-                    maxStaSize
-                })
-            }else{
-                let lt = 1e10
-                let rb = -1e10
-                let lb = 1e10
-                let rt = -1e10
-                for(let i=0; i<c.length; i++){
-                    const [x,y] = c[i].pos
-                    const sum = x+y;
-                    const diff = x-y;
-                    if(sum < lt)
-                        lt = sum
-                    if(sum > rb)
-                        rb = sum
-                    if(diff < lb)
-                        lb = diff
-                    if(diff > rt)
-                        rt = diff
-                }
-                const t:Coord = [(lt+rt)/2, (lt-rt)/2]
-                const l:Coord = [(lt+lb)/2, (lt-lb)/2]
-                const r:Coord = [(rb+rt)/2, (rb-rt)/2]
-                const b:Coord = [(rb+lb)/2, (rb-lb)/2]
-                polys.push({
-                    coords:[t,l,b,r],
-                    maxStaSize
-                })
+            const polyVert = clusterToPolyVert(c)
+            const polyInc = clusterToPolyInc(c)
+            let poly = polyVert.poly
+            if(polyInc.area < polyVert.area){
+                poly = polyInc.poly
             }
+            polys.push({coords:poly, maxStaSize})
         })
         return polys
+    }
+    function clusterToPolyVert(cluster:ControlPoint[]){
+        let l = 1e10
+        let r = -1e10
+        let t = 1e10
+        let b = -1e10
+        for(let i=0; i<cluster.length; i++){
+            const [x,y] = cluster[i].pos
+            if(x < l)
+                l = x
+            if(x > r)
+                r = x
+            if(y < t)
+                t = y
+            if(y > b)
+                b = y
+        }
+        const poly:Coord[] = [[l,t], [r,t], [r,b], [l,b]]
+        const area = (r-l)*(b-t)
+        return {poly,area}
+    }
+    function clusterToPolyInc(cluster:ControlPoint[]){
+        let lt = 1e10
+        let rb = -1e10
+        let lb = 1e10
+        let rt = -1e10
+        for(let i=0; i<cluster.length; i++){
+            const [x,y] = cluster[i].pos
+            const sum = x+y;
+            const diff = x-y;
+            if(sum < lt)
+                lt = sum
+            if(sum > rb)
+                rb = sum
+            if(diff < lb)
+                lb = diff
+            if(diff > rt)
+                rt = diff
+        }
+        const t:Coord = [(lt+rt)/2, (lt-rt)/2]
+        const l:Coord = [(lt+lb)/2, (lt-lb)/2]
+        const r:Coord = [(rb+rt)/2, (rb-rt)/2]
+        const b:Coord = [(rb+lb)/2, (rb-lb)/2]
+        const poly:Coord[] = [t,l,b,r]
+        const lt2rb = (rb-lt)*sqrt2half
+        const rt2lb = (rt-lb)*sqrt2half
+        const area = lt2rb * rt2lb
+        return {poly,area}
     }
     return { renderClusters }
 })

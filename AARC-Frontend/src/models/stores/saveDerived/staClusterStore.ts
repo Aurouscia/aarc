@@ -27,7 +27,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     }
 
     /**
-     * 同样朝向且紧挨着的控制点，会被汇总为一个“晶体”（将会被用一个矩形覆盖）
+     * 紧挨着的控制点，会被汇总为一个“集群”（将会被用一个面积最小的矩形覆盖）
      * 所有点两两互相检查，非常费时，只能初始化用
      * 运行完后staClusters和belong都被完整设置好
      */
@@ -50,7 +50,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         }
         cleanClusters()
     }
-    function updateCrystalsBecauseOf(pt:ControlPoint){
+    function updateClustersBecauseOf(pt:ControlPoint){
         const pts = saveStore.save?.points.filter(pt => pt.sta === ControlPointSta.sta)
         if(!pts || !staClusters)
             return
@@ -128,7 +128,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             removeAllByPred(pBelong, x=>x.id===ptId)
             belong[ptId] = undefined
             if(pBelong.length > 1){
-                updateCrystalsBecauseOf(pBelong[0])
+                updateClustersBecauseOf(pBelong[0])
             }else{
                 cleanClusters()
             }
@@ -136,9 +136,6 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     }
 
     function ptClinging(a:ControlPoint, b:ControlPoint):boolean{
-        if(a.dir !== b.dir){
-            return false
-        }
         const sizeA = saveStore.getLinesDecidedPtSize(a.id)
         const sizeB = saveStore.getLinesDecidedPtSize(b.id)
         const distMut = (sizeA + sizeB)/2
@@ -196,7 +193,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     return {
         setStaClusters,
         getStaClusters,
-        updateCrystalsBecauseOf,
+        updateClustersBecauseOf,
         tryTransferStaNameWithinCluster,
         getMaxSizePtWithinCluster,
         clearItems

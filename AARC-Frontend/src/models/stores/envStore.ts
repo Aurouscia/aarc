@@ -146,9 +146,9 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         //更新车站团
         if(mergeKept){
-            staClusterStore.updateCrystalsBecauseOf(mergeKept)
+            staClusterStore.updateClustersBecauseOf(mergeKept)
         }else if(movedPoint.value && activePt.value){
-            staClusterStore.updateCrystalsBecauseOf(activePt.value)
+            staClusterStore.updateClustersBecauseOf(activePt.value)
         }
         //如果有需要重新渲染的线/点、或移动过文本标签，那么重新渲染
         if(rerenderParamLineIds.length>0 || rerenderParamPtIds.length>0 
@@ -383,7 +383,7 @@ export const useEnvStore = defineStore('env', ()=>{
         activeTextTagGrabbedAt.value = [0,0]
         if(movingExtendedPointOriginated.value){
             const extendFrom = movingExtendedPointOriginated.value.from
-            staClusterStore.updateCrystalsBecauseOf(extendFrom)
+            staClusterStore.updateClustersBecauseOf(extendFrom)
             const mergeRes = saveStore.tryMergePt(extendFrom.id)
             if(mergeRes){
                 rerender.value([], [])
@@ -636,7 +636,7 @@ export const useEnvStore = defineStore('env', ()=>{
             for(const ptId of line.pts){
                 const pt = saveStore.getPtById(ptId)
                 if(pt)
-                    staClusterStore.updateCrystalsBecauseOf(pt)
+                    staClusterStore.updateClustersBecauseOf(pt)
             }
         }
         rerender.value([], line.pts)
