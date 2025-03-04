@@ -23,12 +23,13 @@
     }
     .retractBtn{
         right: 0px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         img{
             transform: rotate(180deg);
             width: 80%;
             height: 80%;
-            margin-top: 10%;
-            margin-left: 10%;
         }
     }
     .duplicateBtn{
