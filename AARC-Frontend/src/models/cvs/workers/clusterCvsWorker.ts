@@ -1,4 +1,4 @@
-import { ControlPoint } from "@/models/save";
+import { ControlPoint, ControlPointDir } from "@/models/save";
 import { useConfigStore } from "@/models/stores/configStore";
 import { Coord } from "@/models/coord";
 import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
@@ -68,11 +68,26 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
             if(sizes.length==0)
                 return
             const maxStaSize = Math.max(...sizes)
-            const polyVert = clusterToPolyVert(c)
-            const polyInc = clusterToPolyInc(c)
-            let poly = polyVert.poly
-            if(polyInc.area < polyVert.area){
+            const vertCount = c.filter(x=>x.dir===ControlPointDir.vertical).length
+            const incCount = c.filter(x=>x.dir===ControlPointDir.incline).length
+
+            let poly:Coord[] = []
+            if(incCount===0){
+                const polyVert = clusterToPolyVert(c)
+                poly = polyVert.poly
+            }
+            else if(vertCount===0){
+                const polyInc = clusterToPolyInc(c)
                 poly = polyInc.poly
+            }
+            else{
+                const polyVert = clusterToPolyVert(c)
+                const polyInc = clusterToPolyInc(c)
+                if(polyInc.area < polyVert.area){
+                    poly = polyInc.poly
+                }else{
+                    poly = polyVert.poly
+                }
             }
             polys.push({coords:poly, maxStaSize})
         })
