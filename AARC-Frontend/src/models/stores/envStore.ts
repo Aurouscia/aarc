@@ -50,7 +50,8 @@ export const useEnvStore = defineStore('env', ()=>{
     const rerender = ref<(changedLines?:number[], staNameMoved?:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])
     const getActivePtOpsAvoidance = ref<()=>SgnCoord[]>(()=>[])
-    const { snap, snapName, snapNameStatus, snapGrid } = useSnapStore()
+    const snapStore = useSnapStore()
+    const { snap, snapName, snapNameStatus, snapGrid } = snapStore
     const { setLinesFormalPts } = useFormalizedLineStore()
     const { setStaNameRects } = useStaNameRectStore()
     const { onPt, onLine, onStaName, onLineExtendBtn, onTextTag } = useOnDetectStore()
@@ -119,6 +120,7 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!coord)
             return
 
+        snapStore.snapInterPtTargets = undefined
         //根据当前状态判断是否需要重新渲染主画布
         let rerenderParamLineIds:number[] = []
         let rerenderParamPtIds:number[] = []

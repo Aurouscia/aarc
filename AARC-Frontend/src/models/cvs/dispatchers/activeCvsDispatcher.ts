@@ -26,7 +26,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const canvasIdPrefix = 'active'
     const { getCtx } = useCvs(canvasIdPrefix)
     const { renderSegsAroundActivePt, renderLine } = useLineCvsWorker()
-    const { renderSomePoints, renderLinePoints, renderPointById } = usePointCvsWorker()
+    const { renderSomePoints, renderLinePoints, renderPointById, renderInterPtSnapTargets } = usePointCvsWorker()
     const { renderRay } = useRayCvsWorker()
     const { renderPtNameById } = useStaNameCvsWorker()
     const { renderLineExtend } = useLineExtendCvsWorker()
@@ -65,6 +65,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
             }
             if(envStore.activePtType=='body'){
                 renderPtNameById(ctx, activePtId, true)
+                renderInterPtSnapTargets(ctx)
             }else if(envStore.activePtType=='name'){
                 let markRoot:'free'|'snapVague'|'snapAccu' = 'free'
                 if(envStore.activePtNameSnapped == 'accu')

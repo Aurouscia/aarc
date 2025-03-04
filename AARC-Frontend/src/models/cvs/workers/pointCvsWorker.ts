@@ -6,11 +6,13 @@ import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { Coord } from "@/models/coord";
 import { useCvsBlocksControlStore } from "../common/cvs";
+import { useSnapStore } from "@/models/stores/snapStore";
 
 export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     const saveStore = useSaveStore();
     const cvsBlocksControlStore = useCvsBlocksControlStore()
     const cs = useConfigStore();
+    const snapStore = useSnapStore()
     function renderAllPoints(ctx:CvsContext, onlyVisiblePts?:boolean, noOmit?:boolean){
         if(!saveStore.save)
             return
@@ -92,6 +94,22 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             ctx.stroke()
         }
     }
+    function renderInterPtSnapTargets(ctx:CvsContext){
+        const targets = snapStore.snapInterPtTargets
+        for(const pt of targets?.snapToPts || []){
+            renderPoint(ctx, pt, {})
+        }
+        for(const t of targets?.snapPoss || []){
+            ctx.beginPath()
+            ctx.arc(...t, 6, 0, 2*Math.PI)
+            ctx.fillStyle = 'white'
+            ctx.fill()
+            ctx.beginPath()
+            ctx.arc(...t, 4, 0, 2*Math.PI)
+            ctx.fillStyle = '#008080'
+            ctx.fill()
+        }
+    }
     function checkOmittable(pos:Coord){
         const radius = cs.config.ptStaSize * 3
         const { cvsWidth, cvsHeight } = saveStore
@@ -106,7 +124,7 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             return true
         return false
     }
-    return { renderAllPoints, renderLinePoints, renderSomePoints, renderPoint, renderPointById }
+    return { renderAllPoints, renderLinePoints, renderSomePoints, renderPoint, renderPointById, renderInterPtSnapTargets }
 })
 
 export interface PointRenderOptions{

@@ -31,6 +31,7 @@ export const useSnapStore = defineStore('snap',()=>{
         ]
     })
     const snapNeighborExtendsOnlySameDir = ref<boolean>(false)
+    const snapInterPtTargets = ref<{snapPoss:Coord[], snapToPts:ControlPoint[]}>()
     function snap(pt:ControlPoint):Coord|undefined{
         snapLines.value = []
         snapLinesForPt.value = pt.id
@@ -196,7 +197,8 @@ export const useSnapStore = defineStore('snap',()=>{
         const ptSize = saveStore.getLinesDecidedPtSize(pt.id)
         const snapDist = cs.config.snapOctaClingPtPtDist*ptSize;
         const snapThrs = cs.config.snapOctaClingPtPtThrs;
-        const pts = saveStore.getPtsInRange(pt.pos, snapDist + snapThrs, pt.id)
+        snapInterPtTargets.value = {snapPoss:[], snapToPts:[]}
+        const pts = saveStore.getPtsInRange(pt.pos, (snapDist + snapThrs)*3, pt.id).filter(x=>x.sta===pt.sta)
         if(pts.length==0){
             return undefined
         }
@@ -215,8 +217,10 @@ export const useSnapStore = defineStore('snap',()=>{
             const optSize = saveStore.getLinesDecidedPtSize(opt.id)
             const optSnapDist = cs.config.snapOctaClingPtPtDist*optSize
             const finalSnapDist = (snapDist + optSnapDist)/2
+            snapInterPtTargets.value?.snapToPts.push(opt)
             biases.forEach(b=>{
                 const biased = applyBias(opt.pos, b, finalSnapDist)
+                snapInterPtTargets.value?.snapPoss.push(biased) //记录这个可吸附点
                 const dist = coordDist(pt.pos, biased)
                 if(dist<snapThrs && dist<minDist){
                     target = biased;
@@ -350,6 +354,7 @@ export const useSnapStore = defineStore('snap',()=>{
     return {
         snap, snapName, snapNameStatus, snapGrid,
         snapLines, snapLinesForPt, snapGridIntv, snapNeighborExtendsOnlySameDir,
-        snapInterPtEnabled, snapNeighborExtendsEnabled, snapGridEnabled
+        snapInterPtEnabled, snapNeighborExtendsEnabled, snapGridEnabled,
+        snapInterPtTargets
     }
 })
