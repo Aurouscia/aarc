@@ -19,6 +19,8 @@ import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { ShortcutListener } from '@aurouscia/keyboard-shortcut'
 import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
 import { useCachePreventer } from '@/utils/timeUtils/cachePreventer';
+import { DocumentHiddenLongWatcher } from '@/utils/eventUtils/documentHiddenLong';
+import HiddenLongWarnPrompt from './components/HiddenLongWarnPrompt.vue';
 
 const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
@@ -124,6 +126,8 @@ watch(props, async()=>{
 const saveShortcutListener = new ShortcutListener(saveData, 's', true)
 const cachePreventerInputId = 'cachePreventerInput'
 const { cachePreventStart, cachePreventStop } = useCachePreventer(cachePreventerInputId)
+const showHiddenLongWarn = ref(false)
+const hiddenLongWatcher = new DocumentHiddenLongWatcher(30*1000, ()=>{showHiddenLongWarn.value = true}) 
 onBeforeMount(async()=>{
     setLeavingPreventing()
     if(!isDemo.value)
@@ -132,12 +136,14 @@ onBeforeMount(async()=>{
     await load()
     saveShortcutListener.startListen()
     cachePreventStart()
+    hiddenLongWatcher.startWatching()
 })
 onUnmounted(()=>{
     mainCvsDispatcher.afterMainCvsRendered = undefined
     topbarShow.value = true
     saveShortcutListener.dispose()
     cachePreventStop()
+    hiddenLongWatcher.stopWatching()
 })
 </script>
 
@@ -145,6 +151,7 @@ onUnmounted(()=>{
     <Cvs v-if="loadComplete" ref="cvsComponent"></Cvs>
     <Menu v-if="loadComplete" @save-data="saveData"></Menu>
     <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
+    <HiddenLongWarnPrompt v-if="showHiddenLongWarn" @ok="showHiddenLongWarn=false"></HiddenLongWarnPrompt>
     <div v-if="scalerLocalConfig.steppedScaleEnabled" class="steppedScaleEnabled">已启用步进式缩放</div>
     <div v-if="savingDisabledWarning" class="savingDisabledWarning">{{ savingDisabledWarning }}</div>
     <div class="cachePreventer">
