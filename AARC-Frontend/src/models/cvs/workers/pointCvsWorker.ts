@@ -56,7 +56,8 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             let markSize = cs.config.ptBareSize * sizeRatio;
             let markWidth = cs.config.ptBareLineWidth * sizeRatio;
             if(active){
-                markSize *= 1.8
+                markSize *= 2.2
+                markWidth *= 1.6
                 markColor = '#000'
             }
             drawCross(ctx, {
