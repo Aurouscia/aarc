@@ -16,28 +16,29 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             return
         const allPts = saveStore.save.points
         for(const pt of allPts){
-            renderPoint(ctx, pt, false, onlyVisiblePts, noOmit)
+            renderPoint(ctx, pt, {active:false, staOnly:onlyVisiblePts, noOmit})
         }
     }
     function renderLinePoints(ctx:CvsContext, line:Line){
         const ptIds = line.pts
         if(ptIds && ptIds.length>0){
             const pts = saveStore.save?.points.filter(p=>ptIds.includes(p.id))
-            pts?.forEach(p=>renderPoint(ctx, p))
+            pts?.forEach(p=>renderPoint(ctx, p, {}))
         }
     }
     function renderSomePoints(ctx:CvsContext, pts:Iterable<ControlPoint>, activeId:number){
         for(const pt of pts){
-            renderPoint(ctx, pt, activeId == pt.id)
+            renderPoint(ctx, pt, {active: activeId == pt.id})
         }
     }
     function renderPointById(ctx:CvsContext, ptId:number, active:boolean = false){
         const pt = saveStore.getPtById(ptId)
         if(pt)
-            renderPoint(ctx, pt, active)
+            renderPoint(ctx, pt, {active})
     }
-    function renderPoint(ctx:CvsContext, pt:ControlPoint, active = false, staOnly = false, noOmit = false){
+    function renderPoint(ctx:CvsContext, pt:ControlPoint, options:PointRenderOptions){
         const pos = pt.pos;
+        const { active, staOnly, noOmit } = options
         if(!noOmit && checkOmittable(pos))
             return
         let markColor = '#999'
@@ -107,3 +108,9 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     }
     return { renderAllPoints, renderLinePoints, renderSomePoints, renderPoint, renderPointById }
 })
+
+export interface PointRenderOptions{
+    active?:boolean
+    staOnly?:boolean
+    noOmit?:boolean
+}
