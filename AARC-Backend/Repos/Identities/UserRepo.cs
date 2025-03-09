@@ -28,15 +28,19 @@ namespace AARC.Repos.Identities
             var userQ = string.IsNullOrWhiteSpace(search)
                 ? Existing
                 : Existing.Where(x => x.Name.Contains(search));
-            var validSavesOwnerIds = base.Context.Saves
-                .Existing()
-                .Where(x => x.StaCount > 0)
-                .GroupBy(x => x.OwnerUserId)
-                .Select(x => new {
-                    UserId = x.Key,
-                    Count = x.Count()
-                })
-                .ToList();
+            var orderbySave = orderby == "save";
+            var validSavesOwnerIds =
+                orderbySave ? 
+                    base.Context.Saves
+                    .Existing()
+                    .Where(x => x.StaCount > 0)
+                    .GroupBy(x => x.OwnerUserId)
+                    .Select(x => new {
+                        UserId = x.Key,
+                        Count = x.Count()
+                    })
+                    .ToList()
+                : [];
             int getCountOfUser(int uid)
             {
                 return validSavesOwnerIds
@@ -46,7 +50,7 @@ namespace AARC.Repos.Identities
             }
 
             List<UserDto> finalList;
-            if (orderby == "save")
+            if (orderbySave)
             {
                 var uids = validSavesOwnerIds
                     .OrderByDescending(x => x.Count)
