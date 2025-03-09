@@ -18,9 +18,9 @@ namespace AARC.Controllers.Identities
         IConfiguration config
         ) : Controller
     {
-        public IActionResult Index()
+        public IActionResult Index(string? search)
         {
-            var list = userRepo.IndexUser();
+            var list = userRepo.IndexUser(search);
             return this.ApiResp(list);
         }
 

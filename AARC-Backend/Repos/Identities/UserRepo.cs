@@ -21,10 +21,13 @@ namespace AARC.Repos.Identities
                 .FirstOrDefault();
         }
 
-        public List<UserDto> IndexUser()
+        public List<UserDto> IndexUser(string? search)
         {
             var myId = httpUserInfoService.UserInfo.Value.Id;
-            var list = Existing
+            var q = string.IsNullOrWhiteSpace(search)
+                ? Existing
+                : Existing.Where(x => x.Name.Contains(search));
+            var list = q
                 .OrderByDescending(x => x.LastActive)
                 .Take(50)
                 .SelectToDto()
