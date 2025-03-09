@@ -23,8 +23,8 @@ import NewestSaves from '../components/NewestSaves.vue';
         <h3>自由插入图片</h3>
         <p>作为公司logo、特殊站标识、底图参考等</p>
     </div>
-    <div>
-        <h3>画廊</h3>
+    <div class="done">
+        <h3>画廊（已完成✔）</h3>
         <p>展示全站所有最新作品（略缩图）</p>
     </div>
     <div class="done">
@@ -36,7 +36,7 @@ import NewestSaves from '../components/NewestSaves.vue';
         <p>把同一线路系统的各支线合并整理</p>
     </div>
     <div class="done">
-        <h3>旧版迁移</h3>
+        <h3>旧版迁移（已完成✔）</h3>
         <p>将旧版绘图器存档转换为新版的</p>
     </div>
     <h2>中期规划</h2>
@@ -44,8 +44,8 @@ import NewestSaves from '../components/NewestSaves.vue';
         <h3>多人协作</h3>
         <p>支持多个用户同时编辑一张画布，任何操作都会立即同步给其他用户</p>
     </div>
-    <div>
-        <h3>丰富线路样式</h3>
+    <div class="done">
+        <h3>丰富线路样式（已完成✔）</h3>
         <p>虚线和不同宽度的多层描边</p>
     </div>
     <div>
