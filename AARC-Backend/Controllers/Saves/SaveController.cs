@@ -32,9 +32,9 @@ namespace AARC.Controllers.Saves
             return this.ApiResp(list);
         }
         [Authorize]
-        public IActionResult GetMySaves()
+        public IActionResult GetMySaves(int uid)
         {
-            var list = saveRepo.GetMySaves();
+            var list = saveRepo.GetMySaves(uid);
             foreach (var c in list)
             {
                 var url = saveMiniatureFileService.GetUrl(c.Id);

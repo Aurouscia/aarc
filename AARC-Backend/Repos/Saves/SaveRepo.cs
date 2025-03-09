@@ -23,9 +23,10 @@ namespace AARC.Repos.Saves
                 .ToList();
             return res;
         }
-        public List<SaveDto> GetMySaves()
+        public List<SaveDto> GetMySaves(int uid = 0)
         {
-            var uid = httpUserIdProvider.RequireUserId();
+            if(uid == 0)
+                uid = httpUserIdProvider.RequireUserId();
             var res = base.Existing
                 .Where(x => x.OwnerUserId == uid)
                 .OrderByDescending(x => x.LastActive)

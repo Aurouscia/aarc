@@ -104,6 +104,11 @@ namespace AARC.Repos.Identities
             return true;
         }
 
+        public UserDto? GetUserInfo(int id)
+        {
+            return Existing.Where(x => x.Id == id).SelectToDto().FirstOrDefault();
+        }
+
         public bool DeleteUser(int id, out string? errmsg)
         {
             var user = base.Get(id);

@@ -37,6 +37,15 @@ namespace AARC.Controllers.Identities
             return this.ApiResp(success, errmsg);
         }
 
+        public IActionResult GetInfo(int id)
+        {
+            var res = userRepo.GetUserInfo(id);
+            var errmsg = res is null ? "找不到指定用户" : null;
+            if(errmsg is null)
+                return this.ApiResp(res);
+            return this.ApiRespFailed(errmsg);
+        }
+
         [AllowAnonymous]
         public IActionResult InitAdmin(string? userName, string? masterKey)
         {
