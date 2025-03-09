@@ -1,4 +1,5 @@
-﻿using AARC.Models.Dto;
+﻿using AARC.Models.DbModels;
+using AARC.Models.Dto;
 using AARC.Repos.Identities;
 using AARC.Repos.Saves;
 using AARC.Services.Files;
@@ -34,6 +35,11 @@ namespace AARC.Controllers.Saves
         public IActionResult GetMySaves()
         {
             var list = saveRepo.GetMySaves();
+            foreach (var c in list)
+            {
+                var url = saveMiniatureFileService.GetUrl(c.Id);
+                c.MiniUrl = url;
+            }
             return this.ApiResp(list);
         }
         [Authorize]

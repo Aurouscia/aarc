@@ -10,6 +10,7 @@ import fileDownload from 'js-file-download';
 import Loading from '@/components/common/Loading.vue';
 import { Save, saveLineCount, saveStaCount } from '@/models/save';
 import { guideInfo } from '@/app/guideInfo';
+import defaultMini from '@/assets/logo/aarc.svg'
 
 const saveList = ref<SaveDto[]>()
 const api = useApiStore().get()
@@ -138,11 +139,15 @@ onMounted(async()=>{
 <div style="overflow-x: auto;">
 <table v-if="saveList" class="fullWidth"><tbody>
     <tr>
+        <th style="width: 100px;"></th>
         <th style="min-width: 200px;">名称</th>
         <th style="width: 130px;min-width: 130px">上次更新</th>
         <th style="width: 100px;min-width: 100px"></th>
     </tr>
     <tr v-for="s in saveList">
+        <td>
+            <img :src="s.MiniUrl || defaultMini" class="mini"/>
+        </td>
         <td>
             {{ s.Name }}
             <div class="dataInfo">{{ s.LineCount }}线 {{ s.StaCount }}站</div>
@@ -155,8 +160,8 @@ onMounted(async()=>{
             <RouterLink :to="editorRoute(s.Id)"><button>编辑</button></RouterLink>
         </td>
     </tr>
-    <tr v-if="guideInfo.findHelp" style="color: #aaa; font-size: 14px;">
-        <td colspan="3">{{ guideInfo.findHelp }}</td>
+    <tr v-if="guideInfo.findHelp" style="color: #666; font-size: 14px;">
+        <td colspan="4">{{ guideInfo.findHelp }}</td>
     </tr>
 </tbody></table>
 <Loading v-else></Loading>
@@ -164,6 +169,11 @@ onMounted(async()=>{
 <SideBar ref="saveInfoSb" @extend="resetDangerZone">
     <h1>{{ isCreatingSave ? '创建存档':'编辑信息' }}</h1>
     <table v-if="editingSave"><tbody>
+        <tr>
+            <td colspan="2">
+                <img :src="editingSave.MiniUrl || defaultMini" class="miniInSidebar"/>
+            </td>
+        </tr>
         <tr>
             <td>名称</td>
             <td>
@@ -214,9 +224,21 @@ onMounted(async()=>{
 </template>
 
 <style scoped lang="scss">
+.mini{
+    border-radius: 5px;
+    height: 90px;
+    width: 90px;
+}
+.miniInSidebar{
+    border-radius: 10px;
+    height: 160px;
+    width: 160px;
+}
+
 .dataInfo{
-    font-size: 12px;
-    color: #333;
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
 }
 .lastActive{
     font-size: 14px;
