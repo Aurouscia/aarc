@@ -6,9 +6,11 @@ import { userTypeReadable } from './models/utils';
 import SideBar from '@/components/common/SideBar.vue';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { storeToRefs } from 'pinia';
+import { useSavesRoutesJump } from '../saves/routes/routesJump';
 
 const list = ref<UserDto[]>()
 const api = useApiStore().get()
+const { someonesSavesRoute } = useSavesRoutesJump()
 async function loadList() {
     list.value = await api.user.index()
 }
@@ -49,12 +51,17 @@ onMounted(async()=>{
     <tr>
         <th>名称</th>
         <th style="width: 100px;">类型</th>
-        <th style="width: 100px;">操作</th>
+        <th style="width: 130px;">操作</th>
     </tr>
     <tr v-for="u in list" :key="u.Id">
         <td>{{ u.Name }}</td>
         <td>{{ userTypeReadable(u.Type) }}</td>
         <td>
+            <RouterLink :to="someonesSavesRoute(u.Id)">
+                <button class="lite" style="margin-right: 6px;">
+                    查看
+                </button>
+            </RouterLink>
             <button @click="startEditing(u)" v-if="userInfo.Id === u.Id || userInfoStore.isAdmin" class="lite">
                 编辑
             </button>

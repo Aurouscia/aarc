@@ -9,8 +9,9 @@ export function addSavesPages(r:Router){
 
 const routes = [
     {
-        path:"/Saves/Mine",
+        path:"/Saves/Mine/:uid?",
         component:MySaves,
-        name:mySavesName
+        name:mySavesName,
+        props:true
     }
 ]

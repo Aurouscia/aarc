@@ -78,6 +78,16 @@ export class Api{
             )
             return resp.Success
         },
+        getInfo: async(id:number)=>{
+            const resp = await this.httpClient.request(
+                this.apiUrl('user', 'getInfo'),
+                'postForm',
+                {id},
+                undefined
+            )
+            if(resp.Success)
+                return resp.Data as UserDto
+        },
     }
     save = {
         getNewestSaves: async()=>{
@@ -88,10 +98,13 @@ export class Api{
             if(resp.Success)
                 return resp.Data as SaveDto[]
         },
-        getMySaves: async()=>{
+        getMySaves: async(uid:number)=>{
             const resp = await this.httpClient.request(
                 this.apiUrl('save', 'getMySaves'),
-                'get'
+                'get',
+                {uid},
+                undefined,
+                true
             )
             if(resp.Success)
                 return resp.Data as SaveDto[]

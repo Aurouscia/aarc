@@ -7,5 +7,13 @@ export const useSavesRoutesJump = ()=>{
             name:mySavesName
         }
     }
-    return { mySavesRoute }
+    function someonesSavesRoute(uid:number):RouteLocationRaw{
+        return {
+            name:mySavesName,
+            params:{
+                uid 
+            }
+        }
+    }
+    return { mySavesRoute, someonesSavesRoute }
 }

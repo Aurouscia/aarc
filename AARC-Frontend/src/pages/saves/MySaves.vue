@@ -16,9 +16,23 @@ const saveList = ref<SaveDto[]>()
 const api = useApiStore().get()
 const { editorRoute } = useEditorsRoutesJump()
 const { pop } = useUniqueComponentsStore()
+const props = defineProps<{
+    uid?:string
+}>()
+let uidNum = parseInt(props.uid || '')
+if(isNaN(uidNum)){
+    uidNum = 0
+}
 
+const ownerName = ref<string>()
 async function load(){
-    saveList.value = await api.save.getMySaves()
+    if(uidNum > 0){
+        const ownerInfo = await api.user.getInfo(uidNum)
+        ownerName.value = ownerInfo?.Name || '??'
+    }else{
+        ownerName.value = '我'
+    }
+    saveList.value = await api.save.getMySaves(uidNum)
 }
 
 const saveInfoSb = ref<InstanceType<typeof SideBar>>()
@@ -130,8 +144,8 @@ onMounted(async()=>{
 </script>
 
 <template>
-<h1 class="h1WithBtns">
-    我的存档
+<h1 v-if="ownerName" class="h1WithBtns">
+    {{ ownerName }}的存档
     <div>
         <button @click="startCreating">新建</button>
     </div>
@@ -159,6 +173,9 @@ onMounted(async()=>{
             <button class="minor" @click="startEditingInfo(s)">信息</button>
             <RouterLink :to="editorRoute(s.Id)"><button>编辑</button></RouterLink>
         </td>
+    </tr>
+    <tr style="color: #666; font-size: 16px;">
+        <td colspan="4">暂无存档</td>
     </tr>
     <tr v-if="guideInfo.findHelp" style="color: #666; font-size: 14px;">
         <td colspan="4">{{ guideInfo.findHelp }}</td>

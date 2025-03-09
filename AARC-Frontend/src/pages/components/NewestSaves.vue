@@ -4,9 +4,11 @@ import { SaveDto } from '../saves/models/models';
 import { onMounted, ref } from 'vue';
 import defaultMini from '@/assets/logo/aarc.svg'
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
+import { useSavesRoutesJump } from '../saves/routes/routesJump';
 
 const api = useApiStore().get()
 const { editorRoute } = useEditorsRoutesJump()
+const { someonesSavesRoute } = useSavesRoutesJump()
 const list = ref<SaveDto[]>([])
 async function load(){
     const resp = await api.save.getNewestSaves()
@@ -27,7 +29,9 @@ onMounted(async()=>{
         </RouterLink>
         <div class="cvsName">{{ s.Name }}</div>
         <div class="cvsData">{{ s.LineCount }}线 {{ s.StaCount }}站</div>
-        <div class="cvsOwner">{{ s.OwnerName }}</div>
+        <RouterLink :to="someonesSavesRoute(s.OwnerUserId||0)" class="cvsOwner">
+            {{ s.OwnerName }}
+        </RouterLink>
     </div>
 </div>
 </template>
@@ -73,6 +77,15 @@ onMounted(async()=>{
         .cvsOwner, .cvsData{
             font-size: 0.8em;
             color: #666;
+        }
+        .cvsOwner{
+            padding: 3px;
+            border-radius: 5px;
+            background-color: #666;
+            color: white;
+            min-width: 80px;
+            text-align: center;
+            font-weight: bold;
         }
         @media screen and (min-width: 1000px) {
             width: $blockWidthPC;
