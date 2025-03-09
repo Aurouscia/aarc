@@ -46,11 +46,11 @@ export class Api{
         }
     }
     user = {
-        index: async ()=>{
+        index: async (search?:string)=>{
             const resp = await this.httpClient.request(
                 this.apiUrl('user', 'index'),
                 'postForm',
-                { },
+                { search },
                 undefined,
                 true
             )

@@ -11,8 +11,9 @@ import { useSavesRoutesJump } from '../saves/routes/routesJump';
 const list = ref<UserDto[]>()
 const api = useApiStore().get()
 const { someonesSavesRoute } = useSavesRoutesJump()
+const searchStr = ref<string>()
 async function loadList() {
-    list.value = await api.user.index()
+    list.value = await api.user.index(searchStr.value)
 }
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
@@ -45,7 +46,13 @@ onMounted(async()=>{
 </script>
 
 <template>
-<h1>用户列表</h1>
+<h1 class="h1WithBtns">
+    用户列表
+    <div>
+        <button v-show="searchStr" class="lite" @click="searchStr=undefined;loadList()">清空搜索</button>
+        <input v-model="searchStr" @blur="loadList" placeholder="搜索用户名称"/>
+    </div>
+</h1>
 <div class="wideTableContainer">
 <table class="fullWidth"><tbody>
     <tr>
@@ -68,7 +75,7 @@ onMounted(async()=>{
         </td>
     </tr>
     <tr v-if="list && list.length>=50">
-        <td colspan="3">仅显示最新活动的50个用户</td>
+        <td colspan="3" style="color: #666; font-size: 14px;">仅显示最新活动的50个用户</td>
     </tr>
 </tbody></table>
 </div>
