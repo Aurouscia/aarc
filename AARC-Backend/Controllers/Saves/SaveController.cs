@@ -46,18 +46,21 @@ namespace AARC.Controllers.Saves
         public IActionResult Add(SaveDto saveDto)
         {
             var success = saveRepo.Create(saveDto, out var errmsg);
+            userRepo.UpdateCurrentUserLastActive();
             return this.ApiResp(success, errmsg);
         }
         [Authorize]
         public IActionResult UpdateInfo(SaveDto saveDto)
         {
             var success = saveRepo.UpdateInfo(saveDto, out var errmsg);
+            userRepo.UpdateCurrentUserLastActive();
             return this.ApiResp(success, errmsg);
         }
         [Authorize]
         public IActionResult UpdateData(int id, string data, int staCount, int lineCount)
         {
             var success = saveRepo.UpdateData(id, data, staCount, lineCount, out var errmsg);
+            userRepo.UpdateCurrentUserLastActive();
             return this.ApiResp(success, errmsg);
         }
         [Authorize]

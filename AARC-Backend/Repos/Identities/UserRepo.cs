@@ -3,12 +3,14 @@ using AARC.Models.DbModels;
 using AARC.Models.Dto;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Utils;
+using Microsoft.EntityFrameworkCore;
 
 namespace AARC.Repos.Identities
 {
     public class UserRepo(
         AarcContext context,
-        HttpUserInfoService httpUserInfoService
+        HttpUserInfoService httpUserInfoService,
+        HttpUserIdProvider httpUserIdProvider
         ) : Repo<User>(context)
     {
         public User? MatchUser(string username, string password)
@@ -107,6 +109,14 @@ namespace AARC.Repos.Identities
         public UserDto? GetUserInfo(int id)
         {
             return Existing.Where(x => x.Id == id).SelectToDto().FirstOrDefault();
+        }
+
+        public void UpdateCurrentUserLastActive()
+        {
+            var id = httpUserIdProvider.UserId.Value;
+            Existing.Where(x => x.Id == id)
+                .ExecuteUpdate(spc => 
+                    spc.SetProperty(u=>u.LastActive, DateTime.Now));
         }
 
         public bool DeleteUser(int id, out string? errmsg)
