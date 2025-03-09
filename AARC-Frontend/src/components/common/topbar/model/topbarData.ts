@@ -19,6 +19,15 @@ export async function getTopbarData(): Promise<TopbarModel> {
                 ]
             },
             {
+                Title: "用户",
+                SubItems: [
+                    {
+                        Title: "用户列表",
+                        Link: "/UserList"
+                    }
+                ]
+            },
+            {
                 Title: "登录",
                 Link: {name: loginName}
             }

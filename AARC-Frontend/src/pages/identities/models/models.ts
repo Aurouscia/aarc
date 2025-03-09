@@ -1,3 +1,14 @@
+export interface UserDto{
+    Id:number
+    Name?:string
+    Password?:string
+    Type:UserType
+    AvatarFileId?:number
+    AvatarUrl?:string
+    Intro?:string
+    LastActive?:string
+}
+
 export interface HttpUserInfo{
     readonly Id:number
     readonly Name:string

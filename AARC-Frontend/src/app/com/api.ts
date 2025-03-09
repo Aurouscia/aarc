@@ -1,4 +1,4 @@
-import { HttpUserInfo, LoginResponse } from "@/pages/identities/models/models";
+import { HttpUserInfo, LoginResponse, UserDto } from "@/pages/identities/models/models";
 import { HttpClient, useHttpClientStore } from "./httpClient";
 import { defineStore } from "pinia";
 import { shallowRef } from "vue";
@@ -46,6 +46,18 @@ export class Api{
         }
     }
     user = {
+        index: async ()=>{
+            const resp = await this.httpClient.request(
+                this.apiUrl('user', 'index'),
+                'postForm',
+                { },
+                undefined,
+                true
+            )
+            if(resp.Success){
+                return resp.Data as UserDto[]
+            }
+        },
         add: async (username:string, password:string)=>{
             const resp = await this.httpClient.request(
                 this.apiUrl('user', 'add'),
@@ -55,7 +67,17 @@ export class Api{
                 true
             )
             return resp.Success
-        }
+        },
+        update: async (user:UserDto)=>{
+            const resp = await this.httpClient.request(
+                this.apiUrl('user', 'update'),
+                'postJson',
+                user,
+                '编辑成功',
+                true
+            )
+            return resp.Success
+        },
     }
     save = {
         getNewestSaves: async()=>{
