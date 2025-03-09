@@ -8,9 +8,10 @@ namespace AARC.Repos
         AarcContext context
         ) where T : class, IDbModel
     {
+        protected AarcContext Context => context;
         protected DbSet<T> Set => context.Set<T>();
         public IQueryable<T> All => Set;
-        public IQueryable<T> Existing => All.Where(x => !x.Deleted);
+        public IQueryable<T> Existing => All.Existing();
         public T? Get(int id) => Existing.Where(x=>x.Id == id).FirstOrDefault();
         public IQueryable<T> WithId(int id) => Existing.Where(x => x.Id == id);
         protected int Add(T item, bool saveChanges = true)
@@ -44,5 +45,12 @@ namespace AARC.Repos
                     .SetProperty(x => x.LastActive, DateTime.Now)
                     .SetProperty(x => x.Deleted, true));
         }
+    }
+
+    public static class DbModelQuerableExtension
+    {
+        public static IQueryable<T> Existing<T>(
+            this IQueryable<T> q) where T : IDbModel
+            => q.Where(x => !x.Deleted);
     }
 }

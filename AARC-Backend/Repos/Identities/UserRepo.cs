@@ -21,34 +21,83 @@ namespace AARC.Repos.Identities
                 .FirstOrDefault();
         }
 
-        public List<UserDto> IndexUser(string? search)
+        public List<UserDto> IndexUser(string? search, string? orderby)
         {
+            int takeCount = 50;
             var myId = httpUserInfoService.UserInfo.Value.Id;
-            var q = string.IsNullOrWhiteSpace(search)
+            var userQ = string.IsNullOrWhiteSpace(search)
                 ? Existing
                 : Existing.Where(x => x.Name.Contains(search));
-            var list = q
-                .OrderByDescending(x => x.LastActive)
-                .Take(50)
-                .SelectToDto()
+            var validSavesOwnerIds = base.Context.Saves
+                .Existing()
+                .Where(x => x.StaCount > 0)
+                .GroupBy(x => x.OwnerUserId)
+                .Select(x => new {
+                    UserId = x.Key,
+                    Count = x.Count()
+                })
                 .ToList();
-            var meIdx = list.FindIndex(x => x.Id == myId);
-            if (meIdx == -1)
+            int getCountOfUser(int uid)
             {
-                var me = Existing
-                    .Where(x => x.Id == myId)
-                    .SelectToDto()
+                return validSavesOwnerIds
+                    .Where(x => x.UserId == uid)
+                    .Select(x => x.Count)
                     .FirstOrDefault();
-                if (me is { })
-                    list.Insert(0, me);
+            }
+
+            List<UserDto> finalList;
+            if (orderby == "save")
+            {
+                var uids = validSavesOwnerIds
+                    .OrderByDescending(x => x.Count)
+                    .Take(takeCount)
+                    .Select(x => x.UserId)
+                    .ToList();
+                finalList = userQ
+                    .Where(x => uids.Contains(x.Id))
+                    .SelectToDto()
+                    .ToList();
+                finalList.ForEach(u =>
+                {
+                    u.SaveCount = getCountOfUser(u.Id);
+                });
+                finalList = finalList
+                    .OrderByDescending(x => x.SaveCount)
+                    .ToList();
             }
             else
             {
-                var me = list.ElementAt(meIdx);
-                list.RemoveAt(meIdx);
-                list.Insert(0, me);
+                finalList = userQ
+                    .OrderByDescending(x => x.LastActive)
+                    .SelectToDto()
+                    .Take(takeCount)
+                    .ToList();
             }
-            return list;
+
+            if (myId > 0)
+            {
+                var meIdx = finalList.FindIndex(x => x.Id == myId);
+                if (meIdx == -1)
+                {
+                    var me = Existing
+                        .Where(x => x.Id == myId)
+                        .SelectToDto()
+                        .FirstOrDefault();
+                    var mySaveCount = getCountOfUser(myId);
+                    if (me is { })
+                    {
+                        me.SaveCount = mySaveCount;
+                        finalList.Insert(0, me);
+                    }
+                }
+                else
+                {
+                    var me = finalList.ElementAt(meIdx);
+                    finalList.RemoveAt(meIdx);
+                    finalList.Insert(0, me);
+                }
+            }
+            return finalList;
         }
 
         public bool CreateUser(
@@ -170,6 +219,7 @@ namespace AARC.Repos.Identities
                 AvatarFileId = x.AvatarFileId,
                 Type = x.Type,
                 Intro = x.Intro,
+                LastActive = x.LastActive.ToString("yyyy-MM-dd HH:mm")
             });
         }
     }
