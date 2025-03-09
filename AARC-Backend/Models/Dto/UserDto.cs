@@ -12,5 +12,6 @@ namespace AARC.Models.Dto
         public string? AvatarUrl { get; set; }
         public string? Intro { get; set; }
         public string? LastActive { get; set; }
+        public int SaveCount { get; set; }
     }
 }

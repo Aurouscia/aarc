@@ -2,6 +2,7 @@
 using AARC.Models.DbModels;
 using AARC.Models.Dto;
 using AARC.Repos.Identities;
+using AARC.Repos.Saves;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -15,12 +16,28 @@ namespace AARC.Controllers.Identities
     [Authorize]
     public class UserController(
         UserRepo userRepo,
+        SaveRepo saveRepo,
         IConfiguration config
         ) : Controller
     {
         public IActionResult Index(string? search)
         {
+            var saveCounts = saveRepo.Existing
+                .GroupBy(x => x.OwnerUserId)
+                .Select(x => new
+                {
+                    Uid = x.Key,
+                    SaveCount = x.Count()
+                }).ToList();
             var list = userRepo.IndexUser(search);
+            foreach(var u in list)
+            {
+                var userSaveCount = saveCounts
+                    .Where(x => x.Uid == u.Id)
+                    .Select(x => x.SaveCount)
+                    .FirstOrDefault();
+                u.SaveCount = userSaveCount;
+            }
             return this.ApiResp(list);
         }
 
