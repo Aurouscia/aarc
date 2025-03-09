@@ -67,6 +67,9 @@ onMounted(async()=>{
             </button>
         </td>
     </tr>
+    <tr v-if="list && list.length>=50">
+        <td colspan="3">仅显示最新活动的50个用户</td>
+    </tr>
 </tbody></table>
 </div>
 <SideBar ref="sidebar">

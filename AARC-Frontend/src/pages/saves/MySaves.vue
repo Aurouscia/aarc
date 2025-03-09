@@ -174,7 +174,7 @@ onMounted(async()=>{
             <RouterLink :to="editorRoute(s.Id)"><button>编辑</button></RouterLink>
         </td>
     </tr>
-    <tr style="color: #666; font-size: 16px;">
+    <tr v-if="saveList.length==0" style="color: #666; font-size: 16px;">
         <td colspan="4">暂无存档</td>
     </tr>
     <tr v-if="guideInfo.findHelp" style="color: #666; font-size: 14px;">
