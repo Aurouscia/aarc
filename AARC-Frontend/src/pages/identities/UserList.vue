@@ -57,12 +57,12 @@ onMounted(async()=>{
 <table class="fullWidth"><tbody>
     <tr>
         <th>名称</th>
-        <th style="width: 100px;">类型</th>
+        <th style="width: 100px;">作品数</th>
         <th style="width: 130px;">操作</th>
     </tr>
     <tr v-for="u in list" :key="u.Id">
         <td>{{ u.Name }}</td>
-        <td>{{ userTypeReadable(u.Type) }}</td>
+        <td>{{ u.SaveCount }}</td>
         <td>
             <RouterLink :to="someonesSavesRoute(u.Id)">
                 <button class="lite" style="margin-right: 6px;">

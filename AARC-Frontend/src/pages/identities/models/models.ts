@@ -7,6 +7,7 @@ export interface UserDto{
     AvatarUrl?:string
     Intro?:string
     LastActive?:string
+    SaveCount?:number
 }
 
 export interface HttpUserInfo{
