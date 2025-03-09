@@ -3,6 +3,7 @@ import { HttpClient, useHttpClientStore } from "./httpClient";
 import { defineStore } from "pinia";
 import { shallowRef } from "vue";
 import { SaveDto } from "@/pages/saves/models/models";
+import { UserListOrderBy } from "../localConfig/userListLocalConfig";
 
 export const useApiStore = defineStore('api', ()=>{
     const httpClientStore = useHttpClientStore()
@@ -46,11 +47,11 @@ export class Api{
         }
     }
     user = {
-        index: async (search?:string)=>{
+        index: async (search?:string, orderby?:UserListOrderBy)=>{
             const resp = await this.httpClient.request(
                 this.apiUrl('user', 'index'),
                 'postForm',
-                { search },
+                { search, orderby },
                 undefined,
                 true
             )
