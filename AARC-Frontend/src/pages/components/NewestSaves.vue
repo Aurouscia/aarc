@@ -26,6 +26,7 @@ onMounted(async()=>{
             <img :src="s.MiniUrl || defaultMini"/>
         </RouterLink>
         <div class="cvsName">{{ s.Name }}</div>
+        <div class="cvsData">{{ s.LineCount }}线 {{ s.StaCount }}站</div>
         <div class="cvsOwner">{{ s.OwnerName }}</div>
     </div>
 </div>
@@ -62,14 +63,14 @@ onMounted(async()=>{
                 box-shadow: 0px 0px 10px 0px black;
             }
         }
-        .cvsName, .cvsOwner{
+        .cvsName, .cvsOwner, .cvsData{
             max-width: 90%;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             user-select: none;
         }
-        .cvsOwner{
+        .cvsOwner, .cvsData{
             font-size: 0.8em;
             color: #666;
         }
