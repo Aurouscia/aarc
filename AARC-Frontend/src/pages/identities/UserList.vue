@@ -54,7 +54,7 @@ onMounted(async()=>{
     </div>
 </h1>
 <div class="wideTableContainer">
-<table class="fullWidth"><tbody>
+<table class="fullWidth index"><tbody>
     <tr>
         <th>名称</th>
         <th style="width: 100px;">作品数</th>

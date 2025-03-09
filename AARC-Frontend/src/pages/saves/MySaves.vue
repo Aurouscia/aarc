@@ -151,7 +151,7 @@ onMounted(async()=>{
     </div>
 </h1>
 <div style="overflow-x: auto;">
-<table v-if="saveList" class="fullWidth"><tbody>
+<table v-if="saveList" class="fullWidth index"><tbody>
     <tr>
         <th style="width: 100px;"></th>
         <th style="min-width: 200px;">名称</th>
