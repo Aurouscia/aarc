@@ -1,5 +1,6 @@
 ﻿using AARC.Models.Db.Context;
 using AARC.Models.DbModels;
+using AARC.Models.Dto;
 using AARC.Repos.Identities;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Utils;
@@ -11,15 +12,43 @@ using SixLabors.ImageSharp.Processing;
 
 namespace AARC.Controllers.Identities
 {
+    [Authorize]
     public class UserController(
-        UserRepo userRepo
-        //HttpUserIdProvider httpUserIdProvider
+        UserRepo userRepo,
+        IConfiguration config
         ) : Controller
     {
+        public IActionResult Index()
+        {
+            var list = userRepo.IndexUser();
+            return this.ApiResp(list);
+        }
+
+        [AllowAnonymous]
         public IActionResult Add(string? userName, string? password)
         {
             var success = userRepo.CreateUser(userName, password, out var errmsg);
             return this.ApiResp(success, errmsg);
+        }
+
+        public IActionResult Update([FromBody] UserDto user)
+        {
+            var success = userRepo.UpdateUser(user, out var errmsg);
+            return this.ApiResp(success, errmsg);
+        }
+
+        [AllowAnonymous]
+        public IActionResult InitAdmin(string? userName, string? masterKey)
+        {
+            var mKey = config["MasterKey"] ?? Path.GetRandomFileName();
+            if (mKey != masterKey)
+                return this.ApiRespFailed("MasterKey错误");
+            var initialPwd = "987333";
+            var success = userRepo.CreateUser(userName, initialPwd, out var errmsg, true);
+            if (success)
+                return this.ApiResp(new { Info = $"创建成功，密码为{initialPwd}，立即登录并更改" });
+            else
+                return this.ApiRespFailed(errmsg);
         }
     }
 }

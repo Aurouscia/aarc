@@ -10,15 +10,15 @@ namespace AARC.Services.App.HttpAuthInfo
         public Lazy<HttpUserInfo> UserInfo { get; }
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpUserIdProvider _userIdProvider;
-        private readonly UserRepo _userRepo;
+        private readonly AarcContext _context;
         public HttpUserInfoService(
             IHttpContextAccessor httpContextAccessor,
             HttpUserIdProvider userId,
-            UserRepo userRepo)
+            AarcContext context)
         {
             _httpContextAccessor = httpContextAccessor;
             _userIdProvider = userId;
-            _userRepo = userRepo;
+            _context = context;
             UserInfo = new(GetUserInfo);
         }
 
@@ -32,7 +32,7 @@ namespace AARC.Services.App.HttpAuthInfo
                 ?? throw new Exception("httpContext获取失败");
             if (id > 0)
             {
-                var user = _userRepo.Get(id);
+                var user = _context.Users.Find(id);
                 if (user is not null)
                 {
                     name = user.Name ?? "??";
