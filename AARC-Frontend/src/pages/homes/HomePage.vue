@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { guideInfo } from '@/app/guideInfo';
 import NewestSaves from '../components/NewestSaves.vue';
+import GiteeInfo from '@/components/common/GiteeGitInfo.vue';
 
 
 </script>
@@ -17,6 +18,7 @@ import NewestSaves from '../components/NewestSaves.vue';
 <div style="margin: 20px 0px 20px 0px;">
     <NewestSaves></NewestSaves>
 </div>
+<GiteeInfo></GiteeInfo>
 <div class="roadmap">
     <h2>近期规划</h2>
     <div>
