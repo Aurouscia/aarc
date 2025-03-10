@@ -87,7 +87,7 @@ onUnmounted(()=>{
             </div>
         </div>
     </SideBar>
-    <LineDelPrompt :line-name="wantDelLine?.name" :pt-called="'节点'" :with-sta-default="true"
+    <LineDelPrompt :line="wantDelLine" :line-called="'地形'" :pt-called="'节点'" :with-sta-default="true"
         @abort="delLineAbort" @exe="delLineExe"></LineDelPrompt>
 </template>
 

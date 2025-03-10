@@ -1,13 +1,26 @@
 <script setup lang="ts">
 import Prompt from '@/components/common/Prompt.vue';
-import { ref } from 'vue';
+import { Line } from '@/models/save';
+import { useSaveStore } from '@/models/stores/saveStore';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{
-    lineName:string|undefined,
+    line?:Line,
     withStaDefault?:boolean,
+    lineCalled:string,
     ptCalled:string
 }>()
+
+const saveStore = useSaveStore();
+const lineColor = computed<string|undefined>(()=>{
+    if(props.line)
+        return saveStore.getLineActualColor(props.line)
+})
+
 const withSta = ref<boolean>(props.withStaDefault)
+function withStaReturnToDefault(){
+    withSta.value = props.withStaDefault
+}
 const emit = defineEmits<{
     (e:'abort'):void
     (e:'exe', withSta:boolean):void
@@ -15,15 +28,18 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <Prompt v-if="lineName">
+    <Prompt v-if="line">
         <div class="promptDel">
-            <div class="promptDeltitle">确定删除 {{ lineName }}</div>
+            <div class="promptDeltitle">
+                确定删除
+                <span :style="{color: lineColor}">{{ line.name || '无名'+lineCalled }}</span>
+            </div>
             <div class="promptDelSta">
                 <input type="checkbox" v-model="withSta"/> 同时删除其{{ ptCalled }}
             </div>
             <div class="promptDelBtns">
-                <button class="minor" @click="emit('abort'); withSta=false">取消</button>
-                <button class="danger" @click="emit('exe', withSta); withSta=false">确认删除</button>
+                <button class="minor" @click="emit('abort'); withStaReturnToDefault()">取消</button>
+                <button class="danger" @click="emit('exe', withSta); withStaReturnToDefault()">确认删除</button>
             </div>
         </div>
     </Prompt>
