@@ -8,7 +8,7 @@ import { AuColorPicker } from '@aurouscia/au-color-picker';
 import LineDelPrompt from './shared/LineDelPrompt.vue';
 
 const { 
-    sidebar, init, lines, envStore,
+    sidebar, lines, envStore,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
     arrangingId, editingInfoLineId, editInfoOfLine,
     createLine,
@@ -26,7 +26,7 @@ defineExpose({
     fold: ()=>{sidebar.value?.fold()}
 })
 onMounted(()=>{
-    init()
+    
 })
 onUnmounted(()=>{
     disposeLinesArrange()

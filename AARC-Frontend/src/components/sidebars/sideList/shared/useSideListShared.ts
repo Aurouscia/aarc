@@ -4,14 +4,14 @@ import { useEnvStore } from "@/models/stores/envStore"
 import { useSaveStore } from "@/models/stores/saveStore"
 import { useLinesArrange } from "@/utils/eventUtils/linesArrange"
 import SideBar from "@/components/common/SideBar.vue"
-import { ref } from "vue"
+import { computed, ref } from "vue"
 
 export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
     const saveStore = useSaveStore()
     const envStore = useEnvStore()
     const mainCvsDispatcher = useMainCvsDispatcher()
     const sidebar = ref<InstanceType<typeof SideBar>>()
-    const lines = ref<Line[]>([])
+    const lines = computed<Line[]>(()=>saveStore.getLinesByType(lineType))
     const {
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, activeId: arrangingId
     } = useLinesArrange(65, lines, orderChanged) //65：一个线路框60高，加上5的缝隙
@@ -30,14 +30,9 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
     }
     function createLine(){
         envStore.createLine(lineType)
-        init()
     }
     function delLine(line:Line, withSta:boolean){
         envStore.delLine(line.id, false, withSta)
-        init()
-    }
-    function init(){
-        lines.value = saveStore.getLinesByType(lineType)
     }
 
     const editingInfoLineId = ref<number>()
@@ -66,7 +61,7 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
     }
 
     return {
-        sidebar, lines, init, envStore, saveStore,
+        sidebar, lines, envStore, saveStore,
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
         arrangingId, editingInfoLineId, editInfoOfLine,
         createLine, 

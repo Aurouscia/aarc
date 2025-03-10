@@ -9,7 +9,7 @@ import { useColorPresetNames } from './shared/useColorPresetNames';
 import LineDelPrompt from './shared/LineDelPrompt.vue';
 
 const { 
-    sidebar, init, lines: terrains, envStore,
+    sidebar, lines: terrains, envStore,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
     createLine, editingInfoLineId, editInfoOfLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe
@@ -40,7 +40,7 @@ defineExpose({
     fold: ()=>{sidebar.value?.fold()}
 })
 onMounted(()=>{
-    init()
+    
 })
 onUnmounted(()=>{
     disposeLinesArrange()
