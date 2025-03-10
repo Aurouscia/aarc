@@ -82,7 +82,7 @@ onMounted(()=>{
     if(!config.value.lineWidthMapped){
         config.value.lineWidthMapped = {}
     }
-    if(!config.value.bgRefImage){
+    if(Object.keys(config.value.bgRefImage).length===0){
         config.value.bgRefImage = {
             left: 0,
             right: 0,
