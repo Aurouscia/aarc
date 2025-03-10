@@ -96,12 +96,9 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     /** 正在把“延长按钮拖出来的点”拖动时，其方向会智能自动调整 */
     function autoDirForNewExtended(){
         if(!envStore.movingExtendedPointOriginated || !envStore.activePt){
-            //如果不是正在移动“延长按钮拖出来的点”，恢复原状
-            snapStore.snapNeighborExtendsOnlySameDir = false
-            return
+             //如果不是正在移动“延长按钮拖出来的点”，不做处理
+             return
         }
-        //如果当前正在移动“延长按钮拖出来的点”，那么将线中相邻延长线snap设为“必须同方向控制点”，否则在接近45度时会鬼畜
-        snapStore.snapNeighborExtendsOnlySameDir = true
         const ori = envStore.movingExtendedPointOriginated
         const act = envStore.activePt
         const currentWay = coordSub(act.pos, ori.from.pos)
