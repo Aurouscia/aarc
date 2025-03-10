@@ -336,15 +336,17 @@ export const useSaveStore = defineStore('save', () => {
         const thatLinesContainsNoneCommon = thatLines.some(x=>x.type!==LineType.common)
         if(thisLinesContainsNoneCommon !== thatLinesContainsNoneCommon)
             return
-        let keepThis = true
-        if(thisLines.length == thatLines.length){
-            keepThis = (thisPt.name?.trim().length || 0) > (thatPt?.name?.trim().length || 0)
-        }else{
-            keepThis = thisLines.length > thatLines.length
-        }
+        //本体保留名称更长的那个
+        let keepThis  = (thisPt.name?.trim().length || 0) >= (thatPt?.name?.trim().length || 0)
+        //方向保留线路更多的那个
+        let keepThisDir = thisLines.length >= thatLines.length
+        const finalDir = keepThisDir ? thisPt.dir : thatPt.dir
+
         let keepPt = keepThis ? thisPt : thatPt
         let delPt = keepThis ? thatPt : thisPt
-        if(!keepPt.name?.trim() && !keepPt.nameS?.trim()){
+        keepPt.dir = finalDir
+        if(!keepPt.name?.trim()){
+            //如果保留的那个没有名称，那么使用另一个的名称
             keepPt.name = delPt.name
             keepPt.nameS = delPt.nameS
             keepPt.nameP = delPt.nameP
