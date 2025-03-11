@@ -370,7 +370,11 @@ export const useEnvStore = defineStore('env', ()=>{
             if(!coord || !clientCoord)
                 return;
             discardAreaStore.discardStatus(clientCoord)
-            const setToGlobalPos = coordSub(coord, activeTextTagGrabbedAt.value)
+            let setToGlobalPos = coordSub(coord, activeTextTagGrabbedAt.value)
+            const snapGridRes = snapGrid(setToGlobalPos, undefined, true)
+            if(snapGridRes){
+                setToGlobalPos = snapGridRes
+            }
             activeTextTag.value.pos = setToGlobalPos
             movedTextTag.value = true
         }
@@ -720,7 +724,7 @@ export const useEnvStore = defineStore('env', ()=>{
     return { 
         init, activePt, activePtType, activePtNameSnapped,
         activeLine, activeTextTag, somethingActive,
-        cursorPos, movingPoint, movedPoint, movingExtendedPointOriginated,
+        cursorPos, movingPoint, movedPoint, movingExtendedPointOriginated, movingTextTag,
         cvsWidth, cvsHeight, getDisplayRatio,
         rerender, rescaled, getActivePtOpsAvoidance,
         delLine, createLine, lineInfoChanged,

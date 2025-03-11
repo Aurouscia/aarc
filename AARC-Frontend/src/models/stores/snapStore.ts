@@ -230,7 +230,11 @@ export const useSnapStore = defineStore('snap',()=>{
         })
         return target
     }
-    function snapGrid(ptPos:Coord, freeAxis?:SgnCoord):Coord|undefined{
+    function snapGrid(ptPos:Coord, freeAxis?:SgnCoord, clearSnapLines?:boolean):Coord|undefined{
+        if(clearSnapLines)
+            snapLines.value = []
+        if(!snapGridEnabled.value)
+            return;
         const intv = snapGridIntv.value
         if(!intv)
             return;

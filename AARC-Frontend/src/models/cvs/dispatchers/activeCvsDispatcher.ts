@@ -75,7 +75,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
                 renderPtNameById(ctx, activePtId, true, markRoot)
             }
         }
-        if(envStore.movingPoint && envStore.activePtType=='body' 
+        if((envStore.movingPoint && envStore.activePtType=='body') || (envStore.movingTextTag && envStore.activeTextTag) 
             && snapStore.snapLines && snapStore.snapLinesForPt == activePtId)
         {
             const ls = snapStore.snapLines
