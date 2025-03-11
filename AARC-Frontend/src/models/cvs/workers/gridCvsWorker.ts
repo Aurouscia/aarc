@@ -46,22 +46,26 @@ export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
         let subWidth:number = 1
         if(displayRatio1000 > 3000){
             mainIntv = 500
-            subIntv = 0
+            subIntv = 100
             mainWidth = 6
+            subWidth = 3
         }
         else if(displayRatio1000 > 1800){
             mainIntv = 500
             subIntv = 100
             mainWidth = 4
             subWidth = 2
-        }else{// if(displayRatio1000 > 1100){
+        }else if(displayRatio1000 > 1100){
             mainIntv = 100
             subIntv = 50
+        }else if(displayRatio1000 > 600){
+            mainIntv = 100
+            subIntv = 25
+        }else{
+            mainIntv = 100
+            subIntv = 10
+            subWidth = 0.5
         }
-        // else{
-        //     mainIntv = 100
-        //     subIntv = 25
-        // }
         return {
             mainIntv, subIntv,
             mainWidth, subWidth
