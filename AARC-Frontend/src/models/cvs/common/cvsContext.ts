@@ -108,5 +108,5 @@ export class CvsContext{
     set textAlign(value:CanvasTextAlign){
         this.enumerate(b=>b.ctx2d.textAlign = value)}
     set font(value:{fontSize:number, font:string}){
-        this.enumerate(b=>b.ctx2d.font = `${value.fontSize*b.scale}px ${value.font}`)}
+        this.enumerate(b=>b.ctx2d.font = `${value.fontSize*b.scale}px ${value.font}, sans-serif`)}
 }
