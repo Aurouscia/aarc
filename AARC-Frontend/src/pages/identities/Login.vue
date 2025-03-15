@@ -11,6 +11,7 @@ import { userTypeReadable } from './models/utils';
 import { RouterLink } from 'vue-router';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
 import { useAuthLocalConfigStore } from '@/app/localConfig/authLocalConfig';
+import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 
 const props = defineProps<{
     backAfterSuccess?:string
@@ -18,6 +19,7 @@ const props = defineProps<{
 const router = useRouter()
 const { readLoginExpireHrs, saveLoginExpireHrs, loginExpireHrsDefault }
     = useAuthLocalConfigStore()
+const { isWebkit } = useBrowserInfoStore()
 
 const userName = ref<string>("")
 const password = ref<string>("")
@@ -116,10 +118,15 @@ onUnmounted(()=>{
         <div v-show="setExpire" style="color:red; text-align: center;">仅在自己的设备上选择较长时间</div>
         <div class="guide" style="color:red" v-if="failedGuide">{{ failedGuide }}</div>
         <div class="guide" style="font-size: 13px;" v-else>
-            <div><b>本应用对浏览器版本非常敏感</b></div>
-            <div>如果遇到异常现象，请先前往应用商店，<br/>确认你使用的浏览器<b>是否有版本更新</b></div>
+            <div><b>本应用对系统版本/浏览器版本非常敏感</b></div>
+            <div>如果遇到异常现象，请先</div>
+            <!--苹果设备的浏览器内核是系统的一部分，应该提示检查系统版本-->
+            <div v-if="isWebkit">在设置中确认设备<b>是否有系统更新</b></div>
+            <!--其他设备提示检查浏览器版本-->
+            <div v-else>确认浏览器<b>是否有版本更新</b></div>
             <div><b>不要</b>使用IE等已停止更新的旧型浏览器</div>
             <div><b>不要</b>使用过旧的、无法更新系统的设备</div>
+            <div>否则程序将无法正常工作</div>
             <div>如果确认版本后问题仍存在，请向管理员报告</div>
         </div>
     </div>
