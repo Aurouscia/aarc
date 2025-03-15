@@ -2,7 +2,6 @@
 import { onMounted, onUnmounted, ref } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { useScalerLocalConfigStore } from '@/app/localConfig/scalerLocalConfig';
-import Bowser from 'bowser'
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useConfigStore } from '@/models/stores/configStore';
@@ -10,6 +9,7 @@ import { storeToRefs } from 'pinia';
 import { clamp } from '@/utils/lang/clamp';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import LineStyles from './configItems/LineStyles.vue';
+import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
@@ -69,7 +69,7 @@ async function steppedScaleChange(){
     const enabled = steppedScaleEnabled.value
     scalerLocalConfig.saveSteppedScaleEnabled(enabled)
 }
-const browserInfo = ref<ReturnType<typeof Bowser.parse>>()
+const { browserInfo } = storeToRefs(useBrowserInfoStore())
 
 const visibilityChangedTimes = ref(0)
 function visibilityChangedHandler(){
@@ -90,7 +90,6 @@ onMounted(()=>{
         }
     }
     steppedScaleEnabled.value = scalerLocalConfig.readSteppedScaleEnabled()
-    browserInfo.value = Bowser.parse(navigator.userAgent)
     document.addEventListener('visibilitychange', visibilityChangedHandler)
 })
 onUnmounted(()=>{

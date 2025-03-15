@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useApiStore } from '@/app/com/api';
@@ -12,8 +12,8 @@ import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { AdsRenderType } from '@/models/cvs/workers/adsCvsWorker';
 import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
-import Bowser from 'bowser';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
+import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -183,9 +183,7 @@ function exportPixelRestrictChanged(){
     exportLocalConfig.saveExportPixelRestrict(exportPixelRestrict.value||'')
 }
 
-const browserInfo = ref<ReturnType<typeof Bowser.parse>>()
-browserInfo.value = Bowser.parse(navigator.userAgent)
-const isApple = computed<boolean>(()=>browserInfo.value?.engine.name?.toLowerCase()=='webkit')
+const { isWebkit } = useBrowserInfoStore()
 
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
@@ -227,7 +225,7 @@ defineExpose({
         若导出失败，可能由于系统/浏览器限制，<br/>
         导致只能导出模糊的图片<br/>
         请尝试设置<b>“像素上限”</b>为4000，若仍然失败则逐步调低直至导出成功<br/>
-        <b v-if="isApple" style="color:plum">
+        <b v-if="isWebkit" style="color:plum">
             苹果系统疑似有4000的上限<br/>
         </b>
         若需要清晰的图片请换用其他设备
