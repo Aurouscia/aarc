@@ -147,14 +147,14 @@ function recaculateIdIncre(save:Save){
 function defaultLineStyles(save:Save):LineStyle[]{
     return [
         {
-            id: save.idIncre++,
+            id: save.idIncre++,    //idIncre使用后自增
             name: '快线',
             layers:[
-                {color:'#FFFFFF', width:0.3, opacity:1}
+                {color:'#FFFFFF', width:0.15, opacity:1}
             ]
         },
         {
-            id: save.idIncre++,
+            id: save.idIncre++,    //idIncre使用后自增
             name: '铁路',
             layers:[
                 {color:'#FFFFFF', width:0.6, opacity:1, dash:'4 4'}
