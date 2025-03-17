@@ -1,12 +1,13 @@
 import { useConfigStore } from "@/models/stores/configStore";
-import { useEnvStore } from "@/models/stores/envStore";
 import { useSnapStore } from "@/models/stores/snapStore";
 import { defineStore, storeToRefs } from "pinia";
 import { CvsContext } from "../common/cvsContext";
+import { useSaveStore } from "@/models/stores/saveStore";
+import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
 
 export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
-    const envStore = useEnvStore();
-    const { cvsWidth, cvsHeight } = storeToRefs(envStore)
+    const { cvsWidth, cvsHeight } = storeToRefs(useSaveStore())
+    const cvsFrameStore = useCvsFrameStore()
     const { snapGridIntv } = storeToRefs(useSnapStore())
     const cs = useConfigStore()
     function renderGrid(ctx:CvsContext){
@@ -39,26 +40,26 @@ export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
         ctx.stroke()
     }
     function gridLinesInfo():{mainIntv:number, subIntv:number, mainWidth:number, subWidth:number}{
-        const displayRatio1000 = envStore.getDisplayRatio('smaller') * 1000
+        const side = cvsFrameStore.getBiggerSideLength()
         let mainIntv:number
         let subIntv:number
         let mainWidth:number = 2
         let subWidth:number = 1
-        if(displayRatio1000 > 3000){
+        if(side > 4000){
             mainIntv = 500
             subIntv = 100
             mainWidth = 6
             subWidth = 3
         }
-        else if(displayRatio1000 > 1800){
+        else if(side > 2300){
             mainIntv = 500
             subIntv = 100
             mainWidth = 4
             subWidth = 2
-        }else if(displayRatio1000 > 1100){
+        }else if(side > 1100){
             mainIntv = 100
             subIntv = 50
-        }else if(displayRatio1000 > 600){
+        }else if(side > 500){
             mainIntv = 100
             subIntv = 25
         }else{

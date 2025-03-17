@@ -3,7 +3,6 @@ import { defineStore, storeToRefs } from "pinia";
 import { Ref, ref } from "vue";
 import { Coord } from "../coord";
 import { useSaveStore } from "./saveStore";
-import { minDisplayRatio } from "@/utils/consts";
 import { useScalerLocalConfigStore } from "@/app/localConfig/scalerLocalConfig";
 
 export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
@@ -71,8 +70,8 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
             scaleLocked.value = 'min'
             return
         }
-        const r = getDisplayRatio('smaller') || 0
-        if(r < minDisplayRatio){
+        const r = getBiggerSideLength()
+        if(r < 400){
             scaleLocked.value = 'max'
             return
         }
