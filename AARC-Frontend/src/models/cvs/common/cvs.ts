@@ -50,7 +50,6 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     const saveStore = useSaveStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const blocksControl = ref<BlockControl[]>([])
-    const blockSideLength = ref<number>(1500)
 
     let blocksControlInited = false
     function blocksControlInit(){
@@ -75,23 +74,40 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
         // viewMutateLastReact = now
         // refreshBlocks()
     }
-    const wRatioEach = computed(()=>blockSideLength.value/cvsWidth.value)
-    const hRatioEach = computed(()=>blockSideLength.value/cvsHeight.value)
+
+    function getBlockSideLength(sidePx:number){
+        if(sidePx < 1500)
+            return 1500
+        if(sidePx < 3000)
+            return 3000
+        if(sidePx < 6000)
+            return 6000
+        return 12000
+    }
+    function getWRRatioEach(blockSideLength:number){
+        return {
+            widthRatio: blockSideLength/cvsWidth.value,
+            heightRatio: blockSideLength/cvsHeight.value,
+        }
+    }
     const rectMargin = 0.001
     function refreshBlocks(callReformedHandler:'auto'|'suppress'|'enforce' = 'auto'){
-        const displayRatio = fStore.getDisplayRatio('bigger')
+        const sidePx = fStore.getBiggerSideLength()
+        let blockSideLength = 0
         const cont = fStore.cvsCont
         const frame = fStore.cvsFrame
         if(!frame || !cont)
             return
         const res:BlockControl[] = []
-        if(displayRatio < 1.6){
+        if(sidePx < 6000){
+            blockSideLength = getBlockSideLength(sidePx)
             const rect = fStore.getViewRectInRatio()
             const containedXs:number[] = []
             const containedYs:number[] = []
             let tryingX = 0
+            const { widthRatio, heightRatio } = getWRRatioEach(blockSideLength)
             while(true){
-                const ratioNext = (tryingX+1) * wRatioEach.value
+                const ratioNext = (tryingX+1) * widthRatio
                 if(ratioNext > rect.left - rectMargin)
                     containedXs.push(tryingX)
                 if(ratioNext > rect.right - rectMargin || tryingX>1e5)
@@ -100,7 +116,7 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
             }
             let tryingY = 0
             while(true){
-                const ratioNext = (tryingY+1) * hRatioEach.value
+                const ratioNext = (tryingY+1) * heightRatio
                 if(ratioNext > rect.top - rectMargin)
                     containedYs.push(tryingY)
                 if(ratioNext > rect.bottom - rectMargin || tryingY>1e5)
@@ -114,12 +130,12 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
                     const y = containedYs[yidx]
                     res.push({
                         idx: blockIdx++,
-                        widthRatio: wRatioEach.value,
-                        heightRatio: hRatioEach.value,
-                        leftRatio: x*wRatioEach.value,
-                        topRatio: y*hRatioEach.value,
-                        canvasWidth: blockSideLength.value,
-                        canvasHeight: blockSideLength.value,
+                        widthRatio,
+                        heightRatio,
+                        leftRatio: x*widthRatio,
+                        topRatio: y*heightRatio,
+                        canvasWidth: blockSideLength,
+                        canvasHeight: blockSideLength,
                         key:Math.random()
                     })
                 }
@@ -137,7 +153,8 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
                 key:0
             })
         }
-        console.log(`刷新画布块，${res.length}`)
+        const sideLengthInfo = blockSideLength ? `，(${blockSideLength}px)`:'(整体)'
+        console.log(`画布块${res.length}个${sideLengthInfo}`)
         if(callReformedHandler!=='suppress'){
             const brief = blocksControlBrief(res)
             if(brief !== lastHandledBrief || callReformedHandler==='enforce'){
@@ -186,7 +203,6 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
 
     return {
         blocksControl,
-        blockSideLength,
         blocksReformHandler,
         blocksControlInit,
         refreshBlocks,

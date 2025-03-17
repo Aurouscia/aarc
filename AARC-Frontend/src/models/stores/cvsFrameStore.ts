@@ -50,6 +50,18 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         }
         return 1
     }
+    function getBiggerSideLength(){
+        //当前屏幕上显示的最大边长(像素数)
+        const wf = cvsFrame.value?.clientWidth || 0
+        const hf = cvsFrame.value?.clientHeight || 0
+        const wc = cvsCont.value?.clientWidth || 0
+        const hc = cvsCont.value?.clientHeight || 0
+        const wr = wf/wc
+        const hr = hf/hc
+        const wpx = wr*cvsWidth.value
+        const hpx = hr*cvsHeight.value
+        return Math.max(wpx, hpx)
+    }
     function updateScaleLock(){
         const cw = cvsCont.value?.clientWidth || 0
         const ch = cvsCont.value?.clientHeight || 0
@@ -129,7 +141,8 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     }
     return {
         cvsFrame, cvsCont, initScaler,
-        getDisplayRatio, getViewCenterOffset, getViewRectInRatio,
+        getDisplayRatio, getBiggerSideLength,
+        getViewCenterOffset, getViewRectInRatio,
         updateScaleLock,
         translateFromOffset, translateFromClient,
         translateToOffset, translateToClient,
