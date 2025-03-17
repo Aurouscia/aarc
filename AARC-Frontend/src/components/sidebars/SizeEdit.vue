@@ -38,6 +38,9 @@ const tooBigRefuseThrs = 40000
 const cvsPreviewTooBig = computed<boolean>(()=>{
     return cvsWidthPreview.value > tooBigWarnThrs || cvsHeightPreview.value > tooBigWarnThrs 
 })
+const pendingLeftOrUpCantDivideBy100 = computed<boolean>(()=>{
+    return pendingChanges.value[0] % 100 !== 0 || pendingChanges.value[3] % 100 !== 0
+})
 const anyChangeExist = computed(()=>pendingChanges.value.some(x=>x!==0))
 function changeStyleOf(idx:number):CSSProperties{
     const val = pendingChanges.value[idx]
@@ -63,21 +66,20 @@ function changeIncre(idx:number, way:boolean){
         pendingChanges.value[oppositeIdx] -= inc
     }
 }
+
+const availableIncrements = [1, 10, 100, 400, 1000]
 function changeIncrementIncre(way:boolean){
     const nowVal = changeIncrement.value
-    let useBigIncInc = (way && nowVal>=200) || (!way && nowVal>200)
-    let useGiantIncInc = false
-    if(useBigIncInc){
-        useGiantIncInc = (way && nowVal>=400) || (!way && nowVal>400)
+    if(way){
+       const newVal = availableIncrements.find(x=>x>nowVal)
+       if(newVal)
+            changeIncrement.value = newVal 
     }
-    let inc = useGiantIncInc ? 200 : (useBigIncInc ? 100 : 50)
-    if(!way)
-        inc = -inc
-    changeIncrement.value += inc
-    if(changeIncrement.value < 50)
-        changeIncrement.value = 50
-    else if(changeIncrement.value > 1000)
-        changeIncrement.value = 1000
+    else{
+        const newValIdxP1 = availableIncrements.findIndex(x=>x>=nowVal)
+        if(newValIdxP1>0)
+            changeIncrement.value = availableIncrements[newValIdxP1-1]
+    }
 }
 
 function abortChange(){
@@ -175,6 +177,9 @@ defineExpose({
         <button class="cancel" @click="abortChange">放弃修改</button>
         <button class="ok" @click="applyChange">应用修改</button>
     </div>
+    <Notice v-if="pendingLeftOrUpCantDivideBy100" :type="'warn'">
+        左侧/上方调整量应为100的倍数<br/>否则站点将脱离网格
+    </Notice>
     <Notice v-if="cvsPreviewTooBig" :type="'info'">
         过大的画布会导致<br/>导出的图片难以分享
     </Notice>
