@@ -75,14 +75,13 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
         // refreshBlocks()
     }
 
+    const maxCvsSideLengthWhenMayAppear4Blocks = 1500
     function getBlockSideLength(sidePx:number){
+        if(sidePx < 750)
+            return 750
         if(sidePx < 1500)
             return 1500
-        if(sidePx < 3000)
-            return 3000
-        if(sidePx < 6000)
-            return 6000
-        return 12000
+        return 3000
     }
     function getWRRatioEach(blockSideLength:number){
         return {
@@ -99,7 +98,7 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
         if(!frame || !cont)
             return
         const res:BlockControl[] = []
-        if(sidePx < 6000){
+        if(sidePx < maxCvsSideLengthWhenMayAppear4Blocks*2){
             blockSideLength = getBlockSideLength(sidePx)
             const rect = fStore.getViewRectInRatio()
             const containedXs:number[] = []
@@ -134,8 +133,8 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
                         heightRatio,
                         leftRatio: x*widthRatio,
                         topRatio: y*heightRatio,
-                        canvasWidth: blockSideLength,
-                        canvasHeight: blockSideLength,
+                        canvasWidth: maxCvsSideLengthWhenMayAppear4Blocks,
+                        canvasHeight: maxCvsSideLengthWhenMayAppear4Blocks,
                         key:Math.random()
                     })
                 }
