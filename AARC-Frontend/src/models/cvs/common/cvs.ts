@@ -3,6 +3,7 @@ import { CvsBlock, CvsContext } from "./cvsContext";
 import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
 import { defineStore, storeToRefs } from "pinia";
 import { useSaveStore } from "@/models/stores/saveStore";
+import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
 
 export function useCvs(canvasIdPrefix:string){
     const bStore = useCvsBlocksControlStore()
@@ -48,6 +49,7 @@ export interface BlockControl{
 export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     const fStore = useCvsFrameStore()
     const saveStore = useSaveStore()
+    const editorLocalConfig = useEditorLocalConfigStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const blocksControl = ref<BlockControl[]>([])
 
@@ -75,13 +77,25 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
         // refreshBlocks()
     }
 
-    const maxCvsSideLengthWhenMayAppear4Blocks = 1500
+    const maxCvsSideLengthWhenMayAppear4Blocks = computed<number>(()=>{
+        const rtype = editorLocalConfig.resolution
+        if(rtype == 'ultra')
+            return 3000
+        if(rtype == 'high')
+            return 2250
+        return 1500
+    })
+        
     function getBlockSideLength(sidePx:number){
         if(sidePx < 750)
             return 750
         if(sidePx < 1500)
             return 1500
-        return 3000
+        if(sidePx < 3000)
+            return 3000
+        if(sidePx < 4500)
+            return 4500
+        return 6000
     }
     function getWRRatioEach(blockSideLength:number){
         return {
@@ -92,14 +106,13 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     const rectMargin = 0.001
     function refreshBlocks(callReformedHandler:'auto'|'suppress'|'enforce' = 'auto'){
         const sidePx = fStore.getBiggerSideLength()
-        let blockSideLength = 0
+        const blockSideLength = getBlockSideLength(sidePx)
         const cont = fStore.cvsCont
         const frame = fStore.cvsFrame
         if(!frame || !cont)
             return
         const res:BlockControl[] = []
-        if(sidePx < maxCvsSideLengthWhenMayAppear4Blocks*2){
-            blockSideLength = getBlockSideLength(sidePx)
+        if(blockSideLength <= 4500 && blockSideLength < cvsWidth.value && blockSideLength < cvsHeight.value){
             const rect = fStore.getViewRectInRatio()
             const containedXs:number[] = []
             const containedYs:number[] = []
@@ -133,15 +146,17 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
                         heightRatio,
                         leftRatio: x*widthRatio,
                         topRatio: y*heightRatio,
-                        canvasWidth: maxCvsSideLengthWhenMayAppear4Blocks,
-                        canvasHeight: maxCvsSideLengthWhenMayAppear4Blocks,
+                        canvasWidth: maxCvsSideLengthWhenMayAppear4Blocks.value,
+                        canvasHeight: maxCvsSideLengthWhenMayAppear4Blocks.value,
                         key:Math.random()
                     })
                 }
             }
         }else{
+            const maxSideLengthWhenSingleBlock = maxCvsSideLengthWhenMayAppear4Blocks.value * 2
+            const side = maxSideLengthWhenSingleBlock
             const whr = cvsWidth.value/cvsHeight.value
-            const canvasHeight = Math.min(3000, 3000/whr, cvsHeight.value)
+            const canvasHeight = Math.min(side, side/whr, cvsHeight.value)
             const canvasWidth = canvasHeight * whr
             res.push({
                 idx: 0,

@@ -9,12 +9,15 @@ import { clamp } from '@/utils/lang/clamp';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import LineStyles from './configItems/LineStyles.vue';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
+import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
+import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
 const configStore = useConfigStore()
 const { config } = storeToRefs(configStore)
 const { preventLeaving } = usePreventLeavingUnsavedStore() //无需rerender的地方需要手动调用“阻止未保存离开”
+const cvsBlocksControl = useCvsBlocksControlStore()
 
 const showLineStyles = ref(false)
 
@@ -57,14 +60,20 @@ function applyBgImage(type:'url'|'opacity'|'left'|'top'|'right'|'bottom'|'width'
     }
 }
 
+const showEditor = ref(false)
+const editorLocalConfig = useEditorLocalConfigStore()
+const { resolution } = storeToRefs(editorLocalConfig)
+function editorResolutionChanged(){
+    editorLocalConfig.saveResolution()
+    cvsBlocksControl.refreshBlocks('enforce')
+}
+
 const showOthers = ref(false)
 function removeNoLinePoints(){
     saveStore.removeNoLinePoints()
     envStore.rerender([], undefined)
 }
-
 const { browserInfo } = storeToRefs(useBrowserInfoStore())
-
 const visibilityChangedTimes = ref(0)
 function visibilityChangedHandler(){
     if(document.visibilityState==='visible'){
@@ -205,6 +214,30 @@ defineExpose({
         </td>
     </tr>
 </tbody>
+</table>
+
+<h2 :class="{sectorShown:showEditor}" @click="showEditor =!showEditor">
+    <div class="shownStatusIcon">{{ showEditor? '×':'+' }}</div>
+    <div>编辑器</div>
+</h2>
+<table v-show="showEditor" class="fullWidth">
+    <tbody>
+    <tr>
+        <td>清晰度</td>
+        <td>
+            <select v-model="resolution" @change="editorResolutionChanged">
+                <option :value="'standard'">标清</option>
+                <option :value="'high'">高清</option>
+                <option :value="'ultra'">超清</option>
+            </select>
+            <div class="smallNote">
+                量力而行<br/>
+                建议仅在windows使用标清以上<br/>
+                如果卡顿严重请调低
+            </div>
+        </td>
+    </tr>
+    </tbody>
 </table>
 
 <h2 :class="{sectorShown:showOthers}" @click="showOthers = !showOthers">
