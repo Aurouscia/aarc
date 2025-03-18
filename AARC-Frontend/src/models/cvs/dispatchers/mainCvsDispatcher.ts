@@ -11,7 +11,6 @@ import { useTextTagCvsWorker } from "../workers/textTagCvsWorker";
 import { ref, shallowRef } from "vue";
 import { useConfigStore } from "@/models/stores/configStore";
 import { timestampMS } from "@/utils/timeUtils/timestamp";
-import { useScalerLocalConfigStore } from "@/app/localConfig/scalerLocalConfig";
 import { useTimeSpanClock } from "@/utils/timeUtils/timeSpanClock";
 import { CvsContext } from "../common/cvsContext";
 import { AdsRenderType, useAdsCvsWorker } from "../workers/adsCvsWorker";
@@ -34,7 +33,6 @@ export interface MainCvsRenderingOptions{
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const envStore = useEnvStore()
     const cs = useConfigStore()
-    const scalerLocalConfig = useScalerLocalConfigStore()
     const canvasIdPrefix = 'main'
     const { getCtx: getCtx } = useCvs(canvasIdPrefix)
     const cvsBlocksControlStore = useCvsBlocksControlStore()
@@ -92,15 +90,6 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
             movedStaNames
         })
     }
-    envStore.rescaled.push(()=>{
-        if(scalerLocalConfig.steppedScaleEnabled){
-            renderMainCvs({
-                changedLines:[],
-                movedStaNames:[],
-                suppressRenderedCallback:true
-            })
-        }
-    })
     cvsBlocksControlStore.blocksReformHandler.push(()=>{
         renderMainCvs({
             changedLines:undefined,

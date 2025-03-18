@@ -12,7 +12,6 @@ import { ensureValidSave } from '@/models/save';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useResetterStore } from '@/models/stores/utils/resetterStore';
-import { useScalerLocalConfigStore } from '@/app/localConfig/scalerLocalConfig';
 import rfdc from 'rfdc';
 import { useConfigStore } from '@/models/stores/configStore';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
@@ -35,7 +34,6 @@ const loadComplete = ref(false)
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const isDemo = computed(()=>props.saveId.toLowerCase() == 'demo')
-const scalerLocalConfig = useScalerLocalConfigStore()
 const savingDisabledWarning = ref<string>()
 async function load() {
     if(!isNaN(saveIdNum.value)){
@@ -152,7 +150,6 @@ onUnmounted(()=>{
     <Menu v-if="loadComplete" @save-data="saveData"></Menu>
     <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
     <HiddenLongWarnPrompt v-if="showHiddenLongWarn" @ok="showHiddenLongWarn=false"></HiddenLongWarnPrompt>
-    <div v-if="scalerLocalConfig.steppedScaleEnabled" class="steppedScaleEnabled">已启用步进式缩放</div>
     <div v-if="savingDisabledWarning" class="savingDisabledWarning">{{ savingDisabledWarning }}</div>
     <div class="cachePreventer">
         <input :id="cachePreventerInputId"/>
@@ -163,15 +160,6 @@ onUnmounted(()=>{
 .cachePreventer{
     position: relative;
     z-index: -1;
-}
-.steppedScaleEnabled{
-    z-index: 999;
-    position: fixed;
-    top: 0px;
-    right: 20px;
-    font-size: 14px;
-    color: #aaa;
-    text-align: right;
 }
 .savingDisabledWarning{
     z-index: 999;

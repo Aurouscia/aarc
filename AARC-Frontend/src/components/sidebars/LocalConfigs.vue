@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
 import SideBar from '../common/SideBar.vue';
-import { useScalerLocalConfigStore } from '@/app/localConfig/scalerLocalConfig';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useConfigStore } from '@/models/stores/configStore';
@@ -63,12 +62,7 @@ function removeNoLinePoints(){
     saveStore.removeNoLinePoints()
     envStore.rerender([], undefined)
 }
-const steppedScaleEnabled = ref(false)
-const scalerLocalConfig = useScalerLocalConfigStore()
-async function steppedScaleChange(){
-    const enabled = steppedScaleEnabled.value
-    scalerLocalConfig.saveSteppedScaleEnabled(enabled)
-}
+
 const { browserInfo } = storeToRefs(useBrowserInfoStore())
 
 const visibilityChangedTimes = ref(0)
@@ -89,7 +83,6 @@ onMounted(()=>{
             opacity: bgRefImageOpacityDefault
         }
     }
-    steppedScaleEnabled.value = scalerLocalConfig.readSteppedScaleEnabled()
     document.addEventListener('visibilitychange', visibilityChangedHandler)
 })
 onUnmounted(()=>{
@@ -227,17 +220,6 @@ defineExpose({
         <td>
             <b>清除无线路车站</b>
             <div class="explain">仅限无站名的车站</div>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <input type="checkbox" v-model="steppedScaleEnabled" @change="steppedScaleChange"/>
-        </td>
-        <td>
-            <b>步进式缩放</b>
-            <div class="explain">仅本设备有效</div>
-            <div class="explain">如果缩放时显示异常可开启</div>
-            <div class="explain">会降低性能和体验</div>
         </td>
     </tr>
     <tr v-if="browserInfo">

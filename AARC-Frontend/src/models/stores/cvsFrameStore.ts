@@ -3,7 +3,6 @@ import { defineStore, storeToRefs } from "pinia";
 import { Ref, ref } from "vue";
 import { Coord } from "../coord";
 import { useSaveStore } from "./saveStore";
-import { useScalerLocalConfigStore } from "@/app/localConfig/scalerLocalConfig";
 
 export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     const cvsFrame = ref<HTMLDivElement>()
@@ -12,7 +11,6 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     const saveStore = useSaveStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     let scaler:Scaler|undefined
-    const { steppedScaleEnabled } = storeToRefs(useScalerLocalConfigStore())
     const viewScaleHandlers = ref<(()=>void)[]>([])
     const viewMoveHandlers = ref<(()=>void)[]>([])
     function initScaler(viewScaleHandler:()=>void, viewMoveHandler:()=>void, moveLocked:Ref<boolean>){
@@ -27,7 +25,7 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         const viewMoveHandlerFull = ()=>{
             viewMoveHandlers.value.forEach(h=>h())
         }
-        scaler = new Scaler(cvsFrame.value, cvsCont.value, viewScaleHandlerFull, viewMoveHandlerFull, moveLocked, scaleLocked, steppedScaleEnabled)
+        scaler = new Scaler(cvsFrame.value, cvsCont.value, viewScaleHandlerFull, viewMoveHandlerFull, moveLocked, scaleLocked)
         scaler.widthReset()
     }
     function getDisplayRatio(type:'x'|'y'|'smaller'|'bigger' = 'x'){
