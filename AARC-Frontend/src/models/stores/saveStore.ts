@@ -40,12 +40,11 @@ export const useSaveStore = defineStore('save', () => {
         }
         return res
     })
-    const ptSize = computed<Record<number, number|undefined>>(()=>{
-        const res:Record<number, number> = {}
+    const ptSizes = computed<Record<number, number[]|undefined>>(()=>{
+        const res:Record<number, number[]> = {}
         if(!save.value?.points)
             return res
         for(const pt of save.value.points){
-            let maxSize = 1
             const belongLines = ptBelongLineDict.value[pt.id] || []
             const sizes = belongLines
                 .filter(x=>x.type===LineType.common)
@@ -57,10 +56,19 @@ export const useSaveStore = defineStore('save', () => {
                         configStore.config.lineWidthMapped, x.width||1)?.staSize
                     return configMapped || x.width || 1
                 })
-            if(sizes.length>0)
-                maxSize = Math.max(...sizes)
-            res[pt.id] = maxSize
+            res[pt.id] = sizes
         }
+        return res
+    })
+    const ptSize = computed<Record<number, number|undefined>>(()=>{
+        const res:Record<number, number> = {}
+        Object.entries(ptSizes.value).forEach(kv=>{
+            const [id, sizes] = kv
+            if(sizes && sizes.length>0)
+                res[Number(id)] = Math.max(...sizes)
+            else
+                res[Number(id)] = 1
+        })
         return res
     })
     const ptNameSize = computed<Record<number, number|undefined>>(()=>{
@@ -155,6 +163,9 @@ export const useSaveStore = defineStore('save', () => {
     }
     function getLinesDecidedPtSize(ptId:number){
         return ptSize.value[ptId] || 1
+    }
+    function getLinesDecidedPtSizes(ptId:number){
+        return ptSizes.value[ptId]
     }
     function getLinesDecidedPtNameSize(ptId:number){
         return ptNameSize.value[ptId] || 1
@@ -449,7 +460,8 @@ export const useSaveStore = defineStore('save', () => {
     
     return { 
         save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint, deletedTextTag,
-        getPtById, getPtsByIds, getLineById, getLinesByIds, getLinesDecidedPtSize, getLinesDecidedPtNameSize,
+        getPtById, getPtsByIds, getLineById, getLinesByIds,
+        getLinesDecidedPtSize, getLinesDecidedPtSizes, getLinesDecidedPtNameSize,
         getLineActualColor, linesActualColorSame, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getTextTagById,
         insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType,

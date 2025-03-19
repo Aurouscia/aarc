@@ -10,6 +10,7 @@ import { coordDist, coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { useConfigStore } from "./configStore";
 import { numberCmpEpsilon, sqrt2half } from "@/utils/consts";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
+import { crossAddNums } from "@/utils/lang/crossAddNums";
 
 export const useSnapStore = defineStore('snap',()=>{
     const cs = useConfigStore()
@@ -194,11 +195,12 @@ export const useSnapStore = defineStore('snap',()=>{
         return {}
     }
     function snapInterPt(pt:ControlPoint, noBias:boolean):Coord|undefined{
-        const ptSize = saveStore.getLinesDecidedPtSize(pt.id)
-        const snapDist = cs.config.snapOctaClingPtPtDist*ptSize;
+        const ptSizes = saveStore.getLinesDecidedPtSizes(pt.id) || [1]
+        const ptSizeLargets = Math.max(...ptSizes)
+        const snapDistLargest = ptSizeLargets * cs.config.snapOctaClingPtPtDist
         const snapThrs = cs.config.snapOctaClingPtPtThrs;
         snapInterPtTargets.value = {snapPoss:[], snapToPts:[]}
-        const pts = saveStore.getPtsInRange(pt.pos, (snapDist + snapThrs)*3, pt.id).filter(x=>x.sta===pt.sta)
+        const pts = saveStore.getPtsInRange(pt.pos, (snapDistLargest + snapThrs)*2, pt.id).filter(x=>x.sta===pt.sta)
         if(pts.length==0){
             return undefined
         }
@@ -214,18 +216,20 @@ export const useSnapStore = defineStore('snap',()=>{
                     biases.push([0,-1],[0,1],[1,0],[-1,0])
                 }
             }
-            const optSize = saveStore.getLinesDecidedPtSize(opt.id)
-            const optSnapDist = cs.config.snapOctaClingPtPtDist*optSize
-            const finalSnapDist = (snapDist + optSnapDist)/2
+            const optSizes = saveStore.getLinesDecidedPtSizes(opt.id) || [1]
+            const sizesAdded = crossAddNums(ptSizes, optSizes).sort()
+            const snapDists = sizesAdded.map(x=>x/2*cs.config.snapOctaClingPtPtDist)
             snapInterPtTargets.value?.snapToPts.push(opt)
-            biases.forEach(b=>{
-                const biased = applyBias(opt.pos, b, finalSnapDist)
-                snapInterPtTargets.value?.snapPoss.push(biased) //记录这个可吸附点
-                const dist = coordDist(pt.pos, biased)
-                if(dist<snapThrs && dist<minDist){
-                    target = biased;
-                    minDist = dist
-                }
+            snapDists.forEach(snapDist=>{
+                biases.forEach(b=>{
+                    const biased = applyBias(opt.pos, b, snapDist)
+                    snapInterPtTargets.value?.snapPoss.push(biased) //记录这个可吸附点
+                    const dist = coordDist(pt.pos, biased)
+                    if(dist<snapThrs && dist<minDist){
+                        target = biased;
+                        minDist = dist
+                    }
+                })
             })
         })
         return target
