@@ -32,7 +32,7 @@ export const useSnapStore = defineStore('snap',()=>{
         ]
     })
     const snapNeighborExtendsOnlySameDir = ref<boolean>(false)
-    const snapInterPtTargets = ref<{snapPoss:Coord[], snapToPts:ControlPoint[]}>()
+    const snapInterPtTargets = ref<{snapPoss:Coord[], snapToPts:ControlPoint[], matched?:Coord}>()
     function snap(pt:ControlPoint):Coord|undefined{
         snapLines.value = []
         snapLinesForPt.value = pt.id
@@ -204,9 +204,9 @@ export const useSnapStore = defineStore('snap',()=>{
         if(pts.length==0){
             return undefined
         }
-        let target:Coord|undefined = undefined
+        let matched:Coord|undefined = undefined
         let minDist = 10000000;
-        pts.forEach(opt=>{
+        for(const opt of pts){
             const biases:SgnCoord[] = [[0,0]]
             if(!noBias){
                 if(pt.dir == ControlPointDir.incline || opt.dir == ControlPointDir.incline){
@@ -226,13 +226,16 @@ export const useSnapStore = defineStore('snap',()=>{
                     snapInterPtTargets.value?.snapPoss.push(biased) //记录这个可吸附点
                     const dist = coordDist(pt.pos, biased)
                     if(dist<snapThrs && dist<minDist){
-                        target = biased;
+                        matched = biased;
                         minDist = dist
                     }
                 })
             })
-        })
-        return target
+        }
+        if(matched){
+            snapInterPtTargets.value.matched = matched
+        }
+        return matched
     }
     function snapGrid(ptPos:Coord, freeAxis?:SgnCoord, clearSnapLines?:boolean):Coord|undefined{
         if(clearSnapLines)

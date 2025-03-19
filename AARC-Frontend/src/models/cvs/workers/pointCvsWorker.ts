@@ -110,6 +110,16 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             ctx.fillStyle = '#008080'
             ctx.fill()
         }
+        if(targets?.matched){
+            ctx.beginPath()
+            ctx.arc(...targets.matched, 6, 0, 2*Math.PI)
+            ctx.fillStyle = 'white'
+            ctx.fill()
+            ctx.beginPath()
+            ctx.arc(...targets.matched, 4, 0, 2*Math.PI)
+            ctx.fillStyle = '#f00080'
+            ctx.fill()
+        }
     }
     function checkOmittable(pos:Coord){
         const radius = cs.config.ptStaSize * 3
