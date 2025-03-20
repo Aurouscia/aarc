@@ -3,7 +3,7 @@ import { useTextTagEditStore } from '@/models/stores/textTagEditStore';
 import { storeToRefs } from 'pinia';
 import { useTwinTextarea } from './composables/useTwinTextarea';
 import TextTagOptions from './sidebars/options/TextTagOptions.vue';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useEnvStore } from '@/models/stores/envStore';
 import foldImg from '@/assets/ui/fold.svg'
 import settingsImg from '@/assets/ui/settings.svg'
@@ -11,7 +11,8 @@ import settingsImg from '@/assets/ui/settings.svg'
 const textTagEditStore = useTextTagEditStore()
 const envStore = useEnvStore()
 const { 
-    target, textMain, textSub, editing, edited, textEditorDiv, targetForType
+    textMain, textSub, editing, edited, textEditorDiv, targetForType,
+    textTagOptionsPanel
 } = storeToRefs(textTagEditStore)
 const inputPlaceholder = computed<string|undefined>(()=>{
     const t = targetForType.value
@@ -21,12 +22,6 @@ const inputPlaceholder = computed<string|undefined>(()=>{
         return "留空使用地形名"
     return "请输入文本"
 })
-
-const textTagOptions = ref<InstanceType<typeof TextTagOptions>>()
-function textTagOptionsOpen(){
-    if(target.value)
-        textTagOptions.value?.startEditing(target.value)
-}
 
 const { 
     mainRows, mainInput,
@@ -54,14 +49,14 @@ const {
         <div @click="envStore.duplicateTextTag();textTagEditStore.endEditing()" class="duplicateBtn sqrBtn withShadow">
             <div class="dupA"></div><div class="dupB"></div>
         </div>
-        <div @click="textTagOptionsOpen" class="settingsBtn sqrBtn withShadow">
+        <div @click="textTagEditStore.textTagOptionsPanelOpen" class="settingsBtn sqrBtn withShadow">
             <img :src="settingsImg"/>
         </div>
         <div @click="textTagEditStore.endEditing()" class="retractBtn sqrBtn withShadow">
             <img :src="foldImg"/>
         </div>
     </div>
-    <TextTagOptions ref="textTagOptions" @changed="edited=true"></TextTagOptions>
+    <TextTagOptions ref="textTagOptionsPanel" @changed="edited=true"></TextTagOptions>
 </template>
 
 <style scoped lang="scss">

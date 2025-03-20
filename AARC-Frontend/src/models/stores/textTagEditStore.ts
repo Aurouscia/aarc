@@ -2,6 +2,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { LineType, TextOptions, TextTag } from "../save";
+import TextTagOptions from "@/components/sidebars/options/TextTagOptions.vue";
 
 export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
     const saveStore = useSaveStore()
@@ -17,7 +18,8 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
     const textInputFocusHandler = ref<()=>void>()
     const textEditorDiv = ref<HTMLDivElement>()
     const options = ref<TextOptions>()
-    function startEditing(textTagId:number){
+    const textTagOptionsPanel = ref<InstanceType<typeof TextTagOptions>>()
+    function startEditing(textTagId:number, openOptionsPanel?:boolean){
         endEditing()
         const tt = saveStore.getTextTagById(textTagId)
         if(!tt)
@@ -28,7 +30,15 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
         textMain.value = tt.text
         textSub.value = tt.textS
         editing.value = true
+        if(openOptionsPanel){
+            textTagOptionsPanelOpen()
+        }
     }
+    function textTagOptionsPanelOpen(){
+        if(target.value)
+            textTagOptionsPanel.value?.startEditing(target.value)
+    }
+
     function applyText(){
         const tt = target.value
         if(tt){
@@ -87,6 +97,7 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
     return { targetId, target, textMain, textSub, editing, edited, targetForType, options,
         startEditing, endEditing, toggleEditing, applyText,
         textInputFocusHandler,
-        textEditorDiv, getEditorDivEffectiveHeight
+        textEditorDiv, getEditorDivEffectiveHeight,
+        textTagOptionsPanel, textTagOptionsPanelOpen
     }
 })

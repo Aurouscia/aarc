@@ -104,6 +104,7 @@ defineExpose({
             </tbody></table>
         </div>
     </div>
+    <div class="smallNote" style="text-align: center;">提示：右键点击文本标签可直接打开本菜单</div>
 </SideBar>
 </template>
 

@@ -181,12 +181,13 @@ export const useEnvStore = defineStore('env', ()=>{
             return
         }
 
+        //判断是否在文本标签上
         const textTagMatch = onTextTag(coord);
         if(textTagMatch){
             activeTextTag.value = textTagMatch
             setOpsPos(false)
             endEveryEditing()
-            textTagEditStore.startEditing(textTagMatch.id)
+            textTagEditStore.startEditing(textTagMatch.id, isRightBtn)
             return
         }
 
