@@ -2,11 +2,9 @@ import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { LineType, TextOptions, TextTag } from "../save";
-import { useConfigStore } from "./configStore";
 
 export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
     const saveStore = useSaveStore()
-    const cs = useConfigStore()
     const { deletedTextTag } = storeToRefs(saveStore)
     deletedTextTag.value = disposedTextTagHandler
     const targetId = ref<number>()
@@ -86,23 +84,9 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
         }
     }
 
-    function textInputClickHandler(type:'main'|'sub'){
-        if(!target.value)
-            return
-        if(type=='main'){
-            if(!target.value.textOp) 
-                target.value.textOp = { size:1, color: cs.config.textTagFontColorHex }
-            options.value = target.value.textOp
-        }
-        else{
-            if(!target.value.textSOp)
-                target.value.textSOp = { size:1, color: cs.config.textTagSubFontColorHex }
-            options.value = target.value.textSOp
-        }
-    }
     return { targetId, target, textMain, textSub, editing, edited, targetForType, options,
         startEditing, endEditing, toggleEditing, applyText,
-        textInputFocusHandler, textInputClickHandler,
+        textInputFocusHandler,
         textEditorDiv, getEditorDivEffectiveHeight
     }
 })

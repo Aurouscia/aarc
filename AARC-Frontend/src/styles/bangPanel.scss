@@ -13,13 +13,16 @@
     z-index: 10;
     transition: 0.2s;
     transition-timing-function: ease-out;
-    .retractBtn,.duplicateBtn{
+    .retractBtn,.duplicateBtn,.settingsBtn{
         position: absolute;
         bottom: -22px;
         width: 27px;
         height: 27px;
         line-height: 27px;
         background-color: white;
+        &:hover{
+            background-color: #eee;
+        }
     }
     .retractBtn{
         right: 0px;
@@ -32,10 +35,20 @@
             height: 80%;
         }
     }
+    .settingsBtn{
+        right: 35px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        img{
+            width: 80%;
+            height: 80%;
+        }
+    }
     .duplicateBtn{
         $size:10px;
         $dist:5px;
-        right: 35px;
+        right: 70px;
         .dupA,.dupB{
             background-color: white;
             position: absolute;

@@ -352,7 +352,7 @@ export const useEnvStore = defineStore('env', ()=>{
             if(!clientCoord)
                 return;
             const textTagEditorHeight = textTagEditStore.getEditorDivEffectiveHeight()
-            if(clientCoord[1] < textTagEditorHeight+10){
+            if(clientCoord[1] < textTagEditorHeight+20){
                 textTagEditStore.endEditing()
             }
             const coord = translateFromClient(clientCoord)
