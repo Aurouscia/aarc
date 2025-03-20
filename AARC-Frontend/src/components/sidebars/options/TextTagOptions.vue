@@ -44,7 +44,19 @@ defineExpose({
 
 <template>
 <SideBar ref="sidebar" @click="picker1?.closePanel();picker2?.closePanel()">
-    <div class="settings" v-if="editing">
+    <div v-if="editing">
+        <h2>标签设置</h2>
+        <div class="optionSection">
+            <table class="fullWidth"><tbody>
+                <tr>
+                    <td>坐标</td>
+                    <td class="textTagCoord">
+                        <input type="number" v-model="editing.pos[0]" @change="emit('changed')"/><br/>
+                        <input type="number" v-model="editing.pos[1]" @change="emit('changed')"/>
+                    </td>
+                </tr>
+            </tbody></table>
+        </div>
         <h2>主文字样式</h2>
         <div class="optionSection">
             <table class="fullWidth"><tbody>
@@ -119,6 +131,11 @@ td.colorPickerTd{
         margin: 0px;
         width: 70px;
         text-align: center;
+    }
+}
+.textTagCoord{
+    input{
+        width: 100px;
     }
 }
 h2{
