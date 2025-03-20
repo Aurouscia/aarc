@@ -4,7 +4,7 @@ import Lines from './sidebars/sideList/Lines.vue';
 import Terrains from './sidebars/sideList/Terrains.vue';
 import SizeEdit from './sidebars/SizeEdit.vue';
 import ExportPng from './sidebars/ExportPng.vue';
-import LocalConfigs from './sidebars/LocalConfigs.vue';
+import Configs from './sidebars/Configs.vue';
 import { storeToRefs } from 'pinia';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { useSnapStore } from '@/models/stores/snapStore';
@@ -23,7 +23,7 @@ const terrains = ref<InstanceType<typeof Terrains>>()
 const toolBox = ref<InstanceType<typeof ToolBox>>()
 const sizeEdit = ref<InstanceType<typeof Terrains>>()
 const exportPng = ref<InstanceType<typeof ExportPng>>()
-const localConfigs = ref<InstanceType<typeof LocalConfigs>>()
+const configs = ref<InstanceType<typeof Configs>>()
 const router = useRouter()
 const { preventingLeaving, unsavedForALongTime } = storeToRefs(usePreventLeavingUnsavedStore())
 const { 
@@ -33,7 +33,7 @@ const {
 } = storeToRefs(useSnapStore())
 const anotherMenuFolded = ref(true)
 
-type SidebarNames = 'lines'|'terrains'|'sizeEdit'|'exportPng'|'localConfigs'|'toolBox'|undefined
+type SidebarNames = 'lines'|'terrains'|'sizeEdit'|'exportPng'|'configs'|'toolBox'|undefined
 const activeSidebarName = ref<SidebarNames>()
 
 const saveBtnMode = computed<'save'|'leave'>(()=>{
@@ -65,10 +65,10 @@ function openSidebarOf(name:SidebarNames){
         exportPng.value?.comeOut()
     else
         exportPng.value?.fold()
-    if(name==='localConfigs')
-        localConfigs.value?.comeOut()
+    if(name==='configs')
+        configs.value?.comeOut()
     else
-        localConfigs.value?.fold()
+        configs.value?.fold()
     if(name==='toolBox')
         toolBox.value?.comeOut()
     else
@@ -91,7 +91,7 @@ const emit = defineEmits<{
         <div @click="openSidebarOf('terrains')" class="sqrBtn withShadow">地形</div>
         <div @click="openSidebarOf('toolBox')" class="sqrBtn withShadow">工具</div>
         <div @click="openSidebarOf('sizeEdit')" class="sqrBtn withShadow">画布</div>
-        <div @click="openSidebarOf('localConfigs')" class="sqrBtn withShadow">设置</div>
+        <div @click="openSidebarOf('configs')" class="sqrBtn withShadow">设置</div>
         <div @click="openSidebarOf('exportPng')" class="sqrBtn withShadow">导出</div>
         <div @click="saveData" class="sqrBtn withShadow saveBtn">
             <div v-show="preventingLeaving" class="saveRedDot" :class="{unsavedForALongTime}"></div>
@@ -103,7 +103,7 @@ const emit = defineEmits<{
     <ToolBox ref="toolBox"></ToolBox>
     <SizeEdit ref="sizeEdit"></SizeEdit>
     <ExportPng ref="exportPng"></ExportPng>
-    <LocalConfigs ref="localConfigs"></LocalConfigs>
+    <Configs ref="configs"></Configs>
     <div class="anotherMenu" :class="{anotherMenuFolded}">
         <div class="foldBtn sqrBtn withShadow" @click="anotherMenuFolded=!anotherMenuFolded">
             <img :src="foldImg"/>
