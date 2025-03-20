@@ -60,7 +60,7 @@ defineExpose({
         <h2>主文字样式</h2>
         <div class="optionSection">
             <table class="fullWidth"><tbody>
-                <tr>
+                <tr v-if="!editing.forId">
                     <td>颜色</td>
                     <td class="colorPickerTd">
                         <AuColorPicker ref="picker1" :initial="editing.textOp?.color" :pos="-120"
@@ -83,7 +83,7 @@ defineExpose({
         <h2>副文字样式</h2>
         <div class="optionSection">
             <table class="fullWidth"><tbody>
-                <tr>
+                <tr v-if="!editing.forId">
                     <td>颜色</td>
                     <td class="colorPickerTd">
                         <AuColorPicker ref="picker2" :initial="editing.textSOp?.color" :pos="-120"
@@ -104,7 +104,9 @@ defineExpose({
             </tbody></table>
         </div>
     </div>
-    <div class="smallNote" style="text-align: center;">提示：右键点击文本标签可直接打开本菜单</div>
+    <div class="smallNote" style="text-align: center;"><b>
+        提示：右键点击文本标签可直接打开本菜单
+    </b></div>
 </SideBar>
 </template>
 

@@ -36,21 +36,23 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     }
     function renderForCommonLine(ctx:CvsContext, t:TextTag, lineInfo:Line){
         const commonLineBuiltinRatio = 1.2
+        const mainRatio = (t.textOp?.size || 1) * commonLineBuiltinRatio
+        const subRatio = (t.textSOp?.size || 1) * commonLineBuiltinRatio
         const textColor = colorProcStore.colorProcInvBinary.convert(lineInfo.color)
         const mainEmpty = !t.text?.trim()
         const subEmpty = mainEmpty && !t.textS?.trim()
         const optMain:DrawTextBodyOption = {
             color: textColor,
             font: cs.config.textTagFont,
-            fontSize: cs.config.textTagFontSizeBase * commonLineBuiltinRatio,
-            rowHeight: cs.config.textTagRowHeightBase * commonLineBuiltinRatio,
+            fontSize: cs.config.textTagFontSizeBase * mainRatio,
+            rowHeight: cs.config.textTagRowHeightBase * mainRatio,
             text: !mainEmpty ? t.text?.trim() : (lineInfo.name || '未命名线路')
         }
         const optSub:DrawTextBodyOption = {
             color: textColor,
             font: cs.config.textTagSubFont,
-            fontSize: cs.config.textTagSubFontSizeBase * commonLineBuiltinRatio,
-            rowHeight: cs.config.textTagSubRowHeightBase * commonLineBuiltinRatio,
+            fontSize: cs.config.textTagSubFontSizeBase * subRatio,
+            rowHeight: cs.config.textTagSubRowHeightBase * subRatio,
             text: !subEmpty ? t.textS?.trim() : lineInfo.nameSub
         }
         const lineNameRectAlign:SgnCoord = [1, 0]
@@ -72,6 +74,8 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     }
     function renderForTerrainLine(ctx:CvsContext, t:TextTag, lineInfo:Line){
         const terrainLineBuiltinRatio = 1.2
+        const mainRatio = (t.textOp?.size || 1) * terrainLineBuiltinRatio
+        const subRatio = (t.textSOp?.size || 1) * terrainLineBuiltinRatio
         const terrainColor = saveStore.getLineActualColor(lineInfo)
         const textColor = colorProcStore.colorProcTerrainTag.convert(terrainColor)
         const mainEmpty = !t.text?.trim()
@@ -79,20 +83,20 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         const optMain:DrawTextBodyOption = {
             color: textColor,
             font: cs.config.textTagFont,
-            fontSize: cs.config.textTagFontSizeBase * terrainLineBuiltinRatio,
-            rowHeight: cs.config.textTagRowHeightBase * terrainLineBuiltinRatio,
+            fontSize: cs.config.textTagFontSizeBase * mainRatio,
+            rowHeight: cs.config.textTagRowHeightBase * mainRatio,
             text: !mainEmpty ? t.text?.trim() : (lineInfo.name || '未命名地形')
         }
         const optSub:DrawTextBodyOption = {
             color: textColor,
             font: cs.config.textTagSubFont,
-            fontSize: cs.config.textTagSubFontSizeBase * terrainLineBuiltinRatio,
-            rowHeight: cs.config.textTagSubRowHeightBase * terrainLineBuiltinRatio,
+            fontSize: cs.config.textTagSubFontSizeBase * subRatio,
+            rowHeight: cs.config.textTagSubRowHeightBase * subRatio,
             text: !subEmpty ? t.textS?.trim() : lineInfo.nameSub
         }
         const lineNameRectAlign:SgnCoord = [0, 0]
         const drawLineNameRes = drawTextForLineName(ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, {
-            width: cs.config.textTagFontSizeBase * terrainLineBuiltinRatio/4,
+            width: cs.config.textTagFontSizeBase * mainRatio/4,
             color: terrainColor,
             opacity: 1
         }, 'both')

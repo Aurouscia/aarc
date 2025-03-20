@@ -21,6 +21,7 @@ defineExpose({
     <div class="toolItem">
         <button @click="envStore.createTextTag();fd()">创建文本标签</button>
         <div class="smallNote">用于添加标题/作者等信息，请勿用于标注站名</div>
+        <div class="smallNote">需要线路/地形名称标签，请点击线路/地形创建</div>
         <div class="smallNoteVital">拖动到屏幕左上角即可删除</div>
     </div>
     <div class="toolItem">
