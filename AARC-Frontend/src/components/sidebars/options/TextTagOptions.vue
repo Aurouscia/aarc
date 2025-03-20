@@ -135,7 +135,7 @@ td.colorPickerTd{
 }
 .textTagCoord{
     input{
-        width: 100px;
+        width: 130px;
     }
 }
 h2{

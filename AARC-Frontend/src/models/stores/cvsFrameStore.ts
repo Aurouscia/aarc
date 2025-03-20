@@ -3,6 +3,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { Ref, ref } from "vue";
 import { Coord } from "../coord";
 import { useSaveStore } from "./saveStore";
+import { coordRound } from "@/utils/coordUtils/coordRound";
 
 export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     const cvsFrame = ref<HTMLDivElement>()
@@ -89,7 +90,9 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
             return;
         const ratioX = cvsWidth.value/w
         const ratioY = cvsHeight.value/h
-        return [ratioX*ox, ratioY*oy]
+        const coord:Coord = [ratioX*ox, ratioY*oy]
+        coordRound(coord)
+        return coord
     }
     function translateFromClient(coordClient:Coord|undefined):Coord|undefined{
         if(!coordClient)

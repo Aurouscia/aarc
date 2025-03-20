@@ -18,6 +18,7 @@ import { useCvsFrameStore } from "./cvsFrameStore";
 import { useDiscardAreaStore } from "./discardAreaStore";
 import { useTextTagEditStore } from "./textTagEditStore";
 import rfdc from "rfdc";
+import { coordRound } from "@/utils/coordUtils/coordRound";
 
 export const useEnvStore = defineStore('env', ()=>{
     const saveStore = useSaveStore();
@@ -320,6 +321,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     const snapRes = snap(pt)
                     if(snapRes)
                         pt.pos = snapRes
+                    coordRound(pt.pos)
                     cursorPos.value = coord
                 }else if(activePtType.value=='name'){
                     discardAreaStore.discardStatus(clientCoord)
@@ -338,6 +340,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     const snapRes = snapName(pt)
                     if(snapRes){
                         pt.nameP = snapRes.to
+                        coordRound(pt.nameP)
                         activePtNameSnapped.value = snapRes.type
                     }else{
                         activePtNameSnapped.value = 'no'
@@ -364,6 +367,7 @@ export const useEnvStore = defineStore('env', ()=>{
             if(snapGridRes){
                 setToGlobalPos = snapGridRes
             }
+            coordRound(setToGlobalPos)
             activeTextTag.value.pos = setToGlobalPos
             movedTextTag.value = true
         }
