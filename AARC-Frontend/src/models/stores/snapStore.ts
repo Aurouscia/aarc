@@ -18,7 +18,6 @@ export const useSnapStore = defineStore('snap',()=>{
     const staClusterStore = useStaClusterStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const snapLines = ref<FormalRay[]>([])
-    const snapLinesForPt = ref<number>()
     const snapGridIntv = ref<number>()
     const snappingNamePtId = ref<number>()
     const snapStaNameTo = computed<Coord[]>(()=>{
@@ -35,7 +34,6 @@ export const useSnapStore = defineStore('snap',()=>{
     const snapInterPtTargets = ref<{snapPoss:Coord[], snapToPts:ControlPoint[], matched?:Coord}>()
     function snap(pt:ControlPoint):Coord|undefined{
         snapLines.value = []
-        snapLinesForPt.value = pt.id
         const interPtNoBias = !snapInterPtEnabled.value
         const interPtRes = snapInterPt(pt, interPtNoBias)
         if(interPtRes){
@@ -364,7 +362,7 @@ export const useSnapStore = defineStore('snap',()=>{
     const snapGridEnabled = ref(true)
     return {
         snap, snapName, snapNameStatus, snapGrid,
-        snapLines, snapLinesForPt, snapGridIntv, snapNeighborExtendsOnlySameDir,
+        snapLines, snapGridIntv, snapNeighborExtendsOnlySameDir,
         snapInterPtEnabled, snapNeighborExtendsEnabled, snapGridEnabled,
         snapInterPtTargets
     }

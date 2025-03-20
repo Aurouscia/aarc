@@ -150,6 +150,8 @@ export const useEnvStore = defineStore('env', ()=>{
         //取消所有状态
         const activePtIdJustNow = activePt.value?.id
         cancelActive()
+        //清除snap可视化线条
+        snapStore.snapLines = []
 
 
         //判断是否在站名上
