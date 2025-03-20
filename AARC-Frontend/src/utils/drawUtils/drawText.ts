@@ -124,7 +124,7 @@ export function drawTextForLineName(
     const mainText = main.text?.trim() || ''
     const subText = sub.text?.trim() || ''
     const match = chineseStyleDropCapPattern.exec(mainText)
-    if(!match || match.length===0)
+    if(!subText || !match || match.length===0)
     {
         //如果不是需要dropCap的线路名，则fallback到一般的写法
         return {isDropCap:false, rect:drawText(ctx, pos, align, textAlignOverride, main, sub, stroke, task)}
