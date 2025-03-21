@@ -68,7 +68,9 @@ onMounted(()=>{
                 :max="lineWidthRange.max"
                 :step="lineWidthRange.step" value="1"
                 @change="lineWidthChanged"/>
-            <div>{{ lineWidthBinded || 1 }}×</div>
+            <input v-if="line.type===LineType.terrain" type="number"
+                v-model="lineWidthBinded" @blur="lineWidthChanged"/>
+            <div v-else>{{ lineWidthBinded || 1 }}×</div>
         </div>
     </div>
     <div v-if="line.type===LineType.common" class="configItem">
@@ -111,6 +113,7 @@ onMounted(()=>{
         <div>填充</div>
         <div class="checkItem">
             <input type="checkbox" v-model="line.isFilled" @change="envStore.lineInfoChanged(line)"/>
+            <div>勾选本项时<br/>地形必须是环形</div>
         </div>
     </div>
     <div class="configItem">
@@ -143,6 +146,12 @@ onMounted(()=>{
             flex-direction: column;
             align-items: center;
             gap: 0px;
+            input[type=number]{
+                width: 60px;
+            }
+            input[type=range]{
+                width: 120px
+            }
         }
         .checkItem{
             flex-grow: 1;
@@ -164,7 +173,7 @@ onMounted(()=>{
                 font-size: 14px;
             }
         }
-        .slideBarItem, .selectItem{
+        .slideBarItem, .selectItem, .checkItem{
             div{
                 color: gray;
                 font-size: 12px;
