@@ -173,14 +173,16 @@ export class Scaler{
         const hh = this.frame.clientHeight;
         const w = this.arena.clientWidth;
         const h = w * this.getArenaHW()
+        const scLeft = this.frame.scrollLeft;
+        const scTop = this.frame.scrollTop;
         var x:number;
         var y:number;
         if(anchor){
             x = anchor.x;
             y = anchor.y;
         }else{
-            x = (this.frame.scrollLeft+ww/2)/w;
-            y = (this.frame.scrollTop+hh/2)/h;
+            x = (scLeft+ww/2)/w;
+            y = (scTop+hh/2)/h;
         }
         if(this.scaleLocked?.value === 'min' && ratio<1){
             return;
@@ -188,29 +190,20 @@ export class Scaler{
         else if(this.scaleLocked?.value === 'max' && ratio>1){
             return;
         }
-        const arx = this.frame.scrollLeft + ww*x;
-        const ary = this.frame.scrollTop + hh*y;
+        const arx = scLeft + ww*x;
+        const ary = scTop + hh*y;
         const gx = arx/w
         const gy = ary/h
-        this.arena.style.width = w*ratio+'px';
-        this.arena.style.height = h*ratio+'px';
         const wGrowth = w*(ratio-1);
         const hGrowth = h*(ratio-1);
-        let compensateScrollLeft = true
-        let compensateScrollTop = true
-        //当场地缩小时，右侧可能已经碰到边缘，此时就不再应该调整scroll
-        if(wGrowth < 0){
-            if(this.frame.clientWidth + this.frame.scrollLeft + 1 > this.arena.clientWidth)
-                compensateScrollLeft = false
-        }
-        if(hGrowth < 0){
-            if(this.frame.clientHeight + this.frame.scrollTop + 1 > this.arena.clientHeight)
-                compensateScrollTop = false
-        }
-        if(compensateScrollLeft)
-            this.frame.scrollLeft += wGrowth*gx
-        if(compensateScrollTop)
-            this.frame.scrollTop += hGrowth*gy
+        const arenaNewWidth = w*ratio
+        const arenaNewHeight = h*ratio
+        const newScrollLeft = scLeft + wGrowth*gx
+        const newScrollTop = scTop + hGrowth*gy
+        this.arena.style.width = arenaNewWidth+'px';
+        this.arena.style.height = arenaNewHeight+'px';
+        this.frame.scrollLeft = newScrollLeft
+        this.frame.scrollTop = newScrollTop
         this.scaleCallback();
     }
     move(increX:number,increY:number){
