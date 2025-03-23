@@ -5,7 +5,7 @@ import { defineStore } from "pinia";
 import { useSaveStore } from "../saveStore";
 import { useConfigStore } from "../configStore";
 import { numberCmpEpsilon } from "@/utils/consts";
-import { removeAllByPred } from "@/utils/lang/indicesInArray";
+import { computed, ref } from "vue";
 
 export const useStaClusterStore = defineStore('staCluster', ()=>{
     const saveStore = useSaveStore()
@@ -15,28 +15,36 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     const configClingingDist = cs.config.snapOctaClingPtPtDist
     const skipClingingCheckThrs = 2.5*configClingingDist
 
-    let staClusters:ControlPoint[][]|undefined = undefined
-    let belong: Record<number, ControlPoint[] | undefined> = {}
-    function setStaClusters(clusters:ControlPoint[][]){
-        staClusters = clusters
-    }
+    const staClusters = ref<ControlPoint[][]>()
+    const staBelongToCluster = computed<Record<number, ControlPoint[]|undefined>>(()=>{
+        const clusters = staClusters.value
+        if(!clusters)
+            return {}
+        const res:Record<number, ControlPoint[]|undefined> = {}
+        for(const c of clusters){
+            for(const pt of c){
+                res[pt.id] = c
+            } 
+        }
+        return res
+    })
     function getStaClusters(){
-        if(!staClusters)
-            initClusters()
-        return staClusters
+        if(!staClusters.value){
+            initNeighbors()
+            makeClustersFromNeighbors()
+        }
+        return staClusters.value
     }
 
     /**
-     * 紧挨着的控制点，会被汇总为一个“集群”（将会被用一个面积最小的矩形覆盖）
-     * 所有点两两互相检查，非常费时，只能初始化用
-     * 运行完后staClusters和belong都被完整设置好
+     * 记录每个点的邻点，在有点移动或删除时，需要更新
      */
-    function initClusters(): ControlPoint[][] | undefined {
+    let neighbors:Record<string, Set<number>|undefined> = {}
+    function initNeighbors(): ControlPoint[][] | undefined {
         const pts = saveStore.save?.points.filter(pt => pt.sta == ControlPointSta.sta)
         if (!pts)
             return;
-        staClusters = []
-        belong = {}
+        neighbors = {}
         for (let i = 0; i < pts.length - 1; i++) {
             for (let j = i + 1; j < pts.length; j++) {
                 const a = pts[i]
@@ -45,94 +53,93 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
                     continue
                 if(Math.abs(a.pos[1] - b.pos[1]) > skipClingingCheckThrs)
                     continue
-                tryMergeTwoPoints(a, b)
-            }
-        }
-        cleanClusters()
-    }
-    function updateClustersBecauseOf(pt:ControlPoint){
-        const pts = saveStore.save?.points.filter(pt => pt.sta === ControlPointSta.sta)
-        if(!pts || !staClusters)
-            return
-        const pBelong = belong[pt.id] //pt曾经属于的组团
-        let pBelongIds:number[] = [pt.id]
-        if(pBelong){
-            pBelongIds = pBelong.map(x=>x.id)//取出曾经组团包含的点id（包括pt自己）
-            pBelongIds.forEach(x=>{
-                belong[x] = undefined
-            }) //全部退出组团
-            const pBelongClusterIdx = staClusters.indexOf(pBelong)
-            staClusters.splice(pBelongClusterIdx, 1) //删除该组团
-
-            for (let i = 0; i < pBelong.length - 1; i++) {
-                for (let j = i + 1; j < pBelong.length; j++) {
-                    const a = pBelong[i]
-                    const b = pBelong[j]
-                    tryMergeTwoPoints(a, b) //原组团成员互相重新检测
+                if(ptClinging(a, b)){
+                    if(!neighbors[a.id])
+                        neighbors[a.id] = new Set<number>()
+                    if(!neighbors[b.id])
+                        neighbors[b.id] = new Set<number>()
+                    neighbors[a.id]?.add(b.id)
+                    neighbors[b.id]?.add(a.id)
                 }
             }
         }
-        for (let i = 0; i < pts.length; i++) {
-            const b = pts[i]
-            if(pBelongIds.includes(b.id))
+    }
+    function makeClustersFromNeighbors(){
+        const usedPtIds = new Set<number>()
+        staClusters.value = [] // 清空
+        for(const pt of Object.entries(neighbors)){
+            const ptId = Number(pt[0])
+            if(usedPtIds.has(ptId))
                 continue
-            tryMergeTwoPoints(pt, b) //检测pt到原组团外其他所有点
+            const ptNeibs = pt[1]
+            if(ptNeibs && ptNeibs.size > 0){
+                const newClusterIds = new Set<number>()
+                expandSetInNeighbors(newClusterIds, ptId)
+                if(newClusterIds.size > 0){
+                    const newCluster:ControlPoint[] = []
+                    for(const id of newClusterIds){
+                        const addingPt = saveStore.getPtById(id)
+                        if(addingPt){
+                            newCluster.push(addingPt)
+                            usedPtIds.add(id)
+                        }
+                    }
+                    if(newCluster.length > 0)
+                        staClusters.value.push(newCluster)
+                }
+            }
         }
-        cleanClusters()
     }
-    function tryMergeTwoPoints(a:ControlPoint, b:ControlPoint){
-        if(a===b || a.sta !== ControlPointSta.sta || b.sta !== ControlPointSta.sta)
+    function expandSetInNeighbors(formingIds:Set<number>, current:number){
+        const currentNeibs = neighbors[current]
+        if(!currentNeibs)
             return
-        if (ptClinging(a, b)) {
-            const aBelong = belong[a.id]
-            const bBelong = belong[b.id]
-            if (aBelong && bBelong) {
-                if(aBelong === bBelong) //四个点2x2排列时会发生
-                    return
-                for (const pt of bBelong) {
-                    aBelong.push(pt)
-                    belong[pt.id] = aBelong
-                }
-            } else if (aBelong) {
-                aBelong.push(b)
-                belong[b.id] = aBelong
-            } else if (bBelong) {
-                bBelong.push(a)
-                belong[a.id] = bBelong
-            } else {
-                const newCrys = [a, b]
-                belong[a.id] = newCrys;
-                belong[b.id] = newCrys;
-                staClusters?.push(newCrys)
-            }
+        for(const neib of currentNeibs){
+            if(formingIds.has(neib))
+                continue
+            formingIds.add(neib)
+            expandSetInNeighbors(formingIds, neib)
         }
     }
-    function cleanClusters(){
-        if(staClusters){
-            for(const c of staClusters){
-                if(c.length == 1){
-                    belong[c[0].id] = undefined
+
+
+    function updateClustersBecauseOf(pt:ControlPoint){
+        let neibs = neighbors[pt.id]
+        if(neibs){
+            for(const neib of neibs){
+                const neibNeibs = neighbors[neib]
+                if(neibNeibs){
+                    neibNeibs.delete(pt.id)  
                 }
             }
-            removeAllByPred<ControlPoint[]>(staClusters, x => x.length<=1)
+            neibs.clear()
+        }else{
+            neibs = new Set<number>()
+            neighbors[pt.id] = neibs
         }
-        for(const ptId of Object.keys(belong)){
-            const ptIdNum = parseInt(ptId)
-            if(belong[ptIdNum] && !belong[ptIdNum].some(x=>x.id === ptIdNum))
-                belong[ptIdNum] = undefined
+        for(const otherPt of saveStore.save?.points||[]){
+            if(otherPt.sta != ControlPointSta.sta || otherPt.id==pt.id)
+                continue
+            if(ptClinging(pt, otherPt)){
+                neibs.add(otherPt.id)
+                if(!neighbors[otherPt.id])
+                    neighbors[otherPt.id] = new Set<number>()
+                neighbors[otherPt.id]?.add(pt.id) 
+            }
         }
+        makeClustersFromNeighbors()
     }
     function cleanClustersFromDeletedPt(ptId:number){
-        const pBelong = belong[ptId]
-        if(pBelong){
-            removeAllByPred(pBelong, x=>x.id===ptId)
-            belong[ptId] = undefined
-            if(pBelong.length > 1){
-                updateClustersBecauseOf(pBelong[0])
-            }else{
-                cleanClusters()
+        const neibs = neighbors[ptId]
+        if(!neibs)
+            return
+        for(const neib of neibs){
+            const neibNeibs = neighbors[neib]
+            if(neibNeibs){
+                neibNeibs.delete(ptId)
             }
         }
+        delete neighbors[ptId]
     }
 
     function ptClinging(a:ControlPoint, b:ControlPoint):boolean{
@@ -140,8 +147,9 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         const sizeB = saveStore.getLinesDecidedPtSize(b.id)
         const distMut = (sizeA + sizeB)/2
         const clingingDist = configClingingDist * distMut
-        const clingingDistSqrBiggerByEpsilon = clingingDist**2 + numberCmpEpsilon
-        return !!coordDistSqLessThan(a.pos, b.pos, clingingDistSqrBiggerByEpsilon)
+        const clingingDistSqrBiggerByEpsilon = (clingingDist+numberCmpEpsilon*10)**2 //判断条件应该宽松一些（避免浮点数误差）所以eps*10
+        const resBool = !!coordDistSqLessThan(a.pos, b.pos, clingingDistSqrBiggerByEpsilon)
+        return resBool
     }
 
     function tryTransferStaNameWithinCluster(sta:ControlPoint){
@@ -176,7 +184,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         const get = sizeType === 'ptSize' 
             ? (id:number)=>saveStore.getLinesDecidedPtSize(id)
             : (id:number)=>saveStore.getLinesDecidedPtNameSize(id)
-        const cluster = belong[ptId]
+        const cluster = staBelongToCluster.value[ptId]
         if(!cluster)
             return get(ptId)
         const sizes = cluster.map(x=>get(x.id))
@@ -185,17 +193,10 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         return Math.max(...sizes)
     }
 
-    function clearItems(){
-        staClusters = undefined
-        belong = {}
-    }
-
     return {
-        setStaClusters,
         getStaClusters,
         updateClustersBecauseOf,
         tryTransferStaNameWithinCluster,
         getMaxSizePtWithinCluster,
-        clearItems
     }
 })

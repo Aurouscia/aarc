@@ -20,7 +20,6 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         const clusters = staClusterStore.getStaClusters()
         if(!clusters)
             return;
-        staClusterStore.setStaClusters([...clusters])
         const polys = clustersToPolys(clusters)
         const forEachPoly = (doSth:(size:number)=>void)=>{
             for(const p of polys){
