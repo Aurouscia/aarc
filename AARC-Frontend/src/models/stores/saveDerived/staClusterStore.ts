@@ -117,8 +117,12 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             neibs = new Set<number>()
             neighbors[pt.id] = neibs
         }
+        if(pt.sta!==ControlPointSta.sta){
+            makeClustersFromNeighbors()
+            return
+        }
         for(const otherPt of saveStore.save?.points||[]){
-            if(otherPt.sta != ControlPointSta.sta || otherPt.id==pt.id)
+            if(otherPt.sta !== ControlPointSta.sta || otherPt.id==pt.id)
                 continue
             if(ptClinging(pt, otherPt)){
                 neibs.add(otherPt.id)
@@ -140,6 +144,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             }
         }
         delete neighbors[ptId]
+        makeClustersFromNeighbors()
     }
 
     function ptClinging(a:ControlPoint, b:ControlPoint):boolean{
