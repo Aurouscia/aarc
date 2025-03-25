@@ -48,7 +48,7 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         }
         return 1
     }
-    function getBiggerSideLength(){
+    function getViewRectBiggerSideLength(){
         //当前屏幕上显示的最大边长(像素数)
         const wf = cvsFrame.value?.clientWidth || 0
         const hf = cvsFrame.value?.clientHeight || 0
@@ -69,7 +69,7 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
             scaleLocked.value = 'min'
             return
         }
-        const r = getBiggerSideLength()
+        const r = getViewRectBiggerSideLength()
         if(r < 400){
             scaleLocked.value = 'max'
             return
@@ -141,7 +141,7 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     }
     return {
         cvsFrame, cvsCont, initScaler,
-        getDisplayRatio, getBiggerSideLength,
+        getDisplayRatio, getViewRectBiggerSideLength,
         getViewCenterOffset, getViewRectInRatio,
         updateScaleLock,
         translateFromOffset, translateFromClient,

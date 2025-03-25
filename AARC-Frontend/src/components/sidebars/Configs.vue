@@ -65,7 +65,7 @@ const editorLocalConfig = useEditorLocalConfigStore()
 const { resolution } = storeToRefs(editorLocalConfig)
 function editorResolutionChanged(){
     editorLocalConfig.saveResolution()
-    cvsBlocksControl.refreshBlocks('enforce')
+    cvsBlocksControl.refreshBlocks()
 }
 
 const showOthers = ref(false)

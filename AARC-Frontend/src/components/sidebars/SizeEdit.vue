@@ -103,7 +103,7 @@ function applyChange(){
     saveStore.setCvsSize([newW, newH])
     cvsFrameStore.initContSizeStyle()
     nextTick(()=>{
-        cvsBlocksControlStore.refreshBlocks('enforce')
+        cvsBlocksControlStore.refreshBlocks()
         nextTick(()=>{
             baseCvsDispatcher.renderBaseCvs()
             mainCvsDispatcher.renderMainCvs({})

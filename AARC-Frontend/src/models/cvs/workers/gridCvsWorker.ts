@@ -40,7 +40,7 @@ export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
         ctx.stroke()
     }
     function gridLinesInfo():{mainIntv:number, subIntv:number, mainWidth:number, subWidth:number}{
-        const side = cvsFrameStore.getBiggerSideLength()
+        const side = cvsFrameStore.getViewRectBiggerSideLength()
         let mainIntv:number
         let subIntv:number
         let mainWidth:number = 2
