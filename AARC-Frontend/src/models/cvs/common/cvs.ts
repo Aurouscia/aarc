@@ -81,10 +81,10 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     function clientToCvsSizeRatio(){
         const r = editorLocalConfig.readResolution()
         if(r==='ultra')
-            return 2
+            return 3
         if(r==='high')
-            return 1.5
-        return 1
+            return 2.5
+        return 2
     }
 
     function refreshBlocks(callReformedHandler = true){
