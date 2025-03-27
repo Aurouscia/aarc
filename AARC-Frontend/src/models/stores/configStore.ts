@@ -71,6 +71,7 @@ export const useConfigStore = defineStore('config', ()=>{
     const config = ref<Config>(deepClone(configDefault))
     const saveStore = useSaveStore()
     function readConfigFromSave(){
+        config.value = deepClone(configDefault)
         if(!saveStore.save?.config)
             return;
         const sc = saveStore.save.config;

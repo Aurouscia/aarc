@@ -198,10 +198,16 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         return Math.max(...sizes)
     }
 
+    function clearItems(){
+        staClusters.value = undefined
+        neighbors = {}
+    }
+
     return {
         getStaClusters,
         updateClustersBecauseOf,
         tryTransferStaNameWithinCluster,
         getMaxSizePtWithinCluster,
+        clearItems
     }
 })
