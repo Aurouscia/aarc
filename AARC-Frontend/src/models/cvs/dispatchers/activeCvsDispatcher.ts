@@ -17,12 +17,14 @@ import { useDiscardAreaCvsWorker } from "../workers/discardAreaCvsWorker";
 import { coordAngle, coordSub } from "@/utils/coordUtils/coordMath";
 import { numberCmpEpsilon } from "@/utils/consts";
 import { ControlPointDir } from "@/models/save";
+import { usePointLinkStore } from "@/models/stores/pointLinkStore";
 
 export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const saveStore = useSaveStore()
     const envStore = useEnvStore()
     const snapStore = useSnapStore()
     const lineExtendStore = useLineExtendStore()
+    const pointLinkStore = usePointLinkStore()
     const canvasIdPrefix = 'active'
     const { getCtx } = useCvs(canvasIdPrefix)
     const { renderSegsAroundActivePt, renderLine } = useLineCvsWorker()
@@ -40,7 +42,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
 
     function renderActiveCvs(){
         //该函数应被设置为每x毫秒执行一次
-        const ctx = getCtx(envStore.somethingActive);
+        const ctx = getCtx(envStore.somethingActive || pointLinkStore.isCreating);
         if(envStore.activeLine){
             renderLine(ctx, envStore.activeLine)
             renderLinePoints(ctx, envStore.activeLine)

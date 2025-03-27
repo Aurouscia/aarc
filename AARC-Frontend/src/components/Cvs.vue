@@ -15,6 +15,7 @@ import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
+import { usePointLinkStore } from '@/models/stores/pointLinkStore';
 
 const envStore = useEnvStore();
 const { somethingActive } = storeToRefs(envStore)
@@ -27,6 +28,7 @@ const mainCvsDispatcher = useMainCvsDispatcher()
 const activeCvsDispatcher = useActiveCvsDispatcher()
 const { wait } = storeToRefs(useUniqueComponentsStore())
 const cvsBlocksControlStore = useCvsBlocksControlStore()
+const pointLinkStore = usePointLinkStore()
 
 let activeCvsRenderTimer = 0
 async function init(){
@@ -102,12 +104,15 @@ defineExpose({init})
             <CvsBlocks :canvas-id-prefix="mainCvsDispatcher.canvasIdPrefix"
                 :cvs-class-name="'mainCvs'" :insnif="envStore.somethingActive"></CvsBlocks>
             <CvsBlocks :canvas-id-prefix="activeCvsDispatcher.canvasIdPrefix"
-                :cvs-class-name="'activeCvs'" :invisible="!envStore.somethingActive"></CvsBlocks>
+                :cvs-class-name="'activeCvs'" :invisible="!envStore.somethingActive && !pointLinkStore.creatingLink"></CvsBlocks>
         </div>
     </div>
     <Ops></Ops>
     <NameEdit></NameEdit>
     <TextTagEdit></TextTagEdit>
+    <div v-if="pointLinkStore.isCreating" class="statusDisplay pointLinkCreatingStatus">
+        {{ pointLinkStore.helpText }}
+    </div>
 </template>
 
 <style scoped lang="scss">
@@ -128,5 +133,17 @@ defineExpose({init})
         width: 100%;
         height: 100%;
     }
+}
+.pointLinkCreatingStatus{
+    z-index: 1001;
+    color: white;
+    background-color: olivedrab;
+    animation: greenBackgroundblink 1s infinite;
+    $some-green: rgb(124, 207, 0);
+    @keyframes greenBackgroundblink {
+        0% { background-color: $some-green; box-shadow: 0px 0px 10px 3px $some-green; }
+        50% { background-color: green; box-shadow: 0px 0px 10px 3px green;}
+        100% { background-color: $some-green; box-shadow: 0px 0px 10px 3px $some-green; }
+    }  
 }
 </style>

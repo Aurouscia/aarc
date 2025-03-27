@@ -150,7 +150,7 @@ onUnmounted(()=>{
     <Menu v-if="loadComplete" @save-data="saveData"></Menu>
     <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
     <HiddenLongWarnPrompt v-if="showHiddenLongWarn" @ok="showHiddenLongWarn=false"></HiddenLongWarnPrompt>
-    <div v-if="savingDisabledWarning" class="savingDisabledWarning">{{ savingDisabledWarning }}</div>
+    <div v-if="savingDisabledWarning" class="statusDisplay savingDisabledWarning">{{ savingDisabledWarning }}</div>
     <div class="cachePreventer">
         <input :id="cachePreventerInputId"/>
     </div>
@@ -158,23 +158,12 @@ onUnmounted(()=>{
 
 <style scoped lang="scss">
 .cachePreventer{
-    position: relative;
+    position: fixed;
     z-index: -1;
+    top: -100px; //藏起来
 }
 .savingDisabledWarning{
-    z-index: 999;
-    position: fixed;
-    bottom: 15px;
-    left: 0px;
-    right: 0px;
-    width: fit-content;
-    margin: auto;
-    text-align: center;
-    color: white;
-    padding: 3px;
-    border-radius: 3px;
+    color:white;
     background-color: orange;
-    font-weight: bold;
-    box-shadow: 0px 0px 10px 3px black;
 }
 </style>

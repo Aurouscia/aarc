@@ -19,6 +19,7 @@ import { useDiscardAreaStore } from "./discardAreaStore";
 import { useTextTagEditStore } from "./textTagEditStore";
 import rfdc from "rfdc";
 import { coordRound } from "@/utils/coordUtils/coordRound";
+import { usePointLinkStore } from "./pointLinkStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const saveStore = useSaveStore();
@@ -57,6 +58,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const { onPt, onLine, onStaName, onLineExtendBtn, onTextTag } = useOnDetectStore()
     const { removeLineExtendBtn } = useLineExtendStore()
     const discardAreaStore = useDiscardAreaStore()
+    const pointLinkStore = usePointLinkStore()
     const deepClone = rfdc()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
@@ -199,6 +201,13 @@ export const useEnvStore = defineStore('env', ()=>{
         if(pt){
             //点到点上了
             endEveryEditing(true)
+            if(pointLinkStore.isCreating){
+                cursorPos.value = [...pt.pos]
+                const done = pointLinkStore.ptLinkClick(pt.id)
+                if(done)
+                    rerender.value()
+                return
+            }
             activePt.value = pt
             activePtType.value = 'body'
             cursorPos.value = [...pt.pos]
