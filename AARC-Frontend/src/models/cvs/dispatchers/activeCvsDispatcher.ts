@@ -39,10 +39,20 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
 
     const { getActivePtOpsAvoidance } = storeToRefs(envStore)
     getActivePtOpsAvoidance.value = renderActiveCvs
+    let cvsCleared = true
 
     function renderActiveCvs(){
         //该函数应被设置为每x毫秒执行一次
-        const ctx = getCtx(envStore.somethingActive || pointLinkStore.isCreating);
+        if(!(envStore.somethingActive || pointLinkStore.isCreating)){
+            if(!cvsCleared){
+                getCtx()
+                cvsCleared = true
+                //console.log('清空activeCvs')
+            }
+            return []
+        }
+        const ctx = getCtx();
+        cvsCleared = false
         if(envStore.activeLine){
             renderLine(ctx, envStore.activeLine)
             renderLinePoints(ctx, envStore.activeLine)
