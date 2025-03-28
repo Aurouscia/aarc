@@ -3,9 +3,11 @@ import { CvsContext } from "../common/cvsContext";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { ControlPoint, ControlPointLink, ControlPointLinkType } from "@/models/save";
 import { useConfigStore } from "@/models/stores/configStore";
+import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
 
 export const usePointLinkCvsWorker = defineStore('pointLinkCvsWorker',()=>{
     const saveStore = useSaveStore()
+    const staClusterStore = useStaClusterStore()
     const cs = useConfigStore()
     function renderAllLinks(ctx:CvsContext, renderLayer:'carpet'|'body'|'core'){
         const links = saveStore.save?.pointLinks
@@ -26,20 +28,22 @@ export const usePointLinkCvsWorker = defineStore('pointLinkCvsWorker',()=>{
         }
         if(pts.length<2)
             return
+        const sizes = pts.map(x=>staClusterStore.getMaxSizePtWithinCluster(x.id, 'ptSize'))
+        const sizeRatio = Math.min(...sizes)
         if(link.type === ControlPointLinkType.fat){
-            const bodyLineWidth = cs.config.ptStaLineWidth*3
+            const bodyLineWidth = cs.config.ptStaLineWidth*3.5
             ctx.beginPath()
             if(renderLayer == 'carpet'){
                 const carpetLineWidth = bodyLineWidth+cs.config.ptStaLineWidth
-                ctx.lineWidth = carpetLineWidth
+                ctx.lineWidth = carpetLineWidth*sizeRatio
                 ctx.strokeStyle = cs.config.bgColor
             }
             else if(renderLayer == 'body'){
-                ctx.lineWidth = bodyLineWidth
+                ctx.lineWidth = bodyLineWidth*sizeRatio
                 ctx.strokeStyle = cs.config.ptStaExchangeLineColor
             }else{
                 const coreLineWidth = bodyLineWidth-2*cs.config.ptStaLineWidth
-                ctx.lineWidth = coreLineWidth
+                ctx.lineWidth = coreLineWidth*sizeRatio
                 ctx.strokeStyle = cs.config.ptStaFillColor
             }
             ctx.moveTo(...pts[0].pos)
