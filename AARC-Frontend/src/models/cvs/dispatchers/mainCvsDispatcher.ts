@@ -14,6 +14,7 @@ import { timestampMS } from "@/utils/timeUtils/timestamp";
 import { useTimeSpanClock } from "@/utils/timeUtils/timeSpanClock";
 import { CvsContext } from "../common/cvsContext";
 import { AdsRenderType, useAdsCvsWorker } from "../workers/adsCvsWorker";
+import { usePointLinkStore } from "@/models/stores/pointLinkStore";
 
 export interface MainCvsRenderingOptions{
     /** 这次渲染前哪些线路形状变动了？不提供即为所有 */
@@ -36,6 +37,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const canvasIdPrefix = 'main'
     const { getCtx: getCtx } = useCvs(canvasIdPrefix)
     const cvsBlocksControlStore = useCvsBlocksControlStore()
+    const pointLinkStore = usePointLinkStore()
     const { renderAllLines } = useLineCvsWorker()
     const { renderAllPoints } = usePointCvsWorker()
     const { renderClusters } = useClusterCvsWorker()
@@ -67,7 +69,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         tic('线路')
         renderAllPoints(ctx, forExport, forExport)
         tic('点')
-        renderClusters(ctx)
+        renderClusters(ctx, pointLinkStore.isCreating)
         tic('集群')
         renderAllPtName(ctx, movedStaNames, forExport)
         tic('站名')

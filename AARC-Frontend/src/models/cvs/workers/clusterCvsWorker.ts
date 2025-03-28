@@ -16,7 +16,7 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const cs = useConfigStore()
 
-    function renderClusters(ctx:CvsContext){
+    function renderClusters(ctx:CvsContext, transparentMode?:boolean){
         const clusters = staClusterStore.getStaClusters()
         if(!clusters)
             return;
@@ -37,12 +37,22 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         ctx.lineCap = 'round'
         const bgColor = cs.config.bgColor;
         const exchangeColor = cs.config.ptStaExchangeLineColor;
+
         ctx.strokeStyle = bgColor
+        if(transparentMode){
+            ctx.globalAlpha = 0.7
+            ctx.strokeStyle = exchangeColor
+        }
         forEachPoly((size)=>{
             const rectLineWidth = (cs.config.ptStaSize + cs.config.ptStaLineWidth) * size * 2
             ctx.lineWidth = rectLineWidth
             ctx.stroke()
         })
+        if(transparentMode){
+            ctx.globalAlpha = 1
+            return
+        }
+
             
         ctx.strokeStyle = exchangeColor
         forEachPoly((size) => {

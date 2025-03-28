@@ -2,10 +2,8 @@
 import { ref } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { useEnvStore } from '@/models/stores/envStore';
-import { usePointLinkStore } from '@/models/stores/pointLinkStore';
 
 const envStore = useEnvStore()
-const pointLinkStore = usePointLinkStore()
 
 function fd(){
     sidebar.value?.fold()
@@ -27,7 +25,7 @@ defineExpose({
         <div class="smallNoteVital">拖动到屏幕左上角即可删除</div>
     </div>
     <div class="toolItem">
-        <button @click="pointLinkStore.startCreatingPtLink">创建出站换乘连线</button>
+        <button @click="envStore.startCreatingPtLink();fd()">创建出站换乘连线</button>
         <div class="smallNote">后续更新，敬请期待</div>
     </div>
     <div class="toolItem">

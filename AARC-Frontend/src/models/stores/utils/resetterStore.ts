@@ -6,6 +6,7 @@ import { useLineExtendStore } from "../saveDerived/saveDerivedDerived/lineExtend
 import { useCvsBlocksControlStore } from "@/models/cvs/common/cvs";
 import { useStaClusterStore } from "../saveDerived/staClusterStore";
 import { useEnvStore } from "../envStore";
+import { usePointLinkStore } from "../pointLinkStore";
 
 //目前已经弃用，改为每次退出画布时自动刷新页面一次
 //TODO：有时刷新会触发两次同样的http请求的问题
@@ -17,7 +18,8 @@ export const useResetterStore = defineStore('resetter', ()=>{
         useTextTagRectStore,
         useLineExtendStore,
         useCvsBlocksControlStore,
-        useStaClusterStore
+        useStaClusterStore,
+        usePointLinkStore
     ]
 
     function resetDerivedStores(){

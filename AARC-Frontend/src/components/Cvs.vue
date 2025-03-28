@@ -111,7 +111,8 @@ defineExpose({init})
     <NameEdit></NameEdit>
     <TextTagEdit></TextTagEdit>
     <div v-if="pointLinkStore.isCreating" class="statusDisplay pointLinkCreatingStatus">
-        {{ pointLinkStore.helpText }}
+        正在创建连接，请点击第<b>{{ pointLinkStore.helpTextNumber }}</b>个点<br/>
+        <button class="lite" @click="envStore.abortCreatingPtLink">取消创建</button>
     </div>
 </template>
 
@@ -139,11 +140,21 @@ defineExpose({init})
     color: white;
     background-color: olivedrab;
     animation: greenBackgroundblink 1s infinite;
-    $some-green: rgb(124, 207, 0);
+    $some-green: rgb(0, 80, 0);
+    $lighter-green: rgb(0, 150, 0);
     @keyframes greenBackgroundblink {
         0% { background-color: $some-green; box-shadow: 0px 0px 10px 3px $some-green; }
-        50% { background-color: green; box-shadow: 0px 0px 10px 3px green;}
+        50% { background-color: $lighter-green; box-shadow: 0px 0px 10px 3px green;}
         100% { background-color: $some-green; box-shadow: 0px 0px 10px 3px $some-green; }
-    }  
+    }
+    button{
+        color:white;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+    b{
+        font-size: 26px;
+        margin: 0px 2px 0px 2px;
+    }
 }
 </style>

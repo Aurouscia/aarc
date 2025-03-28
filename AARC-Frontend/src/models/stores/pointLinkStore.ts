@@ -9,9 +9,9 @@ export const usePointLinkStore = defineStore('pointLinkStore',()=>{
     const creatingLink = ref<Set<number>>()
     const creatingLinkType = ref<ControlPointLinkType>()
     const isCreating = computed(()=>!!creatingLink.value)
-    const helpText = computed(()=>{
+    const helpTextNumber = computed(()=>{
         if(creatingLink.value){
-            return `正在创建连接，请点击第<${creatingLink.value.size+1}>个点`
+            return creatingLink.value.size+1
         }
     })
     function startCreatingPtLink(){
@@ -29,9 +29,9 @@ export const usePointLinkStore = defineStore('pointLinkStore',()=>{
                         pts: newLink,
                         type: creatingLinkType.value || 0
                     })
-                    return true
                 }
                 creatingLink.value = undefined
+                return true
             }
         }
     }
@@ -40,12 +40,17 @@ export const usePointLinkStore = defineStore('pointLinkStore',()=>{
             return saveStore.save.pointLinks.find(link=>link.pts.includes(pt1) && link.pts.includes(pt2))
         }
     }
+    function abortCreatingPtLink(){
+        creatingLink.value = undefined
+    }
     return{
         creatingLink,
         creatingLinkType,
         isCreating,
-        helpText,
+        helpTextNumber,
         startCreatingPtLink,
-        ptLinkClick
+        abortCreatingPtLink,
+        ptLinkClick,
+        clearItems: abortCreatingPtLink
     }
 })

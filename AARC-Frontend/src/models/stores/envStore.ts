@@ -149,6 +149,20 @@ export const useEnvStore = defineStore('env', ()=>{
             rerender.value(rerenderParamLineIds, rerenderParamPtIds)
         }
 
+
+        //如果正在创建点连接，则仅判断是否点击点，无视其他操作，直到isCreating变回false为止
+        if(pointLinkStore.isCreating){
+            const pt = onPt(coord, true)
+            if(pt){
+                cursorPos.value = [...pt.pos]
+                const done = pointLinkStore.ptLinkClick(pt.id)
+                if(done)
+                    rerender.value()
+            }
+            return
+        }
+
+
         //取消所有状态
         const activePtIdJustNow = activePt.value?.id
         cancelActive()
@@ -201,13 +215,6 @@ export const useEnvStore = defineStore('env', ()=>{
         if(pt){
             //点到点上了
             endEveryEditing(true)
-            if(pointLinkStore.isCreating){
-                cursorPos.value = [...pt.pos]
-                const done = pointLinkStore.ptLinkClick(pt.id)
-                if(done)
-                    rerender.value()
-                return
-            }
             activePt.value = pt
             activePtType.value = 'body'
             cursorPos.value = [...pt.pos]
@@ -681,6 +688,17 @@ export const useEnvStore = defineStore('env', ()=>{
         activeTextTag.value = newTextTag
     }
 
+    function startCreatingPtLink(){
+        endEveryEditing()
+        cancelActive()
+        pointLinkStore.startCreatingPtLink()
+        rerender.value()
+    }
+    function abortCreatingPtLink(){
+        pointLinkStore.abortCreatingPtLink()
+        rerender.value()
+    }
+
     function pointlessLineScan(){
         if(!saveStore.save)
             return
@@ -734,6 +752,7 @@ export const useEnvStore = defineStore('env', ()=>{
         rerender, rescaled, getActivePtOpsAvoidance,
         delLine, createLine, lineInfoChanged,
         createTextTag, duplicateTextTag,
+        startCreatingPtLink, abortCreatingPtLink,
         endEveryEditing, cancelActive, 
         closeOps:()=>setOpsPos(false)
     }
