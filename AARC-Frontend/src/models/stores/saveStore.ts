@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { computed, ref, watch } from "vue";
-import { ControlPoint, ControlPointDir, ControlPointSta, ensureValidCvsSize, Line, LineType, Save, saveLineCount, saveStaCount } from "../save";
+import { ControlPoint, ControlPointDir, ControlPointLink, ControlPointSta, ensureValidCvsSize, Line, LineType, Save, saveLineCount, saveStaCount } from "../save";
 import { Coord } from "../coord";
 import { isSameCoord } from "@/utils/sgn";
 import { getRangeByPred } from "@/utils/lang/getRangeByPred";
@@ -91,6 +91,19 @@ export const useSaveStore = defineStore('save', () => {
             if(sizes.length>0)
                 maxSize = Math.max(...sizes)
             res[pt.id] = maxSize
+        }
+        return res
+    })
+    const ptRelatedLinks = computed<Record<number, ControlPointLink[]|undefined>>(()=>{
+        const res:Record<number, ControlPointLink[]|undefined> = {}
+        if(!save.value?.pointLinks)
+            return res
+        for(const link of save.value.pointLinks){
+            for(const ptId of link.pts){
+                if(!res[ptId])
+                    res[ptId] = []
+                res[ptId].push(link)
+            } 
         }
         return res
     })
@@ -216,6 +229,9 @@ export const useSaveStore = defineStore('save', () => {
     function getTextTagById(textTagId:number){
         return save.value?.textTags.find(x=>x.id === textTagId)
     }
+    function getPointLinksByPt(ptId:number){
+        return ptRelatedLinks.value[ptId] || []
+    }
     function insertNewPtToLine(lineId:number, afterIdx:number|'head'|'tail', pos:Coord, dir:ControlPointDir){
         if(!save.value)
             return;
@@ -274,12 +290,7 @@ export const useSaveStore = defineStore('save', () => {
         relatedLines.forEach(line=>{
             line.pts = line.pts.filter(pt=>pt!==ptId)
         })
-        const relatedLinks = save.value.pointLinks?.filter(link=>link.pts.includes(ptId)) || [];
-        relatedLinks.forEach(link=>{
-            link.pts = link.pts.filter(pt=>pt!==ptId)
-        })
-        if(save.value.pointLinks)
-            removeAllByPred(save.value.pointLinks, link=>link.pts.length<=1)
+        removePointLinkByPt(ptId)
         const idx = save.value.points.findIndex(x=>x.id == ptId)
         if(idx >= 0){
             save.value.points.splice(idx, 1)
@@ -304,6 +315,16 @@ export const useSaveStore = defineStore('save', () => {
                 noLinePoints.push(pt.id)
         }
         noLinePoints.forEach(removePt)
+    }
+    function removePointLinkByPt(ptId:number){
+        if(!save.value)
+            return;
+        const relatedLinks = ptRelatedLinks.value[ptId] || []
+        relatedLinks.forEach(link=>{
+            link.pts = link.pts.filter(pt=>pt!==ptId)
+        })
+        if(save.value.pointLinks)
+            removeAllByPred(save.value.pointLinks, link=>link.pts.length<=1)
     }
     function ensureLinesOrderedByType(){
         if(!save.value)
@@ -466,12 +487,12 @@ export const useSaveStore = defineStore('save', () => {
     
     return { 
         save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint, deletedTextTag,
-        getPtById, getPtsByIds, getLineById, getLinesByIds,
+        getPtById, getPtsByIds, getLineById, getLinesByIds, 
         getLinesDecidedPtSize, getLinesDecidedPtSizes, getLinesDecidedPtNameSize,
         getLineActualColor, linesActualColorSame, getLineActualColorById,
-        getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getTextTagById,
+        getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getTextTagById, getPointLinksByPt,
         insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType,
-        removePt, removePtFromLine, removeNoLinePoints, tryMergePt, isNamedPt,
+        removePt, removePtFromLine, removeNoLinePoints, removePointLinkByPt, tryMergePt, isNamedPt,
         removeTextTag, moveEverything, setCvsSize,
         isLineTypeWithoutSta, isPtNoSta,
         getLineCount, getStaCount

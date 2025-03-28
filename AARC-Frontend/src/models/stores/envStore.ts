@@ -522,6 +522,19 @@ export const useEnvStore = defineStore('env', ()=>{
                 textSub:'是否显示'
             })
         }
+        const relatedLinks = saveStore.getPointLinksByPt(pt.id)
+        if(relatedLinks.length>0){
+            rmFromLines.push({
+                cb:()=>{
+                    saveStore.removePointLinkByPt(pt.id)
+                    setOpsPos(false)
+                    rerender.value([], [])
+                },
+                text:'断连',
+                color: '',
+                textSub: ''
+            })
+        }
         opsStore.btns = [
             [...firstCol],
             [...rmFromLines],
