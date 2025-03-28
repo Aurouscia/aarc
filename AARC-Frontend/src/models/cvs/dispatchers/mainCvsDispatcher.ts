@@ -15,6 +15,7 @@ import { useTimeSpanClock } from "@/utils/timeUtils/timeSpanClock";
 import { CvsContext } from "../common/cvsContext";
 import { AdsRenderType, useAdsCvsWorker } from "../workers/adsCvsWorker";
 import { usePointLinkStore } from "@/models/stores/pointLinkStore";
+import { usePointLinkCvsWorker } from "../workers/pointLinkCvsWorker";
 
 export interface MainCvsRenderingOptions{
     /** 这次渲染前哪些线路形状变动了？不提供即为所有 */
@@ -40,10 +41,11 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const pointLinkStore = usePointLinkStore()
     const { renderAllLines } = useLineCvsWorker()
     const { renderAllPoints } = usePointCvsWorker()
-    const { renderClusters } = useClusterCvsWorker()
+    const { renderClusters, getClustersRenderingData } = useClusterCvsWorker()
     const { renderAllPtName } = useStaNameCvsWorker()
     const { renderAllTerrainSmooth } = useTerrainSmoothCvsWorker()
     const { renderAllTextTags } = useTextTagCvsWorker()
+    const { renderAllLinks } = usePointLinkCvsWorker()
     const { renderAds } = useAdsCvsWorker()
     const afterMainCvsRendered = shallowRef<()=>void>()
     const isRendering = ref(false)
@@ -58,6 +60,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
             ctx.fillStyle = cs.config.bgColor
             ctx.fillTotal()
         }
+        const creatingLink = pointLinkStore.isCreating
         tic()
         renderAllLines(ctx, changedLines, LineType.terrain, 'carpet')
         tic('地形-地毯')
@@ -69,7 +72,13 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         tic('线路')
         renderAllPoints(ctx, forExport, forExport)
         tic('点')
-        renderClusters(ctx, pointLinkStore.isCreating)
+        const clusterData = getClustersRenderingData()
+        renderClusters(ctx, clusterData, 'carpet', creatingLink)
+        renderAllLinks(ctx, 'carpet')
+        renderClusters(ctx, clusterData, 'body', creatingLink)
+        renderAllLinks(ctx, 'body')
+        renderClusters(ctx, clusterData, 'core', creatingLink)
+        renderAllLinks(ctx, 'core')
         tic('集群')
         renderAllPtName(ctx, movedStaNames, forExport)
         tic('站名')

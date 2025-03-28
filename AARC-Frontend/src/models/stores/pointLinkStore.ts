@@ -27,7 +27,7 @@ export const usePointLinkStore = defineStore('pointLinkStore',()=>{
                 if(!containExistingLinkBetween(newLink[0], newLink[1])){
                     saveStore.save.pointLinks.push({
                         pts: newLink,
-                        type: creatingLinkType.value || 0
+                        type: creatingLinkType.value || ControlPointLinkType.fat
                     })
                 }
                 creatingLink.value = undefined
@@ -43,6 +43,17 @@ export const usePointLinkStore = defineStore('pointLinkStore',()=>{
     function abortCreatingPtLink(){
         creatingLink.value = undefined
     }
+
+    function getLinkLinkedPts(){
+        const pts:number[] = []
+        if(saveStore.save?.pointLinks){
+            saveStore.save.pointLinks.forEach(link=>{
+                pts.push(...link.pts)
+            })
+        }
+        return pts
+    }
+
     return{
         creatingLink,
         creatingLinkType,
@@ -51,6 +62,7 @@ export const usePointLinkStore = defineStore('pointLinkStore',()=>{
         startCreatingPtLink,
         abortCreatingPtLink,
         ptLinkClick,
-        clearItems: abortCreatingPtLink
+        clearItems: abortCreatingPtLink,
+        getLinkLinkedPts
     }
 })

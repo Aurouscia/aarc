@@ -6,6 +6,7 @@ import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { sqrt2half } from "@/utils/consts";
+import { usePointLinkStore } from "@/models/stores/pointLinkStore";
 
 interface ClusterPoly{
     coords:Coord[]
@@ -15,14 +16,27 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
     const staClusterStore = useStaClusterStore()
     const saveStore = useSaveStore()
     const cs = useConfigStore()
+    const pointLinkStore = usePointLinkStore()
 
-    function renderClusters(ctx:CvsContext, transparentMode?:boolean){
-        const clusters = staClusterStore.getStaClusters()
-        if(!clusters)
-            return;
+    function getClustersRenderingData(){
+        const clusters = staClusterStore.getStaClusters() || []
+        const fakeClusters = pointLinkStore.getLinkLinkedPts()
+        for(const fakeCluster of fakeClusters){
+            if(clusters.some(c=>c.some(x=>x.id===fakeCluster))){
+                continue
+            }
+            const pt = saveStore.getPtById(fakeCluster)
+            if(pt){
+                clusters.push([pt]) 
+            }
+        }
         const polys = clustersToPolys(clusters)
+        return polys
+    }
+
+    function renderClusters(ctx:CvsContext, data:ClusterPoly[], renderLayer:'carpet'|'body'|'core', transparentMode?:boolean){
         const forEachPoly = (doSth:(size:number)=>void)=>{
-            for(const p of polys){
+            for(const p of data){
                 ctx.beginPath();
                 const firstPos = p.coords[0]
                 ctx.moveTo(firstPos[0], firstPos[1])
@@ -38,36 +52,48 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         const bgColor = cs.config.bgColor;
         const exchangeColor = cs.config.ptStaExchangeLineColor;
 
-        ctx.strokeStyle = bgColor
+        
         if(transparentMode){
+            if(renderLayer != 'carpet'){
+                return
+            }
             ctx.globalAlpha = 0.7
             ctx.strokeStyle = exchangeColor
-        }
-        forEachPoly((size)=>{
-            const rectLineWidth = (cs.config.ptStaSize + cs.config.ptStaLineWidth) * size * 2
-            ctx.lineWidth = rectLineWidth
-            ctx.stroke()
-        })
-        if(transparentMode){
+            forEachPoly((size)=>{
+                const rectLineWidth = (cs.config.ptStaSize + cs.config.ptStaLineWidth) * size * 2
+                ctx.lineWidth = rectLineWidth
+                ctx.stroke()
+            })
             ctx.globalAlpha = 1
             return
         }
 
-            
-        ctx.strokeStyle = exchangeColor
-        forEachPoly((size) => {
-            const rectLineWidth = ((cs.config.ptStaSize * 2) + cs.config.ptStaLineWidth) * size
-            ctx.lineWidth = rectLineWidth
-            ctx.stroke()
-        })
-        ctx.strokeStyle = cs.config.ptStaFillColor
-        ctx.fillStyle = cs.config.ptStaFillColor
-        forEachPoly((size) => {
-            const rectLineWidth = ((cs.config.ptStaSize * 2) - cs.config.ptStaLineWidth) * size
-            ctx.lineWidth = rectLineWidth
-            ctx.fill()
-            ctx.stroke()
-        })
+        if(renderLayer == 'carpet'){
+            ctx.strokeStyle = bgColor
+            forEachPoly((size)=>{
+                const rectLineWidth = (cs.config.ptStaSize + cs.config.ptStaLineWidth) * size * 2
+                ctx.lineWidth = rectLineWidth
+                ctx.stroke()
+            })
+        }
+        else if(renderLayer == 'body'){
+            ctx.strokeStyle = exchangeColor
+            forEachPoly((size) => {
+                const rectLineWidth = ((cs.config.ptStaSize * 2) + cs.config.ptStaLineWidth) * size
+                ctx.lineWidth = rectLineWidth
+                ctx.stroke()
+            })
+        }
+        else{
+            ctx.strokeStyle = cs.config.ptStaFillColor
+            ctx.fillStyle = cs.config.ptStaFillColor
+            forEachPoly((size) => {
+                const rectLineWidth = ((cs.config.ptStaSize * 2) - cs.config.ptStaLineWidth) * size
+                ctx.lineWidth = rectLineWidth
+                ctx.fill()
+                ctx.stroke()
+            })
+        }
     }
 
     function clustersToPolys(clusters:ControlPoint[][]):ClusterPoly[]{
@@ -150,5 +176,8 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         const area = lt2rb * rt2lb
         return {poly,area}
     }
-    return { renderClusters }
+    return {
+        getClustersRenderingData, 
+        renderClusters
+    }
 })
