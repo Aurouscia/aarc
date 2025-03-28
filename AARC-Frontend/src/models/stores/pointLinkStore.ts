@@ -7,7 +7,7 @@ export const usePointLinkStore = defineStore('pointLinkStore',()=>{
     const linkLength = 2
     const saveStore = useSaveStore()
     const creatingLink = ref<Set<number>>()
-    const creatingLinkType = ref<ControlPointLinkType>()
+    const creatingLinkType = ref<ControlPointLinkType>(ControlPointLinkType.fat)
     const isCreating = computed(()=>!!creatingLink.value)
     const helpTextNumber = computed(()=>{
         if(creatingLink.value){

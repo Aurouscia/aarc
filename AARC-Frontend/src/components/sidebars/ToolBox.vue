@@ -2,8 +2,12 @@
 import { ref } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { useEnvStore } from '@/models/stores/envStore';
+import { storeToRefs } from 'pinia';
+import { usePointLinkStore } from '@/models/stores/pointLinkStore';
+import { ControlPointLinkType } from '@/models/save';
 
 const envStore = useEnvStore()
+const { creatingLinkType } = storeToRefs(usePointLinkStore())
 
 function fd(){
     sidebar.value?.fold()
@@ -26,7 +30,11 @@ defineExpose({
     </div>
     <div class="toolItem">
         <button @click="envStore.startCreatingPtLink();fd()">创建出站换乘连线</button>
-        <div class="smallNote">后续更新，敬请期待</div>
+        <select v-model="creatingLinkType">
+            <option :value="ControlPointLinkType.fat">粗线</option>
+            <option :value="ControlPointLinkType.thin">细线</option>
+            <option :value="ControlPointLinkType.dot">虚线</option>
+        </select>
     </div>
     <div class="toolItem">
         <button class="off">创建区间类型标记</button>

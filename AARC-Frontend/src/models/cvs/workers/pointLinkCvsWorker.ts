@@ -50,7 +50,39 @@ export const usePointLinkCvsWorker = defineStore('pointLinkCvsWorker',()=>{
             ctx.lineTo(...pts[1].pos)
             ctx.stroke()
         }
-        //TODO: 其他类型的link
+        else{
+            
+            if(renderLayer == 'carpet'){
+                ctx.beginPath()
+                const carpetLineWidth = cs.config.ptStaLineWidth*2
+                ctx.lineWidth = carpetLineWidth*sizeRatio
+                ctx.strokeStyle = cs.config.bgColor
+                ctx.moveTo(...pts[0].pos)
+                ctx.lineTo(...pts[1].pos)
+                ctx.stroke()
+                ctx.setLineDash([])
+            }
+            else if(renderLayer == 'body'){
+                ctx.beginPath()
+                if (link.type === ControlPointLinkType.thin) {
+                    const bodyLineWidth = cs.config.ptStaLineWidth
+                    ctx.lineWidth = bodyLineWidth * sizeRatio
+                    ctx.strokeStyle = cs.config.ptStaExchangeLineColor
+                } else {
+                    const bodyLineWidth = cs.config.ptStaLineWidth
+                    const lineWidth = bodyLineWidth * sizeRatio
+                    const dash = [lineWidth, lineWidth * 2]
+                    ctx.lineWidth = lineWidth
+                    ctx.strokeStyle = cs.config.ptStaExchangeLineColor
+                    ctx.lineCap = 'round'
+                    ctx.setLineDash(dash)
+                }
+                ctx.moveTo(...pts[0].pos)
+                ctx.lineTo(...pts[1].pos)
+                ctx.stroke()
+                ctx.setLineDash([])
+            }
+        }
     }
     return {
         renderAllLinks
