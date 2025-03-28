@@ -6,7 +6,7 @@ import { isSameCoord } from "@/utils/sgn";
 import { getRangeByPred } from "@/utils/lang/getRangeByPred";
 import { checkOrder } from "@/utils/lang/checkOrder";
 import { useConfigStore } from "./configStore";
-import { indicesInArray, removeAllByIndices } from "@/utils/lang/indicesInArray";
+import { indicesInArray, removeAllByIndices, removeAllByPred } from "@/utils/lang/indicesInArray";
 import { coordAdd } from "@/utils/coordUtils/coordMath";
 import { getMayRingLinePtIds } from "@/utils/lineUtils/isRing";
 import { readNumKeyedRecord } from "@/utils/lang/readNumKeyedRecord";
@@ -274,6 +274,12 @@ export const useSaveStore = defineStore('save', () => {
         relatedLines.forEach(line=>{
             line.pts = line.pts.filter(pt=>pt!==ptId)
         })
+        const relatedLinks = save.value.pointLinks?.filter(link=>link.pts.includes(ptId)) || [];
+        relatedLinks.forEach(link=>{
+            link.pts = link.pts.filter(pt=>pt!==ptId)
+        })
+        if(save.value.pointLinks)
+            removeAllByPred(save.value.pointLinks, link=>link.pts.length<=1)
         const idx = save.value.points.findIndex(x=>x.id == ptId)
         if(idx >= 0){
             save.value.points.splice(idx, 1)

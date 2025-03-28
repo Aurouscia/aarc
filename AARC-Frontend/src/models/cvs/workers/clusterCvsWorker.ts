@@ -19,7 +19,7 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
     const pointLinkStore = usePointLinkStore()
 
     function getClustersRenderingData(){
-        const clusters = staClusterStore.getStaClusters() || []
+        let clusters = staClusterStore.getStaClusters() || []
         const fakeClusters = pointLinkStore.getLinkLinkedPts()
         for(const fakeCluster of fakeClusters){
             if(clusters.some(c=>c.some(x=>x.id===fakeCluster))){
@@ -27,7 +27,7 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
             }
             const pt = saveStore.getPtById(fakeCluster)
             if(pt){
-                clusters.push([pt]) 
+                clusters = [...clusters, [pt]]
             }
         }
         const polys = clustersToPolys(clusters)
