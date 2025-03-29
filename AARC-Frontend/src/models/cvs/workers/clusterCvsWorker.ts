@@ -7,6 +7,7 @@ import { CvsContext } from "../common/cvsContext";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { sqrt2half } from "@/utils/consts";
 import { usePointLinkStore } from "@/models/stores/pointLinkStore";
+import { isZero } from "@/utils/sgn";
 
 interface ClusterPoly{
     coords:Coord[]
@@ -123,6 +124,7 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
                     poly = polyVert.poly
                 }
             }
+            illPosedPolyJustify(poly)
             polys.push({coords:poly, maxStaSize})
         })
         return polys
@@ -174,6 +176,21 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         const rt2lb = (rt-lb)*sqrt2half
         const area = lt2rb * rt2lb
         return {poly,area}
+    }
+    function illPosedPolyJustify(poly:Coord[]){
+        //在一些浏览器里，若四个点都在同一个点，则不会进行绘制
+        //所以将其中的点略微移动一丁点，以避免这种情况（仍然绘制出一个坨坨）
+        if(poly.length!=4)
+            return
+        const xs = poly.map(x=>x[0])
+        const ys = poly.map(x=>x[1])
+        const xmin = Math.min(...xs)
+        const xmax = Math.max(...xs)
+        const ymin = Math.min(...ys)
+        const ymax = Math.max(...ys)
+        if(isZero(xmax-xmin) && isZero(ymax-ymin)){
+            poly[0][0] -= 0.001
+        }
     }
     return {
         getClustersRenderingData, 
