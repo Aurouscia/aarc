@@ -198,7 +198,7 @@ export const useSnapStore = defineStore('snap',()=>{
         const snapDistLargest = ptSizeLargets * cs.config.snapOctaClingPtPtDist
         const snapThrs = cs.config.snapOctaClingPtPtThrs;
         snapInterPtTargets.value = {snapPoss:[], snapToPts:[]}
-        const pts = saveStore.getPtsInRange(pt.pos, (snapDistLargest + snapThrs)*2, pt.id).filter(x=>x.sta===pt.sta)
+        const pts = saveStore.getPtsInRange(pt.pos, (snapDistLargest + snapThrs)*2, pt.id)
         if(pts.length==0){
             return undefined
         }
