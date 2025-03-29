@@ -125,7 +125,10 @@ const saveShortcutListener = new ShortcutListener(saveData, 's', true)
 const cachePreventerInputId = 'cachePreventerInput'
 const { cachePreventStart, cachePreventStop } = useCachePreventer(cachePreventerInputId)
 const showHiddenLongWarn = ref(false)
-const hiddenLongWatcher = new DocumentHiddenLongWatcher(30*1000, ()=>{showHiddenLongWarn.value = true}) 
+const hiddenLongWatcher = new DocumentHiddenLongWatcher(30*1000, ()=>{
+    if(!isDemo.value)
+        showHiddenLongWarn.value = true
+}) 
 onBeforeMount(async()=>{
     setLeavingPreventing()
     if(!isDemo.value)
