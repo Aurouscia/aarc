@@ -701,6 +701,25 @@ export const useEnvStore = defineStore('env', ()=>{
         activeTextTag.value = newTextTag
     }
 
+    function createPlainPt(){
+        const vco = getViewCenterOffset()
+        let viewCenterCoord:Coord|undefined = [vco.x, vco.y]
+        viewCenterCoord = translateFromOffset(viewCenterCoord)
+        if(!viewCenterCoord)
+            return
+        ensureCoordInCanvas(viewCenterCoord)
+        const newPt:ControlPoint = {
+            id: saveStore.getNewId(),
+            pos: viewCenterCoord,
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.plain 
+        }
+        saveStore.save?.points.push(newPt)
+        activePt.value = newPt
+        activePtType.value = 'body'
+        movedPoint.value = true
+        cursorPos.value = [...newPt.pos]
+    }
     function startCreatingPtLink(){
         endEveryEditing()
         cancelActive()
@@ -764,7 +783,7 @@ export const useEnvStore = defineStore('env', ()=>{
         cvsWidth, cvsHeight, getDisplayRatio,
         rerender, rescaled, getActivePtOpsAvoidance,
         delLine, createLine, lineInfoChanged,
-        createTextTag, duplicateTextTag,
+        createTextTag, duplicateTextTag, createPlainPt,
         startCreatingPtLink, abortCreatingPtLink,
         endEveryEditing, cancelActive, 
         closeOps:()=>setOpsPos(false)
