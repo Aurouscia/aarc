@@ -1,4 +1,4 @@
-import { ControlPoint, ControlPointDir } from "@/models/save";
+import { ControlPoint, ControlPointDir, ControlPointSta } from "@/models/save";
 import { useConfigStore } from "@/models/stores/configStore";
 import { Coord } from "@/models/coord";
 import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
@@ -22,13 +22,12 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         let clusters = staClusterStore.getStaClusters() || []
         const fakeClusters = pointLinkStore.getLinkLinkedPts()
         for(const fakeCluster of fakeClusters){
-            if(clusters.some(c=>c.some(x=>x.id===fakeCluster))){
-                continue
-            }
             const pt = saveStore.getPtById(fakeCluster)
-            if(pt){
-                clusters = [...clusters, [pt]]
-            }
+            if(!pt || pt.sta !== ControlPointSta.sta)
+                continue
+            if(clusters.some(c=>c.some(x=>x.id===fakeCluster)))
+                continue
+            clusters = [...clusters, [pt]]
         }
         const polys = clustersToPolys(clusters)
         return polys
