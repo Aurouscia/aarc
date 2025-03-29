@@ -9,15 +9,15 @@ import { clamp } from '@/utils/lang/clamp';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import LineStyles from './configItems/LineStyles.vue';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
-import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
-import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
+//import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
+//import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
 const configStore = useConfigStore()
 const { config } = storeToRefs(configStore)
 const { preventLeaving } = usePreventLeavingUnsavedStore() //无需rerender的地方需要手动调用“阻止未保存离开”
-const cvsBlocksControl = useCvsBlocksControlStore()
+//const cvsBlocksControl = useCvsBlocksControlStore()
 
 const showLineStyles = ref(false)
 
@@ -60,13 +60,13 @@ function applyBgImage(type:'url'|'opacity'|'left'|'top'|'right'|'bottom'|'width'
     }
 }
 
-const showEditor = ref(false)
-const editorLocalConfig = useEditorLocalConfigStore()
-const { resolution } = storeToRefs(editorLocalConfig)
-function editorResolutionChanged(){
-    editorLocalConfig.saveResolution()
-    cvsBlocksControl.refreshBlocks()
-}
+// const showEditor = ref(false)
+// const editorLocalConfig = useEditorLocalConfigStore()
+// const { resolution } = storeToRefs(editorLocalConfig)
+// function editorResolutionChanged(){
+//     editorLocalConfig.saveResolution()
+//     cvsBlocksControl.refreshBlocks()
+// }
 
 const showOthers = ref(false)
 function removeNoLinePoints(){
@@ -216,6 +216,7 @@ defineExpose({
 </tbody>
 </table>
 
+<!--
 <h2 :class="{sectorShown:showEditor}" @click="showEditor =!showEditor">
     <div class="shownStatusIcon">{{ showEditor? '×':'+' }}</div>
     <div>编辑器</div>
@@ -238,7 +239,7 @@ defineExpose({
         </td>
     </tr>
     </tbody>
-</table>
+</table>-->
 
 <h2 :class="{sectorShown:showOthers}" @click="showOthers = !showOthers">
     <div class="shownStatusIcon">{{ showOthers ? '×':'+' }}</div>

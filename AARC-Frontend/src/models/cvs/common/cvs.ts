@@ -3,7 +3,7 @@ import { CvsBlock, CvsContext } from "./cvsContext";
 import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
 import { defineStore, storeToRefs } from "pinia";
 import { useSaveStore } from "@/models/stores/saveStore";
-import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
+//import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
 
 export function useCvs(canvasIdPrefix:string){
     const bStore = useCvsBlocksControlStore()
@@ -48,7 +48,7 @@ export interface BlockControl{
 }
 export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     const fStore = useCvsFrameStore()
-    const editorLocalConfig = useEditorLocalConfigStore()
+    //const editorLocalConfig = useEditorLocalConfigStore()
     const blocksControl = ref<BlockControl[]>([])
     //原思路：将整个canvas分成若干块，每块的大小和位置都是固定的，这样就可以避免放大（高清）时canvas过大造成爆内存
     //后来发现canvas块状况在切换时会不响应用户的操作，非常影响使用体验，所以放弃了这个方案
@@ -79,26 +79,44 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
     }
 
     function clientToCvsSizeRatio(){
-        const r = editorLocalConfig.readResolution()
-        if(r==='ultra')
-            return 3
-        if(r==='high')
-            return 2.5
+        // const r = editorLocalConfig.readResolution()
+        // if(r==='ultra')
+        //     return 3
+        // if(r==='high')
+        //     return 2.5
         return 2
     }
 
+    const bleed = 0.2
     function refreshBlocks(callReformedHandler = true){
         const cont = fStore.cvsCont
         const frame = fStore.cvsFrame
         if(!frame || !cont)
             return
-        const viewRect = fStore.getViewRectInRatio()
-        const res:BlockControl[] = []
-        const sizeRatio = clientToCvsSizeRatio()
-        const canvasHeight = (frame.clientHeight||10) * sizeRatio
-        const canvasWidth = (frame.clientWidth||10) * sizeRatio
+        const viewRectOriginal = {...fStore.getViewRectInRatio()}
+        const widthRatioOri = viewRectOriginal.right - viewRectOriginal.left
+        const heightRatioOri = viewRectOriginal.bottom - viewRectOriginal.top
+        const viewRect = {...viewRectOriginal}
+        viewRect.left -= widthRatioOri*bleed
+        viewRect.right += widthRatioOri*bleed
+        viewRect.top -= heightRatioOri*bleed
+        viewRect.bottom += heightRatioOri*bleed
+        if(viewRect.left<0)
+            viewRect.left = 0
+        if(viewRect.right>1)
+            viewRect.right = 1
+        if(viewRect.top<0)
+            viewRect.top = 0
+        if(viewRect.bottom>1)
+            viewRect.bottom = 1
         const widthRatio =  (viewRect.right - viewRect.left)
         const heightRatio = (viewRect.bottom - viewRect.top)
+        const xEnlargedBy = widthRatio/widthRatioOri
+        const yEnlargedBy = heightRatio/heightRatioOri
+        const res:BlockControl[] = []
+        const sizeRatio = clientToCvsSizeRatio()
+        const canvasHeight = Math.round((frame.clientHeight||10) * sizeRatio * yEnlargedBy)
+        const canvasWidth = Math.round((frame.clientWidth||10) * sizeRatio * xEnlargedBy)
         const leftRatio = viewRect.left
         const topRatio = viewRect.top
         res.push({
