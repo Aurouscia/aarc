@@ -29,12 +29,12 @@ defineExpose({
         <div class="smallNoteVital">拖动到屏幕左上角即可删除</div>
     </div>
     <div class="toolItem">
-        <button @click="envStore.startCreatingPtLink();fd()">创建出站换乘连线</button>
         <select v-model="creatingLinkType">
             <option :value="ControlPointLinkType.fat">粗线</option>
             <option :value="ControlPointLinkType.thin">细线</option>
             <option :value="ControlPointLinkType.dot">虚线</option>
         </select>
+        <button @click="envStore.startCreatingPtLink();fd()">创建出站换乘连线</button>
     </div>
     <div class="toolItem">
         <button class="off">创建区间类型标记</button>
