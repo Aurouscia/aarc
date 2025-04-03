@@ -29,12 +29,12 @@
   },
   "devDependencies": {
     "@types/color": "^4.2.0",
-    "@types/node": "^22.13.13",
+    "@types/node": "^22.14.0",
     "@vitejs/plugin-vue": "^5.2.3",
     "execa": "^9.5.2",
-    "sass": "^1.86.0",
+    "sass": "^1.86.2",
     "typescript": "^5.8.2",
-    "vite": "^6.2.3",
+    "vite": "^6.2.4",
     "vue-tsc": "^2.2.8"
   }
 }
