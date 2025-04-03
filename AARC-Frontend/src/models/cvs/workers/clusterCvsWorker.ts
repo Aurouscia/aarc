@@ -22,7 +22,7 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
 
     function getClustersRenderingData(){
         let clusters = staClusterStore.getStaClusters() || []
-        const fakeClusters = pointLinkStore.getLinkLinkedPts()
+        const fakeClusters = pointLinkStore.getLinkLinkedPts('excludeDot')
         for(const fakeCluster of fakeClusters){
             const pt = saveStore.getPtById(fakeCluster)
             if(!pt || pt.sta !== ControlPointSta.sta)

@@ -44,10 +44,12 @@ export const usePointLinkStore = defineStore('pointLinkStore',()=>{
         creatingLink.value = undefined
     }
 
-    function getLinkLinkedPts(){
+    function getLinkLinkedPts(excludeDot?:'excludeDot'){
         const pts:number[] = []
         if(saveStore.save?.pointLinks){
             saveStore.save.pointLinks.forEach(link=>{
+                if(excludeDot && link.type === ControlPointLinkType.dot)
+                    return
                 pts.push(...link.pts)
             })
         }
