@@ -12,6 +12,7 @@ import { isZero } from "@/utils/sgn";
 interface ClusterPoly{
     coords:Coord[]
     maxStaSize:number
+    ill:boolean
 }
 export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
     const staClusterStore = useStaClusterStore()
@@ -35,16 +36,31 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
     }
 
     function renderClusters(ctx:CvsContext, data:ClusterPoly[], renderLayer:'carpet'|'body'|'core', transparentMode?:boolean){
-        const forEachPoly = (doSth:(size:number)=>void)=>{
+        const forEachPoly = (getLineWidth:(size:number)=>number, color:string, mustFill?:'mustFill')=>{
             for(const p of data){
-                ctx.beginPath();
-                const firstPos = p.coords[0]
-                ctx.moveTo(firstPos[0], firstPos[1])
-                for(let i=1;i<p.coords.length;i++){
-                    ctx.lineTo(p.coords[i][0], p.coords[i][1])
+                const w = getLineWidth(p.maxStaSize)
+                if(!p.ill){
+                    ctx.beginPath();
+                    const firstPos = p.coords[0]
+                    ctx.moveTo(...firstPos)
+                    for(let i=1;i<p.coords.length;i++){
+                        ctx.lineTo(p.coords[i][0], p.coords[i][1])
+                    }
+                    ctx.closePath()
+                    ctx.lineWidth = w
+                    ctx.strokeStyle = color
+                    ctx.stroke()
+                    if(mustFill){
+                        ctx.fillStyle = color
+                        ctx.fill()
+                    }
+                }else{
+                    ctx.beginPath();
+                    const firstPos = p.coords[0]
+                    ctx.arc(...firstPos, w/2, 0, Math.PI*2)
+                    ctx.fillStyle = color
+                    ctx.fill()
                 }
-                ctx.closePath()
-                doSth(p.maxStaSize)
             }
         }
         ctx.lineJoin = 'round'
@@ -58,41 +74,29 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
                 return
             }
             ctx.globalAlpha = 0.7
-            ctx.strokeStyle = exchangeColor
             forEachPoly((size)=>{
-                const rectLineWidth = (cs.config.ptStaSize + cs.config.ptStaLineWidth) * size * 2
-                ctx.lineWidth = rectLineWidth
-                ctx.stroke()
-            })
+                return (cs.config.ptStaSize + cs.config.ptStaLineWidth) * size * 2
+            }, exchangeColor)
             ctx.globalAlpha = 1
             return
         }
 
         if(renderLayer == 'carpet'){
-            ctx.strokeStyle = bgColor
             forEachPoly((size)=>{
-                const rectLineWidth = (cs.config.ptStaSize + cs.config.ptStaLineWidth) * size * 2
-                ctx.lineWidth = rectLineWidth
-                ctx.stroke()
-            })
+                return (cs.config.ptStaSize + cs.config.ptStaLineWidth) * size * 2
+            }, bgColor)
         }
         else if(renderLayer == 'body'){
-            ctx.strokeStyle = exchangeColor
             forEachPoly((size) => {
-                const rectLineWidth = ((cs.config.ptStaSize * 2) + cs.config.ptStaLineWidth) * size
-                ctx.lineWidth = rectLineWidth
-                ctx.stroke()
-            })
+                return ((cs.config.ptStaSize * 2) + cs.config.ptStaLineWidth) * size
+            }, exchangeColor)
         }
         else{
             ctx.strokeStyle = cs.config.ptStaFillColor
             ctx.fillStyle = cs.config.ptStaFillColor
             forEachPoly((size) => {
-                const rectLineWidth = ((cs.config.ptStaSize * 2) - cs.config.ptStaLineWidth) * size
-                ctx.lineWidth = rectLineWidth
-                ctx.fill()
-                ctx.stroke()
-            })
+                return ((cs.config.ptStaSize * 2) - cs.config.ptStaLineWidth) * size
+            }, cs.config.ptStaFillColor, 'mustFill')
         }
     }
 
@@ -124,8 +128,11 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
                     poly = polyVert.poly
                 }
             }
-            illPosedPolyJustify(poly)
-            polys.push({coords:poly, maxStaSize})
+            polys.push({
+                coords:poly,
+                maxStaSize,
+                ill:isIllPosedPoly(poly)
+            })
         })
         return polys
     }
@@ -177,11 +184,9 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         const area = lt2rb * rt2lb
         return {poly,area}
     }
-    function illPosedPolyJustify(poly:Coord[]){
-        //在一些浏览器里，若四个点都在同一个点，则不会进行绘制
-        //所以将其中的点略微移动一丁点，以避免这种情况（仍然绘制出一个坨坨）
+    function isIllPosedPoly(poly:Coord[]){
         if(poly.length!=4)
-            return
+            return false
         const xs = poly.map(x=>x[0])
         const ys = poly.map(x=>x[1])
         const xmin = Math.min(...xs)
@@ -189,8 +194,9 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         const ymin = Math.min(...ys)
         const ymax = Math.max(...ys)
         if(isZero(xmax-xmin) && isZero(ymax-ymin)){
-            poly[0][0] -= 0.001
+            return true
         }
+        return false
     }
     return {
         getClustersRenderingData, 
