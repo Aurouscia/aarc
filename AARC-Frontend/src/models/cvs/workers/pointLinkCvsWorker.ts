@@ -61,6 +61,7 @@ export const usePointLinkCvsWorker = defineStore('pointLinkCvsWorker',()=>{
                 pt0Pos = pts[0].pos
                 pt1Pos = pts[1].pos
             }else{
+                //type 为 dot 或 dotCover
                 const carpetLineWidth = lineWidth * 2
                 let pt0SizeRatio = 0
                 let pt1SizeRatio = 0
@@ -93,6 +94,7 @@ export const usePointLinkCvsWorker = defineStore('pointLinkCvsWorker',()=>{
                     ctx.lineTo(...pts[1].pos)
                     ctx.stroke()
                 } else {
+                    //type 为 dot 或 dotCover
                     const dash = autoDash(pt0Pos, pt1Pos, lineWidth, lineWidth*2)
                     ctx.moveTo(...pt0Pos)
                     ctx.lineTo(...pt1Pos)

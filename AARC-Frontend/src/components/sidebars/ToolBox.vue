@@ -32,7 +32,8 @@ defineExpose({
         <select v-model="creatingLinkType">
             <option :value="ControlPointLinkType.fat">粗线</option>
             <option :value="ControlPointLinkType.thin">细线</option>
-            <option :value="ControlPointLinkType.dot">虚线</option>
+            <option :value="ControlPointLinkType.dot">虚线(原色)</option>
+            <option :value="ControlPointLinkType.dotCover">虚线(覆盖)</option>
         </select>
         <button @click="envStore.startCreatingPtLink();fd()">创建车站间连线</button>
     </div>

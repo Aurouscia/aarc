@@ -22,6 +22,8 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
 
     function getClustersRenderingData(){
         let clusters = staClusterStore.getStaClusters() || []
+        //伪集群：“点连接”的两端，若不属于集群，需要被涂成集群的样式
+        //但需要排除类型为“dot”的点连接，dot连接需要保持原色，而dotCover需要涂色
         const fakeClusters = pointLinkStore.getLinkLinkedPts('excludeDot')
         for(const fakeCluster of fakeClusters){
             const pt = saveStore.getPtById(fakeCluster)
