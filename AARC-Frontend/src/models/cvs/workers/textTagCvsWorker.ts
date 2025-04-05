@@ -38,7 +38,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         const commonLineBuiltinRatio = 1.2
         const mainRatio = (t.textOp?.size || 1) * commonLineBuiltinRatio
         const subRatio = (t.textSOp?.size || 1) * commonLineBuiltinRatio
-        const textColor = colorProcStore.colorProcInvBinary.convert(lineInfo.color)
+        const textColor = lineInfo.tagTextColor ?? colorProcStore.colorProcInvBinary.convert(lineInfo.color)
         const mainEmpty = !t.text?.trim()
         const subEmpty = mainEmpty && !t.textS?.trim()
         const optMain:DrawTextBodyOption = {

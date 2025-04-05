@@ -66,6 +66,7 @@ export interface Line{
     type:LineType
     isFilled?:boolean
     style?:number
+    tagTextColor?:string
 }
 export interface LineStyle{
     id:number

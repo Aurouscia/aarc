@@ -45,9 +45,6 @@ function lineStaSizeChanged(){
     props.line.ptSize = lineStaSizeBinded.value
     envStore.lineInfoChanged(props.line)
 }
-function textTagCreateBtnClickHandler(){
-    envStore.createTextTag(props.line.id)
-}
 
 onMounted(()=>{
     lineWidthBinded.value = props.line.width || 1
@@ -116,11 +113,16 @@ onMounted(()=>{
             <div>勾选本项时<br/>地形必须是环形</div>
         </div>
     </div>
-    <div class="configItem">
-        <div>标签</div>
-        <div class="btnItem">
-            <button class="minor" @click="textTagCreateBtnClickHandler">生成标签</button>
-            <div class="smallNote">将标签拖到屏幕<br/>左上角即可删除</div>
+    <div v-if="line.type===LineType.common" class="configItem">
+        <div>标签<br/>文字</div>
+        <div style="flex-grow: 1;">
+            <div class="selectItem">
+                <select v-model="line.tagTextColor" @change="envStore.lineInfoChanged(line)">
+                    <option :value="undefined">自动</option>
+                    <option :value="'black'">黑色</option>
+                    <option :value="'white'">白色</option>
+                </select>
+            </div>
         </div>
     </div>
 </div>
