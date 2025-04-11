@@ -54,8 +54,8 @@ import GiteeInfo from '@/components/common/GiteeGitInfo.vue';
         <h3>区间标记</h3>
         <p>高架、单向运行、施工中、规划中</p>
     </div>
-    <div>
-        <h3>出站换乘标记</h3>
+    <div class="done">
+        <h3>出站换乘标记（已完成✔）</h3>
         <p>连接邻近站点的虚线，标识它们可以出站换乘</p>
     </div>
     <div>
