@@ -31,8 +31,8 @@ const {
 } = useTwinTextarea({
     main: textMain,
     sub: textSub,
-    mainMaxRow: 2,
-    subMaxRow: 3,
+    mainMaxRow: 10,
+    subMaxRow: 10,
     apply: textTagEditStore.applyText,
     endEditing: textTagEditStore.endEditing
 })
@@ -44,7 +44,7 @@ const {
             <textarea v-model="textMain" ref="mainInput" :rows="mainRows" @input="inputHandler('main')" :placeholder="inputPlaceholder"
                 @keydown="keyHandler" spellcheck="false"></textarea>
             <textarea v-model="textSub" ref="subInput" :rows="subRows" @input="inputHandler('sub')" :placeholder="inputPlaceholder"
-                @keydown="keyHandler" class="subText" spellcheck="false"></textarea>
+                @keydown="keyHandler" class="secondary" spellcheck="false"></textarea>
         </div>
         <div @click="envStore.duplicateTextTag();textTagEditStore.endEditing()" class="duplicateBtn sqrBtn withShadow">
             <div class="dupA"></div><div class="dupB"></div>
@@ -60,11 +60,4 @@ const {
 </template>
 
 <style scoped lang="scss">
-.textTagEditor{
-    max-width: 300px;
-}
-textarea.subText{
-    margin-top: 5px;
-    font-size: 15px;
-}
 </style>

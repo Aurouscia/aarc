@@ -18,8 +18,8 @@ const {
 } = useTwinTextarea({
     main: nameMain,
     sub: nameSub,
-    mainMaxRow: 2,
-    subMaxRow: 3,
+    mainMaxRow: 10,
+    subMaxRow: 10,
     apply: nameEditStore.applyName,
     endEditing: nameEditStore.endEditing
 })
@@ -31,7 +31,7 @@ const {
             @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler"
             spellcheck="false" placeholder="请输入站名"></textarea>
         <textarea v-model="nameSub" ref="nameSubInput" :rows="nameSubRows" @input="inputHandler('sub')"
-            @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler" class="subName"
+            @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler" class="secondary"
             spellcheck="false" placeholder="请输入外语站名/副站名"></textarea>
         <div @click="nameEditStore.controlPointOptionsPanelOpen" class="settingsBtn sqrBtn withShadow">
             <img :src="settingsImg"/>
@@ -44,8 +44,4 @@ const {
 </template>
 
 <style scoped lang="scss">
-textarea.subName{
-    margin-top: 5px;
-    font-size: 15px;
-}
 </style>

@@ -68,7 +68,7 @@
     }
 }
 .bangPanel.retracted{
-    top: -190px;
+    top: -210px;
     transition-timing-function: ease-in;
 }
 .bangPanel textarea{
@@ -83,4 +83,10 @@
     background-color: white;
     padding: 3px;
     border-radius: 5px;
+    max-height: 65px;
+}
+.bangPanel textarea.secondary{
+    margin-top: 5px;
+    font-size: 15px;
+    max-height: 80px;
 }

@@ -30,7 +30,7 @@ export function useTwinTextarea(options:{
     }
     function inputHandler(type:'main'|'sub'){
         if(type == 'main'){
-            //主站名限制两行
+            //主站名限制
             const n = main.value
             if(n){
                 const rowCount = mainRows.value
@@ -42,7 +42,7 @@ export function useTwinTextarea(options:{
                 }
             }
         }else{
-            //副站名限制三行
+            //副站名限制
             const n = sub.value
             if(n){
                 const rowCount = subRows.value
