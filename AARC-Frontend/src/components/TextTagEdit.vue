@@ -40,7 +40,7 @@ const {
 
 <template>
     <div class="textTagEditor bangPanel" :class="{retracted:!editing}" ref="textEditorDiv">
-        <div class="inputPart">
+        <div>
             <textarea v-model="textMain" ref="mainInput" :rows="mainRows" @input="inputHandler('main')" :placeholder="inputPlaceholder"
                 @keydown="keyHandler" spellcheck="false"></textarea>
             <textarea v-model="textSub" ref="subInput" :rows="subRows" @input="inputHandler('sub')" :placeholder="inputPlaceholder"
@@ -62,15 +62,6 @@ const {
 <style scoped lang="scss">
 .textTagEditor{
     max-width: 300px;
-}
-.inputPart{
-    flex-shrink: 3;
-}
-.optionsPart{
-    flex-shrink: 2;
-    background-color: white;
-    border-radius: 5px;
-    width: 300px;
 }
 textarea.subText{
     margin-top: 5px;

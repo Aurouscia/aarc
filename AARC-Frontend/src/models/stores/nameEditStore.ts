@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { useConfigStore } from "./configStore";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
+import ControlPointOptions from "@/components/sidebars/options/ControlPointOptions.vue";
 
 export const useNameEditStore = defineStore('nameEdit', ()=>{
     const cs = useConfigStore()
@@ -17,6 +18,7 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
     const editing = ref(false)
     const nameInputFocusHandler = ref<()=>void>()
     const nameEditorDiv = ref<HTMLDivElement>()
+    const controlPointOptionsPanel = ref<InstanceType<typeof ControlPointOptions>>()
     function startEditing(ptId:number){
         endEditing()
         if(saveStore.isPtNoSta(ptId))
@@ -29,6 +31,17 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
             editing.value = true
         }
     }
+    function controlPointOptionsPanelOpen(){
+        if(!editing.value)
+            return
+        const pt = saveStore.getPtById(targetPtId.value || -1)
+        if(!pt)
+            return
+        if(controlPointOptionsPanel.value){
+            controlPointOptionsPanel.value.startEditing(pt)
+        }
+    }
+    
     function applyName(){
         const pt = saveStore.getPtById(targetPtId.value || -1)
         if(pt){
@@ -76,6 +89,7 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
     }
     return { targetPtId, nameMain, nameSub, editing, edited,
         startEditing, endEditing, toggleEditing, applyName,
-        nameInputFocusHandler, nameEditorDiv, getEditorDivEffectiveHeight
+        nameInputFocusHandler, nameEditorDiv, getEditorDivEffectiveHeight,
+        controlPointOptionsPanel, controlPointOptionsPanelOpen
     }
 })

@@ -3,9 +3,11 @@ import { useNameEditStore } from '@/models/stores/nameEditStore';
 import { storeToRefs } from 'pinia';
 import { useTwinTextarea } from './composables/useTwinTextarea';
 import foldImg from '@/assets/ui/fold.svg'
+import settingsImg from '@/assets/ui/settings.svg'
+import ControlPointOptions from './sidebars/options/ControlPointOptions.vue';
 
 const nameEditStore = useNameEditStore()
-const { nameMain, nameSub, editing, nameEditorDiv } = storeToRefs(nameEditStore)
+const { nameMain, nameSub, editing, edited, nameEditorDiv, controlPointOptionsPanel } = storeToRefs(nameEditStore)
 const { 
     mainInput: nameMainInput,
     subInput: nameSubInput,
@@ -31,10 +33,14 @@ const {
         <textarea v-model="nameSub" ref="nameSubInput" :rows="nameSubRows" @input="inputHandler('sub')"
             @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler" class="subName"
             spellcheck="false" placeholder="请输入外语站名/副站名"></textarea>
+        <div @click="nameEditStore.controlPointOptionsPanelOpen" class="settingsBtn sqrBtn withShadow">
+            <img :src="settingsImg"/>
+        </div>
         <div @click="nameEditStore.endEditing()" class="retractBtn sqrBtn withShadow">
             <img :src="foldImg"/>
         </div>
     </div>
+    <ControlPointOptions @changed="edited=true" ref="controlPointOptionsPanel"></ControlPointOptions>
 </template>
 
 <style scoped lang="scss">

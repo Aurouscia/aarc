@@ -50,7 +50,7 @@ defineExpose({
             <table class="fullWidth"><tbody>
                 <tr>
                     <td>坐标</td>
-                    <td class="textTagCoord">
+                    <td class="coord">
                         <input type="number" v-model="editing.pos[0]" @change="emit('changed')"/><br/>
                         <input type="number" v-model="editing.pos[1]" @change="emit('changed')"/>
                     </td>
@@ -111,38 +111,5 @@ defineExpose({
 </template>
 
 <style scoped lang="scss">
-.optionSection{
-    border-bottom: 1px solid #aaa;
-    padding: 10px;
-    margin-bottom: 10px;
-}
-td.colorPickerTd{
-    display: flex;
-    justify-content: center;
-    padding: 10px;
-}
-.textSize{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    input[type=range]{
-        margin: 0px;
-    }
-    input[type=number]{
-        padding: 1px;
-        margin: 0px;
-        width: 70px;
-        text-align: center;
-    }
-}
-.textTagCoord{
-    input{
-        width: 130px;
-    }
-}
-h2{
-    text-align: center;
-    font-size: 18px;
-}
+@use './options.scss';
 </style>

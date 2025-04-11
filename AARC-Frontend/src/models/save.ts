@@ -29,6 +29,7 @@ export interface ControlPoint{
     name?:string
     nameS?:string
     nameP?:Coord
+    nameSize?:number
 }
 
 export enum ControlPointLinkType{
