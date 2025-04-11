@@ -2,7 +2,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { computed, ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { Coord, SgnCoord } from "../coord";
-import { listenPureClick } from "@/utils/eventUtils/pureClick";
+import { listenPureClick, PureClickType } from "@/utils/eventUtils/pureClick";
 import { eventClientCoord } from "@/utils/eventUtils/eventClientCoord";
 import { OpsBtn, useOpsStore } from "./opsStore";
 import { ColorPreset, ControlPoint, ControlPointDir, ControlPointSta, Line, LineType, TextTag } from "../save";
@@ -107,10 +107,14 @@ export const useEnvStore = defineStore('env', ()=>{
         nameEditStore.edited = false
         textTagEditStore.edited = false
     }
-    function pureClickHandler(clientCord:Coord, isRightBtn?:boolean){
+    function pureClickHandler(clientCord:Coord, clickType?:PureClickType){
         const coord = translateFromClient(clientCord);
         if(!coord)
             return
+
+        const isRightBtnOnly = clickType === 'right' 
+        const isRightBtnAndCtrl = clickType === 'ctrlAndRight'
+        const isRightBtn = isRightBtnOnly || isRightBtnAndCtrl
 
         snapStore.snapInterPtTargets = undefined
         //根据当前状态判断是否需要重新渲染主画布
@@ -179,7 +183,7 @@ export const useEnvStore = defineStore('env', ()=>{
             activePtType.value = 'name'
             const namingPtChanged = activePtIdJustNow !== staName.id
             if(namingPtChanged)
-                nameEditStore.startEditing(staName.id, isRightBtn)
+                nameEditStore.startEditing(staName.id, isRightBtnOnly)
             else if(opsStore.showingOps && nameEditStore.editing){
                 //如果正在命名的车站没变，而且菜单显示着，则保留站名编辑
             }else{
@@ -205,7 +209,7 @@ export const useEnvStore = defineStore('env', ()=>{
             activeTextTag.value = textTagMatch
             setOpsPos(false)
             endEveryEditing()
-            textTagEditStore.startEditing(textTagMatch.id, isRightBtn)
+            textTagEditStore.startEditing(textTagMatch.id, isRightBtnOnly)
             return
         }
 
@@ -218,12 +222,19 @@ export const useEnvStore = defineStore('env', ()=>{
             activePt.value = pt
             activePtType.value = 'body'
             cursorPos.value = [...pt.pos]
-            if(isRightBtn){
+            if(isRightBtnOnly){
                 //右键点击控制点，切换其方向
                 if(pt.dir===ControlPointDir.incline)
                     pt.dir = ControlPointDir.vertical
                 else
                     pt.dir = ControlPointDir.incline
+                movedPoint.value = true
+            }else if(isRightBtnAndCtrl){
+                //右键+ctrl点击切换控制点sta
+                if(pt.sta===ControlPointSta.sta)
+                    pt.sta = ControlPointSta.plain
+                else
+                    pt.sta = ControlPointSta.sta
                 movedPoint.value = true
             }else{
                 if(!opsStore.clientPos || activePtChanged){

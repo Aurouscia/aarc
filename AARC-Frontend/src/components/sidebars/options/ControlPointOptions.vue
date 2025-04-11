@@ -49,9 +49,11 @@ defineExpose({
             </div>
         </div>
     </div>
-    <div class="smallNote" style="text-align: center;"><b>
-        提示：右键点击站名可直接打开本菜单
-    </b></div>
+    <div class="smallNote" style="text-align: center;">
+        <b>右键点击站名</b>可直接打开本菜单<br/>
+        <b>右键点击站点</b>可以旋转站点<br/>
+        <b>右键+ctrl点击站点</b>可以切换站点显示
+    </div>
 </SideBar>
 </template>
 
