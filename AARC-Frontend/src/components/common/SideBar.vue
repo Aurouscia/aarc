@@ -50,7 +50,8 @@ function fold(){
     window.clearTimeout(movingTimer)
     coverStyle.value = {
         display:'block',
-        opacity:0
+        opacity:0,
+        pointerEvents:'none'
     }
     barStyle.value = {
         right: foldedRight,
