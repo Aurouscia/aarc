@@ -181,14 +181,18 @@ export const useEnvStore = defineStore('env', ()=>{
             endEveryEditing(true)
             activePt.value = saveStore.getPtById(staName.id)
             activePtType.value = 'name'
-            const namingPtChanged = activePtIdJustNow !== staName.id
-            if(namingPtChanged)
-                nameEditStore.startEditing(staName.id, isRightBtnOnly)
-            else if(opsStore.showingOps && nameEditStore.editing){
-                //如果正在命名的车站没变，而且菜单显示着，则保留站名编辑
+            if(isRightBtnOnly){
+                nameEditStore.startEditing(staName.id, true)
             }else{
-                //如果正在命名的车站没变，而且菜单未显示，则收起站名编辑
-                nameEditStore.toggleEditing(staName.id)
+                const namingPtChanged = activePtIdJustNow !== staName.id
+                if(namingPtChanged)
+                    nameEditStore.startEditing(staName.id)
+                else if(opsStore.showingOps && nameEditStore.editing){
+                    //如果正在命名的车站没变，而且菜单显示着，则保留站名编辑
+                }else{
+                    //如果正在命名的车站没变，而且菜单未显示，则收起站名编辑
+                    nameEditStore.toggleEditing(staName.id)
+                }
             }
             setOpsPos(false)
             //立即检查该点是否是snap位置
