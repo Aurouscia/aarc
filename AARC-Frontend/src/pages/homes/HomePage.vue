@@ -2,6 +2,7 @@
 import { guideInfo } from '@/app/guideInfo';
 import NewestSaves from '../components/NewestSaves.vue';
 import GiteeInfo from '@/components/common/GiteeGitInfo.vue';
+import Notice from '@/components/common/Notice.vue';
 
 
 </script>
@@ -18,6 +19,12 @@ import GiteeInfo from '@/components/common/GiteeGitInfo.vue';
 <div style="margin: 20px 0px 20px 0px;">
     <NewestSaves></NewestSaves>
 </div>
+<Notice :type="'info'" :title="'2025-4-11更新'">
+    1. 可单独编辑单个车站的站名大小<br/>
+    2. 允许文本标签/站名文字更多行<br/>
+    3. ctrl+右键点击车站，可切换其是否显示<br/>
+    4. 修复了侧边栏关闭中点击无效的问题<br/>
+</Notice>
 <GiteeInfo></GiteeInfo>
 <div class="roadmap">
     <h2>近期规划</h2>

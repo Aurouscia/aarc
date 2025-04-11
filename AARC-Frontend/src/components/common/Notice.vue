@@ -38,18 +38,15 @@ onMounted(()=>{
     margin-bottom: 3px;
 }
 .notice.danger{
-    background-color: plum;
-    border: 2px solid red;
+    background-color: red;
     color:white
 }
 .notice.warn{
-    background-color: rgb(248, 226, 186);
-    border: 2px solid orange;
+    background-color: orange;
     color:rgb(174, 113, 0)
 }
 .notice.info{
-    background-color: #aaa;
-    border:2px solid #666;
+    background-color: #666;
     color:white
 }
 .notice{
