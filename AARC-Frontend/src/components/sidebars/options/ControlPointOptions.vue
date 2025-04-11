@@ -49,9 +49,12 @@ defineExpose({
             </div>
         </div>
     </div>
+    <div class="smallNote" style="text-align: center;"><b>
+        提示：右键点击站名可直接打开本菜单
+    </b></div>
 </SideBar>
 </template>
 
 <style scoped lang="scss">
-@use './options.scss';
+@use './shared/options.scss';
 </style>

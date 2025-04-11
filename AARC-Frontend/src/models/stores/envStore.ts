@@ -171,7 +171,7 @@ export const useEnvStore = defineStore('env', ()=>{
 
 
         //判断是否在站名上
-        const staName = !isRightBtn && onStaName(coord)
+        const staName = onStaName(coord)
         if(staName){
             //点到站名上了
             endEveryEditing(true)
@@ -179,7 +179,7 @@ export const useEnvStore = defineStore('env', ()=>{
             activePtType.value = 'name'
             const namingPtChanged = activePtIdJustNow !== staName.id
             if(namingPtChanged)
-                nameEditStore.startEditing(staName.id)
+                nameEditStore.startEditing(staName.id, isRightBtn)
             else if(opsStore.showingOps && nameEditStore.editing){
                 //如果正在命名的车站没变，而且菜单显示着，则保留站名编辑
             }else{

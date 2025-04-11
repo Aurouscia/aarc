@@ -111,5 +111,5 @@ defineExpose({
 </template>
 
 <style scoped lang="scss">
-@use './options.scss';
+@use './shared/options.scss';
 </style>
