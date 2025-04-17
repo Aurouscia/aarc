@@ -61,8 +61,9 @@ defineExpose({
                     <td>边距</td>
                     <td>
                         <div class="viewableRange">
-                            <input type="range" v-model="editing.padding" :min="0" :max="5" :step="0.25" @change="emit('changed')"/>
-                            <input type="number" v-model="editing.padding" :min="0" :max="5" @change="emit('changed')"/>
+                            <!--TODO：暂时限制最小值，因为0要留给全局默认值-->
+                            <input type="range" v-model="editing.padding" :min="0.5" :max="5" :step="0.25" @change="emit('changed')"/>
+                            <input type="number" v-model="editing.padding" :min="0.5" :max="5" @change="emit('changed')"/>
                             <div class="smallNote">暂时仅对线路名称标签有效</div>
                         </div>
                     </td>
