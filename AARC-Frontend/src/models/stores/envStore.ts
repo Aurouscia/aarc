@@ -612,6 +612,7 @@ export const useEnvStore = defineStore('env', ()=>{
                                 saveStore.save.points.splice(ptIdx, 1)
                             }
                         }
+                        saveStore.removePointLinkByPt(pt)
                     }
                 }
             }
