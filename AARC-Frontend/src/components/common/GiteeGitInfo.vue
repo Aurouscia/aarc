@@ -31,6 +31,9 @@ onMounted(()=>{
 <template>
     <div ref="scriptContainer"></div>
     <div ref="gitWidget" id="osc-gitee-widget-tag"></div>
+    <div class="smallNote" style="text-align: center;">
+        代码提交可能不代表实际运营情况
+    </div>
 </template>
 
 <style>

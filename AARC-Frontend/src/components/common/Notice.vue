@@ -43,7 +43,7 @@ onMounted(()=>{
 }
 .notice.warn{
     background-color: orange;
-    color:rgb(174, 113, 0)
+    color:white
 }
 .notice.info{
     background-color: #666;

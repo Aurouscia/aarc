@@ -19,12 +19,17 @@ import Notice from '@/components/common/Notice.vue';
 <div style="margin: 20px 0px 20px 0px;">
     <NewestSaves></NewestSaves>
 </div>
-<Notice :type="'info'" :title="'2025-4-11更新'">
-    1. 可单独编辑单个车站的站名大小<br/>
-    2. 允许文本标签/站名文字更多行<br/>
-    3. ctrl+右键点击车站，可切换其是否显示<br/>
-    4. 修复了侧边栏关闭中点击无效的问题<br/>
-</Notice>
+<div class="releaseNotes">
+    <Notice :type="'info'" :title="'2025-4-17更新'">
+        1. 可编辑线路名标签的边距<br/>
+        2. 修复了删除整条线路时，“出站换乘连线”残留的问题
+    </Notice>
+    <Notice :type="'warn'" :title="'正在开发'">
+        1. 自定义线路分组功能（分为多个列表）<br/>
+        2. 线路叠加顺序设置（z-index）<br/>
+        3. 站点/线路搜索定位功能
+    </Notice>
+</div>
 <GiteeInfo></GiteeInfo>
 <div class="roadmap">
     <h2>近期规划</h2>
@@ -89,11 +94,20 @@ import Notice from '@/components/common/Notice.vue';
 </div>
 <div class="openSourceNote">
     本项目以<a href="https://apache.org/licenses/LICENSE-2.0" target="_blank">Apache-2.0</a>开源许可证提供，可私有部署和商用。
-    欢迎对<a href="https://gitee.com/au114514/aarc" target="_blank">本项目源码</a>做出改进贡献。
+    欢迎对本项目源码作出贡献或提出改进意见。<br/>
+    <a href="https://gitee.com/au114514/aarc" target="_blank">Gitee(本体)</a><br/>
+    <a href="https://github.com/Aurouscia/aarc" target="_blank">Github(自动同步镜像)</a>
 </div>
 </template>
 
 <style scoped lang="scss">
+.releaseNotes{
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: center;
+   align-items: flex-start;
+   gap: 10px;
+}
 .welcome{
     h1, p{
         text-align: center;

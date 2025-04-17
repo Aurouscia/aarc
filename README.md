@@ -8,6 +8,11 @@ Advanced Abstract Route Canvas
 ## 使用地址
 http://aarc.jowei19.com
 
+## 项目地址
+[Gitee（本体）](https://gitee.com/au114514/aarc)  
+[Github（自动同步镜像）](https://github.com/Aurouscia/aarc)  
+issue请在gitee提出，github那边一般不看
+
 ## 主要功能
 - 绘制线条角度为45度整数倍的线路图，以及车站、水体、出站换乘、线路列表等内容
 - 完全支持在所有类型设备（PC/平板/手机）上进行编辑，可双指或滚轮缩放视角
@@ -31,7 +36,8 @@ http://aarc.jowei19.com
 2. [node客户端](https://nodejs.org/en) 尽可能新版，并确认命令行中有npm命令可用
 3. [git客户端](https://git-scm.com/downloads) 用来下载代码和提交更新
 4. [visual studio code](https://code.visualstudio.com/download)（和第一条是两个东西）用来编辑前端代码
-5. 一台windows系统的服务器（照理说linux的也行，请自行研究.net网站部署方法）
+5. 一台windows系统的服务器（照理说linux的也行，请自行研究.net网站部署方法）  
+TODO：dockerfile
 
 ### 步骤
 1. 下载代码文件  
