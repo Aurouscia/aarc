@@ -99,6 +99,7 @@ export interface TextTag{
     textS?:string
     textOp?:TextOptions
     textSOp?:TextOptions
+    padding?:number
     //rot?:FormalRotation
 }
 export interface TextOptions{

@@ -8,6 +8,7 @@ import { coordSub } from "@/utils/coordUtils/coordMath";
 import { drawText, DrawTextBodyOption, drawTextForLineName } from "@/utils/drawUtils/drawText";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
+import { enlargeRect } from "@/utils/coordUtils/coordRect";
 
 export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     const saveStore = useSaveStore()
@@ -65,10 +66,15 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             ctx.fillRect(...lu, ...wh)
             ctx.lineJoin = 'round'
             ctx.strokeStyle = lineInfo.color
-            ctx.lineWidth = 14
-            ctx.strokeRect(...lu, ...wh)
+            const paddingLineWidth = cs.config.lineWidth * (t.padding?? 1)
+            const paddingValue = paddingLineWidth/2
+            if(paddingValue>0){
+                ctx.lineWidth = paddingLineWidth
+                ctx.strokeRect(...lu, ...wh)
+            }
             drawTextForLineName(ctx, t.pos, lineNameRectAlign, 0, optMain, optSub, false, 'draw')
-            textTagRectStore.setTextTagRect(t.id, rect)
+            const rectEnlarged = enlargeRect(rect, paddingValue)
+            textTagRectStore.setTextTagRect(t.id, rectEnlarged)
         }
         
     }

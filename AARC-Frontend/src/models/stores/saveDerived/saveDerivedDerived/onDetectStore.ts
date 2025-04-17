@@ -7,7 +7,7 @@ import { useFormalizedLineStore } from "../formalizedLineStore";
 import { useConfigStore } from "../../configStore";
 import { coordOnLineOfFormalPts } from "@/utils/coordUtils/coordOnLine";
 import { useStaNameRectStore } from "../staNameRectStore";
-import { rectInside } from "@/utils/coordUtils/coordInsideRect";
+import { rectInside } from "@/utils/coordUtils/coordRect";
 import { ExtendBtn, useLineExtendStore } from "./lineExtendStore";
 import { useTextTagRectStore } from "../textTagRectStore";
 

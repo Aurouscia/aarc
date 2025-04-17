@@ -38,7 +38,7 @@ defineExpose({
         </div>
         <h2>站名尺寸</h2>
         <div class="optionSection">
-            <div class="textSize" v-if="editing.nameSize!==undefined">
+            <div class="viewableRange" v-if="editing.nameSize!==undefined">
                 <input type="range" v-model="editing.nameSize" :min="0" :max="3" :step="0.25" @change="emit('changed')"/>
                 <input type="number" v-model="editing.nameSize" :min="0" :max="3" @change="emit('changed')"/>
             </div>
