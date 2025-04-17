@@ -1,4 +1,4 @@
-import { ColorPreset, LineType, Save } from "@/models/save";
+import { ColorPreset, ControlPointLinkType, LineType, Save } from "@/models/save";
 import { ControlPointDir, ControlPointSta } from "@/models/save";
 
 export const devSave:Save = {
@@ -239,6 +239,12 @@ export const devSave:Save = {
             textS: "some city subway route map",
             textOp: {size:2, color:'#008FFA'},
             textSOp: {size:2, color:'#999999'}
+        }
+    ],
+    pointLinks:[
+        {
+            pts: [3, 8],
+            type: ControlPointLinkType.dot
         }
     ],
     config:{}

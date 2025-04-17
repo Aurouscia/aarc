@@ -326,6 +326,14 @@ export const useSaveStore = defineStore('save', () => {
         if(save.value.pointLinks)
             removeAllByPred(save.value.pointLinks, link=>link.pts.length<=1)
     }
+    function removeDanglingPointLinks(){
+        if(!save.value || !save.value.pointLinks)
+            return;
+        save.value.pointLinks = save.value.pointLinks.filter(link=>{
+            const pts = getPtsByIds(link.pts)
+            return pts.length>1
+        })
+    }
     function ensureLinesOrderedByType(){
         if(!save.value)
             throw Error('找不到存档')
@@ -492,7 +500,7 @@ export const useSaveStore = defineStore('save', () => {
         getLineActualColor, linesActualColorSame, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getTextTagById, getPointLinksByPt,
         insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType,
-        removePt, removePtFromLine, removeNoLinePoints, removePointLinkByPt, tryMergePt, isNamedPt,
+        removePt, removePtFromLine, removeNoLinePoints, removePointLinkByPt, removeDanglingPointLinks, tryMergePt, isNamedPt,
         removeTextTag, moveEverything, setCvsSize,
         isLineTypeWithoutSta, isPtNoSta,
         getLineCount, getStaCount

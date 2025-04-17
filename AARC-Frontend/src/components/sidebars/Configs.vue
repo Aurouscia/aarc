@@ -60,18 +60,14 @@ function applyBgImage(type:'url'|'opacity'|'left'|'top'|'right'|'bottom'|'width'
     }
 }
 
-// const showEditor = ref(false)
-// const editorLocalConfig = useEditorLocalConfigStore()
-// const { resolution } = storeToRefs(editorLocalConfig)
-// function editorResolutionChanged(){
-//     editorLocalConfig.saveResolution()
-//     cvsBlocksControl.refreshBlocks()
-// }
-
 const showOthers = ref(false)
 function removeNoLinePoints(){
     saveStore.removeNoLinePoints()
     envStore.rerender([], undefined)
+}
+function removeDanglingPointLinks(){
+    saveStore.removeDanglingPointLinks()
+    envStore.rerender([], [])
 }
 const { browserInfo } = storeToRefs(useBrowserInfoStore())
 const visibilityChangedTimes = ref(0)
@@ -216,30 +212,6 @@ defineExpose({
 </tbody>
 </table>
 
-<!--
-<h2 :class="{sectorShown:showEditor}" @click="showEditor =!showEditor">
-    <div class="shownStatusIcon">{{ showEditor? '×':'+' }}</div>
-    <div>编辑器</div>
-</h2>
-<table v-show="showEditor" class="fullWidth">
-    <tbody>
-    <tr>
-        <td>清晰度</td>
-        <td>
-            <select v-model="resolution" @change="editorResolutionChanged">
-                <option :value="'standard'">标清</option>
-                <option :value="'high'">高清</option>
-                <option :value="'ultra'">超清</option>
-            </select>
-            <div class="smallNote">
-                量力而行<br/>
-                建议仅在windows使用标清以上<br/>
-                如果卡顿严重请调低
-            </div>
-        </td>
-    </tr>
-    </tbody>
-</table>-->
 
 <h2 :class="{sectorShown:showOthers}" @click="showOthers = !showOthers">
     <div class="shownStatusIcon">{{ showOthers ? '×':'+' }}</div>
@@ -254,6 +226,14 @@ defineExpose({
         <td>
             <b>清除无线路车站</b>
             <div class="explain">仅限无站名的车站</div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button @click="removeDanglingPointLinks">执行</button>
+        </td>
+        <td>
+            <b>清除残留车站连线</b>
         </td>
     </tr>
     <tr v-if="browserInfo">
