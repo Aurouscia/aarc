@@ -37,8 +37,8 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     }
     function renderForCommonLine(ctx:CvsContext, t:TextTag, lineInfo:Line){
         const commonLineBuiltinRatio = 1.2
-        const mainRatio = (t.textOp?.size || 1) * commonLineBuiltinRatio
-        const subRatio = (t.textSOp?.size || 1) * commonLineBuiltinRatio
+        const mainRatio = getFontSize(t.textOp, cs.config.textTagForLine.fontSize??1) * commonLineBuiltinRatio
+        const subRatio = getFontSize(t.textSOp, cs.config.textTagForLine.subFontSize??1) * commonLineBuiltinRatio
         const textColor = lineInfo.tagTextColor ?? colorProcStore.colorProcInvBinary.convert(lineInfo.color)
         const mainEmpty = !t.text?.trim()
         const subEmpty = mainEmpty && !t.textS?.trim()
@@ -66,7 +66,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             ctx.fillRect(...lu, ...wh)
             ctx.lineJoin = 'round'
             ctx.strokeStyle = lineInfo.color
-            const paddingLineWidth = cs.config.lineWidth * (t.padding?? 1)
+            const paddingLineWidth = cs.config.lineWidth * getPadding(t, cs.config.textTagForLine.padding??1)
             const paddingValue = paddingLineWidth/2
             if(paddingValue>0){
                 ctx.lineWidth = paddingLineWidth
@@ -80,8 +80,8 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     }
     function renderForTerrainLine(ctx:CvsContext, t:TextTag, lineInfo:Line){
         const terrainLineBuiltinRatio = 1.2
-        const mainRatio = (t.textOp?.size || 1) * terrainLineBuiltinRatio
-        const subRatio = (t.textSOp?.size || 1) * terrainLineBuiltinRatio
+        const mainRatio = getFontSize(t.textOp, cs.config.textTagForTerrain.fontSize??1) * terrainLineBuiltinRatio
+        const subRatio = getFontSize(t.textSOp, cs.config.textTagForTerrain.subFontSize??1) * terrainLineBuiltinRatio
         const terrainColor = saveStore.getLineActualColor(lineInfo)
         const textColor = colorProcStore.colorProcTerrainTag.convert(terrainColor)
         const mainEmpty = !t.text?.trim()
@@ -116,40 +116,58 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         const so = t.textSOp
         const mainEmpty = !t.text?.trim()
         const subEmpty = mainEmpty && !t.textS?.trim()
+        const mainRatio = getFontSize(mo, cs.config.textTagPlain.fontSize??1)
+        const subRatio = getFontSize(so, cs.config.textTagPlain.subFontSize??1)
         const optMain:DrawTextBodyOption = {
             color: mo?.color || cs.config.textTagFontColorHex,
             font: cs.config.textTagFont,
-            fontSize: cs.config.textTagFontSizeBase * getFontSize(mo),
-            rowHeight: cs.config.textTagRowHeightBase * getFontSize(mo),
+            fontSize: cs.config.textTagFontSizeBase * mainRatio,
+            rowHeight: cs.config.textTagRowHeightBase * mainRatio,
             text: !mainEmpty ? t.text?.trim() : '空文本标签'
         }
         const optSub:DrawTextBodyOption = {
             color: so?.color || cs.config.textTagSubFontColorHex,
             font: cs.config.textTagSubFont,
-            fontSize: cs.config.textTagSubFontSizeBase * getFontSize(so),
-            rowHeight: cs.config.textTagSubRowHeightBase * getFontSize(so),
+            fontSize: cs.config.textTagSubFontSizeBase * subRatio,
+            rowHeight: cs.config.textTagSubRowHeightBase * subRatio,
             text: !subEmpty ? t.textS?.trim(): 'Empty TextTag'
         }
         const lineNameRectAlign:SgnCoord = [0, 0]
-        const drawLineNameResRect = drawText(ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, {
-            width: cs.config.textTagFontSizeBase * getFontSize(mo)/4,
+        const drawTextResRect = drawText(ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, {
+            width: cs.config.textTagFontSizeBase * mainRatio/4,
             color: cs.config.bgColor,
             opacity: 1
         }, 'both')
-        if(drawLineNameResRect){
-            const rect = drawLineNameResRect
+        if(drawTextResRect){
+            const rect = drawTextResRect
             textTagRectStore.setTextTagRect(t.id, rect)
         }
     }
-    function getFontSize(textOptions?:TextOptions):number{
-        const val = textOptions?.size
-        if(!val)
-            return 1
-        if(val < 0.5)
-            return 0.5
+    function getFontSize(textOptions:TextOptions|undefined, fallback:number):number{
+        //坑爹的input会把值设为string
+        let val:number|string|undefined = textOptions?.size
+        if(val===undefined)
+            val = 0
+        else
+            val = Number(val)
+        if(val < 0)
+            val = 0
         if(val > 16)
-            return 16
-        return val
+            val = 16
+        return val || fallback
+    }
+    function getPadding(textTag:TextTag, fallback:number):number{
+        //坑爹的input会把值设为string
+        let val:number|string|undefined = textTag.padding
+        if(val===undefined)
+            val = 0
+        else
+            val = Number(val)
+        if(val < 0)
+            val = 0
+        if(val > 16)
+            val = 16
+        return val || fallback
     }
     return { renderAllTextTags, renderOneTextTag }
 })

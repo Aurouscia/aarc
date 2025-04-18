@@ -9,6 +9,7 @@ import { clamp } from '@/utils/lang/clamp';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import LineStyles from './configItems/LineStyles.vue';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
+import TextTagConfig from './configs/TextTagConfig.vue';
 //import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
 //import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 
@@ -146,6 +147,8 @@ defineExpose({
     </tr>
 </tbody></table>
 
+<TextTagConfig></TextTagConfig>
+
 <h2 :class="{sectorShown:showBgRefImage}" @click="showBgRefImage =!showBgRefImage">
     <div class="shownStatusIcon">{{ showBgRefImage? '×':'+' }}</div>
     <div>背景参考图</div>
@@ -262,37 +265,18 @@ defineExpose({
             {{ visibilityChangedTimes }}
         </td>
     </tr>
+    <tr>
+        <td colspan="2">
+            <button class="lite" @click="configStore.writeConfigToSave();console.log({...saveStore.save})">打印存档到控制台</button>
+        </td>
+    </tr>
 </tbody></table>
 </SideBar>
 </template>
 
 <style scoped lang="scss">
-h2{
-    display: flex;
-    align-items: center;
-    color: #999;
-    font-size: 20px;
-    gap: 10px;
-    margin: 5px;
-    border-top: 1px solid #ccc;
-    padding-top: 5px;
-    cursor: pointer;
-    user-select: none;
-    &.sectorShown{
-        font-weight: bold;
-        color: black
-    }
-    .shownStatusIcon{
-        width: 20px;
-        height: 20px;
-        font-size: 16px;
-        line-height: 20px;
-        font-weight: bold;
-        text-align: center;
-        border: 1px solid #999;
-        border-radius: 5px;
-    }
-}
+@use './configs/shared/configSection.scss';
+
 .lineWidthMapped{
     input{
         width: 80px;
@@ -314,10 +298,6 @@ h2{
         }
     }
 }
-.explain{
-    font-size: 14px;
-    color: #666
-}
 .browserInfo{
     text-align: left;
     &>div{
@@ -327,8 +307,5 @@ h2{
         font-size: 14px;
         color: gray;
     }
-}
-td{
-    min-width: 40px;
 }
 </style>

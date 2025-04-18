@@ -56,6 +56,9 @@ export interface Config{
     textTagSubFontSizeBase: number,
     textTagSubFontColorHex: string,
     textTagSubRowHeightBase: number,
+    textTagPlain:TextTagPerTypeGlobalConfig,
+    textTagForLine:TextTagPerTypeGlobalConfig,
+    textTagForTerrain:TextTagPerTypeGlobalConfig
 }
 export type LineWidthMappedConfig = Record<string, {
     staSize?:number,
@@ -70,6 +73,11 @@ export type BgRefImageConfig = {
     bottom?: number,
     width?: number,
     height?: number,
+}
+export type TextTagPerTypeGlobalConfig = {
+    padding?: number,
+    fontSize?: number
+    subFontSize?: number
 }
 
 export type ConfigInSave = AllKeysOptional<Config>
