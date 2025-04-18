@@ -70,8 +70,8 @@ export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
         if(side > 4000){
             mainIntv = 500
             subIntv = 100
-            mainWidth = 6
-            subWidth = 3
+            mainWidth = 4
+            subWidth = 2
         }
         else if(side > 2300){
             mainIntv = 500
@@ -87,6 +87,7 @@ export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
         }else{
             mainIntv = 100
             subIntv = 10
+            mainWidth = 1
             subWidth = 0.5
         }
         return {

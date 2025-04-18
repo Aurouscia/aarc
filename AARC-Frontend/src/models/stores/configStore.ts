@@ -34,8 +34,8 @@ export const configDefault:Config = {
     staNameSubRowHeight: 20,
     staNameSubColor: '#888888',
 
-    gridMainLineColor: '#999999',
-    gridSubLineColor: '#aaaaaa',
+    gridMainLineColor: '#bbbbbb',
+    gridSubLineColor: '#cccccc',
 
     clickPtThrs: 24,
     clickLineThrs: 12,
