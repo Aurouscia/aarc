@@ -13,6 +13,6 @@ export function enlargeRect(rect:RectCoord, delta:number){
 
 export function enlargeRectBy(rect:RectCoord, pct:number){
     const [[leftX, upperY], [rightX, lowerY]] = rect;
-    const delta = (rightX-leftX)*pct/2;
+    const delta = (rightX-leftX)*pct;
     return [[leftX-delta, upperY-delta], [rightX+delta, lowerY+delta]] as RectCoord;
 }

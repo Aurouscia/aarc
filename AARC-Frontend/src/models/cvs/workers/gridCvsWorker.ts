@@ -33,12 +33,8 @@ export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
         [[left, top], [right, bottom]] = rectWithBleed;
         let x = intv;
         ctx.beginPath()
-        let loopTime = 0
-        let lineCount = 0
         while(x < cvsWidth.value){
-            loopTime++
             if(x >= cvsWidth.value*left){
-                lineCount++
                 ctx.moveTo(x, 0);
                 ctx.lineTo(x, cvsHeight.value);
             }
@@ -47,7 +43,6 @@ export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
             }
             x += intv
         }
-        console.log(loopTime, lineCount)
         let y = intv;
         while(y < cvsHeight.value){
             if(y >= cvsHeight.value*top){
