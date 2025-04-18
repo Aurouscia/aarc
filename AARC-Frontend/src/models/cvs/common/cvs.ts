@@ -4,7 +4,6 @@ import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
 import { defineStore, storeToRefs } from "pinia";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { cvsRenderingBleed } from "@/utils/consts";
-//import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
 
 export function useCvs(canvasIdPrefix:string){
     const bStore = useCvsBlocksControlStore()
@@ -64,27 +63,15 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
         fStore.viewScaleHandlers.push(viewMutateHandler)
     }
 
-    //let viewMutateLastReact = 0
     let viewMutateEndedTimer = 0
     function viewMutateHandler(){
         window.clearTimeout(viewMutateEndedTimer)
         viewMutateEndedTimer = window.setTimeout(()=>{
-            //viewMutateLastReact = Date.now()
             refreshBlocks()
         }, 100)
-        // const now = Date.now()
-        // if(now - viewMutateLastReact < 800)
-        //     return
-        // viewMutateLastReact = now
-        // refreshBlocks()
     }
 
     function clientToCvsSizeRatio(){
-        // const r = editorLocalConfig.readResolution()
-        // if(r==='ultra')
-        //     return 3
-        // if(r==='high')
-        //     return 2.5
         return 2
     }
 
