@@ -4,6 +4,9 @@ import { defineStore, storeToRefs } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
+import { cvsRenderingBleed } from "@/utils/consts";
+import { enlargeRectBy } from "@/utils/coordUtils/coordRect";
+import { RectCoord } from "@/models/coord";
 
 export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
     const { cvsWidth, cvsHeight } = storeToRefs(useSaveStore())
@@ -24,17 +27,36 @@ export const useGridCvsWorker = defineStore('gridCvsWorker', ()=>{
     function drawGrid(ctx:CvsContext, intv:number){
         if(intv <= 1)
             return
+        let {left, right, top, bottom} = cvsFrameStore.getViewRectInRatio()
+        const rect:RectCoord = [[left, top], [right, bottom]]
+        const rectWithBleed:RectCoord = enlargeRectBy(rect, cvsRenderingBleed);
+        [[left, top], [right, bottom]] = rectWithBleed;
         let x = intv;
         ctx.beginPath()
+        let loopTime = 0
+        let lineCount = 0
         while(x < cvsWidth.value){
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, cvsHeight.value);
+            loopTime++
+            if(x >= cvsWidth.value*left){
+                lineCount++
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, cvsHeight.value);
+            }
+            if(x > cvsWidth.value*right){
+                break
+            }
             x += intv
         }
+        console.log(loopTime, lineCount)
         let y = intv;
         while(y < cvsHeight.value){
-            ctx.moveTo(0, y);
-            ctx.lineTo(cvsWidth.value, y);
+            if(y >= cvsHeight.value*top){
+                ctx.moveTo(0, y);
+                ctx.lineTo(cvsWidth.value, y); 
+            }
+            if(y > cvsHeight.value*bottom){
+                break 
+            }
             y += intv
         }
         ctx.stroke()

@@ -3,6 +3,7 @@ import { CvsBlock, CvsContext } from "./cvsContext";
 import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
 import { defineStore, storeToRefs } from "pinia";
 import { useSaveStore } from "@/models/stores/saveStore";
+import { cvsRenderingBleed } from "@/utils/consts";
 //import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
 
 export function useCvs(canvasIdPrefix:string){
@@ -87,7 +88,7 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
         return 2
     }
 
-    const bleed = 0.2
+    const bleed = cvsRenderingBleed
     function refreshBlocks(callReformedHandler = true){
         const cont = fStore.cvsCont
         const frame = fStore.cvsFrame

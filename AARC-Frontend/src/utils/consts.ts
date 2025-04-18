@@ -5,3 +5,4 @@ export const sqrt2half = Math.SQRT1_2
 
 export const discardAreaSideRatio = 0.12
 export const minDisplayRatio = 0.5
+export const cvsRenderingBleed = 0.2
