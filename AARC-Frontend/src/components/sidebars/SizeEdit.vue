@@ -34,7 +34,7 @@ const cvsHeightPreview = computed(()=>{
     return w
 })
 const tooBigWarnThrs = 20000
-const tooBigRefuseThrs = 40000
+const tooBigRefuseThrs = 60000
 const cvsPreviewTooBig = computed<boolean>(()=>{
     return cvsWidthPreview.value > tooBigWarnThrs || cvsHeightPreview.value > tooBigWarnThrs 
 })
