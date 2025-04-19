@@ -9,7 +9,11 @@ import { storeToRefs } from 'pinia';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { UserListOrderBy, useUserListLocalConfigStore } from '@/app/localConfig/userListLocalConfig';
 
-const list = ref<UserDto[]>()
+interface UserDtoWithIntroShow extends UserDto{
+    introShow?: boolean
+}
+
+const list = ref<UserDtoWithIntroShow[]>()
 const api = useApiStore().get()
 const { someonesSavesRoute } = useSavesRoutesJump()
 const { readOrderby, saveOrderby, defaultOrderby } = useUserListLocalConfigStore()
@@ -69,15 +73,25 @@ onMounted(async()=>{
 <div class="wideTableContainer">
 <table class="fullWidth index"><tbody>
     <tr>
-        <th>名称</th>
+        <th class="userNameTh">名称</th>
+        <th>
+            简介<span class="introNote">点击展开</span>
+        </th>
         <th v-if="orderbySave" style="width: 100px;">作品数</th>
         <th v-if="orderbyActive" style="width: 100px;">上次活跃</th>
-        <th style="width: 130px;">操作</th>
+        <th style="width: 110px;">操作</th>
     </tr>
     <tr v-for="u in list" :key="u.Id">
         <td>
-            {{ u.Name }}
-            <span v-if="u.Id === userInfo.Id" style="color: cornflowerblue">(我)</span>
+            <div class="userName nowrapEllipsis">
+                <span v-if="u.Id === userInfo.Id" style="color: cornflowerblue">(我)</span>
+                {{ u.Name }}
+            </div>
+        </td>
+        <td>
+            <div class="userIntro" :class="{nowrapEllipsis:!u.introShow}" @click="u.introShow=!u.introShow">
+                {{ u.Intro }}
+            </div>
         </td>
         <td v-if="orderbySave">{{ u.SaveCount }}</td>
         <td v-if="orderbyActive" class="lastActive">{{ u.LastActive }}</td>
@@ -148,5 +162,30 @@ onMounted(async()=>{
 <style scoped lang="scss">
 .lastActive{
     font-size: 14px;
+}
+.userNameTh{
+    width: 190px;
+}
+.userName{
+    margin: auto;
+    max-width: 180px;
+}
+.userIntro{
+    font-size: 14px;
+    color: #666;
+    width: 40vw;
+    word-break: break-all;
+    cursor: pointer;
+    margin: auto;
+}
+.introNote{
+    font-weight: normal;
+    font-size: 12px;
+    margin-left: 4px;
+}
+@media screen and (min-width: 768px) {
+    .introNote{
+        display: none;
+    }
 }
 </style>

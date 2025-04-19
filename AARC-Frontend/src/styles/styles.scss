@@ -152,6 +152,9 @@ table td {
 table.index tr:hover td{
     background-color: #ddd;
 }
+table.index td{
+    min-width: 80px;
+}
 table th{
     background-color: cornflowerblue;
     color:white;
@@ -162,6 +165,9 @@ table tr.noBg td{
 }
 table.fullWidth{
     width: 100%;
+}
+.wideTableContainer{
+    overflow-x: scroll;
 }
 
 input, textarea {
@@ -319,4 +325,10 @@ hr{
     background-color: white;
     font-weight: bold;
     box-shadow: 0px 0px 10px 3px black;
+}
+
+.nowrapEllipsis{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
