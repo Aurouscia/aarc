@@ -201,7 +201,7 @@ namespace AARC.Repos.Identities
         {
             if (name is null || name.Length < 1 || name.Length > User.nameMaxLength)
                 return "用户名必须在1-16个字符";
-            if (id == 0 || password is { })
+            if (id == 0 || !string.IsNullOrWhiteSpace(password))
             {
                 //仅在新建用户或要修改密码时检查
                 if (password is null || password.Length < 6 || password.Length > 20)
