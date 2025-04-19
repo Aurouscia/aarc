@@ -116,7 +116,7 @@ onMounted(async()=>{
             <tr v-if="!isCreatingUser">
                 <td>简介</td>
                 <td>
-                    <textarea v-model="editingUser.Intro"></textarea>
+                    <textarea v-model="editingUser.Intro" placeholder="可提供自己的联系方式（不超过128个字符）"></textarea>
                 </td>
             </tr>
             <tr v-if="!isCreatingUser && userInfoStore.isAdmin">

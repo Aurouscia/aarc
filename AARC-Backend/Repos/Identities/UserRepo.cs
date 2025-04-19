@@ -109,7 +109,7 @@ namespace AARC.Repos.Identities
         {
             username ??= "";
             password ??= "";
-            errmsg = CheckModel(username, password);
+            errmsg = CheckModel(username, password, null);
             if (errmsg is { })
                 return false;
             User u = new()
@@ -136,7 +136,7 @@ namespace AARC.Repos.Identities
                 errmsg = "无权操作";
                 return false;
             }
-            errmsg = CheckModel(u.Name, u.Password, u.Id);
+            errmsg = CheckModel(u.Name, u.Password, u.Intro, u.Id);
             if (errmsg is { })
                 return false;
             var user = base.Get(u.Id);
@@ -193,12 +193,13 @@ namespace AARC.Repos.Identities
         /// </summary>
         /// <param name="name">用户名</param>
         /// <param name="password">密码原文</param>
+        /// <param name="intro">个人简介</param>
         /// <param name="id">用户id（省略代表正在新建用户）</param>
         /// <returns></returns>
         private string? CheckModel(
-            string? name, string? password, int id = 0)
+            string? name, string? password, string? intro, int id = 0)
         {
-            if (name is null || name.Length < 1 || name.Length > 16)
+            if (name is null || name.Length < 1 || name.Length > User.nameMaxLength)
                 return "用户名必须在1-16个字符";
             if (id == 0 || password is { })
             {
@@ -208,6 +209,8 @@ namespace AARC.Repos.Identities
             }
             if (Existing.Any(x => x.Name == name && x.Id != id))
                 return "该用户名已经被占用";
+            if(intro is { } && intro.Length > User.introMaxLength)
+                return $"个人简介不能超过{User.introMaxLength}个字符";
             return null;
         }
     }

@@ -5,16 +5,19 @@ namespace AARC.Models.DbModels
     public class User : IDbModel
     {
         public int Id { get; set; }
-        [MaxLength(16)]
+        [MaxLength(nameMaxLength)]
         public required string Name { get; set; }
         [MaxLength(32)]
         public required string Password { get; set; }
         public UserType Type { get; set; }
         public int AvatarFileId { get; set; }
-        [MaxLength(128)]
+        [MaxLength(introMaxLength)]
         public string? Intro { get; set; }
         public DateTime LastActive { get; set; }
         public bool Deleted { get; set; }
+
+        public const int nameMaxLength = 16;
+        public const int introMaxLength = 128;
     }
     public enum UserType: byte
     {
