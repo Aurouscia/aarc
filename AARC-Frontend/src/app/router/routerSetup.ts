@@ -15,11 +15,4 @@ export function routerSetup(router:Router){
     addIdentitiesPages(router)
     addSavesPages(router)
     addEditorsPages(router)
-    // router.afterEach((to, from, failure)=>{
-    //     if(isNavigationFailure(failure))
-    //         return
-    //     // if(to.name!==editorName && from.name===editorName){
-    //     //     window.location.reload()
-    //     // }
-    // })
 }
