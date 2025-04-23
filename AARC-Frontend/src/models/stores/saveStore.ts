@@ -3,13 +3,12 @@ import { computed, ref, watch } from "vue";
 import { ControlPoint, ControlPointDir, ControlPointLink, ControlPointSta, ensureValidCvsSize, Line, LineType, Save, saveLineCount, saveStaCount } from "../save";
 import { Coord } from "../coord";
 import { isSameCoord } from "@/utils/sgn";
-import { getRangeByPred } from "@/utils/lang/getRangeByPred";
-import { checkOrder } from "@/utils/lang/checkOrder";
 import { useConfigStore } from "./configStore";
 import { indicesInArray, removeAllByIndices, removeAllByPred } from "@/utils/lang/indicesInArray";
 import { coordAdd } from "@/utils/coordUtils/coordMath";
 import { getMayRingLinePtIds } from "@/utils/lineUtils/isRing";
 import { readNumKeyedRecord } from "@/utils/lang/readNumKeyedRecord";
+import { keepOrderSort } from "@/utils/lang/keepOrderSort";
 
 export const useSaveStore = defineStore('save', () => {
     //不应直接在此删除/添加车站/线路，应通过envStore进行，避免数据不一致
@@ -274,14 +273,8 @@ export const useSaveStore = defineStore('save', () => {
     function createNewLine(newLine:Line){
         if(!save.value)
             throw Error('找不到存档')
-        ensureLinesOrderedByType()
-        console.log(save.value.lines)
-        const newTypeOrderNum = lineTypeOrderNum(newLine)
-        const firstBiggerIdx = save.value.lines.findIndex(x=>lineTypeOrderNum(x) > newTypeOrderNum)
-        if(firstBiggerIdx==-1)
-            save.value.lines.push(newLine)
-        else
-            save.value.lines.splice(firstBiggerIdx, 0, newLine)
+        save.value.lines.push(newLine)
+        ensureLinesOrdered()
     }
     function removePt(ptId:number){
         if(!save.value)
@@ -334,38 +327,24 @@ export const useSaveStore = defineStore('save', () => {
             return pts.length>1
         })
     }
-    function ensureLinesOrderedByType(){
+    function ensureLinesOrdered(ids?:number[]){
         if(!save.value)
             throw Error('找不到存档')
-        const ok = checkOrder(save.value.lines, 'asc', lineTypeOrderNum)
-        if(ok)
-            return
-        console.warn('线路类型顺序异常，正在修复')
-        const newList:Line[] = []
-        lineTypesRenderOrder.forEach(type=>{
-            newList.push(...getLinesByType(type))
+        keepOrderSort(save.value.lines, (a, b)=>{
+            if(ids){
+                //如果指定了ids，那么按照ids的顺序排序
+                const aIdx = ids.indexOf(a.id)
+                const bIdx = ids.indexOf(b.id)
+                if(aIdx>=0 && bIdx>=0)
+                    return aIdx - bIdx
+            }
+            if(a.type !== b.type)
+                return lineTypeOrderNum(a) - lineTypeOrderNum(b)
+            return 0
         })
-        save.value.lines.splice(0, save.value.lines.length, ...newList)
     }
-    function arrangeLinesOfType(ids:number[], lineType:LineType){
-        ensureLinesOrderedByType()
-        if(!save.value)
-            throw Error('找不到存档')
-        const range = getRangeByPred(save.value.lines, (line)=>line.type==lineType)
-        if(!range){
-            throw Error('排序设定：不存在该类型线路')
-        }
-        const rangeLength = range.last - range.first+1
-        if(rangeLength != ids.length)
-            throw Error('排序设定：该类型线路个数与排序指令参数长度不一致')
-        const temp:Line[] = []
-        ids.forEach(id=>{
-            const line = getLineById(id)
-            if(!line)
-                throw Error('排序设定：找不到指定线路')
-            temp.push(line)
-        })
-        save.value.lines.splice(range.first, rangeLength, ...temp)
+    function arrangeLinesOfType(ids:number[], _lineType:LineType){
+        ensureLinesOrdered(ids)
     }
     function tryMergePt(ptId:number){
         const thisPt = getPtById(ptId)
