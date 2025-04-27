@@ -622,7 +622,7 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!suppressRender)
             rerender.value([],[])
     }
-    function createLine(type:LineType){
+    function createLine(type:LineType, group?:number){
         if(!saveStore.save)
             return
         const viewCenter = getViewCenterOffset()
@@ -658,7 +658,8 @@ export const useEnvStore = defineStore('env', ()=>{
                 name: '',
                 nameSub: '',
                 color: "#ff0000",
-                type: LineType.common
+                type: LineType.common,
+                group
             }
         }else if(type==LineType.terrain){
             newLine = {
@@ -668,7 +669,8 @@ export const useEnvStore = defineStore('env', ()=>{
                 nameSub: '',
                 color: "#000000",
                 type: LineType.terrain,
-                colorPre: ColorPreset.water
+                colorPre: ColorPreset.water,
+                group
             }
         }
         if(newLine){

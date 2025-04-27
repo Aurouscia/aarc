@@ -340,6 +340,8 @@ export const useSaveStore = defineStore('save', () => {
             }
             if(a.type !== b.type)
                 return lineTypeOrderNum(a) - lineTypeOrderNum(b)
+            if(a.group !== b.group)
+                return (a.group ?? 0) - (b.group ?? 0)
             return 0
         })
     }
