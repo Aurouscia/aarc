@@ -5,6 +5,7 @@ import { useSaveStore } from "@/models/stores/saveStore"
 import { useLinesArrange } from "@/utils/eventUtils/linesArrange"
 import SideBar from "@/components/common/SideBar.vue"
 import { computed, ref } from "vue"
+import LineOptions from "../../options/LineOptions.vue"
 
 export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
     const saveStore = useSaveStore()
@@ -12,6 +13,7 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
     const mainCvsDispatcher = useMainCvsDispatcher()
     const sidebar = ref<InstanceType<typeof SideBar>>()
     const lines = computed<Line[]>(()=>saveStore.getLinesByType(lineType))
+    const lineOptions = ref<InstanceType<typeof LineOptions>>()
     const {
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, activeId: arrangingId
     } = useLinesArrange(65, lines, orderChanged) //65：一个线路框60高，加上5的缝隙
@@ -35,15 +37,15 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
         envStore.delLine(line.id, false, withSta)
     }
 
-    const editingInfoLineId = ref<number>()
-    function editInfoOfLine(lineId:number){
-        if(lineId!==editingInfoLineId.value){
-            window.setTimeout(()=>{
-                editingInfoLineId.value = lineId
-            },1)
-        }else{
-            editingInfoLineId.value = undefined
-        }
+    const editingInfoLine = ref<Line>()
+    function editInfoOfLine(line:Line){
+        console.log(line)
+        editingInfoLine.value = line
+        window.setTimeout(()=>{
+            console.log(editingInfoLine.value)
+            console.log(lineOptions.value)
+            lineOptions.value?.open()
+        },1)
     }
 
     const wantDelLine = ref<Line>()
@@ -61,9 +63,9 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
     }
 
     return {
-        sidebar, lines, envStore, saveStore,
+        sidebar, lineOptions, lines, envStore, saveStore,
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
-        arrangingId, editingInfoLineId, editInfoOfLine,
+        arrangingId, editingInfoLine, editInfoOfLine,
         createLine, 
         wantDelLine, delLineStart, delLineAbort, delLineExe
     }

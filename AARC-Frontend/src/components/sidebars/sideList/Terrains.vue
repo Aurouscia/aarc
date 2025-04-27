@@ -3,15 +3,15 @@ import SideBar from '../../common/SideBar.vue';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { Line, LineType } from '@/models/save';
 import { useSideListShared } from './shared/useSideListShared';
-import LineConfig from './shared/LineConfig.vue';
+import LineOptions from '../options/LineOptions.vue';
 import { AuColorPickerPresetsNested } from '@aurouscia/au-color-picker';
 import { useColorPresetNames } from './shared/useColorPresetNames';
 import LineDelPrompt from './shared/LineDelPrompt.vue';
 
 const { 
-    sidebar, lines: terrains, envStore,
+    sidebar, lineOptions, lines: terrains, envStore,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
-    createLine, editingInfoLineId, editInfoOfLine,
+    createLine, editingInfoLine, editInfoOfLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe
 } = useSideListShared(LineType.terrain, '地形')
 
@@ -31,7 +31,6 @@ function colorPickerDone(l:Line, c:string){
 
 const colorPicker = ref<InstanceType<typeof AuColorPickerPresetsNested>[]>([])
 function clickContainer(){
-    editingInfoLineId.value = undefined
     colorPicker.value.forEach(cp=>cp.closePanel())
 }
 
@@ -68,10 +67,7 @@ onUnmounted(()=>{
                     <input v-model="l.nameSub" placeholder="输入地形副名" @blur="envStore.lineInfoChanged(l)"/>
                 </div>
                 <div class="infoEdit">
-                    <div class="sqrBtn" :class="{sqrActive:editingInfoLineId===l.id}" @click="editInfoOfLine(l.id)">...</div>
-                    <div v-if="editingInfoLineId===l.id" class="infoEditPanel">
-                        <LineConfig :line="l" :line-width-range="{min:0.5, max:12, step:0.5}"></LineConfig>
-                    </div>
+                    <div class="sqrBtn" @click="editInfoOfLine(l)">...</div>
                 </div>
                 <div class="sqrBtn moveBtn" :class="{sqrActive:arrangingId===l.id}"
                     @mousedown="e => mouseDownLineArrange(e, l.id)"
@@ -89,6 +85,7 @@ onUnmounted(()=>{
     </SideBar>
     <LineDelPrompt :line="wantDelLine" :line-called="'地形'" :pt-called="'节点'" :with-sta-default="true"
         @abort="delLineAbort" @exe="delLineExe"></LineDelPrompt>
+    <LineOptions ref="lineOptions" v-if="editingInfoLine" :line="editingInfoLine" :line-width-range="{min:0.5, max:12, step:0.5}"></LineOptions>
 </template>
 
 <style scoped lang="scss">

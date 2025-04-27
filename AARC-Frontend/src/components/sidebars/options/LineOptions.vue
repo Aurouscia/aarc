@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SideBar from '@/components/common/SideBar.vue';
 import { Line, LineStyle, LineType } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useSaveStore } from '@/models/stores/saveStore';
@@ -6,7 +7,8 @@ import { storeToRefs } from 'pinia';
 import { computed, onMounted, ref } from 'vue';
 
 const envStore = useEnvStore()
-const { save } = storeToRefs(useSaveStore())
+const saveStore = useSaveStore()
+const { save } = storeToRefs(saveStore)
 const props = defineProps<{
     line:Line,
     lineWidthRange:{
@@ -46,6 +48,11 @@ function lineStaSizeChanged(){
     envStore.lineInfoChanged(props.line)
 }
 
+const sidebar = ref<InstanceType<typeof SideBar>>()
+defineExpose({
+    open: ()=>{sidebar.value?.extend()}, 
+})
+
 onMounted(()=>{
     lineWidthBinded.value = props.line.width || 1
     lineStyleBinded.value = props.line.style || 0
@@ -55,11 +62,21 @@ onMounted(()=>{
 </script>
 
 <template>
-<div class="lineConfig withShadow" @click="e=>e.stopPropagation()">
-    <div class="configTitle">设置</div>
-    <div class="configItem">
-        <div>线宽</div>
-        <div class="slideBarItem">
+<SideBar ref="sidebar">
+<h1>线路更多设置</h1>
+<div class="lineConfig">
+    <table class="fullWidth"><tbody>
+    <tr>
+        <td colspan="2">
+            {{ line.name || '未命名线路' }}
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" :style="{backgroundColor: saveStore.getLineActualColor(line)}"></td>
+    </tr>
+    <tr>
+        <td>线宽</td>
+        <td class="viewableRange">
             <input type="range" v-model="lineWidthBinded"
                 :min="lineWidthRange.min"
                 :max="lineWidthRange.max"
@@ -68,54 +85,54 @@ onMounted(()=>{
             <input v-if="line.type===LineType.terrain" type="number"
                 v-model="lineWidthBinded" @blur="lineWidthChanged"/>
             <div v-else>{{ lineWidthBinded || 1 }}×</div>
-        </div>
-    </div>
-    <div v-if="line.type===LineType.common" class="configItem">
-        <div>样式</div>
-        <div class="selectItem">
+        </td>
+    </tr>
+    <tr v-if="line.type===LineType.common">
+        <td>样式</td>
+        <td>
             <select v-model="lineStyleBinded" @change="lineStyleChanged">
                 <option :value="0">默认</option>
                 <option v-for="style in selectableLineStyles" :value="style.id">
                     {{ style.name }}
                 </option>
             </select>
-            <div>(可在设置-线路样式<br/>自定义更多选项)</div>
-        </div>
-    </div>
-    <div v-if="line.type===LineType.common" class="configItem">
-        <div>站名</div>
-        <div class="slideBarItem">
+            <div class="smallNote">(可在设置-线路样式<br/>自定义更多选项)</div>
+        </td>
+    </tr>
+    <tr v-if="line.type===LineType.common">
+        <td>站名</td>
+        <td class="viewableRange">
             <input type="range" v-model="lineStaNameSizeBinded"
                 :min="0"
                 :max="lineWidthRange.max"
                 :step="lineWidthRange.step"
                 @change="lineStaNameSizeChanged"/>
             <div>{{ lineStaNameSizeBinded || 0 }}×</div>
-            <div>(设为0使用全局设置)</div>
-        </div>
-    </div>
-    <div v-if="line.type===LineType.common" class="configItem">
-        <div>车站</div>
-        <div class="slideBarItem">
+            <div class="smallNote">(设为0使用全局设置)</div>
+        </td>
+    </tr>
+    <tr v-if="line.type===LineType.common">
+        <td>车站</td>
+        <td class="viewableRange">
             <input type="range" v-model="lineStaSizeBinded"
                 :min="0"
                 :max="lineWidthRange.max"
                 :step="lineWidthRange.step"
                 @change="lineStaSizeChanged"/>
             <div>{{ lineStaSizeBinded || 0 }}×</div>
-            <div>(设为0使用全局设置)</div>
-        </div>
-    </div>
-    <div v-if="line.type===LineType.terrain" class="configItem">
-        <div>填充</div>
-        <div class="checkItem">
+            <div class="smallNote">(设为0使用全局设置)</div>
+        </td>
+    </tr>
+    <tr v-if="line.type===LineType.terrain">
+        <td>填充</td>
+        <td>
             <input type="checkbox" v-model="line.isFilled" @change="envStore.lineInfoChanged(line)"/>
-            <div>勾选本项时<br/>地形必须是环形</div>
-        </div>
-    </div>
-    <div v-if="line.type===LineType.common" class="configItem">
-        <div>标签<br/>文字</div>
-        <div style="flex-grow: 1;">
+            <div class="smallNote">勾选本项时<br/>地形必须是环形</div>
+        </td>
+    </tr>
+    <tr v-if="line.type===LineType.common">
+        <td>标签<br/>文字</td>
+        <td>
             <div class="selectItem">
                 <select v-model="line.tagTextColor" @change="envStore.lineInfoChanged(line)">
                     <option :value="undefined">自动</option>
@@ -123,69 +140,13 @@ onMounted(()=>{
                     <option :value="'white'">白色</option>
                 </select>
             </div>
-        </div>
-    </div>
+        </td>
+    </tr>
+    </tbody></table>
 </div>
+</SideBar>
 </template>
 
 <style scoped lang="scss">
-.lineConfig{
-    background-color: white;
-    padding: 10px;
-    border-radius: 5px;
-    display: flex;
-    flex-direction: column;
-    .configItem{
-        display: flex;
-        gap: 10px;
-        justify-content: space-between;
-        align-items: center;
-        white-space: nowrap;
-        border-top: 1px solid #ccc;
-        padding: 5px 0px 5px 0px;
-        .slideBarItem{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0px;
-            input[type=number]{
-                width: 60px;
-            }
-            input[type=range]{
-                width: 120px
-            }
-        }
-        .checkItem{
-            flex-grow: 1;
-            text-align: center;
-            input[type=checkbox]{
-                width: 20px;
-                height: 20px;
-            }
-        }
-        .btnItem{
-            flex-grow: 1;
-            text-align: center;
-        }
-        .selectItem{
-            flex-grow: 1;
-            text-align: center;
-            select{
-                max-width: 120px;
-                font-size: 14px;
-            }
-        }
-        .slideBarItem, .selectItem, .checkItem{
-            div{
-                color: gray;
-                font-size: 12px;
-            }
-        }
-    }
-    .configTitle{
-        font-weight: bold;
-        padding: 0px 0px 5px 0px;
-        text-align: center;
-    }
-}
+@use './shared/options.scss'
 </style>
