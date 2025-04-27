@@ -12,7 +12,10 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
     const envStore = useEnvStore()
     const mainCvsDispatcher = useMainCvsDispatcher()
     const sidebar = ref<InstanceType<typeof SideBar>>()
-    const lines = computed<Line[]>(()=>saveStore.getLinesByType(lineType))
+    const showingLineGroup = ref<number>()
+    const lines = computed<Line[]>(()=>{
+        return saveStore.save?.lines.filter(x => x.type===lineType && x.group===showingLineGroup.value) || []
+    })
     const lineOptions = ref<InstanceType<typeof LineOptions>>()
     const {
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, activeId: arrangingId
@@ -62,11 +65,27 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
         }
     }
 
+    function lineGroupCheck(){
+        //若有线路组被删除，将其线路的group属性设为undefined
+        //若当前显示的线路组被删除，将其设为undefined
+        const existGroupIds = saveStore.save?.lineGroups?.map(x=>x.id) || [];
+        const lines = saveStore.save?.lines || [];
+        if(showingLineGroup.value && !existGroupIds.includes(showingLineGroup.value)){
+            showingLineGroup.value = undefined; 
+        }
+        lines.forEach(x=>{
+            if(x.group && !existGroupIds.includes(x.group)){
+                x.group = undefined;
+            }
+        })
+    }
+
     return {
         sidebar, lineOptions, lines, envStore, saveStore,
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
         arrangingId, editingInfoLine, editInfoOfLine,
         createLine, 
-        wantDelLine, delLineStart, delLineAbort, delLineExe
+        wantDelLine, delLineStart, delLineAbort, delLineExe,
+        showingLineGroup, lineGroupCheck
     }
 }

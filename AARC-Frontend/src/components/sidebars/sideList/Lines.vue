@@ -8,11 +8,12 @@ import { AuColorPicker } from '@aurouscia/au-color-picker';
 import LineDelPrompt from './shared/LineDelPrompt.vue';
 
 const { 
-    sidebar, lineOptions, lines, envStore,
+    sidebar, lineOptions, lines, envStore, saveStore,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
     arrangingId, editingInfoLine, editInfoOfLine,
     createLine,
-    wantDelLine, delLineStart, delLineAbort, delLineExe
+    wantDelLine, delLineStart, delLineAbort, delLineExe,
+    showingLineGroup, lineGroupCheck
 } = useSideListShared(LineType.common, '线路')
 
 const colorPicker = ref<InstanceType<typeof AuColorPicker>[]>([])
@@ -25,7 +26,7 @@ defineExpose({
     fold: ()=>{sidebar.value?.fold()}
 })
 onMounted(()=>{
-    
+
 })
 onUnmounted(()=>{
     disposeLinesArrange()
@@ -33,8 +34,16 @@ onUnmounted(()=>{
 </script>
 
 <template>
-    <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList"
-        @extend="registerLinesArrange" @fold="disposeLinesArrange" @click="clickContainer">
+    <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList" :body-no-position="true"
+        @extend="registerLinesArrange();lineGroupCheck()" @fold="disposeLinesArrange" @click="clickContainer">
+        <div class="filter">
+            <select v-model="showingLineGroup">
+                <option :value="undefined">默认分组</option>
+                <option v-for="g in saveStore.save?.lineGroups" :value="g.id">
+                    {{ g.name }}
+                </option>
+            </select>
+        </div>
         <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l,idx in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
                 <div class="colorEdit">
@@ -72,5 +81,5 @@ onUnmounted(()=>{
 </template>
 
 <style scoped lang="scss">
-input{margin: 0px;padding: 0px;}
+@use './shared/arrangableList.scss';
 </style>

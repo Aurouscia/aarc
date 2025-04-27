@@ -7,7 +7,8 @@ const showing = ref<boolean>(false);
 const props = defineProps<{
     width?:number,
     shrinkWay?:'v-if'|'v-show',
-    enforceYScroll?:boolean
+    enforceYScroll?:boolean,
+    bodyNoPosition?:boolean
 }>()
 const width = props.width? props.width+'px' : '300px';
 const foldedRight = '-'+width;
@@ -17,6 +18,12 @@ barStyle.value = {
     width:width,
     right:foldedRight
 }
+const bodyStyle = computed<CSSProperties>(()=>{
+    return{
+        overflowY : props.enforceYScroll ? 'scroll' : 'auto',
+        position: props.bodyNoPosition ? 'static' : undefined
+    }
+})
 
 let movingTimer:number = 0
 let folding:boolean = false
@@ -76,7 +83,7 @@ const emit = defineEmits<{
 <div class="sidebarOuter">
     <div class="cover" :style="coverStyle" @click="fold"></div>
     <div class="sideBar" :style="barStyle">
-        <div class="body" v-show="showing" :style="{overflowY:enforceYScroll?'scroll':'auto'}">
+        <div class="body" v-show="showing" :style="bodyStyle">
             <slot v-if="showing || onlyHideWhenShrink" ></slot>
         </div>
     </div>

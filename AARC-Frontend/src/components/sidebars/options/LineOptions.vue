@@ -58,6 +58,10 @@ onMounted(()=>{
     lineStyleBinded.value = props.line.style || 0
     lineStaNameSizeBinded.value = props.line.ptNameSize || 0
     lineStaSizeBinded.value = props.line.ptSize || 0
+    const gId = props.line.group
+    const group = save.value?.lineGroups?.find(x=>x.id===gId)
+    if(!group)
+        props.line.group = undefined
 })
 </script>
 
@@ -73,6 +77,17 @@ onMounted(()=>{
     </tr>
     <tr>
         <td colspan="2" :style="{backgroundColor: saveStore.getLineActualColor(line)}"></td>
+    </tr>
+    <tr>
+        <td>分组</td>
+        <td>
+            <select v-model="line.group" @change="envStore.lineInfoChanged(line)">
+                <option :value="undefined">默认分组</option>
+                <option v-for="group in save?.lineGroups" :value="group.id">
+                    {{ group.name }}
+                </option>
+            </select>
+        </td>
     </tr>
     <tr>
         <td>线宽</td>

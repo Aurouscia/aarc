@@ -247,5 +247,11 @@ export const devSave:Save = {
             type: ControlPointLinkType.dot
         }
     ],
+    lineGroups:[
+        {
+            id: 10000,
+            name:"远郊线路"
+        }
+    ],
     config:{}
 }

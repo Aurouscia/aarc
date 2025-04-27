@@ -9,10 +9,11 @@ import { useColorPresetNames } from './shared/useColorPresetNames';
 import LineDelPrompt from './shared/LineDelPrompt.vue';
 
 const { 
-    sidebar, lineOptions, lines: terrains, envStore,
+    sidebar, lineOptions, lines: terrains, envStore, saveStore,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
     createLine, editingInfoLine, editInfoOfLine,
-    wantDelLine, delLineStart, delLineAbort, delLineExe
+    wantDelLine, delLineStart, delLineAbort, delLineExe,
+    showingLineGroup, lineGroupCheck
 } = useSideListShared(LineType.terrain, '地形')
 
 const { getPresetNameByEnum, getPresetEnumByName, presets } = useColorPresetNames()
@@ -47,8 +48,16 @@ onUnmounted(()=>{
 </script>
 
 <template>
-    <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList"
-        @extend="registerLinesArrange" @fold="disposeLinesArrange" @click="clickContainer">
+    <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList" :body-no-position="true"
+    @extend="registerLinesArrange();lineGroupCheck()" @fold="disposeLinesArrange" @click="clickContainer">
+        <div class="filter">
+            <select v-model="showingLineGroup">
+                <option :value="undefined">默认分组</option>
+                <option v-for="g in saveStore.save?.lineGroups" :value="g.id">
+                    {{ g.name }}
+                </option>
+            </select>
+        </div>
         <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l in terrains" :key="l.id" :class="{arranging: arrangingId==l.id}">
                 <AuColorPickerPresetsNested
@@ -89,7 +98,7 @@ onUnmounted(()=>{
 </template>
 
 <style scoped lang="scss">
-input{margin: 0px;padding: 0px;}
+@use './shared/arrangableList.scss';
 
 .lines>div{
     position: relative;

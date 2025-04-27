@@ -1,18 +1,35 @@
 .arrangeableList{
+    $filterHeight: 40px;
+    .filter{
+        position: absolute;
+        inset: 0px;
+        bottom: unset;
+        height: $filterHeight;
+        z-index: 10;
+        background-color: white;
+        box-shadow: 0px 0px 5px 0px black;
+        text-align: center;
+    }
     .lines{
-        background-color: #ccc;
+        position: absolute;
+        inset: 0px;
+        top: $filterHeight;
+        background-color: #ddd;
         display: flex;
         flex-direction: column;
         gap: 5px;
-        padding: 5px;
+        padding: 8px;
+        padding-top: 16px;
         justify-content: flex-start;
         align-items: stretch;
-        border-radius: 5px;
+        overflow-y: scroll;
     }
     .lines.arranging{
         cursor: ns-resize;
     }
     .lines>div{
+        flex-grow: 0;
+        flex-shrink: 0;
         height: 60px;
         display: flex;
         justify-content: space-around;
@@ -20,7 +37,7 @@
         gap: 3px;
         background-color: white;
         padding: 5px;
-        border-radius: 5px;
+        border-radius: 8px;
     }
     .lines>div.arranging{
         box-shadow: 0px 0px 5px 2px black;
