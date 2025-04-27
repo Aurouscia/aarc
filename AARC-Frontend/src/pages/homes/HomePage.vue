@@ -20,16 +20,14 @@ import Notice from '@/components/common/Notice.vue';
     <NewestSaves></NewestSaves>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-4-19更新'">
-        1. 设置-文本标签（全局设置）<br/>
-        2. 关闭网格对齐时，不显示网格（可用于截图）<br/>
-        3. 用户列表显示个人简介
+    <Notice :type="'info'" :title="'2025-4-27更新'">
+        1. 线路分组功能（可分为多个列表）<br/>
+        2. 线路设置移入单独的侧边栏
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">
-        1. 自定义线路分组功能（分为多个列表）<br/>
-        2. 线路叠加顺序设置（z-index）<br/>
-        3. 标签/站名的旋转和压缩<br/>
-        4. 站点/线路搜索定位功能
+        1. 线路叠加顺序设置（z-index）<br/>
+        2. 标签/站名的旋转和压缩<br/>
+        3. 站点/线路搜索定位功能
     </Notice>
 </div>
 <GiteeInfo></GiteeInfo>
