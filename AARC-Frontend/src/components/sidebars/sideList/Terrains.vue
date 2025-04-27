@@ -9,11 +9,11 @@ import { useColorPresetNames } from './shared/useColorPresetNames';
 import LineDelPrompt from './shared/LineDelPrompt.vue';
 
 const { 
-    sidebar, lineOptions, lines: terrains, envStore, saveStore,
+    sidebar, lineOptions, lines: terrains, envStore,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
     createLine, editingInfoLine, editInfoOfLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe,
-    showingLineGroup, lineGroupCheck
+    showingLineGroup, lineGroupCheck, lineGroupsSelectable
 } = useSideListShared(LineType.terrain, '地形')
 
 const { getPresetNameByEnum, getPresetEnumByName, presets } = useColorPresetNames()
@@ -53,7 +53,7 @@ onUnmounted(()=>{
         <div class="filter">
             <select v-model="showingLineGroup">
                 <option :value="undefined">默认分组</option>
-                <option v-for="g in saveStore.save?.lineGroups" :value="g.id">
+                <option v-for="g in lineGroupsSelectable" :value="g.id">
                     {{ g.name }}
                 </option>
             </select>

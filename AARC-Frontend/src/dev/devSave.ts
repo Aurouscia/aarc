@@ -250,7 +250,8 @@ export const devSave:Save = {
     lineGroups:[
         {
             id: 10000,
-            name:"远郊线路"
+            name:"远郊线路",
+            lineType: LineType.common,
         }
     ],
     config:{}

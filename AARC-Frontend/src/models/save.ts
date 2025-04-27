@@ -85,6 +85,7 @@ export interface LineStyle{
 export interface LineGroup{
     id:number
     name?:string
+    lineType:LineType
 }
 
 export enum FormalRotation{

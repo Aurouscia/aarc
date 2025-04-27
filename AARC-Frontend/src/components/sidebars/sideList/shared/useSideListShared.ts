@@ -17,6 +17,9 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
         return saveStore.save?.lines.filter(x => x.type===lineType && x.group===showingLineGroup.value) || []
     })
     const lineOptions = ref<InstanceType<typeof LineOptions>>()
+    const lineGroupsSelectable = computed(()=>{
+        return saveStore.save?.lineGroups?.filter(x=>x.lineType===lineType) || [] 
+    })
     const {
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, activeId: arrangingId
     } = useLinesArrange(65, lines, orderChanged) //65：一个线路框60高，加上5的缝隙
@@ -68,12 +71,14 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
     function lineGroupCheck(){
         //若有线路组被删除，将其线路的group属性设为undefined
         //若当前显示的线路组被删除，将其设为undefined
-        const existGroupIds = saveStore.save?.lineGroups?.map(x=>x.id) || [];
-        const lines = saveStore.save?.lines || [];
+        const existGroupIds = saveStore.save?.lineGroups
+            ?.filter(x=>x.lineType===lineType)
+            .map(x=>x.id) || [];
         if(showingLineGroup.value && !existGroupIds.includes(showingLineGroup.value)){
             showingLineGroup.value = undefined; 
         }
-        lines.forEach(x=>{
+        const linesOfType = saveStore.getLinesByType(lineType)
+        linesOfType.forEach(x=>{
             if(x.group && !existGroupIds.includes(x.group)){
                 x.group = undefined;
             }
@@ -86,6 +91,6 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
         arrangingId, editingInfoLine, editInfoOfLine,
         createLine, 
         wantDelLine, delLineStart, delLineAbort, delLineExe,
-        showingLineGroup, lineGroupCheck
+        showingLineGroup, lineGroupCheck, lineGroupsSelectable
     }
 }

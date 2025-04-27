@@ -48,6 +48,10 @@ function lineStaSizeChanged(){
     envStore.lineInfoChanged(props.line)
 }
 
+const myUsableLineGroups = computed(()=>{
+    return save.value?.lineGroups?.filter(x=>x.lineType===props.line.type) || []
+})
+
 const sidebar = ref<InstanceType<typeof SideBar>>()
 defineExpose({
     open: ()=>{sidebar.value?.extend()}, 
@@ -59,7 +63,7 @@ onMounted(()=>{
     lineStaNameSizeBinded.value = props.line.ptNameSize || 0
     lineStaSizeBinded.value = props.line.ptSize || 0
     const gId = props.line.group
-    const group = save.value?.lineGroups?.find(x=>x.id===gId)
+    const group = myUsableLineGroups.value.find(x=>x.id===gId)
     if(!group)
         props.line.group = undefined
 })
@@ -83,7 +87,7 @@ onMounted(()=>{
         <td>
             <select v-model="line.group" @change="envStore.lineInfoChanged(line)">
                 <option :value="undefined">默认分组</option>
-                <option v-for="group in save?.lineGroups" :value="group.id">
+                <option v-for="group in myUsableLineGroups" :value="group.id">
                     {{ group.name }}
                 </option>
             </select>

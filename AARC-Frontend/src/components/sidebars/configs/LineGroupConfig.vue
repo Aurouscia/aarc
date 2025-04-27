@@ -4,6 +4,7 @@ import ConfigSection from './shared/ConfigSection.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { onMounted, ref } from 'vue';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
+import { LineGroup, LineType } from '@/models/save';
 
 const saveStore = useSaveStore();
 const { save } = storeToRefs(saveStore);
@@ -32,6 +33,25 @@ function remove(index: number) {
         preventLeaving()
     }
 }
+function toggleLineType(g:LineGroup){
+    if(g.lineType === LineType.terrain)
+        g.lineType = LineType.common;
+    else
+        g.lineType = LineType.terrain;
+    preventLeaving()
+}
+function lineTypeStr(g:LineGroup){
+    if(g.lineType === LineType.terrain)
+        return '地形';
+    else
+        return '线路';
+}
+function lineTypeColor(g:LineGroup){
+    if(g.lineType === LineType.terrain)
+        return 'olivedrab';
+    else
+        return 'cornflowerblue';
+}
 
 const creatingName = ref();
 function create() {
@@ -40,7 +60,8 @@ function create() {
     const newId = saveStore.getNewId()
     save.value?.lineGroups?.push({
         id: newId,
-        name: creatingName.value
+        name: creatingName.value,
+        lineType: LineType.common,
     })
     creatingName.value = undefined;
     preventLeaving()
@@ -56,6 +77,7 @@ function create() {
                 <input v-model="lg.name"/>
             </td>
             <td class="btns">
+                <button @click="toggleLineType(lg)" class="lite" :style="{color:lineTypeColor(lg)}">{{ lineTypeStr(lg) }}</button>
                 <button @click="moveUp(idx)" class="lite">上移</button>
                 <button @click="remove(idx)" class="lite">删</button>
             </td>
@@ -76,9 +98,10 @@ function create() {
 <style scoped lang="scss">
 input{
     width: 120px;
+    margin: 5px 0px;
 }
 button{
     font-size: 13px;
-    margin: 0px 10px;
+    margin: 0px 5px;
 }
 </style>
