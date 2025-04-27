@@ -10,6 +10,7 @@ import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeaving
 import LineStyles from './configItems/LineStyles.vue';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import TextTagConfig from './configs/TextTagConfig.vue';
+import LineGroupConfig from './configs/LineGroupConfig.vue';
 //import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
 //import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 
@@ -109,6 +110,8 @@ defineExpose({
     <div>线路风格</div>
 </h2>
 <LineStyles v-if="showLineStyles"></LineStyles>
+
+<LineGroupConfig></LineGroupConfig>
 
 <h2 :class="{sectorShown:showLineWidthMapped}" @click="showLineWidthMapped = !showLineWidthMapped">
     <div class="shownStatusIcon">{{ showLineWidthMapped ? '×':'+' }}</div>

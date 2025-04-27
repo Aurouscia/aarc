@@ -7,6 +7,7 @@ export interface Save{
     pointLinks?: ControlPointLink[]
     lines: Line[]
     lineStyles?: LineStyle[]
+    lineGroups?: LineGroup[]
     textTags: TextTag[]
     cvsSize: Coord
     config: ConfigInSave
@@ -61,6 +62,7 @@ export interface Line{
     nameSub:string
     color:string
     colorPre?:ColorPreset
+    group?:number
     width?:number
     ptNameSize?:number
     ptSize?:number
@@ -79,6 +81,10 @@ export interface LineStyle{
         opacity?:number
         dash?:string
     }[]
+}
+export interface LineGroup{
+    id:number
+    name?:string
 }
 
 export enum FormalRotation{
