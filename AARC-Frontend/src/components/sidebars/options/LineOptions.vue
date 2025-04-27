@@ -57,7 +57,7 @@ defineExpose({
     open: ()=>{sidebar.value?.extend()}, 
 })
 
-onMounted(()=>{
+function init(){
     lineWidthBinded.value = props.line.width || 1
     lineStyleBinded.value = props.line.style || 0
     lineStaNameSizeBinded.value = props.line.ptNameSize || 0
@@ -66,11 +66,15 @@ onMounted(()=>{
     const group = myUsableLineGroups.value.find(x=>x.id===gId)
     if(!group)
         props.line.group = undefined
+}
+
+onMounted(()=>{
+    init()
 })
 </script>
 
 <template>
-<SideBar ref="sidebar">
+<SideBar ref="sidebar" @extend="init">
 <h1>线路更多设置</h1>
 <div class="lineConfig">
     <table class="fullWidth"><tbody>
