@@ -8,6 +8,7 @@ export const usePreventLeavingUnsavedStore = defineStore('preventLeavingUnsaved'
     const preventingLeaving = ref<boolean>(false);
     const showUnsavedWarning = ref<boolean>(false);
     const unsavedForALongTime = ref<boolean>(false);
+    const preventLeavingDisabled = ref<boolean>(false);
     let lastSaved:number = 0;
     function leavingHandler(){
         return "未保存"
@@ -15,7 +16,7 @@ export const usePreventLeavingUnsavedStore = defineStore('preventLeavingUnsaved'
     let removeRouteGuard:(()=>void)|undefined;
     
     function preventLeaving(){
-        if(preventingLeaving.value){
+        if(preventingLeaving.value || preventLeavingDisabled.value){
             return;
         }
         console.log("限制离开")
@@ -51,5 +52,5 @@ export const usePreventLeavingUnsavedStore = defineStore('preventLeavingUnsaved'
             unsavedForALongTime.value = now-lastSaved > aLongTimeForUnsavedStatusMs
         }
     }, 1000)
-    return { preventLeaving, releasePreventLeaving, preventingLeaving, showUnsavedWarning, unsavedForALongTime }
+    return { preventLeaving, releasePreventLeaving, preventingLeaving, showUnsavedWarning, unsavedForALongTime, preventLeavingDisabled }
 })

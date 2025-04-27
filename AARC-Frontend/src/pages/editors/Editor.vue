@@ -69,7 +69,7 @@ async function load() {
 const deepClone = rfdc()
 const preventLeaveStore = usePreventLeavingUnsavedStore()
 const { preventLeaving, releasePreventLeaving } = preventLeaveStore
-const { showUnsavedWarning } = storeToRefs(preventLeaveStore)
+const { showUnsavedWarning, preventLeavingDisabled } = storeToRefs(preventLeaveStore)
 async function saveData(){
     configStore.writeConfigToSave()
     if(isNaN(saveIdNum.value)){
@@ -110,10 +110,8 @@ async function checkLoginLeftTime(){
 
 function setLeavingPreventing(){
     //将“主画布重新渲染”当成“存档信息变化”，当主画布重新渲染时，阻止用户离开/刷新页面/关闭页面
-    if(!isDemo.value)
-        mainCvsDispatcher.afterMainCvsRendered = preventLeaving
-    else
-        mainCvsDispatcher.afterMainCvsRendered = undefined
+    mainCvsDispatcher.afterMainCvsRendered = preventLeaving
+    preventLeavingDisabled.value = isDemo.value
 }
 const cvsComponent = ref<InstanceType<typeof Cvs>>()
 watch(props, async()=>{
@@ -131,8 +129,6 @@ const hiddenLongWatcher = new DocumentHiddenLongWatcher(30*1000, ()=>{
 }) 
 onBeforeMount(async()=>{
     setLeavingPreventing()
-    if(!isDemo.value)
-        mainCvsDispatcher.afterMainCvsRendered = preventLeaving
     topbarShow.value = false
     await load()
     saveShortcutListener.startListen()
