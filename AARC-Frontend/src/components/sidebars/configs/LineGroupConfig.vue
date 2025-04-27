@@ -5,21 +5,26 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import { onMounted, ref } from 'vue';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { LineType } from '@/models/save';
+import { useEnvStore } from '@/models/stores/envStore';
 
 const saveStore = useSaveStore();
 const { save } = storeToRefs(saveStore);
+const envStore = useEnvStore()
 const { preventLeaving } = usePreventLeavingUnsavedStore() //无需rerender的地方需要手动调用“阻止未保存离开”
 onMounted(()=>{
     if(save.value && !save.value?.lineGroups) {
         save.value.lineGroups = [];
     }
 })
+const orderChanged = ref(false)
 function moveUp(index: number) {
     if(index > 0){
         const item = save.value?.lineGroups?.splice(index, 1)[0];
         if(item) {
             save.value?.lineGroups?.splice(index - 1, 0, item);
             preventLeaving()
+            saveStore.ensureLinesOrdered()
+            orderChanged.value = true;
         }
     }
 }
@@ -81,6 +86,11 @@ function create() {
                 <span :style="{color:lineTypeColor(lg.lineType)}">{{ lineTypeStr(lg.lineType) }}</span>
                 <button @click="moveUp(idx)" class="lite">上移</button>
                 <button @click="remove(idx)" class="lite">删</button>
+            </td>
+        </tr>
+        <tr v-if="orderChanged">
+            <td colspan="2">
+                <button class="ok" @click="envStore.rerender();orderChanged=false">确认调序</button>
             </td>
         </tr>
         <tr><th colspan="2">新建</th></tr>

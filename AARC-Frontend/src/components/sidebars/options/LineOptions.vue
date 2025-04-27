@@ -85,7 +85,7 @@ onMounted(()=>{
     <tr>
         <td>分组</td>
         <td>
-            <select v-model="line.group" @change="envStore.lineInfoChanged(line)">
+            <select v-model="line.group" @change="saveStore.ensureLinesOrdered();envStore.lineInfoChanged(line)">
                 <option :value="undefined">默认分组</option>
                 <option v-for="group in myUsableLineGroups" :value="group.id">
                     {{ group.name }}

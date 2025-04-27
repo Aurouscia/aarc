@@ -56,6 +56,7 @@ async function load() {
     else if(isDemo.value){
         saveStore.save = ensureValidSave(deepClone(devSave))
         resetterStore.resetDerivedStores()
+        saveStore.ensureLinesOrdered()
         loadComplete.value = true
         pop.value?.show('此处为体验环境，不能保存', 'warning')
         savingDisabledWarning.value = '此处为体验环境，不能保存'

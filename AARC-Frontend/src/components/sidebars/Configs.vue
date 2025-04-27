@@ -138,8 +138,7 @@ defineExpose({
     <tr>
         <td class="explain" colspan="3">
             调小车站尺寸可能会造成<br/>
-            换乘站脱离，请保存后刷新<br/>
-            并重新拼合脱离处
+            换乘站脱离，请手动拼合脱离处
         </td>
     </tr>
 </tbody></table>

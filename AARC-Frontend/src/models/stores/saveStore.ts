@@ -340,8 +340,11 @@ export const useSaveStore = defineStore('save', () => {
             }
             if(a.type !== b.type)
                 return lineTypeOrderNum(a) - lineTypeOrderNum(b)
-            if(a.group !== b.group)
-                return (a.group ?? 0) - (b.group ?? 0)
+            if(a.group !== b.group){
+                const agIdx = save.value?.lineGroups?.findIndex(g => g.id === a.group) ?? -1
+                const bgIdx = save.value?.lineGroups?.findIndex(g => g.id === b.group) ?? -1
+                return agIdx - bgIdx
+            }
             return 0
         })
     }
@@ -480,7 +483,7 @@ export const useSaveStore = defineStore('save', () => {
         getLinesDecidedPtSize, getLinesDecidedPtSizes, getLinesDecidedPtNameSize,
         getLineActualColor, linesActualColorSame, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getTextTagById, getPointLinksByPt,
-        insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType,
+        insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType, ensureLinesOrdered,
         removePt, removePtFromLine, removeNoLinePoints, removePointLinkByPt, removeDanglingPointLinks, tryMergePt, isNamedPt,
         removeTextTag, moveEverything, setCvsSize,
         isLineTypeWithoutSta, isPtNoSta,
