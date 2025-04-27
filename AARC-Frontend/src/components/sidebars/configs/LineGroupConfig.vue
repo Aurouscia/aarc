@@ -4,7 +4,7 @@ import ConfigSection from './shared/ConfigSection.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { onMounted, ref } from 'vue';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
-import { LineGroup, LineType } from '@/models/save';
+import { LineType } from '@/models/save';
 
 const saveStore = useSaveStore();
 const { save } = storeToRefs(saveStore);
@@ -33,27 +33,28 @@ function remove(index: number) {
         preventLeaving()
     }
 }
-function toggleLineType(g:LineGroup){
-    if(g.lineType === LineType.terrain)
-        g.lineType = LineType.common;
+function toggleCreatingLineType(){
+    if(creatingType.value === LineType.terrain)
+        creatingType.value = LineType.common;
     else
-        g.lineType = LineType.terrain;
+        creatingType.value = LineType.terrain;
     preventLeaving()
 }
-function lineTypeStr(g:LineGroup){
-    if(g.lineType === LineType.terrain)
+function lineTypeStr(t:LineType){
+    if(t === LineType.terrain)
         return '地形';
     else
         return '线路';
 }
-function lineTypeColor(g:LineGroup){
-    if(g.lineType === LineType.terrain)
+function lineTypeColor(t:LineType){
+    if(t === LineType.terrain)
         return 'olivedrab';
     else
         return 'cornflowerblue';
 }
 
 const creatingName = ref();
+const creatingType = ref<LineType>(LineType.common)
 function create() {
     if(!creatingName.value)
         return;
@@ -61,7 +62,7 @@ function create() {
     save.value?.lineGroups?.push({
         id: newId,
         name: creatingName.value,
-        lineType: LineType.common,
+        lineType: creatingType.value,
     })
     creatingName.value = undefined;
     preventLeaving()
@@ -77,7 +78,7 @@ function create() {
                 <input v-model="lg.name"/>
             </td>
             <td class="btns">
-                <button @click="toggleLineType(lg)" class="lite" :style="{color:lineTypeColor(lg)}">{{ lineTypeStr(lg) }}</button>
+                <span :style="{color:lineTypeColor(lg.lineType)}">{{ lineTypeStr(lg.lineType) }}</span>
                 <button @click="moveUp(idx)" class="lite">上移</button>
                 <button @click="remove(idx)" class="lite">删</button>
             </td>
@@ -87,8 +88,21 @@ function create() {
             <td>
                 <input v-model="creatingName" placeholder="新建">
             </td>
-            <td>
+            <td class="btns">
+                <button @click="toggleCreatingLineType" class="lite" :style="{color:lineTypeColor(creatingType)}">
+                    {{ lineTypeStr(creatingType) }}
+                </button>
                 <button @click="create" class="lite">新建</button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" class="smallNote">
+                “新建”按钮左侧的按钮<br/>可切换新建线路组的类型
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" class="smallNote">
+                线路组删除后<br/>该组内的线路将被移至默认分组
             </td>
         </tr>
     </tbody></table>
@@ -100,8 +114,11 @@ input{
     width: 120px;
     margin: 5px 0px;
 }
-button{
-    font-size: 13px;
-    margin: 0px 5px;
+.btns{
+    button, span{
+        font-size: 13px;
+        margin: 0px 5px;
+        vertical-align: middle;
+    }
 }
 </style>

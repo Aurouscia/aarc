@@ -91,6 +91,9 @@ onMounted(()=>{
                     {{ group.name }}
                 </option>
             </select>
+            <div class="smallNote">
+                可在设置-线路组中添加可选的分组
+            </div>
         </td>
     </tr>
     <tr>
