@@ -10,6 +10,7 @@ import { storeToRefs } from 'pinia';
 import { CSSProperties, onMounted, onUnmounted, ref } from 'vue';
 import { hsl } from 'color-convert'
 import { timestampMS } from '@/utils/timeUtils/timestamp';
+import ConfigSection from '../configs/shared/ConfigSection.vue';
 
 const saveStore = useSaveStore()
 const { save } = storeToRefs(saveStore)
@@ -118,6 +119,7 @@ onUnmounted(()=>{
 </script>
 
 <template>
+<ConfigSection :title="'线路风格'">
 <div class="lineStyles" @click="clickContainer">
     <div v-for="s,sIdx in save?.lineStyles" :key="s.id">
         <div class="preview">
@@ -185,6 +187,7 @@ onUnmounted(()=>{
         <button class="ok" @click="addStyle();rr()">+新建样式</button>
     </div>
 </div>
+</ConfigSection>
 </template>
 
 <style scoped lang="scss">

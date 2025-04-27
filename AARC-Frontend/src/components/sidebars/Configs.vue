@@ -7,10 +7,10 @@ import { useConfigStore } from '@/models/stores/configStore';
 import { storeToRefs } from 'pinia';
 import { clamp } from '@/utils/lang/clamp';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
-import LineStyles from './configItems/LineStyles.vue';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import TextTagConfig from './configs/TextTagConfig.vue';
 import LineGroupConfig from './configs/LineGroupConfig.vue';
+import LineStylesConfig from './configs/LineStylesConfig.vue';
 //import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
 //import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 
@@ -20,8 +20,6 @@ const configStore = useConfigStore()
 const { config } = storeToRefs(configStore)
 const { preventLeaving } = usePreventLeavingUnsavedStore() //无需rerender的地方需要手动调用“阻止未保存离开”
 //const cvsBlocksControl = useCvsBlocksControlStore()
-
-const showLineStyles = ref(false)
 
 const showLineWidthMapped = ref(false)
 function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', value?:string){
@@ -105,11 +103,7 @@ defineExpose({
 
 <template>
 <SideBar ref="sidebar" :enforce-y-scroll="true">
-<h2 :class="{sectorShown:showLineStyles}" @click="showLineStyles = !showLineStyles">
-    <div class="shownStatusIcon">{{ showLineStyles ? '×':'+' }}</div>
-    <div>线路风格</div>
-</h2>
-<LineStyles v-if="showLineStyles"></LineStyles>
+<LineStylesConfig></LineStylesConfig>
 
 <LineGroupConfig></LineGroupConfig>
 
