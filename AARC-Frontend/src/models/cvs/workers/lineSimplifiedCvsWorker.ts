@@ -22,16 +22,16 @@ export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker',
             }
             renderLine(ctx, lineInfo, poss, lineWidthHere)
         }
-        const targets:{lineInfo:Line, pts:FormalPt[]}[] = []
+        const formalizedLines:{lineId:number, pts:FormalPt[]}[] = []
         formalizedLineStore.enumerateFormalizedLines((lineId, pts)=>{
-            const lineInfo = saveStore.getLineById(lineId)
-            if(lineInfo)
-                targets.push({lineInfo, pts})
+            formalizedLines.push({lineId, pts})
         })
-        targets.sort((x,y)=>{
-            const xIsTerrain = x.lineInfo.type === LineType.terrain ? 1:0
-            const yIsTerrain = y.lineInfo.type === LineType.terrain ? 1:0
-            return yIsTerrain - xIsTerrain
+        const targets:{lineInfo:Line, pts:FormalPt[]}[] = []
+        //按照saveStore.save?.lines的顺序渲染（这个顺序一直都是对的）
+        saveStore.save?.lines.forEach(line=>{
+            const pts = formalizedLines.find(x=>x.lineId === line.id)?.pts
+            if(pts)
+                targets.push({lineInfo:line, pts}) 
         })
         for(const target of targets){
             render(target.lineInfo, target.pts)
