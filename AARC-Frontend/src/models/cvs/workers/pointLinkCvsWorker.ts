@@ -30,7 +30,9 @@ export const usePointLinkCvsWorker = defineStore('pointLinkCvsWorker',()=>{
                 return //已失效的link
         }
         if(pts.length<2)
-            return
+            return //已失效的link
+        if(pts[0].id === pts[1].id)
+            return //同一点
         const sizes = pts.map(x=>{return{id:x.id, size:staClusterStore.getMaxSizePtWithinCluster(x.id, 'ptSize')}})
         const sizeRatio = Math.min(...sizes.map(x=>x.size))
         if(link.type === ControlPointLinkType.fat){

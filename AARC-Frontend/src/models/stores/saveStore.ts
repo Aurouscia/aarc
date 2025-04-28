@@ -399,6 +399,13 @@ export const useSaveStore = defineStore('save', () => {
             save.value.points.splice(delIdx, 1)
             deletedPoint.value(delPt.id)
         }
+        //把被删除的点的link转移到保留的点上
+        const links = save.value.pointLinks?.filter(x=>x.pts.includes(delPt.id)) || []
+        links.forEach(link=>{
+            const idx = link.pts.indexOf(delPt.id)
+            if(idx >= 0)
+                link.pts[idx] = keepPt.id  
+        })
         return {
             mutatedLines:delFromLines,
             mergedWithPt:thatPt,
