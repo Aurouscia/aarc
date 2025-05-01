@@ -156,6 +156,14 @@ onMounted(()=>{
             <div class="smallNote">勾选本项时<br/>地形必须是环形</div>
         </td>
     </tr>
+    <tr>
+        <td>标签<br/>创建</td>
+        <td>
+            <button @click="envStore.createTextTag(line.id)">
+                点击创建
+            </button>
+        </td>
+    </tr>
     <tr v-if="line.type===LineType.common">
         <td>标签<br/>文字</td>
         <td>
