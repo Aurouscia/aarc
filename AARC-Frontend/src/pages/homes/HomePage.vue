@@ -49,6 +49,10 @@ import Notice from '@/components/common/Notice.vue';
         <h3>支线整理</h3>
         <p>把同一线路系统的各支线合并整理</p>
     </div>
+    <div>
+        <h3>时间轴</h3>
+        <p>每个线路(段)可设置规划/建设/投运/废弃的年代，并查看/导出不同年代的线路图</p>
+    </div>
     <div class="done">
         <h3>旧版迁移（已完成✔）</h3>
         <p>将旧版绘图器存档转换为新版的</p>
@@ -61,6 +65,10 @@ import Notice from '@/components/common/Notice.vue';
     <div class="done">
         <h3>丰富线路样式（已完成✔）</h3>
         <p>虚线和不同宽度的多层描边</p>
+    </div>
+    <div>
+        <h3>丰富站点/标签样式</h3>
+        <p>提供多种可选的站点/线路标签风格（可扩展性）</p>
     </div>
     <div>
         <h3>区间标记</h3>
@@ -96,7 +104,8 @@ import Notice from '@/components/common/Notice.vue';
     本项目以<a href="https://apache.org/licenses/LICENSE-2.0" target="_blank">Apache-2.0</a>开源许可证提供，可私有部署和商用。
     欢迎对本项目源码作出贡献或提出改进意见。<br/>
     <a href="https://gitee.com/au114514/aarc" target="_blank">Gitee(本体)</a><br/>
-    <a href="https://github.com/Aurouscia/aarc" target="_blank">Github(自动同步镜像)</a>
+    <a href="https://github.com/Aurouscia/aarc" target="_blank">Github(自动同步镜像)</a><br/>
+    <div style="color:cornflowerblue">承诺：不管后期添加多少功能，本项目永不以任何形式收取任何费用，所有功能全部开源免费。</div>
 </div>
 </template>
 
