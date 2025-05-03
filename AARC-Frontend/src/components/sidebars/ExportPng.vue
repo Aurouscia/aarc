@@ -68,6 +68,7 @@ async function downloadMainCvsAsPng() {
         exportLock = false
     }, 2000)
 }
+let activeUrl:string|undefined = undefined;
 async function downloadMiniatureCvsAsPng() {
     if(exportLock)
         return
@@ -75,15 +76,17 @@ async function downloadMiniatureCvsAsPng() {
     exported.value = false
     const fileName = await getExportPngFileName(true)
     if(fileName){
+        if(activeUrl)
+            URL.revokeObjectURL(activeUrl)
         const cvs = miniatureCvsDispatcher.renderMiniatureCvs(256, 2)
-        const pngDataUrl = await cvsToDataUrl(cvs)
-        if(!pngDataUrl){
+        activeUrl = await cvsToDataUrl(cvs)
+        if(!activeUrl){
             return
         }
         var link = getDownloadAnchor()
         if(link && 'href' in link){
             exported.value = true
-            link.href = pngDataUrl;
+            link.href = activeUrl;
             if('download' in link)
                 link.download = fileName
             link.click();
@@ -149,18 +152,8 @@ function exportPngFileNameStyleChanged(){
     exportLocalConfig.saveExportFileNameStyle(exportPngFileNameStyle.value || 'plain')
 }
 async function cvsToDataUrl(cvs:OffscreenCanvas):Promise<string>{
-    return await cvs.convertToBlob({ type: 'image/png' }).then(blob => {
-        return new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                if(typeof reader.result =='string')
-                    resolve(reader.result)
-                else
-                    resolve('')
-            };
-            reader.readAsDataURL(blob);
-        });
-    })
+    const blob = await cvs.convertToBlob({ type: 'image/png' });
+    return URL.createObjectURL(blob);
 }
 
 const downloadAnchorElementId = 'downloadAnchor'
