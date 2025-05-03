@@ -3,8 +3,12 @@ import { guideInfo } from '@/app/guideInfo';
 import NewestSaves from '../components/NewestSaves.vue';
 import GiteeInfo from '@/components/common/GiteeGitInfo.vue';
 import Notice from '@/components/common/Notice.vue';
+import { onMounted } from 'vue';
+import { appVersionCheck } from '@/app/appVersionCheck';
 
-
+onMounted(()=>{
+    appVersionCheck()
+})
 </script>
 
 <template>
