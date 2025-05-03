@@ -14,6 +14,7 @@ import { AdsRenderType } from '@/models/cvs/workers/adsCvsWorker';
 import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
+import Notice from '../common/Notice.vue';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -23,14 +24,14 @@ const api = useApiStore().get()
 const route = useRoute()
 const { pop } = useUniqueComponentsStore()
 const exported = ref<boolean>(false)
-let exportLock = false
+const exporting = ref<boolean>(false)
 
 const exportLocalConfig = useExportLocalConfigStore()
 async function downloadMainCvsAsPng() {
-    if(exportLock)
+    if(exporting.value)
         return
-    exportLock = true
     exported.value = false
+    exporting.value = true
 
     const fileName = await getExportPngFileName()
     if(fileName){
@@ -64,16 +65,14 @@ async function downloadMainCvsAsPng() {
         mainRenderingOptions.forExport = false
         mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
     }
-    window.setTimeout(()=>{
-        exportLock = false
-    }, 2000)
+    exporting.value = false
 }
 let activeUrl:string|undefined = undefined;
 async function downloadMiniatureCvsAsPng() {
-    if(exportLock)
+    if(exporting.value)
         return
-    exportLock = true
     exported.value = false
+    exporting.value = true
     const fileName = await getExportPngFileName(true)
     if(fileName){
         if(activeUrl)
@@ -92,9 +91,7 @@ async function downloadMiniatureCvsAsPng() {
             link.click();
         }
     }
-    window.setTimeout(()=>{
-        exportLock = false
-    }, 1000)
+    exporting.value = false
 }
 async function getExportPngFileName(isMini?:boolean){
     let saveId = route.params[editorParamNameSaveId]
@@ -177,6 +174,7 @@ function exportPixelRestrictChanged(){
 }
 
 const { isWebkit } = useBrowserInfoStore()
+const showBrowserLimit = ref<boolean>(false)
 
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
@@ -214,15 +212,37 @@ defineExpose({
     <div v-show="exported" class="note">
         若点击导出后没有开始下载<br/>请尝试<a :id="downloadAnchorElementId" class="downloadAnchor">点击此处</a>
     </div>
+    <Notice v-show="exporting" :title="'请等待'" :type="'info'">
+        正在导出，可能需要几秒
+    </Notice>
     <div class="note">
         若导出失败，可能由于系统/浏览器限制，<br/>
-        导致只能导出模糊的图片<br/>
-        请尝试设置<b>“像素上限”</b>为4000，若仍然失败则逐步调低直至导出成功<br/>
-        <b v-if="isWebkit" style="color:plum">
-            苹果系统疑似有4000的上限<br/>
-        </b>
-        若需要清晰的图片请换用其他设备
+        导致只能导出更模糊的图片<br/>
+        请尝试设置<b>“像素上限”</b>为{{ isWebkit ? '4000': '19000' }}，若仍然失败则逐步调低直至导出成功<br/>
+        若需要清晰的图片请换用其他设备/浏览器
     </div>
+    <button v-if="!showBrowserLimit" class="minor" @click="showBrowserLimit=true">显示已知的浏览器限制</button>
+    <table v-else class="fullWidth"><tbody>
+        <tr>
+            <th>浏览器</th>
+            <th>导出像素上限</th>
+        </tr>
+        <tr>
+            <td>Chrome/Edge</td>
+            <td>19000</td>
+        </tr>
+        <tr>
+            <td>苹果系统上<br/>任意浏览器</td>
+            <td>4000</td>
+        </tr>
+        <tr>
+            <td>FireFox(PC版)</td>
+            <td>暂未发现限制</td>
+        </tr>
+        <tr>
+            <td colspan="2" class="smallNote">欢迎向我们反馈更多</td>
+        </tr>
+    </tbody></table>
 </div>
 </SideBar>
 </template>
@@ -253,6 +273,7 @@ defineExpose({
 }
 .note{
     margin-top: 30px;
+    margin-bottom: 10px;
     font-size: 14px;
     color: #999;
     text-align: center;
