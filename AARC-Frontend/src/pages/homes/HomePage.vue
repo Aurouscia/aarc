@@ -24,9 +24,8 @@ onMounted(()=>{
     <NewestSaves></NewestSaves>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-4-27更新'">
-        1. 线路分组功能（可分为多个列表）<br/>
-        2. 线路设置移入单独的侧边栏
+    <Notice :type="'info'" :title="'2025-5-6更新'">
+        1. 站点名称坐标设置
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">
         1. 线路叠加顺序设置（z-index）<br/>

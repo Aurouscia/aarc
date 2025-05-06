@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import SideBar from '@/components/common/SideBar.vue';
 import { ControlPoint } from '@/models/save';
+import { useNameEditStore } from '@/models/stores/nameEditStore';
 import { ref } from 'vue';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
+const nameEditStore = useNameEditStore()
 
 const editing = ref<ControlPoint>()
 function startEditing(pt: ControlPoint) {
     editing.value = pt
     if(editing.value.nameSize===undefined)
         editing.value.nameSize = 0
+    if(editing.value.nameP===undefined)
+        editing.value.nameP = nameEditStore.newNamePos(editing.value.id)
     sidebar.value?.extend()
 }
 
@@ -47,6 +51,18 @@ defineExpose({
                 （即车站团内最大的“线路设置站名尺寸”）<br/><br/>
                 此处的设置仅影响本点，若站名被拖入<br/>车站团内其他点，则需要重新设置
             </div>
+        </div>
+        <h2>站名位置</h2>
+        <div class="optionSection">
+            <table class="fullWidth" v-if="editing.nameP"><tbody>
+                <tr>
+                    <td>坐标</td>
+                    <td class="coord">
+                        <input type="number" v-model="editing.nameP[0]" @change="emit('changed')"/><br/>
+                        <input type="number" v-model="editing.nameP[1]" @change="emit('changed')"/>
+                    </td>
+                </tr>
+            </tbody></table>
         </div>
     </div>
     <div class="smallNote" style="text-align: center;">

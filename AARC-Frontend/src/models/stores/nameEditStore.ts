@@ -4,6 +4,7 @@ import { useSaveStore } from "./saveStore";
 import { useConfigStore } from "./configStore";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
 import ControlPointOptions from "@/components/sidebars/options/ControlPointOptions.vue";
+import { Coord } from "../coord";
 
 export const useNameEditStore = defineStore('nameEdit', ()=>{
     const cs = useConfigStore()
@@ -54,9 +55,7 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
             pt.name = nameMain.value
             pt.nameS = nameSub.value
             if(saveStore.isNamedPt(pt) && !pt.nameP){
-                const ptSize = staClusterStore.getMaxSizePtWithinCluster(pt.id, 'ptSize')
-                const dist = cs.config.snapOctaClingPtNameDist * ptSize
-                pt.nameP = [0, dist]
+                pt.nameP = newNamePos(pt.id)
             }
         }
     }
@@ -90,9 +89,18 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
             return 0
         return nameEditorDiv.value?.clientHeight || 0
     }
+
+    function newNamePos(ptId:number):Coord{
+        const ptSize = staClusterStore.getMaxSizePtWithinCluster(ptId, 'ptSize')
+        const dist = cs.config.snapOctaClingPtNameDist * ptSize
+        //TODO：自动选择不遮挡线路的位置
+        return [0, dist]
+    }
+
     return { targetPtId, nameMain, nameSub, editing, edited,
         startEditing, endEditing, toggleEditing, applyName,
         nameInputFocusHandler, nameEditorDiv, getEditorDivEffectiveHeight,
-        controlPointOptionsPanel, controlPointOptionsPanelOpen
+        controlPointOptionsPanel, controlPointOptionsPanelOpen,
+        newNamePos
     }
 })
