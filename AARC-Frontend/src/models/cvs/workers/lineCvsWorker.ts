@@ -31,7 +31,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             return
         }
         ctx.lineJoin = 'round'
-        const lines = saveStore.save.lines;
+        const lines = saveStore.linesSortedByZIndex;
         for(const line of lines){
             if(ltype !== undefined){
                 if(ltype != line.type)

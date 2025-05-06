@@ -178,7 +178,7 @@ onMounted(()=>{
                 :max="9"
                 :step="1"
                 @change="lineZIndexChanged"/>
-            <div>{{ lineZIndexBinded || 0 }}</div>
+                <input type="number" v-model="lineZIndexBinded" @blur="lineZIndexChanged"/>
             <div v-if="lineZIndexBinded==0" class="smallNote">
                 控制线路的显示顺序<br/>高层级会盖住低层级
             </div>

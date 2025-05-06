@@ -25,12 +25,15 @@ onMounted(()=>{
 </div>
 <div class="releaseNotes">
     <Notice :type="'info'" :title="'2025-5-6更新'">
-        1. 站点名称坐标设置
+        1. 站点名称坐标设置<br/>
+        2. 线路叠加顺序设置（z-index）
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">
-        1. 线路叠加顺序设置（z-index）<br/>
+        1. 支线整理<br/>
         2. 标签/站名的旋转和压缩<br/>
-        3. 站点/线路搜索定位功能
+        3. 站点/线路搜索定位功能<br/>
+        4. 指定线路导出<br/>
+        5. 发展时间轴
     </Notice>
 </div>
 <GiteeInfo></GiteeInfo>

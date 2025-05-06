@@ -106,6 +106,13 @@ export const useSaveStore = defineStore('save', () => {
         }
         return res
     })
+    const linesSortedByZIndex = computed(()=>{
+        if(!save.value)
+            return [];
+        const copy = [...save.value.lines]
+        keepOrderSort(copy, (x,y)=>(x.zIndex??0)-(y.zIndex??0))
+        return copy
+    })
 
     function getNewId() {
         if(!save.value)
@@ -486,7 +493,7 @@ export const useSaveStore = defineStore('save', () => {
     
     return { 
         save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint, deletedTextTag,
-        getPtById, getPtsByIds, getLineById, getLinesByIds, 
+        getPtById, getPtsByIds, getLineById, getLinesByIds, linesSortedByZIndex,
         getLinesDecidedPtSize, getLinesDecidedPtSizes, getLinesDecidedPtNameSize,
         getLineActualColor, linesActualColorSame, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getTextTagById, getPointLinksByPt,
