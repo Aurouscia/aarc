@@ -70,6 +70,7 @@ export interface Line{
     isFilled?:boolean
     style?:number
     tagTextColor?:string
+    zIndex?:number
 }
 export interface LineStyle{
     id:number

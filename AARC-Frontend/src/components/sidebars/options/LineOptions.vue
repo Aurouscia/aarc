@@ -47,6 +47,19 @@ function lineStaSizeChanged(){
     props.line.ptSize = lineStaSizeBinded.value
     envStore.lineInfoChanged(props.line)
 }
+const lineZIndexBinded = ref(0)
+function lineZIndexChanged(){
+    props.line.zIndex = lineZIndexBinded.value
+    envStore.lineInfoChanged(props.line)
+}
+const lineZIndexSameLines = computed<{n:string,c:string}[]>(()=>{
+    if(lineZIndexBinded.value===0)
+        return []
+    const sameLines = saveStore.save?.lines.filter(x=>x.id!==props.line.id && x.zIndex===lineZIndexBinded.value)
+    return sameLines?.map(x=>{
+        return {n:x.name||'未命名线路', c:saveStore.getLineActualColor(x)}
+    }) ?? []
+})
 
 const myUsableLineGroups = computed(()=>{
     return save.value?.lineGroups?.filter(x=>x.lineType===props.line.type) || []
@@ -62,6 +75,7 @@ function init(){
     lineStyleBinded.value = props.line.style || 0
     lineStaNameSizeBinded.value = props.line.ptNameSize || 0
     lineStaSizeBinded.value = props.line.ptSize || 0
+    lineZIndexBinded.value = props.line.zIndex || 0
     const gId = props.line.group
     const group = myUsableLineGroups.value.find(x=>x.id===gId)
     if(!group)
@@ -157,6 +171,28 @@ onMounted(()=>{
         </td>
     </tr>
     <tr>
+        <td>层级</td>
+        <td class="viewableRange">
+            <input type="range" v-model="lineZIndexBinded"
+                :min="-9"
+                :max="9"
+                :step="1"
+                @change="lineZIndexChanged"/>
+            <div>{{ lineZIndexBinded || 0 }}</div>
+            <div v-if="lineZIndexBinded==0" class="smallNote">
+                控制线路的显示顺序<br/>高层级会盖住低层级
+            </div>
+            <div v-else-if="lineZIndexSameLines.length>0" class="smallNote sameZIndexLines">
+                使用该层级的其他线路：<br/>
+                <span v-for="szl in lineZIndexSameLines" :style="{color:szl.c}">{{ szl.n }}</span>
+            </div>
+            <div v-else class="smallNote">
+                使用该层级的其他线路：<br/>
+                <span>无</span>
+            </div>
+        </td>
+    </tr>
+    <tr>
         <td>标签<br/>创建</td>
         <td>
             <button @click="envStore.createTextTag(line.id)">
@@ -182,5 +218,13 @@ onMounted(()=>{
 </template>
 
 <style scoped lang="scss">
-@use './shared/options.scss'
+@use './shared/options.scss';
+
+.sameZIndexLines{
+    max-width: 200px;
+    span{
+        margin-right: 3px;
+        white-space: nowrap;
+    }
+}
 </style>
