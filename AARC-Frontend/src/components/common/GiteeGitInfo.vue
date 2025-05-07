@@ -32,7 +32,7 @@ onMounted(()=>{
     <div ref="scriptContainer"></div>
     <div ref="gitWidget" id="osc-gitee-widget-tag"></div>
     <div class="smallNote" style="text-align: center;">
-        代码提交可能不代表实际运营情况
+        代码提交不代表实际运营情况，发布可能存在延迟。
     </div>
 </template>
 

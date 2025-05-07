@@ -6,6 +6,7 @@ import { LineType } from '@/models/save';
 import LineOptions from '../options/LineOptions.vue';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
 import LineDelPrompt from './shared/LineDelPrompt.vue';
+import LineItemBtns from './shared/LineItemBtns.vue';
 
 const { 
     sidebar, lineOptions, lines, envStore,
@@ -54,21 +55,8 @@ onUnmounted(()=>{
                         :entry-respond-delay="1"
                         :panel-click-stop-propagation="true"></AuColorPicker>
                 </div>
-                <div class="names">
-                    <input v-model="l.name" placeholder="输入线路名" @blur="envStore.lineInfoChanged(l)"/>
-                    <input v-model="l.nameSub" placeholder="输入线路副名" @blur="envStore.lineInfoChanged(l)"/>
-                </div>
-                <div class="infoEdit">
-                    <div class="sqrBtn" @click="editInfoOfLine(l)">...</div>
-                </div>
-                <div class="sqrBtn moveBtn" :class="{sqrActive:arrangingId===l.id}"
-                    @mousedown="e => mouseDownLineArrange(e, l.id)"
-                    @touchstart="e => mouseDownLineArrange(e, l.id)">
-                    ⇅
-                </div>
-                <div class="sqrBtn" @click="delLineStart(l)">
-                    ×
-                </div>
+                <LineItemBtns :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
+                    :edit-info-of-line="editInfoOfLine" :arranging-id="arrangingId" :l="l" :line-type-called="'线路'"></LineItemBtns>
             </div>
             <div class="newLine" @click="createLine">
                 +新线路
