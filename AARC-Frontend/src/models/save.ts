@@ -71,6 +71,7 @@ export interface Line{
     style?:number
     tagTextColor?:string
     zIndex?:number
+    parent?:number
 }
 export interface LineStyle{
     id:number

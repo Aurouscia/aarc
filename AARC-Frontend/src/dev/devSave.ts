@@ -1,6 +1,7 @@
 import { ColorPreset, ControlPointLinkType, LineType, Save } from "@/models/save";
 import { ControlPointDir, ControlPointSta } from "@/models/save";
 
+//开发/展示用存档数据
 export const devSave:Save = {
     cvsSize: [2000, 2000],
     idIncre: 2000,
@@ -96,7 +97,7 @@ export const devSave:Save = {
             sta: ControlPointSta.sta,
             name: '暖冬',
             nameS: 'NuanDong',
-            nameP: [30, 0]
+            nameP: [20, 0]
         },
         {
             id: 12,
@@ -108,13 +109,31 @@ export const devSave:Save = {
             nameP: [-12.727922058, 12.727922058]
         },
         {
+            id: 13,
+            pos: [650, 650],
+            dir: ControlPointDir.incline,
+            sta: ControlPointSta.sta,
+            name: '暖冬北',
+            nameS: 'N. NuanDong',
+            nameP: [20, 0]
+        },
+        {
             id: 33,
             pos: [750, 900],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta,
             name: '火车北站\n西广场(假日酒店)',
             nameS: 'Northern Railway Station\nSouth Square (Holiday Inn)',
-            nameP: [20, 0]
+            nameP: [0, 20]
+        },
+        {
+            id: 34,
+            pos: [1050, 900],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.sta,
+            name: '东南新城\n(支线功能开发中)',
+            nameS: 'S.E. New Town\n("Branch Line" Under Development)',
+            nameP: [0, 20]
         },
         {
             id: 50,
@@ -188,7 +207,7 @@ export const devSave:Save = {
         },
         {
             id: 101,
-            pts: [10, 1, 2, 3, 11, 4, 12, 10],
+            pts: [10, 1, 2, 3, 13, 4, 12, 10],
             name: "1号线",
             nameSub: "Line 1",
             color: "#44cef6",
@@ -209,6 +228,15 @@ export const devSave:Save = {
             nameSub: "DevZone Line",
             color: "#ff8800",
             type: LineType.common
+        },
+        {
+            id: 104,
+            pts: [11, 34],
+            name: "新城支线",
+            nameSub: "New Town Branch",
+            color: "#ff8800",
+            type: LineType.common,
+            parent: 103
         }
     ],
     textTags:[
@@ -245,6 +273,10 @@ export const devSave:Save = {
         {
             pts: [3, 8],
             type: ControlPointLinkType.dot
+        },
+        {
+            pts: [11, 13],
+            type: ControlPointLinkType.fat,
         }
     ],
     lineGroups:[

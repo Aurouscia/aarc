@@ -14,7 +14,11 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
     const sidebar = ref<InstanceType<typeof SideBar>>()
     const showingLineGroup = ref<number>()
     const lines = computed<Line[]>(()=>{
-        return saveStore.save?.lines.filter(x => x.type===lineType && x.group===showingLineGroup.value) || []
+        return saveStore.save?.lines.filter(x =>
+            x.type===lineType
+            && x.group===showingLineGroup.value
+            && !x.parent
+        ) || []
     })
     const lineOptions = ref<InstanceType<typeof LineOptions>>()
     const lineGroupsSelectable = computed(()=>{
