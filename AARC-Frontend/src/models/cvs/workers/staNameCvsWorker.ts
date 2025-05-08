@@ -40,13 +40,15 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
         const align = sgnCoord(pt.nameP)
         //优先使用pt内设置的值，若pt内的值为undefined或0，再去找cluster内最大的
         const fontSizeRatio = Number(pt.nameSize) || staClusterStore.getMaxSizePtWithinCluster(pt.id, 'ptNameSize')
+        const ptSizeRatio = staClusterStore.getMaxSizePtWithinCluster(pt.id, 'ptSize')
+        const ptRadius = ptSizeRatio * cs.config.ptStaSize
 
         const dist = Math.sqrt(pt.nameP[0] ** 2 + pt.nameP[1] ** 2)
-        if(dist > 35*fontSizeRatio){
+        if(dist > ptRadius*3){
             ctx.beginPath()
             ctx.lineWidth = 2*fontSizeRatio
             ctx.strokeStyle = "#999"
-            const nodeDistToCenter = cs.config.ptStaSize * 1.6 * fontSizeRatio
+            const nodeDistToCenter = ptRadius * 1.6
             const linkStart = coordTwinShrink(globalPos, pt.pos, nodeDistToCenter)
             ctx.moveTo(linkStart[0], linkStart[1])
             ctx.lineTo(...globalPos)
