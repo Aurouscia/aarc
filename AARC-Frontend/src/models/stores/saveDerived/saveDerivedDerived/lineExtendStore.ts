@@ -8,7 +8,7 @@ import { sqrt2 } from "@/utils/consts";
 import { ControlPointDir } from "@/models/save";
 
 export type ExtendBtn = {
-    lineId:number, at:'head'|'tail', rootPos:Coord,
+    lineId:number, at:'head'|'tail', rootPos:Coord, lineWidthRatio:number,
     btnPos:Coord, btnDir:ControlPointDir, way:SgnCoord}
 export const useLineExtendStore = defineStore('lineExtend', ()=>{
     const saveStore = useSaveStore()
@@ -17,7 +17,7 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
     const extendBtns:ExtendBtn[] = []
     function refreshLineExtend(ptId:number, relatedFormalizedSegs:FormalizedLine[]){
         clearLineExtendBtns()
-        const targets:{lineId:number, at:'head'|'tail'}[] = []
+        const targets:{lineId:number, at:'head'|'tail', lineWidthRatio:number}[] = []
         saveStore.save?.lines.forEach(line=>{
             if(line.pts.length<2)
                 return
@@ -26,9 +26,9 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
             if(atHead && atTail)
                 return
             if(atHead)
-                targets.push({lineId:line.id, at:'head'})
+                targets.push({lineId:line.id, at:'head', lineWidthRatio:line.width??1})
             else if(atTail)
-                targets.push({lineId:line.id, at:'tail'})
+                targets.push({lineId:line.id, at:'tail', lineWidthRatio:line.width??1})
         })
         relatedFormalizedSegs.forEach(fl=>{
             const tar = targets.find(x=>fl.lineId==x.lineId)
@@ -49,9 +49,11 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
                 if(btnDir === ControlPointDir.incline){
                     eLength = extendBtnLengthIncline
                 }
+                const lineWidthRatio = tar.lineWidthRatio
+                eLength *= lineWidthRatio
                 const btnPos = coordTwinExtend(rootPos, secondPos, eLength)
                 const way = twinPts2SgnCoord(secondPos, rootPos)
-                extendBtns.push({...tar, rootPos, btnPos, btnDir, way})
+                extendBtns.push({...tar, rootPos, btnPos, btnDir, way, lineWidthRatio})
             }
         })
     }

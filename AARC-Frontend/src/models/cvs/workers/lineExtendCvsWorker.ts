@@ -20,12 +20,12 @@ export const useLineExtendCvsWorker = defineStore('lineExtendCvsWorker', ()=>{
             ctx.beginPath()
             ctx.moveTo(...eb.rootPos)
             ctx.lineTo(...eb.btnPos)
-            ctx.lineWidth = cs.config.lineWidth * 0.6
+            ctx.lineWidth = cs.config.lineWidth * 0.6 * eb.lineWidthRatio
             ctx.strokeStyle = extendColor
             ctx.stroke()
 
             ctx.beginPath()
-            const staRadius = cs.config.ptStaSize + cs.config.ptStaLineWidth/2
+            const staRadius = (cs.config.ptStaSize + cs.config.ptStaLineWidth/2) * eb.lineWidthRatio
             ctx.arc(...eb.btnPos, staRadius, 0, 2*Math.PI)
             ctx.fillStyle = extendColor
             ctx.fill()
@@ -33,7 +33,7 @@ export const useLineExtendCvsWorker = defineStore('lineExtendCvsWorker', ()=>{
             drawCross(ctx, {
                 dir: 'vertical',
                 pos: eb.btnPos,
-                armLength: cs.config.ptStaSize * 0.6,
+                armLength: cs.config.ptStaSize * 0.6 * eb.lineWidthRatio,
                 repetitions: [{
                     armWidth: cs.config.ptStaLineWidth/2,
                     color: 'white'
@@ -45,7 +45,7 @@ export const useLineExtendCvsWorker = defineStore('lineExtendCvsWorker', ()=>{
             ctx.textBaseline = 'top'
             ctx.font = {
                 font: cs.config.staNameSubFont,
-                fontSize: cs.config.staNameSubFontSize
+                fontSize: cs.config.staNameSubFontSize * eb.lineWidthRatio
             }
             ctx.lineJoin = 'round'
             ctx.lineWidth = cs.config.staNameSubFontSize * 0.3
