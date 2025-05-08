@@ -39,7 +39,7 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             return
         const align = sgnCoord(pt.nameP)
         //优先使用pt内设置的值，若pt内的值为undefined或0，再去找cluster内最大的
-        const fontSizeRatio = pt.nameSize || staClusterStore.getMaxSizePtWithinCluster(pt.id, 'ptNameSize')
+        const fontSizeRatio = Number(pt.nameSize) || staClusterStore.getMaxSizePtWithinCluster(pt.id, 'ptNameSize')
 
         const dist = Math.sqrt(pt.nameP[0] ** 2 + pt.nameP[1] ** 2)
         if(dist > 35*fontSizeRatio){
