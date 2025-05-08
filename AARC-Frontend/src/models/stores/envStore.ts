@@ -330,6 +330,12 @@ export const useEnvStore = defineStore('env', ()=>{
                     movedPoint.value = true
                     movingPoint.value = true
                     nameEditStore.startEditing(newPtId)
+                    //新建的点立即进行一次snap
+                    const snapRes = snap(activePt.value)
+                    if(snapRes){
+                        activePt.value.pos = snapRes
+                    }
+                    coordRound(activePt.value.pos)
                 }
             }
         }else{
