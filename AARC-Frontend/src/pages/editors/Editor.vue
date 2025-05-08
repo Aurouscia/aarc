@@ -7,7 +7,7 @@ import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { storeToRefs } from 'pinia';
 import { computed, onBeforeMount, onUnmounted, ref, watch } from 'vue';
 import { devSave } from '@/dev/devSave';
-import { useApiStore } from '@/app/com/api';
+import { useApiStore } from '@/app/com/apiStore';
 import { ensureValidSave } from '@/models/save';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
@@ -26,7 +26,7 @@ const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
 const saveStore = useSaveStore()
 const configStore = useConfigStore()
 const resetterStore = useResetterStore()
-const api = useApiStore().get()
+const api = useApiStore()
 const userInfoStore = useUserInfoStore()
 const saveIdNum = computed(()=>parseInt(props.saveId))
 let loadedSaveIdNum = 0
@@ -47,9 +47,9 @@ async function load() {
         }catch{
             pop.value?.show('存档损坏，请联系管理员', 'failed')
         }
-        const ownerId = (await api.save.loadInfo(saveIdNum.value))?.OwnerUserId || -1
+        const ownerId = (await api.save.loadInfo(saveIdNum.value))?.ownerUserId || -1
         const iden = await userInfoStore.getIdentityInfo()
-        if(iden.Id>0 && iden.Id !== ownerId){
+        if(!!iden.id && iden.id !== ownerId){
             savingDisabledWarning.value = '非存档所有者，仅供浏览，不能保存'
         }
     }
@@ -90,17 +90,17 @@ async function saveData(){
     }
     const miniCvs = miniatureCvsDispatcher.renderMiniatureCvs(256, 2)
     const miniBlob = await miniCvs.convertToBlob()
-    await api.save.updateMiniature(saveIdNum.value, miniBlob)
+    await api.save.updateMiniature(saveIdNum.value, {data:miniBlob, fileName:'mini.png'})
 }
 async function checkLoginLeftTime(){
     const userInfo = await userInfoStore.getIdentityInfo()
     const nearExpireMsg = '登录即将过期\n尽快重新登录'
     const noLoginMsg = '当前没有登录\n不能保存'
-    if(userInfo.LeftHours === 0){
+    if(!userInfo.leftHours){
         pop.value?.show(noLoginMsg, 'warning')
         savingDisabledWarning.value = noLoginMsg
     }
-    else if(userInfo.LeftHours <= 6){
+    else if(userInfo.leftHours <= 6){
         pop.value?.show(nearExpireMsg, 'warning')
         savingDisabledWarning.value = nearExpireMsg
         window.setTimeout(()=>{

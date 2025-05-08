@@ -2,7 +2,9 @@
 using AARC.Services.App.Authentication;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Services.App.Logging;
+using AARC.Services.App.OpenApi;
 using AARC.Utils;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AARC.Services.App
 {
@@ -17,10 +19,20 @@ namespace AARC.Services.App
             services.AddControllers(options =>
             {
                 options.Filters.Add<ApiExceptionFilter>();
+            }).AddNewtonsoftJson(x =>
+            {
+                x.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+            });
+            services.Configure<ApiBehaviorOptions>(opt =>
+            {
+                opt.SuppressModelStateInvalidFilter = true;
             });
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<HttpUserIdProvider>();
             services.AddScoped<HttpUserInfoService>();
+
+            services.AddNSwagDocument();
+            services.AddSingleton<NSwagTsGenService>();
             return services;
         }
     }

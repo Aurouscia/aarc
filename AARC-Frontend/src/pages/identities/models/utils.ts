@@ -1,4 +1,4 @@
-import { UserType } from "./models";
+import { UserType } from "@/app/com/apiGenerated"
 
 export function userTypeReadable(t:UserType){
     if(t===UserType.Admin)

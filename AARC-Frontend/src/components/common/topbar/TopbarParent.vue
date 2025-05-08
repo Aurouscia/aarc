@@ -39,7 +39,7 @@ function toggleFold(){
         <TopbarBodyHorizontal :data="topbarModel"></TopbarBodyHorizontal>
     </div>
     <div class="right">
-        <RouterLink v-if="userInfo?.Id>0" :to="mySavesRoute()" class="avt">
+        <RouterLink v-if="!!userInfo?.id" :to="mySavesRoute()" class="avt">
             <img :src="defaultAvatar"/>
         </RouterLink>
         <div class="foldBtn">

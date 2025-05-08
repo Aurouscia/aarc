@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, nextTick } from 'vue';
-import { SaveDto } from './models/models';
-import { useApiStore } from '@/app/com/api';
+import { useApiStore } from '@/app/com/apiStore';
 import SideBar from '@/components/common/SideBar.vue';
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { appVersionCheck } from '@/app/appVersionCheck';
@@ -11,9 +10,10 @@ import Loading from '@/components/common/Loading.vue';
 import { Save, saveLineCount, saveStaCount } from '@/models/save';
 import { guideInfo } from '@/app/guideInfo';
 import defaultMini from '@/assets/logo/aarc.svg'
+import { SaveDto } from '@/app/com/apiGenerated';
 
 const saveList = ref<SaveDto[]>()
-const api = useApiStore().get()
+const api = useApiStore();
 const { editorRoute } = useEditorsRoutesJump()
 const { pop } = useUniqueComponentsStore()
 const props = defineProps<{
@@ -28,7 +28,7 @@ const ownerName = ref<string>()
 async function load(){
     if(uidNum > 0){
         const ownerInfo = await api.user.getInfo(uidNum)
-        ownerName.value = ownerInfo?.Name || '??'
+        ownerName.value = ownerInfo?.name || '??'
     }else{
         ownerName.value = '我'
     }
@@ -40,7 +40,7 @@ const editingSave = ref<SaveDto>()
 const isCreatingSave = ref(false)
 function startCreating(){
     isCreatingSave.value = true
-    editingSave.value = {Id:0, Name:''}
+    editingSave.value = {id:0, name:''}
     nextTick(()=>saveInfoSb.value?.extend())
 }
 function startEditingInfo(s:SaveDto){
@@ -51,7 +51,7 @@ function startEditingInfo(s:SaveDto){
 async function done(){
     if(!editingSave.value)
         return
-    let p:Promise<boolean>
+    let p:Promise<boolean|undefined>
     if(isCreatingSave.value)
         p = api.save.add(editingSave.value)
     else
@@ -70,11 +70,11 @@ const jsonContent = ref<string>()
 const jsonSaveStaCount = ref<number>()
 const jsonSaveLineCount = ref<number>()
 async function removeCurrentCvs(){
-    if(repeatCvsName.value !== editingSave.value?.Name){
+    if(repeatCvsName.value !== editingSave.value?.name){
         pop?.show('请一字不差输入画布名称', 'failed')
         return
     }
-    const resp = await api.save.remove(editingSave.value.Id)
+    const resp = await api.save.remove(editingSave.value.id)
     if(resp){
         saveInfoSb.value?.fold()
         await load()
@@ -111,7 +111,7 @@ function selectReplaceJson(){
 async function commitReplaceJson(){
     if(!editingSave.value || !jsonContent.value)
         return
-    const id = editingSave.value.Id
+    const id = editingSave.value.id
     const data = jsonContent.value
     const staCount = jsonSaveStaCount.value || 0
     const lineCount = jsonSaveLineCount.value || 0
@@ -133,8 +133,9 @@ function resetDangerZone(){
 async function downloadJson(){
     if(!editingSave.value)
         return
-    const json = await api.save.loadData(editingSave.value.Id)
-    fileDownload(json, `${editingSave.value.Name}.aarc.json`)
+    const json = await api.save.loadData(editingSave.value.id)
+    if(json)
+        fileDownload(json, `${editingSave.value.name}.aarc.json`)
 }
 
 onMounted(async()=>{
@@ -160,18 +161,18 @@ onMounted(async()=>{
     </tr>
     <tr v-for="s in saveList">
         <td>
-            <img :src="s.MiniUrl || defaultMini" class="mini"/>
+            <img :src="s.miniUrl || defaultMini" class="mini"/>
         </td>
         <td>
-            {{ s.Name }}
-            <div class="dataInfo">{{ s.LineCount }}线 {{ s.StaCount }}站</div>
+            {{ s.name }}
+            <div class="dataInfo">{{ s.lineCount }}线 {{ s.staCount }}站</div>
         </td>
         <td>
-            <div class="lastActive">{{ s.LastActive }}</div>
+            <div class="lastActive">{{ s.lastActive }}</div>
         </td>
         <td>
             <button class="minor" @click="startEditingInfo(s)">信息</button>
-            <RouterLink :to="editorRoute(s.Id)"><button>编辑</button></RouterLink>
+            <RouterLink :to="editorRoute(s.id??0)"><button>编辑</button></RouterLink>
         </td>
     </tr>
     <tr v-if="saveList.length==0" style="color: #666; font-size: 16px;">
@@ -188,19 +189,19 @@ onMounted(async()=>{
     <table v-if="editingSave"><tbody>
         <tr>
             <td colspan="2">
-                <img :src="editingSave.MiniUrl || defaultMini" class="miniInSidebar"/>
+                <img :src="editingSave.miniUrl || defaultMini" class="miniInSidebar"/>
             </td>
         </tr>
         <tr>
             <td>名称</td>
             <td>
-                <input v-model="editingSave.Name"/>
+                <input v-model="editingSave.name"/>
             </td>
         </tr>
         <tr>
             <td>简介</td>
             <td>
-                <textarea v-model="editingSave.Intro" placeholder="最多256字符" rows="5"></textarea>
+                <textarea v-model="editingSave.intro" placeholder="最多256字符" rows="5"></textarea>
             </td>
         </tr>
         <tr>

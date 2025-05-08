@@ -1,13 +1,13 @@
 import { defineStore } from "pinia"
-import { useApiStore } from "../com/api"
+import { useApiStore } from "../com/apiStore"
 import { computed, ref } from "vue"
 import { timestampMS } from "@/utils/timeUtils/timestamp"
-import { HttpUserInfo, UserType } from "@/pages/identities/models/models"
+import { HttpUserInfo, UserType } from "../com/apiGenerated"
 
 
 export const useUserInfoStore = defineStore('userInfo', ()=>{
     const userInfo = ref(defaultValue)
-    const isAdmin = computed<boolean>(()=>userInfo.value.Type>=UserType.Admin)
+    const isAdmin = computed<boolean>(()=>(userInfo.value.type??0)>=UserType.Admin)
     const apiStore = useApiStore()
 
     /**
@@ -19,7 +19,7 @@ export const useUserInfoStore = defineStore('userInfo', ()=>{
         if(!enforceNew)
             res = readCache()?.info;
         if(!res){
-            res = await apiStore.get().auth.info()
+            res = await apiStore.auth.info()
             if (res) {
                 log("获取服务器响应:", res)
             }
@@ -66,10 +66,10 @@ const localStorageKey = "aarcUserInfo";
 const logPrefix = "[身份信息]"
 const log = (msg:string, ...data:any[])=>console.log(`${logPrefix}${msg}`, ...data)
 const defaultValue:HttpUserInfo = {
-    Name:"游客",
-    Id:0,
-    LeftHours:0,
-    Type: UserType.Tourist
+    name:"游客",
+    id:0,
+    leftHours:0,
+    type: UserType.Tourist
 }
 const identityCacheExpireSec = 60 //一分钟内刷新不再重复获取，直接读取缓存
 const identityCacheExpireMs = identityCacheExpireSec * 1000

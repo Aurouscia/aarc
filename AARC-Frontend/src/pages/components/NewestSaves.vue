@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useApiStore } from '@/app/com/api';
-import { SaveDto } from '../saves/models/models';
+import { useApiStore } from '@/app/com/apiStore';
 import { onMounted, ref } from 'vue';
 import defaultMini from '@/assets/logo/aarc.svg'
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
+import { SaveDto } from '@/app/com/apiGenerated';
 
-const api = useApiStore().get()
+const api = useApiStore()
 const { editorRoute } = useEditorsRoutesJump()
 const { someonesSavesRoute } = useSavesRoutesJump()
 const list = ref<SaveDto[]>([])
@@ -23,14 +23,14 @@ onMounted(async()=>{
 
 <template>
 <div class="newestSaves">
-    <div v-for="s in list" :key="s.Id">
-        <RouterLink :to="editorRoute(s.Id)">
-            <img :src="s.MiniUrl || defaultMini"/>
+    <div v-for="s in list" :key="s.id">
+        <RouterLink :to="editorRoute(s.id??0)">
+            <img :src="s.miniUrl || defaultMini"/>
         </RouterLink>
-        <div class="cvsName">{{ s.Name }}</div>
-        <div class="cvsData">{{ s.LineCount }}线 {{ s.StaCount }}站</div>
-        <RouterLink :to="someonesSavesRoute(s.OwnerUserId||0)" class="cvsOwner">
-            {{ s.OwnerName }}
+        <div class="cvsName">{{ s.name }}</div>
+        <div class="cvsData">{{ s.lineCount }}线 {{ s.staCount }}站</div>
+        <RouterLink :to="someonesSavesRoute(s.ownerUserId||0)" class="cvsOwner">
+            {{ s.ownerName }}
         </RouterLink>
     </div>
 </div>

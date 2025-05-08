@@ -21,7 +21,11 @@ try
     builder.Services.AddFilesServices();
 
     var app = builder.Build();
-
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseOpenApi();
+        app.UseSwaggerUi();
+    }
     app.UseConfiguredCors();
     app.UseFileServer();
     app.UseAppendedStaticFiles(e);

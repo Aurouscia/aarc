@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useApiStore } from '@/app/com/api';
+import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
 
@@ -22,7 +22,7 @@ async function register(){
         pop?.show("前后两次输入密码不一致", "failed")
         return
     }
-    const res = await api.get().user.add(userName.value, password.value)
+    const res = await api.user.add(userName.value, password.value)
     if(res){
         loginRouteJump(false)
     }

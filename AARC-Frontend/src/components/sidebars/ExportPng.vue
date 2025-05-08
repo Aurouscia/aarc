@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
-import { useApiStore } from '@/app/com/api';
+import { useApiStore } from '@/app/com/apiStore';
 import { useRoute } from 'vue-router';
 import { editorParamNameSaveId } from '@/pages/editors/routes/routesNames';
 import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
@@ -20,7 +20,7 @@ const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const saveStore = useSaveStore()
-const api = useApiStore().get()
+const api = useApiStore()
 const route = useRoute()
 const { pop } = useUniqueComponentsStore()
 const exported = ref<boolean>(false)
@@ -105,15 +105,15 @@ async function getExportPngFileName(isMini?:boolean){
         let name = ''
         const style = exportPngFileNameStyle.value
         if(style == 'date')
-            name = `${info.Name}-${timeStr('date')}`
+            name = `${info.name}-${timeStr('date')}`
         else if(style == 'dateTime')
-            name = `${info.Name}-${timeStr('dateTime')}`
+            name = `${info.name}-${timeStr('dateTime')}`
         else if(style == 'lineCount'){
             const lineCount = saveStore.getLineCount()
             const staCount = saveStore.getStaCount()
-            name = `${info.Name}-${lineCount}线${staCount}站`
+            name = `${info.name}-${lineCount}线${staCount}站`
         }else{
-            name = info.Name
+            name = info.name??'未命名'
         }
         if(isMini){
             name = `${name}-mini`

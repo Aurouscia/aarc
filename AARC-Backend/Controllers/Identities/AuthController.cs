@@ -5,9 +5,12 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using RqEx = AARC.Utils.Exceptions.RequestInvalidException;
 
 namespace AARC.Controllers.Identities
 {
+    [ApiController]
+    [Route(ApiConsts.routePattern)]
     public class AuthController(
         UserRepo userRepo,
         HttpUserInfoService userInfo,
@@ -15,15 +18,16 @@ namespace AARC.Controllers.Identities
         ILogger<AuthController> logger)
         : Controller
     {
-        public IActionResult Login(string? username, string? password, int expireHrs)
+        [HttpPost]
+        public LoginResponse Login(string? username, string? password, int expireHrs)
         {
             logger.LogInformation("登录请求：{userName}", username);
 
             if (username is null || password is null)
-                return this.ApiRespFailed("请填写用户名和密码");
+                throw new RqEx("请填写用户名和密码");
             var u = userRepo.MatchUser(username, password);
             if (u is null)
-                return this.ApiRespFailed("用户名或密码错误");
+                throw new RqEx("用户名或密码错误");
 
             string domain = config["Jwt:Domain"] ?? throw new Exception("未找到配置项Jwt:Domain");
             string secret = config["Jwt:SecretKey"] ?? throw new Exception("未找到配置项Jwt:SecretKey");
@@ -47,12 +51,12 @@ namespace AARC.Controllers.Identities
 
             string tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
             logger.LogInformation("[{userId}]{username}登录成功", u.Id, username);
-            return this.ApiResp(new LoginResponse(tokenStr));
+            return new LoginResponse(tokenStr);
         }
-
-        public IActionResult Info()
+        [HttpGet]
+        public HttpUserInfo Info()
         {
-            return this.ApiResp(userInfo.UserInfo.Value);
+            return userInfo.UserInfo.Value;
         }
 
         public class LoginResponse(string token)

@@ -1,20 +1,25 @@
-﻿using AARC.Models.DbModels;
-using AARC.Models.Dto;
+﻿using AARC.Models.Dto;
 using AARC.Repos.Identities;
 using AARC.Repos.Saves;
 using AARC.Services.Files;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RqEx = AARC.Utils.Exceptions.RequestInvalidException;
 
 namespace AARC.Controllers.Saves
 {
+    [Authorize]
+    [ApiController]
+    [Route(ApiConsts.routePattern)]
     public class SaveController(
         SaveRepo saveRepo,
         UserRepo userRepo,
         SaveMiniatureFileService saveMiniatureFileService
         ) : Controller
     {
-        public IActionResult GetNewestSaves()
+        [AllowAnonymous]
+        [HttpGet]
+        public List<SaveDto> GetNewestSaves()
         {
             var list = saveRepo.GetNewestSaves();
             var userIds = list.ConvertAll(x => x.OwnerUserId);
@@ -29,10 +34,10 @@ namespace AARC.Controllers.Saves
                 var url = saveMiniatureFileService.GetUrl(c.Id);
                 c.MiniUrl = url;
             }
-            return this.ApiResp(list);
+            return list;
         }
-        [Authorize]
-        public IActionResult GetMySaves(int uid)
+        [HttpGet]
+        public List<SaveDto> GetMySaves(int uid)
         {
             var list = saveRepo.GetMySaves(uid);
             foreach (var c in list)
@@ -40,50 +45,67 @@ namespace AARC.Controllers.Saves
                 var url = saveMiniatureFileService.GetUrl(c.Id);
                 c.MiniUrl = url;
             }
-            return this.ApiResp(list);
+            return list;
         }
-        [Authorize]
-        public IActionResult Add(SaveDto saveDto)
+        [HttpPost]
+        public bool Add([FromBody]SaveDto saveDto)
         {
             var success = saveRepo.Create(saveDto, out var errmsg);
             userRepo.UpdateCurrentUserLastActive();
-            return this.ApiResp(success, errmsg);
+            if(success)
+                return true;
+            throw new RqEx(errmsg);
         }
-        [Authorize]
-        public IActionResult UpdateInfo(SaveDto saveDto)
+        [HttpPost]
+        public bool UpdateInfo([FromBody]SaveDto saveDto)
         {
             var success = saveRepo.UpdateInfo(saveDto, out var errmsg);
             userRepo.UpdateCurrentUserLastActive();
-            return this.ApiResp(success, errmsg);
+            if (success)
+                return true;
+            throw new RqEx(errmsg);
         }
-        [Authorize]
-        public IActionResult UpdateData(int id, string data, int staCount, int lineCount)
+        [HttpPost]
+        public bool UpdateData(int id, string data, int staCount, int lineCount)
         {
             var success = saveRepo.UpdateData(id, data, staCount, lineCount, out var errmsg);
             userRepo.UpdateCurrentUserLastActive();
-            return this.ApiResp(success, errmsg);
+            if (success)
+                return true;
+            throw new RqEx(errmsg);
         }
-        [Authorize]
-        public IActionResult UpdateMiniature(int id, IFormFile mini)
+        [HttpPost]
+        public bool UpdateMiniature(int id, IFormFile mini)
         {
             saveMiniatureFileService.Write(mini.OpenReadStream(), id);
-            return this.ApiResp();
+            return true;
         }
-        public IActionResult LoadInfo(int id)
+        [AllowAnonymous]
+        [HttpGet]
+        public SaveDto? LoadInfo(int id)
         {
             var data = saveRepo.LoadInfo(id, out var errmsg);
-            return this.ApiResp(data, errmsg);
+            if (errmsg is not null)
+                throw new RqEx(errmsg);
+            return data;
         }
-        public IActionResult LoadData(int id)
+        [AllowAnonymous]
+        [HttpGet]
+        public string? LoadData(int id)
         {
             var data = saveRepo.LoadData(id, out var errmsg);
-            return this.ApiResp(data, errmsg);
+            if (errmsg is not null)
+                throw new RqEx(errmsg);
+            return data;
         }
-        [Authorize]
-        public IActionResult Remove(int id)
+        [HttpDelete]
+        public bool Remove(int id)
         {
             var success = saveRepo.Remove(id, out string? errmsg);
-            return this.ApiResp(success, errmsg);
+            userRepo.UpdateCurrentUserLastActive();
+            if (success)
+                return true;
+            throw new RqEx(errmsg);
         }
     }
 }

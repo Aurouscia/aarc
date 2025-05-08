@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { UserDto, UserType } from './models/models';
-import { useApiStore } from '@/app/com/api';
+import { useApiStore } from '@/app/com/apiStore';
 import { userTypeReadable } from './models/utils';
 import SideBar from '@/components/common/SideBar.vue';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { storeToRefs } from 'pinia';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { UserListOrderBy, useUserListLocalConfigStore } from '@/app/localConfig/userListLocalConfig';
+import { UserDto, UserType } from '@/app/com/apiGenerated';
 
 interface UserDtoWithIntroShow extends UserDto{
     introShow?: boolean
 }
 
 const list = ref<UserDtoWithIntroShow[]>()
-const api = useApiStore().get()
+const api = useApiStore()
 const { someonesSavesRoute } = useSavesRoutesJump()
 const { readOrderby, saveOrderby, defaultOrderby } = useUserListLocalConfigStore()
 const searchStr = ref<string>()
@@ -38,9 +38,9 @@ function startEditing(u:UserDto){
 async function doneEditing(){
     if(!editingUser.value)
         return
-    let success = false
+    let success:boolean|undefined = false
     if(isCreatingUser.value){
-        success = await api.user.add(editingUser.value.Name || "", editingUser.value.Password || "")
+        success = await api.user.add(editingUser.value.name || "", editingUser.value.password || "")
     }else{
         success = await api.user.update(editingUser.value)
     }
@@ -81,27 +81,27 @@ onMounted(async()=>{
         <th v-if="orderbyActive" style="width: 100px;">上次活跃</th>
         <th style="width: 110px;">操作</th>
     </tr>
-    <tr v-for="u in list" :key="u.Id">
+    <tr v-for="u in list" :key="u.id">
         <td>
             <div class="userName nowrapEllipsis">
-                <span v-if="u.Id === userInfo.Id" style="color: cornflowerblue">(我)</span>
-                {{ u.Name }}
+                <span v-if="u.id === userInfo.id" style="color: cornflowerblue">(我)</span>
+                {{ u.name }}
             </div>
         </td>
         <td>
             <div class="userIntro" :class="{nowrapEllipsis:!u.introShow}" @click="u.introShow=!u.introShow">
-                {{ u.Intro }}
+                {{ u.intro }}
             </div>
         </td>
-        <td v-if="orderbySave">{{ u.SaveCount }}</td>
-        <td v-if="orderbyActive" class="lastActive">{{ u.LastActive }}</td>
+        <td v-if="orderbySave">{{ u.saveCount }}</td>
+        <td v-if="orderbyActive" class="lastActive">{{ u.lastActive }}</td>
         <td>
-            <RouterLink :to="someonesSavesRoute(u.Id)">
+            <RouterLink :to="someonesSavesRoute(u.id??0)">
                 <button class="lite" style="margin-right: 6px;">
                     查看
                 </button>
             </RouterLink>
-            <button @click="startEditing(u)" v-if="userInfo.Id === u.Id || userInfoStore.isAdmin" class="lite">
+            <button @click="startEditing(u)" v-if="userInfo.id === u.id || userInfoStore.isAdmin" class="lite">
                 编辑
             </button>
         </td>
@@ -118,25 +118,25 @@ onMounted(async()=>{
             <tr>
                 <td>名称</td>
                 <td>
-                    <input v-model="editingUser.Name"/>
+                    <input v-model="editingUser.name"/>
                 </td>
             </tr>
             <tr>
                 <td>密码</td>
                 <td>
-                    <input v-model="editingUser.Password"/>
+                    <input v-model="editingUser.password"/>
                 </td>
             </tr>
             <tr v-if="!isCreatingUser">
                 <td>简介</td>
                 <td>
-                    <textarea v-model="editingUser.Intro" placeholder="可提供自己的联系方式（不超过128个字符）"></textarea>
+                    <textarea v-model="editingUser.intro" placeholder="可提供自己的联系方式（不超过128个字符）"></textarea>
                 </td>
             </tr>
             <tr v-if="!isCreatingUser && userInfoStore.isAdmin">
                 <td>类型</td>
                 <td>
-                    <select v-model="editingUser.Type">
+                    <select v-model="editingUser.type">
                         <option :value="UserType.Member">{{ userTypeReadable(UserType.Member) }}</option>
                         <option :value="UserType.Admin">{{ userTypeReadable(UserType.Admin) }}</option>
                         <option :value="UserType.Tourist">{{ userTypeReadable(UserType.Tourist) }}</option>

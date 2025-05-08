@@ -1,9 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
-const showing = ref<boolean>(false);
-function setShowing(value: boolean){
-    showing.value = value;
+const showReasons = ref<Set<string>>(new Set())
+const showing =  computed(()=>{
+    return showReasons.value.size > 0;
+})
+function setShowing(reason:string, value: boolean){
+    if(value){
+        showReasons.value.add(reason); 
+    }else{
+        showReasons.value.delete(reason);
+    }
 }
 defineExpose({
     setShowing

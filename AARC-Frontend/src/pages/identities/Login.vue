@@ -4,8 +4,7 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { guideInfo } from '@/app/guideInfo';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
-import { useHttpClientStore } from '@/app/com/httpClient';
-import { useApiStore } from '@/app/com/api';
+import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { userTypeReadable } from './models/utils';
 import { RouterLink } from 'vue-router';
@@ -28,8 +27,7 @@ const setExpire = ref<boolean>(false);
 const failedGuide = ref<string>();
 const userInfoStore = useUserInfoStore()
 const { userInfo } = storeToRefs(userInfoStore)
-const httpClient = useHttpClientStore().get()
-const api = useApiStore().get()
+const api = useApiStore()
 const { pop } = useUniqueComponentsStore()
 const { registerRoute } = useIdentitiesRoutesJump()
 
@@ -40,8 +38,8 @@ async function Login(){
         password.value,
         expireHrs.value
     )
-    if (loginResp) {
-        httpClient.setToken(loginResp.Token);
+    if (loginResp && loginResp.token) {
+        api.setJwtToken(loginResp.token);
         userInfoStore.clearCache();
         await userInfoStore.getIdentityInfo(true);
         if (props.backAfterSuccess) {
@@ -55,7 +53,7 @@ async function Login(){
     }
 };
 async function Logout() {
-    httpClient.clearToken()
+    api.clearJwtToken()
     userInfoStore.clearCache()
     pop?.show("已经成功退出登录","success");
 }
@@ -64,7 +62,7 @@ const leftTimeDisplay = computed<string>(()=>{
     if(!userInfo){
         return '0小时';
     }
-    const hours = userInfo.value.LeftHours;
+    const hours = userInfo.value.leftHours ?? 0;
     if(hours>72){
         return Math.round(hours/24)+'天';
     }
@@ -132,7 +130,7 @@ onUnmounted(()=>{
     </div>
     <div class="loginInfo" v-if="userInfo">
         当前登录：
-        [{{ userTypeReadable(userInfo.Type) }}]{{ userInfo.Name }}<br/>
+        [{{ userTypeReadable(userInfo.type??0) }}]{{ userInfo.name }}<br/>
         登录有效期：{{ leftTimeDisplay }}<br/>
         <button @click="Logout" class="logout">退出登录</button>
     </div>
