@@ -24,9 +24,10 @@ onMounted(()=>{
     <NewestSaves></NewestSaves>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-5-6更新'">
-        1. 站点名称坐标设置<br/>
-        2. 线路叠加顺序设置（z-index）
+    <Notice :type="'info'" :title="'2025-5-8更新'">
+        1. 文本标签“对齐方向”设置<br/>
+        2. 优化线路延长手柄的显示<br/>
+        3. 优化站名定位点&连线的显示
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">
         1. 支线整理<br/>
