@@ -87,6 +87,7 @@ async function saveData(){
     const resp = await api.save.updateData(saveIdNum.value, data, staCount, lineCount)
     if(resp){
         releasePreventLeaving()
+        pop.value?.show('保存成功', 'success')
     }
     const miniCvs = miniatureCvsDispatcher.renderMiniatureCvs(256, 2)
     const miniBlob = await miniCvs.convertToBlob()

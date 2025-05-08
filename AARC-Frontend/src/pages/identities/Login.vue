@@ -39,6 +39,7 @@ async function Login(){
         expireHrs.value
     )
     if (loginResp && loginResp.token) {
+        pop?.show("登录成功", "success");
         api.setJwtToken(loginResp.token);
         userInfoStore.clearCache();
         await userInfoStore.getIdentityInfo(true);
@@ -55,7 +56,7 @@ async function Login(){
 async function Logout() {
     api.clearJwtToken()
     userInfoStore.clearCache()
-    pop?.show("已经成功退出登录","success");
+    pop?.show("已退出登录","success");
 }
 
 const leftTimeDisplay = computed<string>(()=>{

@@ -24,6 +24,7 @@ async function register(){
     }
     const res = await api.user.add(userName.value, password.value)
     if(res){
+        pop?.show("注册成功", "success")
         loginRouteJump(false)
     }
 }

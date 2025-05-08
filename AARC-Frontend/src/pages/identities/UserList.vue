@@ -8,6 +8,7 @@ import { storeToRefs } from 'pinia';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { UserListOrderBy, useUserListLocalConfigStore } from '@/app/localConfig/userListLocalConfig';
 import { UserDto, UserType } from '@/app/com/apiGenerated';
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 
 interface UserDtoWithIntroShow extends UserDto{
     introShow?: boolean
@@ -26,6 +27,7 @@ async function loadList() {
     list.value = await api.user.index(searchStr.value, orderby.value)
 }
 
+const { pop } = useUniqueComponentsStore()
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const editingUser = ref<UserDto>()
 const isCreatingUser = ref(false)
@@ -45,6 +47,7 @@ async function doneEditing(){
         success = await api.user.update(editingUser.value)
     }
     if(success){
+        pop?.show("操作成功", "success")
         await loadList()
         sidebar.value?.fold()
     }

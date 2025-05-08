@@ -60,6 +60,7 @@ async function done(){
     if(success){
         saveInfoSb.value?.fold()
         await load()
+        pop?.show('操作成功', 'success')
     }
 }
 
@@ -184,7 +185,7 @@ onMounted(async()=>{
 </tbody></table>
 <Loading v-else></Loading>
 </div>
-<SideBar ref="saveInfoSb" @extend="resetDangerZone">
+<SideBar ref="saveInfoSb" @extend="resetDangerZone" class="saveInfoSb">
     <h1>{{ isCreatingSave ? '创建存档':'编辑信息' }}</h1>
     <table v-if="editingSave"><tbody>
         <tr>
@@ -262,25 +263,30 @@ onMounted(async()=>{
     font-size: 14px;
 }
 
-table{
-    width: 100%;
-    margin-bottom: 10px;
-}
-.downloadJsonBtn{
-    display: block;
-    margin: auto;
-}
-.replaceJsonInfo{
-    text-align: center;
-    font-size: 14px;
-    color: #333
-}
-.dangerZoneBtn{
-    display: block;
-    margin: auto;
-}
-.dangerOpName{
-    text-align: center;
-    color: red;
+.saveInfoSb{
+    input, textarea{
+        width: 180px;
+    }
+    table{
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    .downloadJsonBtn{
+        display: block;
+        margin: auto;
+    }
+    .replaceJsonInfo{
+        text-align: center;
+        font-size: 14px;
+        color: #333
+    }
+    .dangerZoneBtn{
+        display: block;
+        margin: auto;
+    }
+    .dangerOpName{
+        text-align: center;
+        color: red;
+    }
 }
 </style>
