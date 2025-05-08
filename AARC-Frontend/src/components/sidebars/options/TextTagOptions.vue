@@ -68,6 +68,16 @@ defineExpose({
                         </div>
                     </td>
                 </tr>
+                <tr v-if="!editing.forId">
+                    <td>文字<br/>对齐</td>
+                    <td>
+                        <select v-model="editing.textAlign" @change="emit('changed')">
+                            <option :value="1">靠左</option>
+                            <option :value="undefined">居中</option>
+                            <option :value="-1">靠右</option>
+                        </select>
+                    </td>
+                </tr>
             </tbody></table>
         </div>
         <h2>主文字样式</h2>

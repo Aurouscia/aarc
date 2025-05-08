@@ -133,7 +133,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             text: !subEmpty ? t.textS?.trim(): 'Empty TextTag'
         }
         const lineNameRectAlign:SgnCoord = [0, 0]
-        const drawTextResRect = drawText(ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, {
+        const drawTextResRect = drawText(ctx, t.pos, lineNameRectAlign, t.textAlign, optMain, optSub, {
             width: cs.config.textTagFontSizeBase * mainRatio/4,
             color: cs.config.bgColor,
             opacity: 1

@@ -1,5 +1,5 @@
 import { ConfigInSave } from "./config";
-import { Coord } from "./coord";
+import { Coord, SgnNumber } from "./coord";
 
 export interface Save{
     idIncre: number //所有元素共用的唯一id新建时从此处取，取一个之后其自增1（初始为1）
@@ -109,6 +109,7 @@ export interface TextTag{
     textOp?:TextOptions
     textSOp?:TextOptions
     padding?:number
+    textAlign?:SgnNumber
     //rot?:FormalRotation
 }
 export interface TextOptions{
