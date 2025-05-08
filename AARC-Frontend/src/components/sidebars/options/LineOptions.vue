@@ -45,7 +45,7 @@ function lineStaNameSizeChanged(){
 const lineStaSizeBinded = ref(1)
 function lineStaSizeChanged(){
     props.line.ptSize = lineStaSizeBinded.value
-    envStore.lineInfoChanged(props.line)
+    envStore.lineInfoChanged(props.line, true)
 }
 const lineZIndexBinded = ref(0)
 function lineZIndexChanged(){
