@@ -78,13 +78,19 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
 
         if(markRoot){
             ctx.beginPath()
+            ctx.fillStyle = 'white'
+            const rootBgRadius = 6 * fontSizeRatio
+            ctx.arc(...globalPos, rootBgRadius, 0, 2*Math.PI)
+            ctx.fill()
+            ctx.beginPath()
             if(markRoot == 'snapAccu')
                 ctx.fillStyle = 'green'
             else if(markRoot == 'snapVague')
                 ctx.fillStyle = 'orange'
             else
                 ctx.fillStyle = 'red'
-            ctx.arc(...globalPos, 4, 0, 2*Math.PI)
+            const rootRadius = 4 * fontSizeRatio
+            ctx.arc(...globalPos, rootRadius, 0, 2*Math.PI)
             ctx.fill()
         }
     }
