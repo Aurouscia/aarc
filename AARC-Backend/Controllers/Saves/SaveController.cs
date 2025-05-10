@@ -66,7 +66,11 @@ namespace AARC.Controllers.Saves
             throw new RqEx(errmsg);
         }
         [HttpPost]
-        public bool UpdateData(int id, string data, int staCount, int lineCount)
+        public bool UpdateData(
+            int id,
+            [FromForm]string data,
+            [FromForm]int staCount,
+            [FromForm]int lineCount)
         {
             var success = saveRepo.UpdateData(id, data, staCount, lineCount, out var errmsg);
             userRepo.UpdateCurrentUserLastActive();

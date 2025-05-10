@@ -19,7 +19,10 @@ namespace AARC.Controllers.Identities
         : Controller
     {
         [HttpPost]
-        public LoginResponse Login(string? username, string? password, int expireHrs)
+        public LoginResponse Login(
+            [FromForm] string? username,
+            [FromForm] string? password,
+            [FromForm] int expireHrs)
         {
             logger.LogInformation("登录请求：{userName}", username);
 
