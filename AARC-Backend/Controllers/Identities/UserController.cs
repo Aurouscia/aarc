@@ -25,7 +25,9 @@ namespace AARC.Controllers.Identities
 
         [AllowAnonymous]
         [HttpPost]
-        public bool Add(string? userName, string? password)
+        public bool Add(
+            [FromForm] string? userName,
+            [FromForm] string? password)
         {
             var success = userRepo.CreateUser(userName, password, out var errmsg);
             if (!success)
@@ -52,7 +54,9 @@ namespace AARC.Controllers.Identities
 
         [AllowAnonymous]
         [HttpPost]
-        public string InitAdmin(string? userName, string? masterKey)
+        public string InitAdmin(
+            [FromForm] string? userName,
+            [FromForm] string? masterKey)
         {
             var mKey = config["MasterKey"] ?? Path.GetRandomFileName();
             if (mKey != masterKey)
