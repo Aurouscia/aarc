@@ -25,10 +25,13 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
             const atTail = line.pts[line.pts.length-1] == ptId
             if(atHead && atTail)
                 return
+            let lineWidthRatioClamped = line.width??1
+            if(lineWidthRatioClamped > 2)
+                lineWidthRatioClamped = 2
             if(atHead)
-                targets.push({lineId:line.id, at:'head', lineWidthRatio:line.width??1})
+                targets.push({lineId:line.id, at:'head', lineWidthRatio:lineWidthRatioClamped})
             else if(atTail)
-                targets.push({lineId:line.id, at:'tail', lineWidthRatio:line.width??1})
+                targets.push({lineId:line.id, at:'tail', lineWidthRatio:lineWidthRatioClamped})
         })
         relatedFormalizedSegs.forEach(fl=>{
             const tar = targets.find(x=>fl.lineId==x.lineId)
