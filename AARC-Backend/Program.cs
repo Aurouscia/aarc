@@ -32,9 +32,7 @@ try
     app.UseRouting();
     app.UseAuthorization();
     app.UseSerilogRequestLogging();
-    app.MapControllerRoute(
-        name: "api",
-        pattern: "api/{controller}/{action}");
+    app.MapControllers();
 
     Log.Information("AARC启动成功=============================================");
     app.Run();
