@@ -9,12 +9,9 @@ import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { UserListOrderBy, useUserListLocalConfigStore } from '@/app/localConfig/userListLocalConfig';
 import { UserDto, UserType } from '@/app/com/apiGenerated';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import { WithIntroShow } from '@/utils/type/WithIntroShow';
 
-interface UserDtoWithIntroShow extends UserDto{
-    introShow?: boolean
-}
-
-const list = ref<UserDtoWithIntroShow[]>()
+const list = ref<WithIntroShow<UserDto>[]>()
 const api = useApiStore()
 const { someonesSavesRoute } = useSavesRoutesJump()
 const { readOrderby, saveOrderby, defaultOrderby } = useUserListLocalConfigStore()

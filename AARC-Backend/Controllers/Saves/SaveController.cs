@@ -22,29 +22,25 @@ namespace AARC.Controllers.Saves
         public List<SaveDto> GetNewestSaves()
         {
             var list = saveRepo.GetNewestSaves();
-            var userIds = list.ConvertAll(x => x.OwnerUserId);
-            var users = userRepo.Existing
-                .Where(x => userIds.Contains(x.Id))
-                .Select(x => new { x.Id, x.Name })
-                .ToList();
-            foreach(var c in list)
-            {
-                var uname = users.Find(u => u.Id == c.OwnerUserId)?.Name;
-                c.OwnerName = uname;
-                var url = saveMiniatureFileService.GetUrl(c.Id);
-                c.MiniUrl = url;
-            }
+            EnrichSaveMini(list);
+            EnrichSaveOwner(list);
             return list;
         }
         [HttpGet]
         public List<SaveDto> GetMySaves(int uid)
         {
             var list = saveRepo.GetMySaves(uid);
-            foreach (var c in list)
-            {
-                var url = saveMiniatureFileService.GetUrl(c.Id);
-                c.MiniUrl = url;
-            }
+            EnrichSaveMini(list);
+            return list;
+        }
+        [HttpGet]
+        public List<SaveDto> Search(string search, string orderBy, int pageIdx)
+        {
+            if (string.IsNullOrWhiteSpace(search))
+                return [];
+            var list = saveRepo.Search(search, orderBy, pageIdx);
+            EnrichSaveMini(list);
+            EnrichSaveOwner(list);
             return list;
         }
         [HttpPost]
@@ -110,6 +106,31 @@ namespace AARC.Controllers.Saves
             if (success)
                 return true;
             throw new RqEx(errmsg);
+        }
+
+        [NonAction]
+        private void EnrichSaveMini(List<SaveDto> saves)
+        {
+            foreach (var s in saves)
+            {
+                var url = saveMiniatureFileService.GetUrl(s.Id);
+                s.MiniUrl = url;
+            }
+        }
+
+        [NonAction]
+        private void EnrichSaveOwner(List<SaveDto> saves)
+        {
+            var userIds = saves.ConvertAll(x => x.OwnerUserId);
+            var users = userRepo.Existing
+                .Where(x => userIds.Contains(x.Id))
+                .Select(x => new { x.Id, x.Name })
+                .ToList();
+            foreach (var s in saves)
+            {
+                var uname = users.Find(u => u.Id == s.OwnerUserId)?.Name;
+                s.OwnerName = uname;
+            }
         }
     }
 }

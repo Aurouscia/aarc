@@ -11,12 +11,9 @@ import { Save, saveLineCount, saveStaCount } from '@/models/save';
 import { guideInfo } from '@/app/guideInfo';
 import defaultMini from '@/assets/logo/aarc.svg'
 import { SaveDto } from '@/app/com/apiGenerated';
+import { WithIntroShow } from '@/utils/type/WithIntroShow';
 
-interface SaveDtoWithIntroShow extends SaveDto{
-    introShow?: boolean 
-}
-
-const saveList = ref<SaveDtoWithIntroShow[]>()
+const saveList = ref<WithIntroShow<SaveDto>[]>()
 const api = useApiStore();
 const { editorRoute } = useEditorsRoutesJump()
 const { pop } = useUniqueComponentsStore()
@@ -254,25 +251,12 @@ onMounted(async()=>{
 
 <style scoped lang="scss">
 @use '@/styles/itemIntro.scss';
+@use '@/styles/saveList.scss';
 
-.mini{
-    border-radius: 5px;
-    height: 90px;
-    width: 90px;
-}
 .miniInSidebar{
     border-radius: 10px;
     height: 160px;
     width: 160px;
-}
-
-.dataInfo{
-    font-size: 14px;
-    color: #666;
-    margin-top: 5px;
-}
-.lastActive{
-    font-size: 14px;
 }
 
 .saveInfoSb{

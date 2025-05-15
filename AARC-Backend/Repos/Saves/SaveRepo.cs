@@ -36,6 +36,32 @@ namespace AARC.Repos.Saves
                 .ToList();
             return res;
         }
+        public List<SaveDto> Search(
+            string search, string orderby, int pageIdx)
+        {
+            var q = base.Existing
+                .Where(x => x.Name.Contains(search));
+            if (orderby == "sta")
+            {
+                q = q
+                    .OrderByDescending(q => q.StaCount)
+                    .ThenByDescending(q => q.LastActive);
+            }
+            else
+                q = q
+                    .OrderByDescending(x => x.LastActive);
+            int pageSize = 20;
+            int skip = pageIdx * pageSize;
+            int take = pageSize;
+            var res = q
+                .Select(x => new SaveDto(
+                    x.Id, x.Name, x.Version, x.OwnerUserId,
+                    x.Intro, x.LastActive, x.StaCount, x.LineCount))
+                .Skip(skip)
+                .Take(take)
+                .ToList();
+            return res;
+        }
         public bool Create(SaveDto saveDto, out string? errmsg)
         {
             errmsg = ValidateDto(saveDto);
