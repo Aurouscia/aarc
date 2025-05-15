@@ -5,6 +5,7 @@ import GiteeInfo from '@/components/common/GiteeGitInfo.vue';
 import Notice from '@/components/common/Notice.vue';
 import { onMounted } from 'vue';
 import { appVersionCheck } from '@/app/appVersionCheck';
+import SearchSaveEntrance from '../components/SearchSaveEntrance.vue';
 
 onMounted(()=>{
     appVersionCheck()
@@ -22,6 +23,9 @@ onMounted(()=>{
 </div>
 <div style="margin: 20px 0px 20px 0px;">
     <NewestSaves></NewestSaves>
+</div>
+<div style="margin: 20px 0px 20px 0px;">
+    <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
     <Notice :type="'info'" :title="'2025-5-8更新'">

@@ -1,4 +1,4 @@
-import { mySavesName } from "@/pages/saves/routes/routesNames";
+import { mySavesName, searchSaveName } from "@/pages/saves/routes/routesNames";
 import { TopbarModel } from "./topbarModel";
 import { loginName } from "@/pages/identities/routes/routesNames";
 
@@ -15,6 +15,10 @@ export async function getTopbarData(): Promise<TopbarModel> {
                     {
                         Title: "我的作品",
                         Link: {name: mySavesName}
+                    },
+                    {
+                        Title: "搜索作品",
+                        Link: {name: searchSaveName}
                     }
                 ]
             },
