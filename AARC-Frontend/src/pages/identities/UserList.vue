@@ -92,7 +92,7 @@ onMounted(async()=>{
             </div>
         </td>
         <td>
-            <div class="userIntro" :class="{nowrapEllipsis:!u.introShow}" @click="u.introShow=!u.introShow">
+            <div class="itemIntro" :class="{nowrapEllipsis:!u.introShow}" @click="u.introShow=!u.introShow">
                 {{ u.intro }}
             </div>
         </td>
@@ -163,6 +163,8 @@ onMounted(async()=>{
 </template>
 
 <style scoped lang="scss">
+@use '@/styles/itemIntro.scss';
+
 .lastActive{
     font-size: 14px;
 }
@@ -172,23 +174,5 @@ onMounted(async()=>{
 .userName{
     margin: auto;
     max-width: 180px;
-}
-.userIntro{
-    font-size: 14px;
-    color: #666;
-    width: 40vw;
-    word-break: break-all;
-    cursor: pointer;
-    margin: auto;
-}
-.introNote{
-    font-weight: normal;
-    font-size: 12px;
-    margin-left: 4px;
-}
-@media screen and (min-width: 768px) {
-    .introNote{
-        display: none;
-    }
 }
 </style>

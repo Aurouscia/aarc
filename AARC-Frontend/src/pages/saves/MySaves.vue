@@ -12,7 +12,11 @@ import { guideInfo } from '@/app/guideInfo';
 import defaultMini from '@/assets/logo/aarc.svg'
 import { SaveDto } from '@/app/com/apiGenerated';
 
-const saveList = ref<SaveDto[]>()
+interface SaveDtoWithIntroShow extends SaveDto{
+    introShow?: boolean 
+}
+
+const saveList = ref<SaveDtoWithIntroShow[]>()
 const api = useApiStore();
 const { editorRoute } = useEditorsRoutesJump()
 const { pop } = useUniqueComponentsStore()
@@ -156,7 +160,10 @@ onMounted(async()=>{
 <table v-if="saveList" class="fullWidth index"><tbody>
     <tr>
         <th style="width: 100px;"></th>
-        <th style="min-width: 200px;">名称</th>
+        <th style="min-width: 200px;">
+            名称
+            <span class="introNote">简介点击展开</span>
+        </th>
         <th style="width: 130px;min-width: 130px">上次更新</th>
         <th style="width: 100px;min-width: 100px"></th>
     </tr>
@@ -166,7 +173,10 @@ onMounted(async()=>{
         </td>
         <td>
             {{ s.name }}
-            <div class="dataInfo">{{ s.lineCount }}线 {{ s.staCount }}站</div>
+            <div v-if="s.intro" class="itemIntro" :class="{nowrapEllipsis:!s.introShow}" @click="s.introShow=!s.introShow">
+                {{ s.intro }}
+            </div>
+            <div class="dataInfo">—{{ s.lineCount }}线 {{ s.staCount }}站—</div>
         </td>
         <td>
             <div class="lastActive">{{ s.lastActive }}</div>
@@ -243,6 +253,8 @@ onMounted(async()=>{
 </template>
 
 <style scoped lang="scss">
+@use '@/styles/itemIntro.scss';
+
 .mini{
     border-radius: 5px;
     height: 90px;
