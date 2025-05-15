@@ -156,17 +156,19 @@ onMounted(async()=>{
 <div style="overflow-x: auto;">
 <table v-if="saveList" class="fullWidth index"><tbody>
     <tr>
-        <th style="width: 100px;"></th>
+        <th style="width: 100px;">点击进入</th>
         <th style="min-width: 200px;">
             名称
             <span class="introNote">简介点击展开</span>
         </th>
         <th style="width: 130px;min-width: 130px">上次更新</th>
-        <th style="width: 100px;min-width: 100px"></th>
+        <th style="width: 80px;min-width: 80px"></th>
     </tr>
     <tr v-for="s in saveList">
         <td>
-            <img :src="s.miniUrl || defaultMini" class="mini"/>
+            <RouterLink :to="editorRoute(s.id??0)">
+                <img :src="s.miniUrl || defaultMini" class="mini"/>
+            </RouterLink>
         </td>
         <td>
             {{ s.name }}
@@ -179,8 +181,7 @@ onMounted(async()=>{
             <div class="lastActive">{{ s.lastActive }}</div>
         </td>
         <td>
-            <button class="minor" @click="startEditingInfo(s)">信息</button>
-            <RouterLink :to="editorRoute(s.id??0)"><button>编辑</button></RouterLink>
+            <button class="minor" @click="startEditingInfo(s)">信息设置</button>
         </td>
     </tr>
     <tr v-if="saveList.length==0" style="color: #666; font-size: 16px;">
@@ -193,7 +194,7 @@ onMounted(async()=>{
 <Loading v-else></Loading>
 </div>
 <SideBar ref="saveInfoSb" @extend="resetDangerZone" class="saveInfoSb">
-    <h1>{{ isCreatingSave ? '创建存档':'编辑信息' }}</h1>
+    <h1>{{ isCreatingSave ? '创建存档':'信息设置' }}</h1>
     <table v-if="editingSave"><tbody>
         <tr>
             <td colspan="2">

@@ -7,9 +7,11 @@ import Loading from '@/components/common/Loading.vue';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
 import { useSavesRoutesJump } from './routes/routesJump';
 import { useRouter } from 'vue-router';
+import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 
 const api = useApiStore()
 const { someonesSavesRoute, searchSaveRoute } = useSavesRoutesJump()
+const { editorRoute } = useEditorsRoutesJump()
 const router = useRouter()
 const searchInit = router.currentRoute.value.query["search"] as string|undefined
 const orderbyInit = router.currentRoute.value.query["orderby"] as string|undefined
@@ -20,13 +22,17 @@ const pageIdx = ref(0)
 
 const searchRes = ref<WithIntroShow<SaveDto>[]>()
 const searchedUsing = ref<string>()
+const searchedUsingOrderBy = ref<string>()
 async function load() {
     if(!search.value){
         searchedUsing.value = search.value
+        searchedUsingOrderBy.value = orderBy.value
         searchRes.value = []
         return
     }
-    if(search.value === searchedUsing.value){
+    if(search.value === searchedUsing.value
+        && orderBy.value === searchedUsingOrderBy.value)
+    {
         return
     }
     if(search.value.length > 10){
@@ -37,6 +43,7 @@ async function load() {
     if(res){
         searchRes.value = res
         searchedUsing.value = search.value
+        searchedUsingOrderBy.value = orderBy.value
         router.replace(searchSaveRoute(search.value, orderBy.value))
     }
 }
@@ -64,7 +71,7 @@ onMounted(()=>{
 <div style="overflow-x: auto;">
 <table v-if="searchRes" class="fullWidth index"><tbody>
     <tr>
-        <th style="width: 100px;"></th>
+        <th style="width: 100px;">点击进入</th>
         <th style="min-width: 200px;">
             名称
             <span class="introNote">简介点击展开</span>
@@ -74,7 +81,9 @@ onMounted(()=>{
     </tr>
     <tr v-for="s in searchRes">
         <td>
-            <img :src="s.miniUrl || defaultMini" class="mini"/>
+            <RouterLink :to="editorRoute(s.id??0)">
+                <img :src="s.miniUrl || defaultMini" class="mini"/>
+            </RouterLink>
         </td>
         <td>
             {{ s.name }}
