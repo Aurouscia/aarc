@@ -7,6 +7,8 @@ export interface Config{
     lineWidth: number,
     lineTurnAreaRadius: number,
     lineWidthMapped: LineWidthMappedConfig
+    lineExtensionHandleLengthVert: string,
+    lineExtensionHandleLengthInc: string,
 
     ptBareSize: number,
     ptBareLineWidth: number,

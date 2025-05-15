@@ -15,6 +15,8 @@ export const configDefault:Config = {
     lineWidth: 14,
     lineTurnAreaRadius: 30,
     lineWidthMapped: {},
+    lineExtensionHandleLengthVert: '',
+    lineExtensionHandleLengthInc: '',
 
     ptBareSize: 12,
     ptBareLineWidth: 3,

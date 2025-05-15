@@ -28,10 +28,9 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-5-8更新'">
-        1. 文本标签“对齐方向”设置<br/>
-        2. 优化线路延长手柄的显示<br/>
-        3. 优化站名定位点&连线的显示
+    <Notice :type="'info'" :title="'2025-5-15更新'">
+        1. 可在设置-杂项中设置线路延长手柄长度<br/>
+        2. 存档搜索功能
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">
         1. 支线整理<br/>

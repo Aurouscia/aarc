@@ -235,6 +235,17 @@ defineExpose({
             <b>清除残留车站连线</b>
         </td>
     </tr>
+    <tr>
+        <td>线路<br/>延长<br/>手柄<br/>长度</td>
+        <td>
+            正<input v-model="config.lineExtensionHandleLengthVert" style="width: 80px;"/><br/>
+            斜<input v-model="config.lineExtensionHandleLengthInc" style="width: 80px;"/><br/>
+            <div class="explain">
+                可填固定值，例如 200 <br/>
+                可填倍率，例如 *1.5
+            </div>
+        </td>
+    </tr>
     <tr v-if="browserInfo">
         <td colspan="2" class="browserInfo">
             <div>

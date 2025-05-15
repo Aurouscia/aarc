@@ -6,12 +6,14 @@ import { Coord, SgnCoord, twinPts2SgnCoord } from "@/models/coord";
 import { coordRelDir } from "@/utils/coordUtils/coordRel";
 import { sqrt2 } from "@/utils/consts";
 import { ControlPointDir } from "@/models/save";
+import { useConfigStore } from "../../configStore";
 
 export type ExtendBtn = {
     lineId:number, at:'head'|'tail', rootPos:Coord, lineWidthRatio:number,
     btnPos:Coord, btnDir:ControlPointDir, way:SgnCoord}
 export const useLineExtendStore = defineStore('lineExtend', ()=>{
     const saveStore = useSaveStore()
+    const cs = useConfigStore()
     const extendBtnLengthVert = 150;
     const extendBtnLengthIncline = 100 * sqrt2
     const extendBtns:ExtendBtn[] = []
@@ -46,15 +48,10 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
                     rootPos = fl.pts[m].pos
                     secondPos = fl.pts[m-1].pos
                 }
-                let eLength = extendBtnLengthVert
-                
-                const btnDir = coordRelDir(rootPos, secondPos)
-                if(btnDir === ControlPointDir.incline){
-                    eLength = extendBtnLengthIncline
-                }
                 const lineWidthRatio = tar.lineWidthRatio
-                eLength *= lineWidthRatio
-                const btnPos = coordTwinExtend(rootPos, secondPos, eLength)
+                const btnDir = coordRelDir(rootPos, secondPos)
+                const handleLength = getHandleLength(btnDir, lineWidthRatio)
+                const btnPos = coordTwinExtend(rootPos, secondPos, handleLength)
                 const way = twinPts2SgnCoord(secondPos, rootPos)
                 extendBtns.push({...tar, rootPos, btnPos, btnDir, way, lineWidthRatio})
             }
@@ -77,6 +74,27 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
     }
     function clearLineExtendBtns(){
         extendBtns.splice(0, extendBtns.length)
+    }
+    function getHandleLength(type:ControlPointDir, lineWidthRatio:number){
+        const defaultVal = (type === ControlPointDir.vertical
+            ? extendBtnLengthVert
+            : extendBtnLengthIncline) * lineWidthRatio
+        const configVal = type === ControlPointDir.vertical
+            ? cs.config.lineExtensionHandleLengthVert
+            : cs.config.lineExtensionHandleLengthInc
+        if(!configVal)
+            return defaultVal
+        if(configVal.startsWith("*")){
+            let factor = parseFloat(configVal.slice(1))
+            if(isNaN(factor))
+                factor = 1
+            return defaultVal * factor
+        }else{
+            let val = parseFloat(configVal)
+            if(isNaN(val))
+                val = defaultVal
+            return val
+        }
     }
     return {
         refreshLineExtend, enumerateLineExtendBtns, getLineExtendWays, removeLineExtendBtn, clearLineExtendBtns, 
