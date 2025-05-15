@@ -5,14 +5,17 @@ import { onMounted, ref } from 'vue';
 import defaultMini from '@/assets/logo/aarc.svg'
 import Loading from '@/components/common/Loading.vue';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
+import { useSavesRoutesJump } from './routes/routesJump';
+import { useRouter } from 'vue-router';
 
 const api = useApiStore()
-const props = defineProps<{
-    searchInit?: string,
-}>()
+const { someonesSavesRoute, searchSaveRoute } = useSavesRoutesJump()
+const router = useRouter()
+const searchInit = router.currentRoute.value.query["search"] as string|undefined
+const orderbyInit = router.currentRoute.value.query["orderby"] as string|undefined
 
-const search = ref<string|undefined>(props.searchInit)
-const orderBy = ref<"sta"|undefined>()
+const search = ref<string|undefined>(searchInit)
+const orderBy = ref<string|undefined>(orderbyInit)
 const pageIdx = ref(0)
 
 const searchRes = ref<WithIntroShow<SaveDto>[]>()
@@ -23,16 +26,26 @@ async function load() {
         searchRes.value = []
         return
     }
+    if(search.value === searchedUsing.value){
+        return
+    }
+    if(search.value.length > 10){
+        search.value = search.value.slice(0, 10)
+    }
+    searchRes.value = undefined
     const res = await api.save.search(search.value, orderBy.value, pageIdx.value)
     if(res){
         searchRes.value = res
         searchedUsing.value = search.value
+        router.replace(searchSaveRoute(search.value, orderBy.value))
     }
 }
 
 onMounted(()=>{
-    if(props.searchInit){
+    if(search.value){
         load()
+    }else{
+        searchRes.value = []
     }
 })
 </script>
@@ -71,7 +84,9 @@ onMounted(()=>{
             <div class="dataInfo">—{{ s.lineCount }}线 {{ s.staCount }}站—</div>
         </td>
         <td>
-            <div class="ownerName">{{ s.ownerName }}</div>
+            <div class="ownerName">
+                <RouterLink :to="someonesSavesRoute(s.ownerUserId??0)">{{ s.ownerName }}</RouterLink>
+            </div>
         </td>
         <td>
             <div class="lastActive">{{ s.lastActive }}</div>
@@ -95,6 +110,9 @@ onMounted(()=>{
 @use '@/styles/itemIntro.scss';
 @use '@/styles/saveList.scss';
 
+.saveSearchInput{
+    width: 160px;
+}
 .noMatch{
     color: #666; 
     font-size: 16px;

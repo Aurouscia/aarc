@@ -46,6 +46,7 @@ h1.h1WithBtns{
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
+    column-gap: 20px;
     div{
         display: flex;
         align-items: center;

@@ -16,9 +16,8 @@ const routes = [
         props:true
     },
     {
-        path:"/Saves/Search/:searchInit?",
+        path:"/Saves/Search",
         component:SearchSave,
-        name:searchSaveName,
-        props:true
+        name:searchSaveName
     }
 ]
