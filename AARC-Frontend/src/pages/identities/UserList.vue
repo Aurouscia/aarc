@@ -107,7 +107,7 @@ onMounted(async()=>{
         </td>
     </tr>
     <tr>
-        <td colspan="3" style="color: #666; font-size: 14px;">仅显示当前排序前50的用户</td>
+        <td colspan="4" style="color: #666; font-size: 14px;">仅显示当前排序前50的用户</td>
     </tr>
 </tbody></table>
 </div>
