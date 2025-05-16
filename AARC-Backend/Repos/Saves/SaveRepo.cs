@@ -1,6 +1,5 @@
 ﻿using AARC.Models.Db.Context;
 using AARC.Models.DbModels;
-using AARC.Models.Dto;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Services.App.Mapping;
 using AutoMapper;
@@ -150,6 +149,21 @@ namespace AARC.Repos.Saves
                 return "无权编辑本存档";
             return null;
         }
+    }
+
+    public class SaveDto
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+        public string? MiniUrl { get; set; }
+        public string? Version { get; set; }
+        public int OwnerUserId { get; set; }
+        public string? OwnerName { get; set; }
+        public string? Intro { get; set; }
+        public int StaCount { get; set; }
+        public int LineCount { get; set; }
+        public byte Priority { get; set; }
+        public string? LastActive { get; set; }
     }
 
     public class SaveDtoProfile : Profile

@@ -1,6 +1,5 @@
 ﻿using AARC.Models.Db.Context;
 using AARC.Models.DbModels;
-using AARC.Models.Dto;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Services.App.Mapping;
 using AARC.Utils;
@@ -215,6 +214,19 @@ namespace AARC.Repos.Identities
                 return $"个人简介不能超过{User.introMaxLength}个字符";
             return null;
         }
+    }
+
+    public class UserDto
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+        public string? Password { get; set; }
+        public UserType Type { get; set; }
+        public int AvatarFileId { get; set; }
+        public string? AvatarUrl { get; set; }
+        public string? Intro { get; set; }
+        public string? LastActive { get; set; }
+        public int SaveCount { get; set; }
     }
 
     public class UserDtoProfile : Profile

@@ -1,5 +1,4 @@
-﻿using AARC.Models.Dto;
-using AARC.Repos.Identities;
+﻿using AARC.Repos.Identities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RqEx = AARC.Utils.Exceptions.RequestInvalidException;
