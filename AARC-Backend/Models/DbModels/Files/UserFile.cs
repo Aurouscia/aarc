@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AARC.Models.DbModels
+namespace AARC.Models.DbModels.Files
 {
     public class UserFile : IDbModel
     {
