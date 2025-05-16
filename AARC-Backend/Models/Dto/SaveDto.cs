@@ -13,20 +13,5 @@
         public int LineCount { get; set; }
         public byte Priority { get; set; }
         public string? LastActive { get; set; }
-
-        public SaveDto() { }
-        public SaveDto(
-            int id, string name, string? version, int ownerId,
-            string? intro, DateTime lastActive, int staCount, int lineCount)
-        {
-            Id = id;
-            Name = name;
-            Version = version;
-            OwnerUserId = ownerId;
-            Intro = intro;
-            LastActive = lastActive.ToString("yyyy-MM-dd HH:mm");
-            StaCount = staCount;
-            LineCount = lineCount;
-        }
     }
 }

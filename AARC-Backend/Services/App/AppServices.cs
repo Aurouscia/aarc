@@ -2,6 +2,7 @@
 using AARC.Services.App.Authentication;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Services.App.Logging;
+using AARC.Services.App.Mapping;
 using AARC.Services.App.OpenApi;
 using AARC.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +34,8 @@ namespace AARC.Services.App
 
             services.AddNSwagDocument();
             services.AddSingleton<NSwagTsGenService>();
+
+            services.SetupAutoMapper();
             return services;
         }
     }

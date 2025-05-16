@@ -2,7 +2,10 @@
 using AARC.Models.DbModels;
 using AARC.Models.Dto;
 using AARC.Services.App.HttpAuthInfo;
+using AARC.Services.App.Mapping;
 using AARC.Utils;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace AARC.Repos.Identities
@@ -10,7 +13,8 @@ namespace AARC.Repos.Identities
     public class UserRepo(
         AarcContext context,
         HttpUserInfoService httpUserInfoService,
-        HttpUserIdProvider httpUserIdProvider
+        HttpUserIdProvider httpUserIdProvider,
+        IMapper mapper
         ) : Repo<User>(context)
     {
         public User? MatchUser(string username, string password)
@@ -59,7 +63,7 @@ namespace AARC.Repos.Identities
                     .ToList();
                 finalList = userQ
                     .Where(x => uids.Contains(x.Id))
-                    .SelectToDto()
+                    .ProjectTo<UserDto>(mapper.ConfigurationProvider)
                     .ToList();
                 finalList.ForEach(u =>
                 {
@@ -73,7 +77,7 @@ namespace AARC.Repos.Identities
             {
                 finalList = userQ
                     .OrderByDescending(x => x.LastActive)
-                    .SelectToDto()
+                    .ProjectTo<UserDto>(mapper.ConfigurationProvider)
                     .Take(takeCount)
                     .ToList();
             }
@@ -85,7 +89,7 @@ namespace AARC.Repos.Identities
                 {
                     var me = Existing
                         .Where(x => x.Id == myId)
-                        .SelectToDto()
+                        .ProjectTo<UserDto>(mapper.ConfigurationProvider)
                         .FirstOrDefault();
                     var mySaveCount = getCountOfUser(myId);
                     if (me is { })
@@ -152,19 +156,17 @@ namespace AARC.Repos.Identities
                 errmsg = "无权操作";
                 return false;
             }
-            user.Name = u.Name ?? "";
-            user.Intro = u.Intro;
-            user.Type = u.Type;
-            user.AvatarFileId = u.AvatarFileId;
-            if (u.Password is { })
-                user.Password = UserPwdEncryption.Encrypt(u.Password);
+            mapper.Map(u, user);
             base.Update(user, true);
             return true;
         }
 
         public UserDto? GetUserInfo(int id)
         {
-            return Existing.Where(x => x.Id == id).SelectToDto().FirstOrDefault();
+            return Existing
+                .Where(x => x.Id == id)
+                .ProjectTo<UserDto>(mapper.ConfigurationProvider)
+                .FirstOrDefault();
         }
 
         public void UpdateCurrentUserLastActive()
@@ -215,19 +217,18 @@ namespace AARC.Repos.Identities
         }
     }
 
-    public static class UserQueryableSelectToDtoExtension
+    public class UserDtoProfile : Profile
     {
-        public static IQueryable<UserDto> SelectToDto(this IQueryable<User> users)
+        public UserDtoProfile()
         {
-            return users.Select(x => new UserDto
-            {
-                Id = x.Id,
-                Name = x.Name,
-                AvatarFileId = x.AvatarFileId,
-                Type = x.Type,
-                Intro = x.Intro,
-                LastActive = x.LastActive.ToString("yyyy-MM-dd HH:mm")
-            });
+            CreateMap<User, UserDto>()
+                .ForMember(x => x.Password, mem => mem.Ignore())
+                .ForMember(x => x.LastActive,
+                    mem => mem.MapFrom(source => source.LastActive.ToString("yyyy-MM-dd HH:mm")));
+            CreateMap<UserDto, User>()
+                .IgnoreLastActive()
+                .ForMember(x => x.Password,
+                    mem => mem.MapFrom(source => UserPwdEncryption.Encrypt(source.Password ?? "")));
         }
     }
 }

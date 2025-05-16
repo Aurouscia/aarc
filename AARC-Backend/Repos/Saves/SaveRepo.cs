@@ -2,6 +2,9 @@
 using AARC.Models.DbModels;
 using AARC.Models.Dto;
 using AARC.Services.App.HttpAuthInfo;
+using AARC.Services.App.Mapping;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace AARC.Repos.Saves
@@ -9,16 +12,15 @@ namespace AARC.Repos.Saves
     public class SaveRepo(
         AarcContext context,
         HttpUserIdProvider httpUserIdProvider,
-        HttpUserInfoService httpUserInfoService)
-        : Repo<Save>(context)
+        HttpUserInfoService httpUserInfoService,
+        IMapper mapper
+        ) : Repo<Save>(context)
     {
         public List<SaveDto> GetNewestSaves()
         {
             var res = base.Existing
                 .OrderByDescending(x => x.LastActive)
-                .Select(x => new SaveDto(
-                    x.Id, x.Name, x.Version, x.OwnerUserId,
-                    x.Intro, x.LastActive, x.StaCount, x.LineCount))
+                .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
                 .Take(8)
                 .ToList();
             return res;
@@ -30,9 +32,7 @@ namespace AARC.Repos.Saves
             var res = base.Existing
                 .Where(x => x.OwnerUserId == uid)
                 .OrderByDescending(x => x.LastActive)
-                .Select(x => new SaveDto(
-                    x.Id, x.Name, x.Version, x.OwnerUserId,
-                    x.Intro, x.LastActive, x.StaCount, x.LineCount))
+                .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
                 .ToList();
             return res;
         }
@@ -54,9 +54,7 @@ namespace AARC.Repos.Saves
             int skip = pageIdx * pageSize;
             int take = pageSize;
             var res = q
-                .Select(x => new SaveDto(
-                    x.Id, x.Name, x.Version, x.OwnerUserId,
-                    x.Intro, x.LastActive, x.StaCount, x.LineCount))
+                .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
                 .Skip(skip)
                 .Take(take)
                 .ToList();
@@ -68,13 +66,8 @@ namespace AARC.Repos.Saves
             if (errmsg is { })
                 return false;
             var uid = httpUserIdProvider.RequireUserId();
-            Save save = new()
-            {
-                Name = saveDto.Name ?? "",
-                Version = saveDto.Version,
-                OwnerUserId = uid,
-                Intro = saveDto.Intro,
-            };
+            Save save = mapper.Map<Save>(saveDto);
+            save.OwnerUserId = uid;
             base.Add(save);
             return true;
         }
@@ -112,9 +105,7 @@ namespace AARC.Repos.Saves
         {
             var res = Existing
                 .Where(x => x.Id == id)
-                .Select(x => new SaveDto(
-                    x.Id, x.Name, x.Version, x.OwnerUserId,
-                    x.Intro, x.LastActive, x.StaCount, x.LineCount))
+                .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
                 .FirstOrDefault();
             errmsg = null;
             return res;
@@ -158,6 +149,19 @@ namespace AARC.Repos.Saves
             if (uinfo.Id != ownerId && !uinfo.IsAdmin)
                 return "无权编辑本存档";
             return null;
+        }
+    }
+
+    public class SaveDtoProfile : Profile
+    {
+        public SaveDtoProfile()
+        {
+            CreateMap<SaveDto, Save>()
+                .IgnoreLastActive();
+            CreateMap<Save, SaveDto>()
+                .ForMember(
+                    destinationMember: x => x.LastActive,
+                    memberOptions: mem => mem.MapFrom(source => source.LastActive.ToString("yyyy-MM-dd HH:mm")));
         }
     }
 }
