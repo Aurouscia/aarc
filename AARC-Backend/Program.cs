@@ -1,6 +1,7 @@
 using AARC.Models.Db.Context;
 using AARC.Repos;
 using AARC.Services.App;
+using AARC.Services.App.Logging;
 using AARC.Services.Files;
 using AARC.Utils;
 using Serilog;
@@ -31,7 +32,7 @@ try
     app.UseAppendedStaticFiles(e);
     app.UseRouting();
     app.UseAuthorization();
-    app.UseSerilogRequestLogging();
+    app.UseSerilog();
     app.MapControllers();
 
     Log.Information("AARC启动成功=============================================");
