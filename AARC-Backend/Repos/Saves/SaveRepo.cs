@@ -90,13 +90,26 @@ namespace AARC.Repos.Saves
         {
             errmsg = ValidateAccess(id);
             if (errmsg is { }) return false;
+            var originalLength = Existing
+                .Where(x => x.Id == id && x.Data != null)
+                .Select(x => x.Data!.Length)
+                .FirstOrDefault();
+            if (originalLength > 1000)
+            {
+                if(data.Length < originalLength / 2)
+                {
+                    errmsg = "内容显著减少，拒绝保存";
+                    return false;
+                }
+            }
+
             Existing
-                .Where(x => x.Id == id)
-                .ExecuteUpdate(spc => spc
-                    .SetProperty(x => x.LastActive, DateTime.Now)
-                    .SetProperty(x => x.Data, data)
-                    .SetProperty(x => x.StaCount, staCount)
-                    .SetProperty(x => x.LineCount, lineCount));
+            .Where(x => x.Id == id)
+            .ExecuteUpdate(spc => spc
+                .SetProperty(x => x.LastActive, DateTime.Now)
+                .SetProperty(x => x.Data, data)
+                .SetProperty(x => x.StaCount, staCount)
+                .SetProperty(x => x.LineCount, lineCount));
             errmsg = null;
             return true;
         }
