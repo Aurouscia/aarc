@@ -16,6 +16,7 @@ import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contex
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import Notice from '../common/Notice.vue';
 import ExportWatermarkConfig from './configs/ExportWatermarkConfig.vue';
+import ConfigSection from './configs/shared/ConfigSection.vue';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -175,7 +176,6 @@ function exportPixelRestrictChanged(){
 }
 
 const { isWebkit } = useBrowserInfoStore()
-const showBrowserLimit = ref<boolean>(false)
 
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
@@ -222,29 +222,32 @@ defineExpose({
         请尝试设置<b>“像素上限”</b>为{{ isWebkit ? '4000': '19000' }}，若仍然失败则逐步调低直至导出成功<br/>
         若需要清晰的图片请换用其他设备/浏览器
     </div>
-    <ExportWatermarkConfig></ExportWatermarkConfig>
-    <button v-if="!showBrowserLimit" class="minor" @click="showBrowserLimit=true">显示已知的浏览器限制</button>
-    <table v-else class="fullWidth"><tbody>
-        <tr>
-            <th>浏览器</th>
-            <th>导出像素上限</th>
-        </tr>
-        <tr>
-            <td>Chrome/Edge</td>
-            <td>19000</td>
-        </tr>
-        <tr>
-            <td>苹果系统上<br/>任意浏览器</td>
-            <td>4000</td>
-        </tr>
-        <tr>
-            <td>FireFox(PC版)</td>
-            <td>暂未发现限制</td>
-        </tr>
-        <tr>
-            <td colspan="2" class="smallNote">欢迎向我们反馈更多</td>
-        </tr>
-    </tbody></table>
+    <div class="exportConfigs">
+        <ExportWatermarkConfig></ExportWatermarkConfig>
+        <ConfigSection :title="'已知的浏览器限制'">
+            <table class="fullWidth"><tbody>
+                <tr>
+                    <th>浏览器</th>
+                    <th>导出像素上限</th>
+                </tr>
+                <tr>
+                    <td>Chrome/Edge</td>
+                    <td>19000</td>
+                </tr>
+                <tr>
+                    <td>苹果系统上<br/>任意浏览器</td>
+                    <td>4000</td>
+                </tr>
+                <tr>
+                    <td>FireFox(PC版)</td>
+                    <td>暂未发现限制</td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="smallNote">欢迎向我们反馈更多</td>
+                </tr>
+            </tbody></table>
+        </ConfigSection>
+    </div>
 </div>
 </SideBar>
 </template>
