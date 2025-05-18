@@ -15,6 +15,7 @@ import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvs
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import Notice from '../common/Notice.vue';
+import ExportWatermarkConfig from './configs/ExportWatermarkConfig.vue';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -215,12 +216,13 @@ defineExpose({
     <Notice v-show="exporting" :title="'请等待'" :type="'info'">
         正在导出，可能需要几秒
     </Notice>
-    <div class="note">
+    <div v-show="exported" class="note">
         若导出失败，可能由于系统/浏览器限制，<br/>
         导致只能导出更模糊的图片<br/>
         请尝试设置<b>“像素上限”</b>为{{ isWebkit ? '4000': '19000' }}，若仍然失败则逐步调低直至导出成功<br/>
         若需要清晰的图片请换用其他设备/浏览器
     </div>
+    <ExportWatermarkConfig></ExportWatermarkConfig>
     <button v-if="!showBrowserLimit" class="minor" @click="showBrowserLimit=true">显示已知的浏览器限制</button>
     <table v-else class="fullWidth"><tbody>
         <tr>

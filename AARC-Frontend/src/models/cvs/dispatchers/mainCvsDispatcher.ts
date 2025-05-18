@@ -16,6 +16,7 @@ import { CvsContext } from "../common/cvsContext";
 import { AdsRenderType, useAdsCvsWorker } from "../workers/adsCvsWorker";
 import { usePointLinkStore } from "@/models/stores/pointLinkStore";
 import { usePointLinkCvsWorker } from "../workers/pointLinkCvsWorker";
+import { useWatermarkCvsWorker } from "../workers/watermarkCvsWorker";
 
 export interface MainCvsRenderingOptions{
     /** 这次渲染前哪些线路形状变动了？不提供即为所有 */
@@ -47,6 +48,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const { renderAllTextTags } = useTextTagCvsWorker()
     const { renderAllLinks } = usePointLinkCvsWorker()
     const { renderAds } = useAdsCvsWorker()
+    const { renderWatermark } = useWatermarkCvsWorker()
     const afterMainCvsRendered = shallowRef<()=>void>()
     const isRendering = ref(false)
     const logRendering = import.meta.env.VITE_LogMainCvsRendering === 'true'
@@ -60,6 +62,8 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
             ctx.fillStyle = cs.config.bgColor
             ctx.fillTotal()
         }
+        renderWatermark(ctx, forExport)
+
         const creatingLink = pointLinkStore.isCreating
         tic()
         renderAllLines(ctx, changedLines, LineType.terrain, 'carpet')
