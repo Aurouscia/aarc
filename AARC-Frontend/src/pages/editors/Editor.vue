@@ -39,6 +39,9 @@ async function load() {
     if(!isNaN(saveIdNum.value)){
         await checkLoginLeftTime()
         const resp = await api.save.loadData(saveIdNum.value)
+        const ownerId = (await api.save.loadInfo(saveIdNum.value))?.ownerUserId || -1
+        const iden = await userInfoStore.getIdentityInfo()
+        mainCvsDispatcher.visitorMode = iden.id!== ownerId
         try{
             const obj = resp ? JSON.parse(resp) : {}
             saveStore.save = ensureValidSave(obj)
@@ -47,8 +50,6 @@ async function load() {
         }catch{
             pop.value?.show('存档损坏，请联系管理员', 'failed')
         }
-        const ownerId = (await api.save.loadInfo(saveIdNum.value))?.ownerUserId || -1
-        const iden = await userInfoStore.getIdentityInfo()
         if(!!iden.id && iden.id !== ownerId){
             savingDisabledWarning.value = '非存档所有者，仅供浏览，不能保存'
         }
@@ -57,6 +58,7 @@ async function load() {
         saveStore.save = ensureValidSave(deepClone(devSave))
         resetterStore.resetDerivedStores()
         saveStore.ensureLinesOrdered()
+        mainCvsDispatcher.visitorMode = false
         loadComplete.value = true
         pop.value?.show('此处为体验环境，不能保存', 'warning')
         savingDisabledWarning.value = '此处为体验环境，不能保存'

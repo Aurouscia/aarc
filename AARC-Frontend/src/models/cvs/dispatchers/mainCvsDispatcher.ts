@@ -53,6 +53,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const isRendering = ref(false)
     const logRendering = import.meta.env.VITE_LogMainCvsRendering === 'true'
     const { tic, toc } = useTimeSpanClock(logRendering)
+    const visitorMode = ref(false)
     function renderMainCvs(options:MainCvsRenderingOptions){
         const tStart = logRendering ? timestampMS():0
         isRendering.value = true
@@ -62,7 +63,8 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
             ctx.fillStyle = cs.config.bgColor
             ctx.fillTotal()
         }
-        renderWatermark(ctx, forExport)
+        if(!visitorMode.value)
+            renderWatermark(ctx, forExport)
 
         const creatingLink = pointLinkStore.isCreating
         tic()
@@ -112,5 +114,5 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
             suppressRenderedCallback:true
         })
     })
-    return { renderMainCvs, afterMainCvsRendered, canvasIdPrefix }
+    return { renderMainCvs, afterMainCvsRendered, canvasIdPrefix, visitorMode }
 })
