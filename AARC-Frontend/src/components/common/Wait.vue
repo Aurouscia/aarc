@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { apiWaitKeyPrefix, apiCancelableMs, useApiStore } from '@/app/com/apiStore';
 
 const showReasons = ref<Set<string>>(new Set())
 const showing =  computed(()=>{
@@ -12,6 +13,29 @@ function setShowing(reason:string, value: boolean){
         showReasons.value.delete(reason);
     }
 }
+
+const apiStore = useApiStore()
+const showCancelBtn = ref(false)
+const anyApiWaiting = computed(()=>{
+    return [...showReasons.value].some(x=>x.startsWith(apiWaitKeyPrefix));
+})
+const waitStartAt = ref(0);
+let waitTimeTooLongCheckTimer:number = 0
+watch(anyApiWaiting, (newValue)=>{
+    window.clearInterval(waitTimeTooLongCheckTimer)
+    if(newValue){
+        waitStartAt.value = Date.now();
+        waitTimeTooLongCheckTimer = window.setInterval(()=>{
+            if(Date.now() - waitStartAt.value > apiCancelableMs){
+                showCancelBtn.value = true;
+                window.clearInterval(waitTimeTooLongCheckTimer)
+            } 
+        }, 100)
+    }
+    else{
+        showCancelBtn.value = false;
+    }
+})
 defineExpose({
     setShowing
 });
@@ -21,6 +45,9 @@ defineExpose({
 <div class="wait" :class="{showing}">
     <div class="shadowDiv">
         <div class="spinner"></div>
+        <button v-if="showCancelBtn" class="cancelWaiting danger" @click="apiStore.abortAll">
+            取消
+        </button>
     </div>
 </div>
 </template>
@@ -44,17 +71,28 @@ defineExpose({
     z-index: 50001;
     box-shadow: 0px 0px 0px 0px black;
 }
-
 .spinner {
     position: absolute;
     top: 0px;
     border: 10px solid white;
     border-top: 10px solid cornflowerblue;
-    left: calc(50% - 25px);
-    width: 50px;
-    height: 50px;
+    box-sizing: border-box;
+    left: calc(50% - 35px);
+    width: 70px;
+    height: 70px;
     border-radius: 1000px;
     animation: none;
+}
+.cancelWaiting{
+    position: absolute;
+    bottom: 120px;
+    width: 100px;
+    box-sizing: border-box;
+    left: calc(50% - 50px);
+    transition: 0.5s;
+    opacity: 0;
+    z-index: 50002;
+    border: 2px solid white;
 }
 .wait.showing{
     top:0px;
@@ -70,6 +108,9 @@ defineExpose({
                 0% { transform: rotate(0deg); }
                 100% { transform: rotate(360deg); }
             }
+        }
+        .cancelWaiting{
+            opacity: 1;
         }
     }
 }

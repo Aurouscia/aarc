@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { CanceledError } from "axios";
 import { defineStore, storeToRefs } from "pinia";
 import { useUniqueComponentsStore } from "../globalStores/uniqueComponents";
 import { ref } from "vue";
@@ -7,6 +7,9 @@ import { getTypeName as tn } from "@/utils/lang/getTypeName";
 import { AllFuncsReturnTypeOptional } from "@/utils/type/AllFuncsReturnTypeOptional";
 
 const jwtTokenStorageKey = "aarcAuthToken"
+const timeoutMs = 16*1000
+export const apiCancelableMs = 4 * 1000
+export const apiWaitKeyPrefix = 'api-'
 export const useApiStore = defineStore('api', () => {
     //初始化时，从localStorage中读取token
     const jwtToken = ref<string|null|undefined>(localStorage.getItem(jwtTokenStorageKey))
@@ -25,17 +28,39 @@ export const useApiStore = defineStore('api', () => {
         transformResponse: data => data
     })
     const { pop, wait } = storeToRefs(useUniqueComponentsStore())
+
+    const userAbortReason = 'http用户取消'
+    let activeAbortCs:AbortController[] = []
+    function cleanAbortControllers(){
+        // 清除已abort的controller，避免内存泄漏
+        activeAbortCs = activeAbortCs.filter(x=>!x.signal.aborted)
+    }
+    function abortAll(){
+        activeAbortCs.forEach(x=>x.abort(userAbortReason))
+        activeAbortCs = []
+    }
+
     instance.interceptors.request.use(config => {
         if (jwtToken.value) {
             config.headers.Authorization = `Bearer ${jwtToken.value}`
         }
+        //设置超时机制（若已有signal则不设置）
+        if(!config.signal){
+            const abortC = new AbortController()
+            const abortS = abortC.signal
+            activeAbortCs.push(abortC)
+            window.setTimeout(()=>{abortC.abort('http超时取消')}, timeoutMs)
+            config.signal = abortS
+        }
         return config
     })
     instance.interceptors.response.use(response => {
-        if (response.headers.authorization) {
-            jwtToken.value = response.headers.authorization
-        }
+        cleanAbortControllers()
         return response
+    }, error=>{
+        cleanAbortControllers()
+        //此处必须返回一个reject的promise，否则会被axios认为成功处理了
+        return Promise.reject(error)
     })
 
     const baseUrl = import.meta.env.VITE_ApiUrlBase;
@@ -47,7 +72,7 @@ export const useApiStore = defineStore('api', () => {
                 if (typeof originalMethod === 'function') {
                     const action = prop.toString()
                     const path = `${clientName}/${action}`
-                    const waitKey = 'api-'+path
+                    const waitKey = apiWaitKeyPrefix+path
                     return async function (...args: any[]) {
                         try {
                             wait.value?.setShowing(waitKey, true)
@@ -78,9 +103,20 @@ export const useApiStore = defineStore('api', () => {
                                     if(!errmsg)
                                         errmsg = '发生异常，请联系管理员'
                                 }
+                                if(!errmsg)
+                                    errmsg='未知错误'
                                 console.error(`[http]异常：${path}\n`, errmsg)
                                 pop.value?.show(errmsg, 'failed')
-                            }else{
+                            }
+                            else if(
+                                error instanceof CanceledError 
+                                && error.config?.signal instanceof AbortSignal
+                                && error.config.signal.reason === userAbortReason)
+                            {
+                                console.error(`[http]取消：${path}`)
+                                pop.value?.show('已取消', 'failed')
+                            }
+                            else{
                                 console.error(error)
                                 pop.value?.show(`网络异常`, 'failed')
                             }
@@ -102,6 +138,7 @@ export const useApiStore = defineStore('api', () => {
     const save = w(new api.SaveClient(baseUrl, instance))
 
     return {
+        abortAll,
         setJwtToken,
         clearJwtToken,
         auth,

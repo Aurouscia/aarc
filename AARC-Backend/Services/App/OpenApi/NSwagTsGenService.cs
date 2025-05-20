@@ -16,11 +16,13 @@ namespace AARC.Services.App.OpenApi
             settings.TypeScriptGeneratorSettings.TypeStyle = TypeScriptTypeStyle.Interface;
             settings.ClassName = "{controller}Client";
             settings.Template = TypeScriptTemplate.Axios;
+            settings.UseAbortSignal = true;
             var generator = new TypeScriptClientGenerator(document, settings);
             var code = generator.GenerateFile();
             using var outputStream = File.Open(outputPath, FileMode.Create);
             using var writer = new StreamWriter(outputStream);
             await writer.WriteAsync(code);
+            AppendFixes(writer);
             writer.Flush();
             return code.Length;
         }
@@ -34,6 +36,16 @@ namespace AARC.Services.App.OpenApi
             var url = $"{scheme}://{host}/swagger/{docName}/swagger.json";
             var document = await OpenApiDocument.FromUrlAsync(url);
             return document;
+        }
+
+        private const string unUsedImportFix
+            = "let c:CancelToken|0=0;if(c){}";
+        public void AppendFixes(StreamWriter sw)
+        {
+            sw.WriteLine();
+            sw.WriteLine();
+            sw.WriteLine("//修复“CancelToken导入未使用”的问题");
+            sw.WriteLine(unUsedImportFix);
         }
     }
 }
