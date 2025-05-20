@@ -64,7 +64,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
             ctx.fillTotal()
         }
         if(!visitorMode.value)
-            renderWatermark(ctx, forExport)
+            renderWatermark(ctx, 'beforeMain', forExport)
 
         const creatingLink = pointLinkStore.isCreating
         tic()
@@ -90,9 +90,12 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         tic('站名')
         renderAllTextTags(ctx)
         toc('标签')
+        
         if(options.withAds){
             renderAds(ctx, options.withAds)
         }
+        if(!visitorMode.value)
+            renderWatermark(ctx, 'afterMain', forExport)
         isRendering.value = false
         if(logRendering){
             const tEnd = logRendering ? timestampMS():0

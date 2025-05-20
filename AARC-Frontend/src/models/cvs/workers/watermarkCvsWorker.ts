@@ -6,7 +6,7 @@ import { useSaveStore } from "@/models/stores/saveStore"
 export const useWatermarkCvsWorker = defineStore('watermarkCvsWorker',()=>{
     const exportLocalConfig = useExportLocalConfigStore()
     const saveStore = useSaveStore()
-    function renderWatermark(ctx:CvsContext, forExport?:boolean){
+    function renderWatermark(ctx:CvsContext, nowTime:'beforeMain'|'afterMain', forExport?:boolean){
         const cfg = exportLocalConfig.readExportWatermarkLocalConfig()
         if(forExport){
             if(!cfg.enabled)
@@ -15,6 +15,11 @@ export const useWatermarkCvsWorker = defineStore('watermarkCvsWorker',()=>{
             if(!cfg.enabledPreview)
                 return
         }
+        const isUnder = !cfg.coverMode || cfg.coverMode === 'under'
+        if(isUnder && nowTime === 'afterMain')
+            return
+        if(!isUnder && nowTime === 'beforeMain')
+            return
 
         let fontSize = cfg.fontSize??30
         if(typeof fontSize === 'string'){ fontSize = parseInt(fontSize) }

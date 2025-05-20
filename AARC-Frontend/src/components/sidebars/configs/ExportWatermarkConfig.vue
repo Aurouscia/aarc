@@ -48,8 +48,17 @@ function reset(){
         <tr>
             <td>不透明度</td>
             <td>
-                <input v-model="cfg.opacity" type="range" min="0" max="1" step="0.05">
-                <input v-model="cfg.opacity" type="number" min="0" max="1" step="0.05">
+                <input v-model="cfg.opacity" type="range" min="0" max="0.5" step="0.01">
+                <input v-model="cfg.opacity" type="number" min="0" max="0.5" step="0.05">
+            </td>
+        </tr>
+        <tr>
+            <td>叠加模式</td>
+            <td>
+                <select v-model="cfg.coverMode">
+                    <option :value="'under'">底部</option>
+                    <option :value="'over'">顶部</option>
+                </select>
             </td>
         </tr>
         <tr>

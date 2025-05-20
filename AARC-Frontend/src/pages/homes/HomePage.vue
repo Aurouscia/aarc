@@ -28,9 +28,9 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-5-15更新'">
-        1. 可在设置-杂项中设置线路延长手柄长度<br/>
-        2. 存档搜索功能
+    <Notice :type="'info'" :title="'2025-5-20更新'">
+        1. 导出时可自定义水印（图层位于底部/顶部）<br/>
+        2. 通信超时的情况下可手动取消
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">
         1. 支线整理<br/>

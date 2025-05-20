@@ -11,6 +11,7 @@ export interface ExportWatermarkLocalConfig{
     text?:string,
     fontSize?:number|string
     opacity?:number|string
+    coverMode?:'under'|'over'
     xDist?:number|string
     yDist?:number|string
     xOffset?:number|string
@@ -25,7 +26,7 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
     const cfg = new ExportLocalConfig()
 
     function exportWaterMarkDefault():ExportWatermarkLocalConfig{
-        return {enabled:false,text:'测试水印',fontSize:300,opacity:0.1,xDist:400,yDist:300,xOffset:400,rotate:0}
+        return {enabled:false,text:'测试水印',fontSize:300,opacity:0.1,coverMode:'under',xDist:400,yDist:300,xOffset:400,rotate:0}
     }
     function readExportWatermarkLocalConfig():ExportWatermarkLocalConfig{
         const wmcJson = cfg.readLocalConfig(exportWatermarkKey) 
