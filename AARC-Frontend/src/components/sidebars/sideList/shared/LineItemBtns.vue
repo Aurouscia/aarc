@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import { Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
+import { computed } from 'vue';
 
 const envStore = useEnvStore()
-defineProps<{
+const props = defineProps<{
     mouseDownLineArrange: (e: MouseEvent | TouchEvent, id: number) => void,
     delLineStart: (l: Line) => void,
     editInfoOfLine: (l: Line) => void,
@@ -12,7 +13,13 @@ defineProps<{
     l: Line,
     lineTypeCalled: string,
     showingBtns?:'children'|'arrange'
+    isInChildrenList?:boolean
 }>()
+const mode = computed<'A'|'B'>(()=>{
+    if(props.showingBtns=='arrange')
+        return 'B'
+    return 'A'
+})
 </script>
 
 <template>
@@ -23,16 +30,16 @@ defineProps<{
     <div class="infoEdit">
         <div class="sqrBtn" @click="editInfoOfLine(l)">...</div>
     </div>
-    <div v-if="showingBtns=='children'" class="sqrBtn" @click="showChildrenOf(l)">
+    <div v-if="mode==='A' && !isInChildrenList" class="sqrBtn" @click="showChildrenOf(l)">
         支
     </div>
-    <div v-else class="sqrBtn moveBtn" :class="{ sqrActive: arrangingId === l.id }" @mousedown="e => mouseDownLineArrange(e, l.id)"
+    <div v-if="mode==='A' && isInChildrenList" class="sqrBtn">出</div>
+    <div v-if="mode==='A'" class="sqrBtn"></div>
+    <div v-if="mode==='B'" class="sqrBtn moveBtn" :class="{ sqrActive: arrangingId === l.id }" @mousedown="e => mouseDownLineArrange(e, l.id)"
         @touchstart="e => mouseDownLineArrange(e, l.id)">
         ⇅
     </div>
-    <div v-if="showingBtns=='children'" class="sqrBtn">    
-    </div>
-    <div v-else class="sqrBtn" @click="delLineStart(l)">
+    <div v-if="mode==='B'" class="sqrBtn" @click="delLineStart(l)">
         ×
     </div>
 </template>

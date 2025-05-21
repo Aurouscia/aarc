@@ -18,7 +18,8 @@ const {
     createLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe,
     showingLineGroup, lineGroupCheck, lineGroupsSelectable,
-    showingBtns, showingChildrenOf, showChildrenOf, childrenLines
+    showingBtns, showingChildrenOf, showingChildrenOfInfo,
+    showChildrenOf, childrenLines
 } = useSideListShared(LineType.common)
 
 const colorPicker = ref<InstanceType<typeof AuColorPicker>[]>([])
@@ -48,12 +49,17 @@ onUnmounted(()=>{
     <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList" :body-no-position="true"
         @extend="registerLinesArrange();lineGroupCheck()" @fold="disposeLinesArrange" @click="clickContainer">
         <div class="filter">
-            <select v-model="showingLineGroup">
+            <select v-if="!isChildrenList" v-model="showingLineGroup">
                 <option :value="undefined">默认分组</option>
                 <option v-for="g in lineGroupsSelectable" :value="g.id">
                     {{ g.name }}
                 </option>
             </select>
+            <div v-else class="childrenListTitle">
+                <div class="parentLineName nowrapEllipsis" :style="{color:showingChildrenOfInfo.color}">
+                    {{ showingChildrenOfInfo.name }}
+                </div>
+            </div>
             <Switch :left-text="'设置'" :right-text="'调序'" :initial="'left'"
                 @left="showingBtns='children'" @right="showingBtns='arrange'"></Switch>
         </div>
@@ -68,11 +74,11 @@ onUnmounted(()=>{
                         :panel-click-stop-propagation="true"></AuColorPicker>
                 </div>
                 <LineItemBtns :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
-                    :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf"
+                    :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf" :is-in-children-list="isChildrenList"
                     :showing-btns="showingBtns" :arranging-id="arrangingId" :l="l" :line-type-called="'线路'"></LineItemBtns>
             </div>
             <div class="newLine" @click="createLine">
-                +新线路
+                {{ isChildrenList ? '+新支线' : '+新线路'}}
             </div>
         </div>
     </SideBar>
@@ -84,4 +90,12 @@ onUnmounted(()=>{
 
 <style scoped lang="scss">
 @use './shared/arrangableList.scss';
+
+.childrenListTitle{
+    font-weight: bold;
+    .parentLineName{
+        font-size: 16px;
+        max-width: 120px;
+    }
+}
 </style>

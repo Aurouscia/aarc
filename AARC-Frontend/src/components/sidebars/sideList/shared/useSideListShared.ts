@@ -14,16 +14,30 @@ export function useSideListShared(lineType:LineType){
     const mainCvsDispatcher = useMainCvsDispatcher()
     const sidebar = ref<InstanceType<typeof SideBar>>()
     const showingLineGroup = ref<number>()
-    const showingChildrenOf = ref()
+    const showingChildrenOf = ref<number>()
+    const showingChildrenOfInfo = computed<{name?:string,color?:string}>(()=>{
+        if(!showingChildrenOf.value) return {}
+        const parent = saveStore.getLineById(showingChildrenOf.value)
+        if(!parent) return {}
+        const name = parent.name 
+        const color = saveStore.getLineActualColor(parent)
+        return {name, color}
+    })
     const lines = computed<Line[]>(()=>{
+        const filteringParent = !!showingChildrenOf.value
         const filterParent = (x:Line)=>{
-            if(!showingChildrenOf.value)
+            if(!filteringParent)
                 return !x.parent
             return showingChildrenOf.value === x.parent
         }
+        const filterGroup = (x:Line)=>{
+            if(filteringParent)
+                return true
+            return showingLineGroup.value === x.group
+        }
         return saveStore.save?.lines.filter(x =>
             x.type===lineType
-            && x.group===showingLineGroup.value
+            && filterGroup(x)
             && filterParent(x)
         ) || []
     })
@@ -109,6 +123,7 @@ export function useSideListShared(lineType:LineType){
         createLine, 
         wantDelLine, delLineStart, delLineAbort, delLineExe,
         showingLineGroup, lineGroupCheck, lineGroupsSelectable,
-        showingBtns, showingChildrenOf, showChildrenOf, childrenLines
+        showingBtns, showingChildrenOf, showingChildrenOfInfo,
+        showChildrenOf, childrenLines
     }
 }
