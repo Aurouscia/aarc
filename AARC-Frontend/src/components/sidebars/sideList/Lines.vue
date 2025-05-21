@@ -7,6 +7,9 @@ import LineOptions from '../options/LineOptions.vue';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
 import LineDelPrompt from './shared/LineDelPrompt.vue';
 import LineItemBtns from './shared/LineItemBtns.vue';
+import Switch from '@/components/common/Switch.vue';
+
+defineProps<{isChildrenList?:boolean}>()
 
 const { 
     sidebar, lineOptions, lines, envStore,
@@ -14,8 +17,9 @@ const {
     arrangingId, editingInfoLine, editInfoOfLine,
     createLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe,
-    showingLineGroup, lineGroupCheck, lineGroupsSelectable
-} = useSideListShared(LineType.common, '线路')
+    showingLineGroup, lineGroupCheck, lineGroupsSelectable,
+    showingBtns, showingChildrenOf, showChildrenOf, childrenLines
+} = useSideListShared(LineType.common)
 
 const colorPicker = ref<InstanceType<typeof AuColorPicker>[]>([])
 function clickContainer(){
@@ -23,11 +27,17 @@ function clickContainer(){
 }
 
 defineExpose({
-    comeOut: ()=>{sidebar.value?.extend()},
-    fold: ()=>{sidebar.value?.fold()}
+    comeOut: (parentLineId?:number)=>{
+        showingChildrenOf.value = parentLineId
+        sidebar.value?.extend()
+    },
+    fold: ()=>{
+        childrenLines.value?.fold()
+        sidebar.value?.fold()
+    }
 })
 onMounted(()=>{
-    
+    showingBtns.value = 'children'
 })
 onUnmounted(()=>{
     disposeLinesArrange()
@@ -44,6 +54,8 @@ onUnmounted(()=>{
                     {{ g.name }}
                 </option>
             </select>
+            <Switch :left-text="'设置'" :right-text="'调序'" :initial="'left'"
+                @left="showingBtns='children'" @right="showingBtns='arrange'"></Switch>
         </div>
         <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l,idx in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
@@ -56,7 +68,8 @@ onUnmounted(()=>{
                         :panel-click-stop-propagation="true"></AuColorPicker>
                 </div>
                 <LineItemBtns :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
-                    :edit-info-of-line="editInfoOfLine" :arranging-id="arrangingId" :l="l" :line-type-called="'线路'"></LineItemBtns>
+                    :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf"
+                    :showing-btns="showingBtns" :arranging-id="arrangingId" :l="l" :line-type-called="'线路'"></LineItemBtns>
             </div>
             <div class="newLine" @click="createLine">
                 +新线路
@@ -66,6 +79,7 @@ onUnmounted(()=>{
     <LineDelPrompt :line="wantDelLine" :line-called="'线路'" :pt-called="'车站'" :with-sta-default="false"
         @abort="delLineAbort" @exe="delLineExe"></LineDelPrompt>
     <LineOptions ref="lineOptions" v-if="editingInfoLine" :line="editingInfoLine" :line-width-range="{min:0.5, max:2, step:0.25}"></LineOptions>
+    <Lines v-if="!isChildrenList" ref="childrenLines" :is-children-list="true"></Lines>
 </template>
 
 <style scoped lang="scss">

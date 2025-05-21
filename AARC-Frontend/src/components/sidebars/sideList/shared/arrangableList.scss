@@ -8,7 +8,10 @@
         z-index: 10;
         background-color: white;
         box-shadow: 0px 0px 5px 0px black;
-        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px
     }
     .lines{
         position: absolute;

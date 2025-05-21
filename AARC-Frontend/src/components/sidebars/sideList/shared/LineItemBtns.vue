@@ -7,9 +7,11 @@ defineProps<{
     mouseDownLineArrange: (e: MouseEvent | TouchEvent, id: number) => void,
     delLineStart: (l: Line) => void,
     editInfoOfLine: (l: Line) => void,
+    showChildrenOf: (l: Line) => void,
     arrangingId: number,
     l: Line,
     lineTypeCalled: string,
+    showingBtns?:'children'|'arrange'
 }>()
 </script>
 
@@ -21,11 +23,16 @@ defineProps<{
     <div class="infoEdit">
         <div class="sqrBtn" @click="editInfoOfLine(l)">...</div>
     </div>
-    <div class="sqrBtn moveBtn" :class="{ sqrActive: arrangingId === l.id }" @mousedown="e => mouseDownLineArrange(e, l.id)"
+    <div v-if="showingBtns=='children'" class="sqrBtn" @click="showChildrenOf(l)">
+        支
+    </div>
+    <div v-else class="sqrBtn moveBtn" :class="{ sqrActive: arrangingId === l.id }" @mousedown="e => mouseDownLineArrange(e, l.id)"
         @touchstart="e => mouseDownLineArrange(e, l.id)">
         ⇅
     </div>
-    <div class="sqrBtn" @click="delLineStart(l)">
+    <div v-if="showingBtns=='children'" class="sqrBtn">    
+    </div>
+    <div v-else class="sqrBtn" @click="delLineStart(l)">
         ×
     </div>
 </template>

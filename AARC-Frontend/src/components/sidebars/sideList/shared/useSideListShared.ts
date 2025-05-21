@@ -6,18 +6,25 @@ import { useLinesArrange } from "@/utils/eventUtils/linesArrange"
 import SideBar from "@/components/common/SideBar.vue"
 import { computed, ref } from "vue"
 import LineOptions from "../../options/LineOptions.vue"
+import Lines from "../Lines.vue"
 
-export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
+export function useSideListShared(lineType:LineType){
     const saveStore = useSaveStore()
     const envStore = useEnvStore()
     const mainCvsDispatcher = useMainCvsDispatcher()
     const sidebar = ref<InstanceType<typeof SideBar>>()
     const showingLineGroup = ref<number>()
+    const showingChildrenOf = ref()
     const lines = computed<Line[]>(()=>{
+        const filterParent = (x:Line)=>{
+            if(!showingChildrenOf.value)
+                return !x.parent
+            return showingChildrenOf.value === x.parent
+        }
         return saveStore.save?.lines.filter(x =>
             x.type===lineType
             && x.group===showingLineGroup.value
-            && !x.parent
+            && filterParent(x)
         ) || []
     })
     const lineOptions = ref<InstanceType<typeof LineOptions>>()
@@ -49,11 +56,8 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
 
     const editingInfoLine = ref<Line>()
     function editInfoOfLine(line:Line){
-        console.log(line)
         editingInfoLine.value = line
         window.setTimeout(()=>{
-            console.log(editingInfoLine.value)
-            console.log(lineOptions.value)
             lineOptions.value?.open()
         },1)
     }
@@ -89,12 +93,22 @@ export function useSideListShared(lineType:LineType, _lineTypeCalled:string){
         })
     }
 
+    const showingBtns = ref<'children'|'arrange'>('arrange')
+    const childrenLines = ref<InstanceType<typeof Lines>>()
+    function showChildrenOf(line?:Line){
+        if(!line)
+            childrenLines.value?.fold()
+        else
+            childrenLines.value?.comeOut(line.id)
+    }
+
     return {
         sidebar, lineOptions, lines, envStore, saveStore,
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
         arrangingId, editingInfoLine, editInfoOfLine,
         createLine, 
         wantDelLine, delLineStart, delLineAbort, delLineExe,
-        showingLineGroup, lineGroupCheck, lineGroupsSelectable
+        showingLineGroup, lineGroupCheck, lineGroupsSelectable,
+        showingBtns, showingChildrenOf, showChildrenOf, childrenLines
     }
 }

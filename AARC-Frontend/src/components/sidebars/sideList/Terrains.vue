@@ -15,7 +15,7 @@ const {
     createLine, editingInfoLine, editInfoOfLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe,
     showingLineGroup, lineGroupCheck, lineGroupsSelectable
-} = useSideListShared(LineType.terrain, '地形')
+} = useSideListShared(LineType.terrain)
 
 const { getPresetNameByEnum, getPresetEnumByName, presets } = useColorPresetNames()
 
@@ -73,7 +73,8 @@ onUnmounted(()=>{
                     :panel-click-stop-propagation="true"
                     ></AuColorPickerPresetsNested>
                 <LineItemBtns :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
-                    :edit-info-of-line="editInfoOfLine" :arranging-id="arrangingId" :l="l" :line-type-called="'地形'"></LineItemBtns>
+                    :edit-info-of-line="editInfoOfLine" :show-children-of="()=>{}"
+                    :arranging-id="arrangingId" :l="l" :line-type-called="'地形'"></LineItemBtns>
             </div>
             <div class="newLine" @click="createLine">
                 +新地形
