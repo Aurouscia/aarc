@@ -7,6 +7,7 @@ const props = defineProps<{
     rightColor?:string,
     leftText?:string,
     rightText?:string,
+    sliderWidthPx?:number,
 }>()
 const emit = defineEmits<{
     (e:'left'):void,
@@ -23,14 +24,14 @@ function toggle(){
     }
 }
 
-const sliderContainerWidthPx = 30
-const sliderContainerHeightPx = 16
+const sliderContainerWidthPx = 55
+const sliderContainerHeightPx = 24
 const sliderContainerPaddingPx = 3
-const sliderWidthPx = 16
+const defaultSliderWidthPx = 40
 const color = computed(()=>{
     return status.value==='left' 
-        ? (props.leftColor ?? '#aaa') 
-        : (props.rightColor ?? '#aaa') 
+        ? (props.leftColor ?? '#999') 
+        : (props.rightColor ?? '#999') 
 })
 const text = computed(()=>{
     return status.value==='left'
@@ -46,6 +47,7 @@ const sliderContainerStyles = computed<CSSProperties>(()=>{
     }
 })
 const sliderStyles = computed<CSSProperties>(()=>{
+    const sliderWidthPx = props.sliderWidthPx??defaultSliderWidthPx
     let left = sliderContainerPaddingPx
     if(status.value==='right'){
         left = sliderContainerWidthPx-sliderWidthPx+sliderContainerPaddingPx
@@ -54,6 +56,7 @@ const sliderStyles = computed<CSSProperties>(()=>{
         width:sliderWidthPx+'px',
         left:left+'px',
         height:sliderContainerHeightPx+'px',
+        color:color.value,
     }
 })
 </script>
@@ -61,9 +64,8 @@ const sliderStyles = computed<CSSProperties>(()=>{
 <template>
 <div class="switch">
     <div class="sliderContainer" @click="toggle" :style="sliderContainerStyles">
-        <div class="slider" :style="sliderStyles"></div>
+        <div class="slider" :style="sliderStyles">{{ text }}</div>
     </div>
-    <div :style="{color:color}" class="switchText">{{ text }}</div>
 </div>
 </template>
 
@@ -74,18 +76,17 @@ const sliderStyles = computed<CSSProperties>(()=>{
     gap: 4px;
     .sliderContainer{
         position: relative;
-        height: 20px;
         border-radius: 10px;
         cursor: pointer;
         .slider{
+            user-select: none;
+            font-size: 16px;
+            text-align: center;
             position: absolute;
             border-radius: 7px;
             background-color: white;
             transition:cubic-bezier(0.215, 0.610, 0.355, 1) .2s;
         }
-    }
-    .switchText{
-        font-size: 14px;
     }
 }
 </style>
