@@ -8,8 +8,10 @@ import { AuColorPicker } from '@aurouscia/au-color-picker';
 import LineDelPrompt from './shared/LineDelPrompt.vue';
 import LineItemBtns from './shared/LineItemBtns.vue';
 import Switch from '@/components/common/Switch.vue';
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 
 defineProps<{isChildrenList?:boolean}>()
+const { pop } = useUniqueComponentsStore()
 
 const { 
     sidebar, lineOptions, lines, envStore,
@@ -65,13 +67,16 @@ onUnmounted(()=>{
         </div>
         <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l,idx in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
-                <div class="colorEdit">
+                <div v-if="!isChildrenList" class="colorEdit">
                     <AuColorPicker :initial="l.color"
                         @done="c=>{l.color=c;envStore.lineInfoChanged(l)}"
                         ref="colorPicker" :panel-base-z-index="idx"
                         :show-package-name="true"
                         :entry-respond-delay="1"
                         :panel-click-stop-propagation="true"></AuColorPicker>
+                </div>
+                <div v-else class="sqrBtn" :style="{backgroundColor: l.color, cursor:'default'}"
+                    @click="pop?.show('支线颜色跟随主线，不可单独调整', 'info')">
                 </div>
                 <LineItemBtns :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
                     :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf" :is-in-children-list="isChildrenList"

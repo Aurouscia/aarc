@@ -20,6 +20,7 @@ import { useTextTagEditStore } from "./textTagEditStore";
 import rfdc from "rfdc";
 import { coordRound } from "@/utils/coordUtils/coordRound";
 import { usePointLinkStore } from "./pointLinkStore";
+import { assignAllProps } from "@/utils/lang/assignAllProps";
 
 export const useEnvStore = defineStore('env', ()=>{
     const saveStore = useSaveStore();
@@ -628,7 +629,7 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!suppressRender)
             rerender.value([],[])
     }
-    function createLine(type:LineType, group?:number){
+    function createLine(type:LineType, group:number|undefined, parentLineId:number|undefined){
         if(!saveStore.save)
             return
         const viewCenter = getViewCenterOffset()
@@ -657,6 +658,7 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         saveStore.save.points.push(pt1, pt2)
         let newLine:Line|undefined = undefined
+        let parent = parentLineId
         if(type==LineType.common){
             newLine = {
                 id: saveStore.getNewId(),
@@ -665,7 +667,8 @@ export const useEnvStore = defineStore('env', ()=>{
                 nameSub: '',
                 color: "#ff0000",
                 type: LineType.common,
-                group
+                group,
+                parent
             }
         }else if(type==LineType.terrain){
             newLine = {
@@ -681,18 +684,37 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         if(newLine){
             saveStore.createNewLine(newLine)
+            if(parent){
+                ensureChildrenOptionsSame(parent)
+            }
             rerender.value([newLine.id], [pt1.id, pt2.id])
         }
     }
     function lineInfoChanged(line:Line, staSizeChanged?:boolean){
+        const children = ensureChildrenOptionsSame(line.id)
         if(staSizeChanged){
-            for(const ptId of line.pts){
-                const pt = saveStore.getPtById(ptId)
-                if(pt)
-                    staClusterStore.updateClustersBecauseOf(pt)
+            const recalClusterFor = [line, ...children]
+            for(const line of recalClusterFor){
+                for(const ptId of line.pts){
+                    const pt = saveStore.getPtById(ptId)
+                    if(pt)
+                        staClusterStore.updateClustersBecauseOf(pt)
+                }
             }
         }
         rerender.value([], line.pts)
+    }
+    function ensureChildrenOptionsSame(parentLineId:number){
+        const parentLine = saveStore.getLineById(parentLineId)
+        if(!parentLine)
+            return []
+        const children = saveStore.save?.lines.filter(x=>x.parent===parentLineId)
+        if(!children || children.length===0)
+            return []
+        for(const c of children){
+            assignAllProps<Line>(c, parentLine, ['id', 'name', 'nameSub', 'parent', 'pts'])
+        }
+        return children;
     }
 
     function createTextTag(forLine?:number){

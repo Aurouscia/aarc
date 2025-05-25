@@ -62,7 +62,7 @@ export function useSideListShared(lineType:LineType){
         }, 500)
     }
     function createLine(){
-        envStore.createLine(lineType, showingLineGroup.value)
+        envStore.createLine(lineType, showingLineGroup.value, showingChildrenOf.value)
     }
     function delLine(line:Line, withSta:boolean){
         envStore.delLine(line.id, false, withSta)
