@@ -21,12 +21,14 @@ namespace AARC.Services.App.Logging
             app.UseSerilogRequestLogging(options =>
             {
                 options.MessageTemplate 
-                    = "HTTP {RequestMethod} {RequestPath}{QueryString}" +
+                    = "HTTP {RequestMethod} by {UserId} {RequestPath}{QueryString}" +
                     " with {RequestLength} bytes" +
                     " => code {StatusCode} with {ResponseLength} bytes in {Elapsed}ms";
 
                 options.GetLevel = (httpContext, elapsed, ex) =>
                 {
+                    if (ex is not null)
+                        return LogEventLevel.Error;
                     if (elapsed > 3000)
                         return LogEventLevel.Warning;
                     return LogEventLevel.Information;
@@ -42,6 +44,8 @@ namespace AARC.Services.App.Logging
                     diagnosticContext.Set("ResponseLength", responseLength);
                 };
             });
+
+            app.UseMiddleware<SerilogUserIdReadingMiddleware>();
             return app;
         }
     }

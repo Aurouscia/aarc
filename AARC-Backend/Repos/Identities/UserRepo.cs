@@ -170,7 +170,7 @@ namespace AARC.Repos.Identities
 
         public void UpdateCurrentUserLastActive()
         {
-            var id = httpUserIdProvider.UserId.Value;
+            var id = httpUserIdProvider.UserIdLazy.Value;
             Existing.Where(x => x.Id == id)
                 .ExecuteUpdate(spc => 
                     spc.SetProperty(u=>u.LastActive, DateTime.Now));

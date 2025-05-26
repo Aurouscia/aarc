@@ -4,11 +4,11 @@ namespace AARC.Services.App.HttpAuthInfo
 {
     public class HttpUserIdProvider
     {
-        public Lazy<int> UserId { get; }
+        public Lazy<int> UserIdLazy { get; }
         private readonly IHttpContextAccessor _httpContextAccessor;
         public HttpUserIdProvider(IHttpContextAccessor httpContextAccessor)
         {
-            UserId = new(GetUserId);
+            UserIdLazy = new(GetUserId);
             _httpContextAccessor = httpContextAccessor;
         }
         private int GetUserId()
@@ -29,7 +29,7 @@ namespace AARC.Services.App.HttpAuthInfo
         }
         public int RequireUserId()
         {
-            var uid = UserId.Value;
+            var uid = UserIdLazy.Value;
             if (uid <= 0)
                 throw new InvalidOperationException("请登录后重试");
             return uid;

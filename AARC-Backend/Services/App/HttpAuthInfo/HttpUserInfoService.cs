@@ -24,7 +24,7 @@ namespace AARC.Services.App.HttpAuthInfo
 
         private HttpUserInfo GetUserInfo()
         {
-            var id = _userIdProvider.UserId.Value;
+            var id = _userIdProvider.UserIdLazy.Value;
             string name = string.Empty;
             int leftHours = 0;
             UserType type = UserType.Tourist;
