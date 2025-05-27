@@ -33,24 +33,47 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         ctx.lineJoin = 'round'
         const lines = saveStore.linesSortedByZIndex;
         for(const line of lines){
+            if(line.parent) //TODO:确保parent要么falsy，要么指向一个存在的线路，不能有dangling情况
+                continue
             if(ltype !== undefined){
                 if(ltype != line.type)
                     continue
             }
             const needReportFormalPts = !needReportFormalPtsLines || needReportFormalPtsLines.includes(line.id)
-            renderLine(ctx, line, needReportFormalPts, rtype)
+            let toRender = [line]
+            const children = saveStore.getLinesByParent(line.id)
+            if(children)
+                toRender.push(...children)
+            renderLine(ctx, toRender, needReportFormalPts, rtype)
         }
     }
-    function renderLine(ctx:CvsContext, line:Line, needReportFormalPts?:boolean, rtype?:LineRenderType){
-        const pts = saveStore.getPtsByIds(line.pts)
-        if(pts.length<=1)
-            return;
-        const formalPts = formalize(pts)
-        if(needReportFormalPts){
-            formalizedLineStore.setLinesFormalPts(line.id, formalPts)
+    /**
+     * 渲染某个线路（可选择“及其支线”）
+     * @param ctx 
+     * @param line 线路（单个或数组，如果是数组，应为x线路及其支线（x和parent设为x.id的线路））
+     * @param needReportFormalPts 需要更新formalPts
+     * @param rtype 渲染类型（地毯/本体）
+     * @returns 
+     */
+    function renderLine(ctx:CvsContext, line:Line|Line[], needReportFormalPts?:boolean, rtype?:LineRenderType){
+        if(!(line instanceof Array)){
+            line = [line]
         }
-        linkPts(ctx, formalPts, line)
-        doRender(ctx, line, undefined, undefined, rtype)
+        if(line.length===0)
+            return
+        const lineInfo = line[0]
+        ctx.beginPath()
+        for(const l of line){
+            const pts = saveStore.getPtsByIds(l.pts)
+            if(pts.length<=1)
+                return;
+            const formalPts = formalize(pts) //TODO: needReportFormalPts为false时可以跳过这步
+            if(needReportFormalPts){
+                formalizedLineStore.setLinesFormalPts(l.id, formalPts)
+            }
+            linkPts(ctx, formalPts, l)
+        }
+        doRender(ctx, lineInfo, undefined, undefined, rtype)
     }
     function renderSegsAroundActivePt(ctx:CvsContext)
         :{relatedPts:Iterable<ControlPoint>, formalizedSegs:FormalizedLine[]}
@@ -113,6 +136,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
             fpts.forEach(pt=>relatedPts.add(pt))
             formalizedSegs.push({lineId:line.id, pts:formalized})
+            ctx.beginPath()
             linkPts(ctx, formalized, line)
             const enforceLineWidth = line.isFilled ? 1 : undefined
             doRender(ctx, line, true, enforceLineWidth)
@@ -300,7 +324,6 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         const pts = formalPts.map(x=>x.pos)
         const first = pts[0]
         const second = pts[1]
-        ctx.beginPath()
         if(!isRingLine){
             ctx.moveTo(...first)
             let prevPt:Coord = first

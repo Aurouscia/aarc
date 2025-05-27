@@ -113,6 +113,20 @@ export const useSaveStore = defineStore('save', () => {
         keepOrderSort(copy, (x,y)=>(x.zIndex??0)-(y.zIndex??0))
         return copy
     })
+    const lineChildren = computed<Record<number, Line[]|undefined>>(()=>{
+        const res:Record<number, Line[]> = {}
+        if(!save.value?.lines)
+            return res
+        for(const line of save.value.lines){
+            const p = line.parent
+            if(p){
+                if(!res[p])
+                    res[p] = []
+                res[p].push(line)
+            }
+        }
+        return res
+    })
 
     function getNewId() {
         if(!save.value)
@@ -193,6 +207,9 @@ export const useSaveStore = defineStore('save', () => {
         if(!save.value)
             throw Error("找不到存档")
         return save.value.lines.filter(x=>x.type==lineType)
+    }
+    function getLinesByParent(parentLineId:number){
+        return lineChildren.value[parentLineId]
     }
     function getNeighborByPt(ptId:number){
         const lines = getLinesByPt(ptId)
@@ -496,7 +513,7 @@ export const useSaveStore = defineStore('save', () => {
         getPtById, getPtsByIds, getLineById, getLinesByIds, linesSortedByZIndex,
         getLinesDecidedPtSize, getLinesDecidedPtSizes, getLinesDecidedPtNameSize,
         getLineActualColor, linesActualColorSame, getLineActualColorById,
-        getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getTextTagById, getPointLinksByPt,
+        getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getLinesByParent, getTextTagById, getPointLinksByPt,
         insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType, ensureLinesOrdered,
         removePt, removePtFromLine, removeNoLinePoints, removePointLinkByPt, removeDanglingPointLinks, tryMergePt, isNamedPt,
         removeTextTag, moveEverything, setCvsSize,
