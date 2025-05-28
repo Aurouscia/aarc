@@ -2,8 +2,13 @@
 import { Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { computed } from 'vue';
+import branchIcon from '@/assets/ui/editor/branch.svg';
+import branchSeperateIcon from '@/assets/ui/editor/branchSeperate.svg';
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 
 const envStore = useEnvStore()
+const { pop } = useUniqueComponentsStore()
+
 const props = defineProps<{
     mouseDownLineArrange: (e: MouseEvent | TouchEvent, id: number) => void,
     delLineStart: (l: Line) => void,
@@ -32,12 +37,12 @@ const mode = computed<'A'|'B'>(()=>{
         <div class="sqrBtn" @click="editInfoOfLine(l)">...</div>
     </div>
     <div v-if="mode==='A' && !isInChildrenList" class="sqrBtn" @click="showChildrenOf(l)">
-        支
+        <img class="btnIcon" :src="branchIcon"/>
     </div>
     <div v-if="mode==='A' && isInChildrenList" class="sqrBtn" @click="leaveParent(l)">
-        拆
+        <img class="btnIcon" :src="branchSeperateIcon"/>
     </div>
-    <div v-if="mode==='A'" class="sqrBtn"></div>
+    <div v-if="mode==='A'" class="sqrBtn" @click="pop?.show('时间轴（敬请期待）', 'info')"></div>
     <div v-if="mode==='B'" class="sqrBtn moveBtn" :class="{ sqrActive: arrangingId === l.id }" @mousedown="e => mouseDownLineArrange(e, l.id)"
         @touchstart="e => mouseDownLineArrange(e, l.id)">
         ⇅
@@ -49,4 +54,9 @@ const mode = computed<'A'|'B'>(()=>{
 
 <style scoped lang="scss">
 @use './arrangableList.scss';
+
+.btnIcon{
+    margin: 5px;
+    border-radius: 5px;
+}
 </style>
