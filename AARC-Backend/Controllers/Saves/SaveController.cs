@@ -25,6 +25,7 @@ namespace AARC.Controllers.Saves
             EnrichSaveOwner(list);
             return list;
         }
+        [AllowAnonymous]
         [HttpGet]
         public List<SaveDto> GetMySaves(int uid)
         {

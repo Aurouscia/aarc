@@ -5,6 +5,7 @@ using AARC.Services.App.Mapping;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using RqEx = AARC.Utils.Exceptions.RequestInvalidException;
 
 namespace AARC.Repos.Saves
 {
@@ -26,8 +27,10 @@ namespace AARC.Repos.Saves
         }
         public List<SaveDto> GetMySaves(int uid = 0)
         {
-            if(uid == 0)
-                uid = httpUserIdProvider.RequireUserId();
+            if (uid == 0)
+                uid = httpUserIdProvider.UserIdLazy.Value;
+            if (uid == 0)
+                throw new RqEx(null, System.Net.HttpStatusCode.Unauthorized);
             var res = base.Existing
                 .Where(x => x.OwnerUserId == uid)
                 .OrderByDescending(x => x.LastActive)
