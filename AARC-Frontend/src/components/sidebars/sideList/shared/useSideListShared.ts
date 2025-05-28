@@ -7,12 +7,14 @@ import SideBar from "@/components/common/SideBar.vue"
 import { computed, ref } from "vue"
 import LineOptions from "../../options/LineOptions.vue"
 import Lines from "../Lines.vue"
+import { useUniqueComponentsStore } from "@/app/globalStores/uniqueComponents"
 
 export function useSideListShared(lineType:LineType){
     const saveStore = useSaveStore()
     const envStore = useEnvStore()
     const mainCvsDispatcher = useMainCvsDispatcher()
     const sidebar = ref<InstanceType<typeof SideBar>>()
+    const { pop } = useUniqueComponentsStore()
     const showingLineGroup = ref<number>()
     const showingChildrenOf = ref<number>()
     const showingChildrenOfInfo = computed<{name?:string,color?:string}>(()=>{
@@ -78,6 +80,10 @@ export function useSideListShared(lineType:LineType){
 
     const wantDelLine = ref<Line>()
     function delLineStart(l:Line){
+        if(saveStore.getLinesByParent(l.id)?.length){
+            pop?.show('先删除或移出其所有支线', 'failed')
+            return
+        }
         wantDelLine.value = l
     }
     function delLineAbort(){
@@ -115,6 +121,13 @@ export function useSideListShared(lineType:LineType){
         else
             childrenLines.value?.comeOut(line.id)
     }
+    function leaveParent(line:Line){
+        if(window.confirm(`确认拆分<${line.name}>为单独线路`)){
+            line.parent = undefined
+            saveStore.ensureLinesOrdered()
+            envStore.rerender([], [])
+        }
+    }
 
     return {
         sidebar, lineOptions, lines, envStore, saveStore,
@@ -124,6 +137,6 @@ export function useSideListShared(lineType:LineType){
         wantDelLine, delLineStart, delLineAbort, delLineExe,
         showingLineGroup, lineGroupCheck, lineGroupsSelectable,
         showingBtns, showingChildrenOf, showingChildrenOfInfo,
-        showChildrenOf, childrenLines
+        showChildrenOf, leaveParent, childrenLines
     }
 }

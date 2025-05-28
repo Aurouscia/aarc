@@ -65,6 +65,24 @@ const myUsableLineGroups = computed(()=>{
     return save.value?.lineGroups?.filter(x=>x.lineType===props.line.type) || []
 })
 
+const selectableParent = computed<Line[]>(()=>{
+    return save.value?.lines.filter(x=>{
+        return x.type === LineType.common && !x.parent && x.id !== props.line.id
+    }) ?? []
+})
+const selectedForParentAssignment = ref<number>()
+function assignParent(){
+    if(selectedForParentAssignment.value){
+        const parentLine = saveStore.getLineById(selectedForParentAssignment.value)
+        if(parentLine){
+            props.line.parent = selectedForParentAssignment.value
+            envStore.ensureChildrenOptionsSame(parentLine.id)
+            saveStore.ensureLinesOrdered()
+            envStore.rerender([], [])
+        }
+    }
+}
+
 const sidebar = ref<InstanceType<typeof SideBar>>()
 defineExpose({
     open: ()=>{sidebar.value?.extend()}, 
@@ -210,6 +228,17 @@ onMounted(()=>{
                     <option :value="'white'">白色</option>
                 </select>
             </div>
+        </td>
+    </tr>
+    <tr v-if="!line.parent">
+        <td>归为<br/>支线</td>
+        <td>
+            <select v-model="selectedForParentAssignment">
+                <option :value="undefined">无所属</option>
+                <option v-for="l in selectableParent"
+                    :value="l.id">{{ l.name ?? '未命名线路' }}</option>
+            </select><br/>
+            <button v-if="selectedForParentAssignment" @click="assignParent">归为选中线路的支线</button>
         </td>
     </tr>
     </tbody></table>

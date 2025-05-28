@@ -73,7 +73,7 @@ onUnmounted(()=>{
                     :panel-click-stop-propagation="true"
                     ></AuColorPickerPresetsNested>
                 <LineItemBtns :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
-                    :edit-info-of-line="editInfoOfLine" :show-children-of="()=>{}"
+                    :edit-info-of-line="editInfoOfLine" :show-children-of="()=>{}" :leave-parent="()=>{}"
                     :arranging-id="arrangingId" :l="l" :line-type-called="'地形'"></LineItemBtns>
             </div>
             <div class="newLine" @click="createLine">

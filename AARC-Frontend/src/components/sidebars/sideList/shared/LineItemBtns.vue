@@ -9,6 +9,7 @@ const props = defineProps<{
     delLineStart: (l: Line) => void,
     editInfoOfLine: (l: Line) => void,
     showChildrenOf: (l: Line) => void,
+    leaveParent: (l: Line) => void,
     arrangingId: number,
     l: Line,
     lineTypeCalled: string,
@@ -33,7 +34,9 @@ const mode = computed<'A'|'B'>(()=>{
     <div v-if="mode==='A' && !isInChildrenList" class="sqrBtn" @click="showChildrenOf(l)">
         支
     </div>
-    <div v-if="mode==='A' && isInChildrenList" class="sqrBtn">出</div>
+    <div v-if="mode==='A' && isInChildrenList" class="sqrBtn" @click="leaveParent(l)">
+        拆
+    </div>
     <div v-if="mode==='A'" class="sqrBtn"></div>
     <div v-if="mode==='B'" class="sqrBtn moveBtn" :class="{ sqrActive: arrangingId === l.id }" @mousedown="e => mouseDownLineArrange(e, l.id)"
         @touchstart="e => mouseDownLineArrange(e, l.id)">

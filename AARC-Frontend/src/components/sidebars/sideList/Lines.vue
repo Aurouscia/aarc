@@ -21,7 +21,7 @@ const {
     wantDelLine, delLineStart, delLineAbort, delLineExe,
     showingLineGroup, lineGroupCheck, lineGroupsSelectable,
     showingBtns, showingChildrenOf, showingChildrenOfInfo,
-    showChildrenOf, childrenLines
+    showChildrenOf, leaveParent, childrenLines
 } = useSideListShared(LineType.common)
 
 const colorPicker = ref<InstanceType<typeof AuColorPicker>[]>([])
@@ -79,7 +79,8 @@ onUnmounted(()=>{
                     @click="pop?.show('支线颜色跟随主线，不可单独调整', 'info')">
                 </div>
                 <LineItemBtns :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
-                    :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf" :is-in-children-list="isChildrenList"
+                    :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf" 
+                    :is-in-children-list="isChildrenList" :leave-parent="leaveParent"
                     :showing-btns="showingBtns" :arranging-id="arrangingId" :l="l" :line-type-called="'线路'"></LineItemBtns>
             </div>
             <div class="newLine" @click="createLine">

@@ -828,7 +828,7 @@ export const useEnvStore = defineStore('env', ()=>{
         cursorPos, movingPoint, movedPoint, movingExtendedPointOriginated, movingTextTag,
         cvsWidth, cvsHeight, getDisplayRatio,
         rerender, rescaled, getActivePtOpsAvoidance,
-        delLine, createLine, lineInfoChanged,
+        delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
         createTextTag, duplicateTextTag, createPlainPt,
         startCreatingPtLink, abortCreatingPtLink,
         endEveryEditing, cancelActive, 
