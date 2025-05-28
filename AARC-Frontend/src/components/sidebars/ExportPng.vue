@@ -100,28 +100,30 @@ async function getExportPngFileName(isMini?:boolean){
     if(typeof saveId === 'object')
         saveId = saveId[0] || 'err'
     const saveIdNum = parseInt(saveId)
+    let saveName:string
     if(isNaN(saveIdNum))
-        return `${saveId}.png`
-    const info = await api.save.loadInfo(saveIdNum)
-    if(info){
-        let name = ''
-        const style = exportPngFileNameStyle.value
-        if(style == 'date')
-            name = `${info.name}-${timeStr('date')}`
-        else if(style == 'dateTime')
-            name = `${info.name}-${timeStr('dateTime')}`
-        else if(style == 'lineCount'){
-            const lineCount = saveStore.getLineCount()
-            const staCount = saveStore.getStaCount()
-            name = `${info.name}-${lineCount}线${staCount}站`
-        }else{
-            name = info.name??'未命名'
-        }
-        if(isMini){
-            name = `${name}-mini`
-        }
-        return `${name}.png`
+        saveName = saveId
+    else{
+        const info = await api.save.loadInfo(saveIdNum)
+        saveName = info?.name ?? '??'
     }
+    let name = ''
+    const style = exportPngFileNameStyle.value
+    if (style == 'date')
+        name = `${saveName}-${timeStr('date')}`
+    else if (style == 'dateTime')
+        name = `${saveName}-${timeStr('dateTime')}`
+    else if (style == 'lineCount') {
+        const lineCount = saveStore.getLineCount()
+        const staCount = saveStore.getStaCount()
+        name = `${saveName}-${lineCount}线${staCount}站`
+    } else {
+        name = saveName ?? '未命名'
+    }
+    if (isMini) {
+        name = `${name}-mini`
+    }
+    return `${name}.png`
 }
 function getExportRenderSize():{scale:number, cvsWidth:number, cvsHeight:number}{
     const epr = parseInt(exportPixelRestrict.value||'')

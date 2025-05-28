@@ -132,7 +132,7 @@ export function saveStaCount(save:Save){
 export function saveLineCount(save:Save){
     let lineCount = 0
     for(let line of save.lines){
-        if(line.type === LineType.common)
+        if(line.type === LineType.common && !line.parent)
             lineCount+=1
     }
     return lineCount
