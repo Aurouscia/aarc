@@ -16,7 +16,12 @@ onMounted(()=>{
 <div class="welcome">
     <h1>欢迎</h1>
     <p>AARC是用于绘制抽象线路图的工具，欢迎试用当前的<b>抢先体验版</b>（后续更新不会删档）</p>
-    <p><b><a style="color:green" href="/#/Editor/demo">点击此处立即试用</a></b></p>
+    <p>
+        <b>
+            <a style="color:green" href="/#/Editor/demo">点击此处立即试用</a>&nbsp;
+            <a style="color:blueviolet" href="http://aarc.jowei19.com/#/Editor/188">使用说明</a>
+        </b>
+    </p>
     <p style="color: #2C71BD">正式使用，请注册账户并登录、在“作品-我的作品”中点击新建，并进入编辑</p>
     <p>{{ guideInfo.findHelp }}</p>
     <p>本项目正在持续完善改进中，想提出建议请qq私聊我或<a href="https://gitee.com/au114514/aarc/issues" target="_blank">点击此处</a></p>
@@ -28,16 +33,17 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-5-20更新'">
-        1. 导出时可自定义水印（图层位于底部/顶部）<br/>
-        2. 通信超时的情况下可手动取消
+    <Notice :type="'info'" :title="'2025-5-29更新'">
+        1. 支线整理（同系统的线不会互相遮挡）<br/>
+        2. 修复“某人的存档”页无法切换到“我的存档”页的问题<br/>
+        3. 允许未登录访客查看他人作品列表
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">
-        1. 支线整理<br/>
+        1. 指定线路导出<br/>
         2. 标签/站名的旋转和压缩<br/>
         3. 站点/线路搜索定位功能<br/>
-        4. 指定线路导出<br/>
-        5. 发展时间轴
+        4. 发展时间轴<br/>
+        5. 区间补丁（支线间遮挡关系 & 好看的跨线线路）
     </Notice>
 </div>
 <GiteeInfo></GiteeInfo>
@@ -55,8 +61,8 @@ onMounted(()=>{
         <h3>动态清晰度（已完成✔）</h3>
         <p>减小大型画布的内存占用，自由调整导出图片的像素</p>
     </div>
-    <div>
-        <h3>支线整理</h3>
+    <div class="done">
+        <h3>支线整理（已完成✔）</h3>
         <p>把同一线路系统的各支线合并整理</p>
     </div>
     <div>

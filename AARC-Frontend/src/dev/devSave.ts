@@ -131,8 +131,8 @@ export const devSave:Save = {
             pos: [1050, 900],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta,
-            name: '东南新城\n(支线功能开发中)',
-            nameS: 'S.E. New Town\n("Branch Line" Under Development)',
+            name: '东南新城',
+            nameS: 'S.E. New Town',
             nameP: [0, 20]
         },
         {
@@ -227,7 +227,8 @@ export const devSave:Save = {
             name: "开发区线",
             nameSub: "DevZone Line",
             color: "#ff8800",
-            type: LineType.common
+            type: LineType.common,
+            style: 100000
         },
         {
             id: 104,
@@ -284,6 +285,20 @@ export const devSave:Save = {
             id: 10000,
             name:"远郊线路",
             lineType: LineType.common,
+        }
+    ],
+    lineStyles:[
+        {
+            id: 100000,
+            name:"快线",
+            layers:[
+                {
+                    width: 0.2,
+                    color: '#ffffff',
+                    colorMode: 'fixed',
+                    opacity: 1
+                }
+            ]
         }
     ],
     config:{}

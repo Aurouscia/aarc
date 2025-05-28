@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, nextTick } from 'vue';
+import { onMounted, ref, nextTick, computed, watch } from 'vue';
 import { useApiStore } from '@/app/com/apiStore';
 import SideBar from '@/components/common/SideBar.vue';
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
@@ -20,20 +20,24 @@ const { pop } = useUniqueComponentsStore()
 const props = defineProps<{
     uid?:string
 }>()
-let uidNum = parseInt(props.uid || '')
-if(isNaN(uidNum)){
-    uidNum = 0
-}
+const uidNum = computed<number>(()=>{
+    const uid = parseInt(props.uid || '')
+    if(isNaN(uid)){
+        return 0
+    }
+    return uid
+})
+watch(uidNum, load)
 
 const ownerName = ref<string>()
 async function load(){
-    if(uidNum > 0){
-        const ownerInfo = await api.user.getInfo(uidNum)
+    if(uidNum.value > 0){
+        const ownerInfo = await api.user.getInfo(uidNum.value)
         ownerName.value = ownerInfo?.name || '??'
     }else{
         ownerName.value = '我'
     }
-    saveList.value = await api.save.getMySaves(uidNum)
+    saveList.value = await api.save.getMySaves(uidNum.value)
 }
 
 const saveInfoSb = ref<InstanceType<typeof SideBar>>()
