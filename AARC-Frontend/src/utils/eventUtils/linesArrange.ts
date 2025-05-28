@@ -7,7 +7,6 @@ export function useLinesArrange(unit:number, lines:Ref<Line[]>, orderChanged:()=
     function mouseDownLineArrange(e:MouseEvent|TouchEvent, id:number){
         e.preventDefault()
         const y = getY(e)
-        console.log(y)
         activeId.value = id;
         activeOriginalY = y;
     }
@@ -39,7 +38,7 @@ export function useLinesArrange(unit:number, lines:Ref<Line[]>, orderChanged:()=
             move = -1
         if(move != 0){
             const idx = lines.value.findIndex(x=>x.id == activeId.value)
-            if(idx==-1)
+            if(idx==-1 || (idx===0 && move<0) || (idx===lines.value.length-1 && move>0))
                 return;
             const item = lines.value.splice(idx, 1)
             lines.value.splice(idx+move, 0, ...item)

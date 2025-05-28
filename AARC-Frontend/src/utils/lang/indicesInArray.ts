@@ -32,3 +32,29 @@ export function removeAllByIndices<T>(array:Array<T>, indices:number[]){
         array.splice(indices[i], 1)
     }
 }
+
+export function pullAllByPred<T>(array:Array<T>, match:(item:T)=>boolean){
+    const indices = indicesInArrayByPred<T>(array, match)
+    const res:T[] = []
+    for(let i = indices.length-1; i>=0; i--){
+        const item = array.splice(indices[i], 1)[0]
+        res.unshift(item)
+    }
+    return res
+}
+
+// export function pullAllByPred<T>(array:Array<T>, match:(item:T)=>boolean){
+//     const indices = new Set<number>(indicesInArrayByPred<T>(array, match))
+//     const pulled:T[] = []
+//     const newArray:T[] = []
+//     for(let i = 0; i < array.length; i++){
+//         if(indices.has(i)){
+//             pulled.push(array[i])
+//         }else{
+//             newArray.push(array[i])
+//         }
+//     }
+//     array.length = 0
+//     array.push(...newArray)
+//     return pulled
+// }

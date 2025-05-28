@@ -4,7 +4,7 @@ import { ControlPoint, ControlPointDir, ControlPointLink, ControlPointSta, ensur
 import { Coord } from "../coord";
 import { isSameCoord } from "@/utils/sgn";
 import { useConfigStore } from "./configStore";
-import { indicesInArray, removeAllByIndices, removeAllByPred } from "@/utils/lang/indicesInArray";
+import { indicesInArray, pullAllByPred, removeAllByIndices, removeAllByPred } from "@/utils/lang/indicesInArray";
 import { coordAdd } from "@/utils/coordUtils/coordMath";
 import { getMayRingLinePtIds } from "@/utils/lineUtils/isRing";
 import { readNumKeyedRecord } from "@/utils/lang/readNumKeyedRecord";
@@ -355,6 +355,11 @@ export const useSaveStore = defineStore('save', () => {
         if(!save.value)
             throw Error('找不到存档')
         keepOrderSort(save.value.lines, (a, b)=>{
+            if(!!a.parent !== !!b.parent){
+                //先把主线和支线分两块放
+                //如果“是主线/支线”属性不一致则返回1/-1
+                return (!!a.parent ? 1:0) - (!!b.parent ? 1:0)
+            }
             if(ids){
                 //如果指定了ids，那么按照ids的顺序排序
                 const aIdx = ids.indexOf(a.id)
@@ -371,6 +376,19 @@ export const useSaveStore = defineStore('save', () => {
             }
             return 0
         })
+        //将支线按顺序放回其所属的主线底部
+        const queue = [...save.value.lines]
+        while(queue.length>0){
+            const line = queue.shift()
+            if(!line || line?.parent)
+                continue
+            const children = pullAllByPred(save.value.lines, x=>x.parent===line.id)
+            if(children.length>0){
+                const idx = save.value.lines.indexOf(line)
+                save.value.lines.splice(idx+1, 0, ...children)
+            }
+        }
+        console.log(save.value.lines.map(x=>x.name))
     }
     function arrangeLinesOfType(ids:number[], _lineType:LineType){
         ensureLinesOrdered(ids)
