@@ -39,12 +39,11 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 if(ltype != line.type)
                     continue
             }
-            const needReportFormalPts = !needReportFormalPtsLines || needReportFormalPtsLines.includes(line.id)
             let toRender = [line]
             const children = saveStore.getLinesByParent(line.id)
             if(children)
                 toRender.push(...children)
-            renderLine(ctx, toRender, needReportFormalPts, rtype)
+            renderLine(ctx, toRender, needReportFormalPtsLines, rtype)
         }
     }
     /**
@@ -55,7 +54,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
      * @param rtype 渲染类型（地毯/本体）
      * @returns 
      */
-    function renderLine(ctx:CvsContext, line:Line|Line[], needReportFormalPts?:boolean, rtype?:LineRenderType){
+    function renderLine(ctx:CvsContext, line:Line|Line[], needReportFormalPtsLines?:number[], rtype?:LineRenderType){
         if(!(line instanceof Array)){
             line = [line]
         }
@@ -67,6 +66,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             const pts = saveStore.getPtsByIds(l.pts)
             if(pts.length<=1)
                 return;
+            const needReportFormalPts = !needReportFormalPtsLines || needReportFormalPtsLines.includes(l.id)
             const formalPts = formalize(pts) //TODO: needReportFormalPts为false时可以跳过这步
             if(needReportFormalPts){
                 formalizedLineStore.setLinesFormalPts(l.id, formalPts)
