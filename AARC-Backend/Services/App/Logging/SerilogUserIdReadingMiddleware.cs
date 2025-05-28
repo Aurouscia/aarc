@@ -11,7 +11,7 @@ namespace AARC.Services.App.Logging
             HttpContext httpContext,
             HttpUserIdProvider httpUserIdProvider)
         {
-            var uid = httpUserIdProvider.RequireUserId();
+            var uid = httpUserIdProvider.UserIdLazy.Value;
             diagnosticContext.Set("UserId", uid);
             await next(httpContext);
         }
