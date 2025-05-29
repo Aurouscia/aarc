@@ -38,6 +38,7 @@ defineExpose({
     fold: ()=>{
         childrenLines.value?.fold()
         sidebar.value?.fold()
+        lineOptions.value?.fold()
     }
 })
 onMounted(()=>{

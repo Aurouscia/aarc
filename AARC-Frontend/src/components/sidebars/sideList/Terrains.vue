@@ -39,7 +39,10 @@ function clickContainer(){
 
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
-    fold: ()=>{sidebar.value?.fold()}
+    fold: ()=>{
+        sidebar.value?.fold();
+        lineOptions.value?.fold()
+    },
 })
 onMounted(()=>{
     

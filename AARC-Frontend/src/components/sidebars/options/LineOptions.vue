@@ -86,6 +86,7 @@ function assignParent(){
 const sidebar = ref<InstanceType<typeof SideBar>>()
 defineExpose({
     open: ()=>{sidebar.value?.extend()}, 
+    fold: ()=>{sidebar.value?.fold()}
 })
 
 function init(){
