@@ -43,6 +43,7 @@ namespace AARC.Controllers.Identities
             return true;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public UserDto GetInfo(int id)
         {

@@ -12,11 +12,13 @@ import { guideInfo } from '@/app/guideInfo';
 import defaultMini from '@/assets/logo/aarc.svg'
 import { SaveDto } from '@/app/com/apiGenerated';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
+import { useUserInfoStore } from '@/app/globalStores/userInfo';
 
 const saveList = ref<WithIntroShow<SaveDto>[]>()
 const api = useApiStore();
 const { editorRoute } = useEditorsRoutesJump()
 const { pop } = useUniqueComponentsStore()
+const userInfoStore = useUserInfoStore()
 const props = defineProps<{
     uid?:string
 }>()
@@ -25,8 +27,13 @@ const uidNum = computed<number>(()=>{
     if(isNaN(uid)){
         return 0
     }
+    if(uid && userInfoStore.userInfo.id === uid){
+        //如果是当前登录用户的id，直接变成“我的”
+        return 0
+    }
     return uid
 })
+const isMine = computed<boolean>(()=>uidNum.value===0)
 watch(uidNum, load)
 
 const ownerName = ref<string>()
@@ -152,8 +159,9 @@ onMounted(async()=>{
 
 <template>
 <h1 v-if="ownerName" class="h1WithBtns">
-    {{ ownerName }}的存档
-    <div>
+    <span v-if="isMine">我的存档</span>
+    <span v-else><span class="ownerNameInH1">{{ ownerName }}</span>的存档</span>
+    <div v-if="isMine">
         <button @click="startCreating">新建</button>
     </div>
 </h1>
@@ -185,7 +193,7 @@ onMounted(async()=>{
             <div class="lastActive">{{ s.lastActive }}</div>
         </td>
         <td>
-            <button class="minor" @click="startEditingInfo(s)">信息设置</button>
+            <button v-if="isMine" class="minor" @click="startEditingInfo(s)">信息设置</button>
         </td>
     </tr>
     <tr v-if="saveList.length==0" style="color: #666; font-size: 16px;">
@@ -257,6 +265,11 @@ onMounted(async()=>{
 <style scoped lang="scss">
 @use '@/styles/itemIntro.scss';
 @use '@/styles/saveList.scss';
+
+.ownerNameInH1{
+    letter-spacing: normal;
+    margin-right: 0.1em;
+}
 
 .miniInSidebar{
     border-radius: 10px;
