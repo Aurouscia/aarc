@@ -96,6 +96,29 @@ export function useSideListShared(lineType:LineType){
         }
     }
 
+    function autoInitShowingGroup(){
+        const thisTypeLines = saveStore.getLinesByType(lineType)
+        //计算每个组的线路数量
+        const groupSize = new Map<number, number>()
+        thisTypeLines.forEach(x=>{
+            if(x.parent)
+                return //支线不算数
+            const xGroup = x.group ?? 0
+            const size = groupSize.get(xGroup) || 0
+            groupSize.set(xGroup, size+1)
+        })
+        //将线路数量最多的组设为当前显示的
+        let maxSize = 0
+        for(const e of groupSize.entries()){
+            if(e[1]>maxSize){
+                maxSize = e[1]
+                showingLineGroup.value = e[0]
+            }
+        }
+        //若为0，将其设为undefined（默认分组）
+        if(!showingLineGroup.value)
+            showingLineGroup.value = undefined
+    }
     function lineGroupCheck(){
         //若有线路组被删除，将其线路的group属性设为undefined
         //若当前显示的线路组被删除，将其设为undefined
@@ -135,7 +158,7 @@ export function useSideListShared(lineType:LineType){
         arrangingId, editingInfoLine, editInfoOfLine,
         createLine, 
         wantDelLine, delLineStart, delLineAbort, delLineExe,
-        showingLineGroup, lineGroupCheck, lineGroupsSelectable,
+        showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
         showingBtns, showingChildrenOf, showingChildrenOfInfo,
         showChildrenOf, leaveParent, childrenLines
     }

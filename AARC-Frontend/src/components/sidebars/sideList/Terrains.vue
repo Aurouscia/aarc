@@ -15,7 +15,7 @@ const {
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
     createLine, editingInfoLine, editInfoOfLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe,
-    showingLineGroup, lineGroupCheck, lineGroupsSelectable
+    showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup
 } = useSideListShared(LineType.terrain)
 
 const { getPresetNameByEnum, getPresetEnumByName, presets } = useColorPresetNames()
@@ -45,7 +45,8 @@ defineExpose({
     },
 })
 onMounted(()=>{
-    
+    //因为本组件在编辑器中始终存在，所以仅会执行一次
+    autoInitShowingGroup()
 })
 onUnmounted(()=>{
     disposeLinesArrange()

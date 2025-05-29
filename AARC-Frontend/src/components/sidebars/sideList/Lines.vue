@@ -20,7 +20,7 @@ const {
     arrangingId, editingInfoLine, editInfoOfLine,
     createLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe,
-    showingLineGroup, lineGroupCheck, lineGroupsSelectable,
+    showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
     showingBtns, showingChildrenOf, showingChildrenOfInfo,
     showChildrenOf, leaveParent, childrenLines
 } = useSideListShared(LineType.common)
@@ -42,7 +42,9 @@ defineExpose({
     }
 })
 onMounted(()=>{
+    //因为本组件在编辑器中始终存在，所以仅会执行一次
     showingBtns.value = 'children'
+    autoInitShowingGroup()
 })
 onUnmounted(()=>{
     disposeLinesArrange()
