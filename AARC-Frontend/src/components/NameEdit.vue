@@ -2,9 +2,11 @@
 import { useNameEditStore } from '@/models/stores/nameEditStore';
 import { storeToRefs } from 'pinia';
 import { useTwinTextarea } from './composables/useTwinTextarea';
+import { enableContextMenu, disableContextMenu } from '@/utils/eventUtils/contextMenu';
 import foldImg from '@/assets/ui/fold.svg'
 import settingsImg from '@/assets/ui/settings.svg'
 import ControlPointOptions from './sidebars/options/ControlPointOptions.vue';
+import { watch } from 'vue';
 
 const nameEditStore = useNameEditStore()
 const { nameMain, nameSub, editing, edited, nameEditorDiv, controlPointOptionsPanel } = storeToRefs(nameEditStore)
@@ -22,6 +24,13 @@ const {
     subMaxRow: 10,
     apply: nameEditStore.applyName,
     endEditing: nameEditStore.endEditing
+})
+watch(editing, newVal=>{
+    if(newVal){
+        enableContextMenu()
+    }else{
+        disableContextMenu()
+    }
 })
 </script>
 

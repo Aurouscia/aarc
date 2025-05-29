@@ -3,10 +3,11 @@ import { useTextTagEditStore } from '@/models/stores/textTagEditStore';
 import { storeToRefs } from 'pinia';
 import { useTwinTextarea } from './composables/useTwinTextarea';
 import TextTagOptions from './sidebars/options/TextTagOptions.vue';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useEnvStore } from '@/models/stores/envStore';
 import foldImg from '@/assets/ui/fold.svg'
 import settingsImg from '@/assets/ui/settings.svg'
+import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 
 const textTagEditStore = useTextTagEditStore()
 const envStore = useEnvStore()
@@ -35,6 +36,13 @@ const {
     subMaxRow: 10,
     apply: textTagEditStore.applyText,
     endEditing: textTagEditStore.endEditing
+})
+watch(editing, newVal=>{
+    if(newVal){
+        enableContextMenu()
+    }else{
+        disableContextMenu()
+    }
 })
 </script>
 
