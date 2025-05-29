@@ -34,6 +34,9 @@ onMounted(()=>{
     <div class="smallNote" style="text-align: center;">
         代码提交不代表实际运营情况，发布可能存在延迟。
     </div>
+    <div class="smallNote" style="text-align: center;">
+        本项目为滚动更新，无“版本号”概念
+    </div>
 </template>
 
 <style>
