@@ -10,10 +10,12 @@ import { UserListOrderBy, useUserListLocalConfigStore } from '@/app/localConfig/
 import { UserDto, UserType } from '@/app/com/apiGenerated';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
+import { useIdentitiesRoutesJump } from './routes/routesJump';
 
 const list = ref<WithIntroShow<UserDto>[]>()
 const api = useApiStore()
 const { someonesSavesRoute } = useSavesRoutesJump()
+const { loginRouteJump } = useIdentitiesRoutesJump()
 const { readOrderby, saveOrderby, defaultOrderby } = useUserListLocalConfigStore()
 const searchStr = ref<string>()
 const orderby = ref<UserListOrderBy>(defaultOrderby)
@@ -30,8 +32,10 @@ const editingUser = ref<UserDto>()
 const isCreatingUser = ref(false)
 const userInfoStore = useUserInfoStore()
 const { userInfo } = storeToRefs(userInfoStore)
+let originalNameAndPwd = ''
 function startEditing(u:UserDto){
     editingUser.value = u
+    originalNameAndPwd = summerizeNameAndPwd()
     sidebar.value?.extend()
 }
 async function doneEditing(){
@@ -45,9 +49,21 @@ async function doneEditing(){
     }
     if(success){
         pop?.show("操作成功", "success")
-        await loadList()
-        sidebar.value?.fold()
+        let newNameAndPwd = summerizeNameAndPwd()
+        if(newNameAndPwd !== originalNameAndPwd && userInfo.value?.id === editingUser.value.id){
+            pop?.show("请立即重新登录", "warning")
+            loginRouteJump()
+        }else{
+            await loadList()
+            sidebar.value?.fold()
+        }
     }
+}
+function summerizeNameAndPwd(){
+    return JSON.stringify({
+        name: editingUser.value?.name,
+        password: editingUser.value?.password
+    })
 }
 
 onMounted(async()=>{
@@ -59,7 +75,7 @@ onMounted(async()=>{
 <template>
 <h1 class="h1WithBtns">
     用户列表
-    <div style="flex-direction: column;align-items: flex-end;">
+    <div>
         <div>
             <button v-show="searchStr" class="lite" @click="searchStr=undefined;loadList()">清空搜索</button>
             <input v-model="searchStr" @blur="loadList" placeholder="搜索用户名称" style="width: 120px;"/>
@@ -124,7 +140,7 @@ onMounted(async()=>{
             <tr>
                 <td>密码</td>
                 <td>
-                    <input v-model="editingUser.password"/>
+                    <input v-model="editingUser.password" type="password" autocomplete="new-password"/>
                 </td>
             </tr>
             <tr v-if="!isCreatingUser">
@@ -146,12 +162,6 @@ onMounted(async()=>{
             <tr>
                 <td colspan="2">
                     <button @click="doneEditing">OK</button>
-                </td>
-            </tr>
-            <tr v-if="!isCreatingUser">
-                <td colspan="2" class="mediumNoteVital">
-                    更改名称/密码后立即重新登录一次<br/>
-                    让浏览器记住新密码
                 </td>
             </tr>
         </tbody>
