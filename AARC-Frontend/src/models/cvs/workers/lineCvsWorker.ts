@@ -17,6 +17,8 @@ import { getByIndexInRing, isRing, isRingByFormalPts } from "@/utils/lineUtils/i
 import { drawArcByThreePoints } from "@/utils/drawUtils/drawArc";
 import { CvsContext } from "../common/cvsContext";
 import { strokeStyledLine } from "../common/strokeStyledLine";
+import { rayToCoordDist } from "@/utils/rayUtils/rayToCoordDist";
+import { numberCmpEpsilon } from "@/utils/consts";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill:number}
 type LineRenderType = 'both'|'body'|'carpet'
@@ -256,6 +258,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         illIdxs.forEach(i=>{
             const thisSeg = segs[i]
             if(i>0 && i<segs.length-1){
+                //如果是中间段，让前后两段矫正它
                 const prevSeg = segs[i-1]
                 const nextSeg = segs[i+1]
                 const prevHelps = prevSeg.ill < thisSeg.ill
@@ -271,14 +274,22 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 }
             }
             else{
+                //如果是末端，让最近的一段矫正它
                 const func = (neibRef:Coord, share:Coord, thisRef:Coord|null, thisTip:Coord)=>{
                     const neibRay = twinPts2Ray(neibRef, share)
                     let thisRay:FormalRay;
                     if(!thisRef){
+                        //若区间内只有尖端一个点
+                        if(rayToCoordDist(neibRay, thisTip) < numberCmpEpsilon){
+                            //若尖端本就在邻近区间延长线的垂线上，什么都不做
+                            return
+                        }
+                        //尖端到邻近区间延长线的垂线，返回垂线交点
                         thisRay = {source:thisTip, way:[...neibRay.way]}
                         rayRotate90(thisRay)
                         return rayIntersect(neibRay, thisRay, true)
                     }else{
+                        //若本区间有尖端外其他点，且尖端到该点延长线与邻近区间延长线垂直，返回交点
                         thisRay = twinPts2Ray(thisRef, share)
                         thisRay.source = thisTip
                         if(rayPerpendicular(neibRay, thisRay)){
