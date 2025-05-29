@@ -7,12 +7,11 @@ import { useConfigStore } from '@/models/stores/configStore';
 import { storeToRefs } from 'pinia';
 import { clamp } from '@/utils/lang/clamp';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
+import { enableContextMenu, disableContextMenu } from '@/utils/eventUtils/contextMenu';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import TextTagConfig from './configs/TextTagConfig.vue';
 import LineGroupConfig from './configs/LineGroupConfig.vue';
 import LineStylesConfig from './configs/LineStylesConfig.vue';
-//import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
-//import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
@@ -102,7 +101,7 @@ defineExpose({
 </script>
 
 <template>
-<SideBar ref="sidebar" :enforce-y-scroll="true">
+<SideBar ref="sidebar" @extend="enableContextMenu()" @fold="disableContextMenu()" :enforce-y-scroll="true">
 <LineStylesConfig></LineStylesConfig>
 
 <LineGroupConfig></LineGroupConfig>

@@ -9,6 +9,7 @@ import LineDelPrompt from './shared/LineDelPrompt.vue';
 import LineItemBtns from './shared/LineItemBtns.vue';
 import Switch from '@/components/common/Switch.vue';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 
 defineProps<{isChildrenList?:boolean}>()
 const { pop } = useUniqueComponentsStore()
@@ -49,7 +50,8 @@ onUnmounted(()=>{
 
 <template>
     <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList" :body-no-position="true"
-        @extend="registerLinesArrange();lineGroupCheck()" @fold="disposeLinesArrange" @click="clickContainer">
+        @extend="registerLinesArrange();lineGroupCheck();enableContextMenu()"
+        @fold="disposeLinesArrange();disableContextMenu()" @click="clickContainer">
         <div class="filter">
             <select v-if="!isChildrenList" v-model="showingLineGroup">
                 <option :value="undefined">默认分组</option>

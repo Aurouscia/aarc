@@ -8,6 +8,7 @@ import { AuColorPickerPresetsNested } from '@aurouscia/au-color-picker';
 import { useColorPresetNames } from './shared/useColorPresetNames';
 import LineDelPrompt from './shared/LineDelPrompt.vue';
 import LineItemBtns from './shared/LineItemBtns.vue';
+import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 
 const { 
     sidebar, lineOptions, lines: terrains, envStore,
@@ -50,7 +51,8 @@ onUnmounted(()=>{
 
 <template>
     <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList" :body-no-position="true"
-    @extend="registerLinesArrange();lineGroupCheck()" @fold="disposeLinesArrange" @click="clickContainer">
+    @extend="registerLinesArrange();lineGroupCheck();enableContextMenu()"
+    @fold="disposeLinesArrange();disableContextMenu()" @click="clickContainer">
         <div class="filter">
             <select v-model="showingLineGroup">
                 <option :value="undefined">默认分组</option>
