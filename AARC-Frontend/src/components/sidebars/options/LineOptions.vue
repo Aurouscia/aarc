@@ -110,7 +110,7 @@ onMounted(()=>{
 <SideBar ref="sidebar" @extend="init">
 <h1>线路更多设置</h1>
 <div class="lineConfig">
-    <table class="fullWidth"><tbody>
+    <table v-if="!line.parent" class="fullWidth"><tbody>
     <tr>
         <td colspan="2">
             {{ line.name || '未命名线路' }}
@@ -242,6 +242,19 @@ onMounted(()=>{
             <button v-if="selectedForParentAssignment" @click="assignParent">归为选中线路的支线</button>
         </td>
     </tr>
+    </tbody></table>
+    <table v-else class="fullWidth"><tbody>
+        <tr>
+            <td>标签<br/>创建</td>
+            <td>
+                <button @click="envStore.createTextTag(line.id)">
+                    点击创建
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" class="mediumNote">本线路为支线，不能单独设置<br/>请对其所属的主线进行设置</td>
+        </tr>
     </tbody></table>
 </div>
 </SideBar>
