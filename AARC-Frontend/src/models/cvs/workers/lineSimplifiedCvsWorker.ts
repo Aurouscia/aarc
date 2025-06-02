@@ -27,8 +27,8 @@ export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker',
             formalizedLines.push({lineId, pts})
         })
         const targets:{lineInfo:Line, pts:FormalPt[]}[] = []
-        //按照saveStore.save?.lines的顺序渲染（这个顺序一直都是对的）
-        saveStore.save?.lines.forEach(line=>{
+        //按照saveStore.linesSortedByZIndex的顺序渲染（这个顺序一直都是对的）
+        saveStore.linesSortedByZIndex.forEach(line=>{
             const pts = formalizedLines.find(x=>x.lineId === line.id)?.pts
             if(pts)
                 targets.push({lineInfo:line, pts}) 
