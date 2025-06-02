@@ -12,6 +12,7 @@ import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import TextTagConfig from './configs/TextTagConfig.vue';
 import LineGroupConfig from './configs/LineGroupConfig.vue';
 import LineStylesConfig from './configs/LineStylesConfig.vue';
+import EditorConfig from './configs/EditorConfig.vue';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
@@ -143,6 +144,8 @@ defineExpose({
 </tbody></table>
 
 <TextTagConfig></TextTagConfig>
+
+<EditorConfig></EditorConfig>
 
 <h2 :class="{sectorShown:showBgRefImage}" @click="showBgRefImage =!showBgRefImage">
     <div class="shownStatusIcon">{{ showBgRefImage? '×':'+' }}</div>

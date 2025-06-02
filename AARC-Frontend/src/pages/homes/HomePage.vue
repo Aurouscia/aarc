@@ -33,12 +33,9 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-5-29更新'">
-        1. 支线整理（同系统的线不会互相遮挡）<br/>
-        2. 修复“某人的存档”页无法切换到“我的存档”页的问题<br/>
-        3. 允许未登录访客查看他人作品列表<br/>
-        4. 修复编辑器内输入框无法复制粘贴的问题<br/>
-        5. 线路列表初始显示线路最多的组
+    <Notice :type="'info'" :title="'2025-6-2更新'">
+        1. 修复略缩图中层级异常的问题<br/>
+        2. 添加“编辑器-站名糊弄机制”设置选项（性能优化）如果感觉不爽可以关掉，感觉爽可以尝试开更大
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">
         1. 指定线路导出<br/>

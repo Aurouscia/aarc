@@ -1,36 +1,29 @@
 import { defineStore } from "pinia";
 import { LocalConfig } from "./common/localConfig";
-//import { useBrowserInfoStore } from "../globalStores/browserInfo";
 import { ref } from "vue";
 
-export type ResolutionType = 'standard'|'high'|'ultra'
 class EditorLocalConfig extends LocalConfig{
     protected storageSectorName() { return 'editor'}
-    private readonly resolutionKey = 'resolution'
-    readResolution(){
-        return this.readLocalConfig(this.resolutionKey) as ResolutionType|null
+    private readonly staNameFobKey = 'staNameFob'
+    readStaNameFob(){
+        return parseFloat(this.readLocalConfig(this.staNameFobKey) || '') || 0
     }
-    saveResolution(rtype:ResolutionType|null){
-        rtype = rtype||'standard'
-        this.saveLocalConfig(this.resolutionKey, rtype)
+    saveStaNameFob(fob:number|string){
+        if(typeof fob === 'string')
+            fob = parseFloat(fob) || 0
+        if(fob < 0)
+            fob = 0
+        this.saveLocalConfig(this.staNameFobKey, fob.toString())
+        return fob
     }
 }
 
 export const useEditorLocalConfigStore = defineStore('editorLocalConfig',()=>{
-    //const browserInfoStore = useBrowserInfoStore()
     const cfg = new EditorLocalConfig()
-    const resolution = ref(readResolution())
-    function readResolution(){
-        let readRes = cfg.readResolution()
-        // if(!readRes){
-        //     readRes = browserInfoStore.isWindows ? 'high':'standard'  //windows下默认高分辨率写入
-        //     cfg.saveResolution(readRes)
-        // }
-        return readRes || 'standard'
-    }
+    const staNameFob = ref(cfg.readStaNameFob())
     return {
-        readResolution,
-        saveResolution:()=>cfg.saveResolution(resolution.value),
-        resolution
+        staNameFob,
+        readStaNameFob: ()=>cfg.readStaNameFob(),
+        saveStaNameFob: (fob:number|string)=>{staNameFob.value = cfg.saveStaNameFob(fob)}
     }
 })

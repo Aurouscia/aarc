@@ -11,9 +11,10 @@ import { useCvsBlocksControlStore } from "../common/cvs";
 import { Coord } from "@/models/coord";
 import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
 import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
+import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
 
 //糊弄阈值
-const staNameFobThrs = 0.000001
+const staNameFobThrsBase = 0.000001
 
 export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
     const saveStore = useSaveStore()
@@ -21,6 +22,7 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
     const staNameMainRectStore = useStaNameMainRectStore()
     const cvsBlocksControlStore = useCvsBlocksControlStore()
     const staClusterStore = useStaClusterStore()
+    const editorLocalConfigStore = useEditorLocalConfigStore()
     const cs = useConfigStore()
     const cvsFrameStore = useCvsFrameStore()
     let viewRectArea = 0
@@ -52,7 +54,8 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
         if(!noOmit){
             //决定要不要糊弄
             const rowToAreaRatio = rowHeight / viewRectArea
-            const fob = rowToAreaRatio < staNameFobThrs
+            const thrs = staNameFobThrsBase * (editorLocalConfigStore.staNameFob || 1)
+            const fob = rowToAreaRatio < thrs
             if(fob){
                 const rect = staNameMainRectStore.getStaNameMainRect(pt.id)
                 if(rect){
