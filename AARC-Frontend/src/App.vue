@@ -4,14 +4,18 @@ import Wait from './components/common/Wait.vue';
 import { useUniqueComponentsStore } from './app/globalStores/uniqueComponents';
 import { storeToRefs } from 'pinia';
 import TopbarParent from './components/common/topbar/TopbarParent.vue';
+import Footer from './components/common/Footer.vue';
 
 const { pop, wait, topbarShow } = storeToRefs(useUniqueComponentsStore())
 </script>
 
 <template>
 <TopbarParent v-if="topbarShow"></TopbarParent>
-<div class="main">
-    <RouterView></RouterView>
+<div class="mainOuter">
+    <div class="main">
+        <RouterView></RouterView>
+        <Footer v-if="topbarShow"></Footer>
+    </div>
 </div>
 <Pop ref="pop"></Pop>
 <Wait ref="wait"></Wait>
@@ -20,10 +24,19 @@ const { pop, wait, topbarShow } = storeToRefs(useUniqueComponentsStore())
 <style scoped lang="scss">
 @use '@/styles/globalValues';
 
+.mainOuter{
+    width: 100vw;
+    position: fixed;
+    top: globalValues.$topbar-height;
+    height: globalValues.$body-height;
+    transition: 0s;
+    overflow: auto;
+}
+
 .main{
     width: calc(100vw - 2 * globalValues.$mainDivLRMargin);
     margin: auto;
-    padding-top: globalValues.$topbar-height;
+    margin-top: 0px;
     height: globalValues.$body-height;
     box-sizing: border-box;
     max-width: 1400px;
