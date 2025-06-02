@@ -18,7 +18,8 @@ export interface DrawTextStrokeOption{
 }
 export function drawText(
     ctx:CvsContext, pos:Coord, align:SgnCoord, textAlignOverride: SgnNumber|undefined,
-    main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false, task:'draw'|'measure'|'both' = 'both'): RectCoord|undefined
+    main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false, task:'draw'|'measure'|'both' = 'both'
+    ): {rectFull:RectCoord, rectMain:RectCoord}|undefined
 {
     const [x, y] = pos
     const [xSgn, ySgn] = align
@@ -67,7 +68,8 @@ export function drawText(
     enumerateMainLines(()=>{})
     enumerateSubLines(()=>{})
 
-    const biggestWidth = Math.max(...mainMeasures.map(x=>x.m.width), ...subMeasures.map(x=>x.m.width))
+    const mainWidth = Math.max(...mainMeasures.map(x=>x.m.width))
+    const biggestWidth = Math.max(mainWidth, ...subMeasures.map(x=>x.m.width))
     let xOffset = 0
     if(typeof textAlignOverride === 'number'){
         ctx.textAlign = getTextAlign(textAlignOverride)
@@ -111,7 +113,12 @@ export function drawText(
     })
 
     if(needMeasure){
-        return getRect(x, y, xSgn, ySgn, biggestWidth, totalHeight)
+        const rectFull = getRect(x, y, xSgn, ySgn, biggestWidth, totalHeight)
+        const rectMain = getMainRectByFullRect(rectFull, xSgn, biggestWidth, mainWidth, totalHeight, mainHeight)
+        return {
+            rectFull,
+            rectMain
+        }
     }
 }
 
@@ -127,7 +134,10 @@ export function drawTextForLineName(
     if(!subText || !match || match.length===0)
     {
         //如果不是需要dropCap的线路名，则fallback到一般的写法
-        return {isDropCap:false, rect:drawText(ctx, pos, align, textAlignOverride, main, sub, stroke, task)}
+        return {
+            isDropCap:false,
+            rect:drawText(ctx, pos, align, textAlignOverride, main, sub, stroke, task)?.rectFull
+        }
     }
     const needDraw = task === 'draw' || task === 'both'
     const needMeasure = task === 'measure' || task === 'both'
@@ -231,6 +241,23 @@ function getRect(x:number, y:number, xSgn:SgnNumber, ySgn:number, biggestWidth:n
     const rightLower:Coord = [rightMost, yTop+totalHeight]
     const rect:RectCoord = [leftUpper, rightLower]
     return rect
+}
+function getMainRectByFullRect(
+    rect:RectCoord, xSgn:SgnNumber, 
+    fullWidth:number, mainWidth:number, fullHeight:number, mainHeight:number){
+    const mainRect:RectCoord = [[...rect[0]], [...rect[1]]]
+    const widthDiff = fullWidth - mainWidth
+    const heightDiff = fullHeight - mainHeight
+    if(xSgn == -1){
+        mainRect[0][0] += widthDiff
+    }else if(xSgn == 0){
+        mainRect[0][0] += widthDiff/2
+        mainRect[1][0] -= widthDiff/2
+    }else{
+        mainRect[1][0] -= widthDiff
+    }
+    mainRect[1][1] -= heightDiff
+    return mainRect
 }
 
 type ActualBaselineResult = {shouldUseY:number, m:TextMetricsSelected}

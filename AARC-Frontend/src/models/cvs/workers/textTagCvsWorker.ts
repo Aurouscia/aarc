@@ -140,7 +140,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         }, 'both')
         if(drawTextResRect){
             const rect = drawTextResRect
-            textTagRectStore.setTextTagRect(t.id, rect)
+            textTagRectStore.setTextTagRect(t.id, rect.rectFull)
         }
     }
     function getFontSize(textOptions:TextOptions|undefined, fallback:number):number{

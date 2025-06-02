@@ -1,6 +1,6 @@
 import { ControlPoint } from "@/models/save";
 import { useConfigStore } from "@/models/stores/configStore";
-import { useStaNameRectStore } from "@/models/stores/saveDerived/staNameRectStore";
+import { useStaNameMainRectStore, useStaNameRectStore } from "@/models/stores/saveDerived/staNameRectStore";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { coordAdd, coordTwinShrink } from "@/utils/coordUtils/coordMath";
 import { drawText } from "@/utils/drawUtils/drawText";
@@ -10,17 +10,26 @@ import { CvsContext } from "../common/cvsContext";
 import { useCvsBlocksControlStore } from "../common/cvs";
 import { Coord } from "@/models/coord";
 import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
+import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
+
+//糊弄阈值
+const staNameFobThrs = 0.000001
 
 export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const staNameRectStore = useStaNameRectStore()
+    const staNameMainRectStore = useStaNameMainRectStore()
     const cvsBlocksControlStore = useCvsBlocksControlStore()
     const staClusterStore = useStaClusterStore()
     const cs = useConfigStore()
+    const cvsFrameStore = useCvsFrameStore()
+    let viewRectArea = 0
     function renderAllPtName(ctx:CvsContext, needReportRectPts?:number[], noOmit?:boolean){
         if(!saveStore.save)
             return;
         const pts = saveStore.save.points;
+        const viewRect = cvsFrameStore.getViewRectSideLengths()
+        viewRectArea = viewRect[0] * viewRect[1]
         pts.forEach(pt=>{
             const needReportRect = !needReportRectPts || needReportRectPts.includes(pt.id)
             renderPtName(ctx, pt, needReportRect, undefined, noOmit)
@@ -37,9 +46,28 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
         const globalPos = coordAdd(pt.pos, pt.nameP)
         if((!noOmit && checkOmittable(globalPos)))
             return
-        const align = sgnCoord(pt.nameP)
-        //优先使用pt内设置的值，若pt内的值为undefined或0，再去找cluster内最大的
+        //字体大小：优先使用pt内设置的值，若pt内的值为undefined或0，再去找cluster内最大的
         const fontSizeRatio = Number(pt.nameSize) || staClusterStore.getMaxSizePtWithinCluster(pt.id, 'ptNameSize')
+        const rowHeight = cs.config.staNameRowHeight * fontSizeRatio
+        if(!noOmit){
+            //决定要不要糊弄
+            const rowToAreaRatio = rowHeight / viewRectArea
+            const fob = rowToAreaRatio < staNameFobThrs
+            if(fob){
+                const rect = staNameMainRectStore.getStaNameMainRect(pt.id)
+                if(rect){
+                    let oriAlpha = ctx.globalAlpha || 1
+                    ctx.globalAlpha = 0.4
+                    ctx.fillStyle = '#666'
+                    const width = rect[1][0] - rect[0][0]
+                    const height = rect[1][1] - rect[0][1]
+                    ctx.fillRect(...rect[0], width, height)
+                    ctx.globalAlpha = oriAlpha
+                    return
+                }
+            }
+        }
+        const align = sgnCoord(pt.nameP)
         const ptSizeRatio = staClusterStore.getMaxSizePtWithinCluster(pt.id, 'ptSize')
         const ptRadius = ptSizeRatio * cs.config.ptStaSize
 
@@ -55,7 +83,7 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             ctx.stroke()
         }
 
-        const rect = drawText(ctx, globalPos, align, undefined, {
+        const rects = drawText(ctx, globalPos, align, undefined, {
             text: pt.name,
             color: cs.config.staNameColor,
             font: cs.config.staNameFont,
@@ -74,8 +102,9 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             opacity: 0.8
         }, needReportRect ? 'both' : 'draw')
 
-        if(rect){
-            staNameRectStore.setStaNameRects(pt.id, rect)
+        if(rects){
+            staNameRectStore.setStaNameRect(pt.id, rects.rectFull)
+            staNameMainRectStore.setStaNameMainRect(pt.id, rects.rectMain)
         }
 
         if(markRoot){

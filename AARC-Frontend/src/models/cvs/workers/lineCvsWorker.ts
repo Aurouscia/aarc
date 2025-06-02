@@ -69,7 +69,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             if(pts.length<=1)
                 return;
             const needReportFormalPts = !needReportFormalPtsLines || needReportFormalPtsLines.includes(l.id)
-            const formalPts = formalize(pts) //TODO: needReportFormalPts为false时可以跳过这步
+            const formalPts = formalize(pts) //TODO: needReportFormalPts参数可以不要，即使跳过了formalize也几乎没有优化
             if(needReportFormalPts){
                 formalizedLineStore.setLinesFormalPts(l.id, formalPts)
             }

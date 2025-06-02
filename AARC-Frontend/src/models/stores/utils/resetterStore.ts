@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { useFormalizedLineStore } from '../saveDerived/formalizedLineStore'
-import { useStaNameRectStore } from "../saveDerived/staNameRectStore";
+import { useStaNameMainRectStore, useStaNameRectStore } from "../saveDerived/staNameRectStore";
 import { useTextTagRectStore } from "../saveDerived/textTagRectStore";
 import { useLineExtendStore } from "../saveDerived/saveDerivedDerived/lineExtendStore";
 import { useCvsBlocksControlStore } from "@/models/cvs/common/cvs";
@@ -13,6 +13,7 @@ export const useResetterStore = defineStore('resetter', ()=>{
     const needClearItemsStoreUses:(()=>{clearItems:()=>void})[] = [
         useFormalizedLineStore,
         useStaNameRectStore,
+        useStaNameMainRectStore,
         useTextTagRectStore,
         useLineExtendStore,
         useCvsBlocksControlStore,

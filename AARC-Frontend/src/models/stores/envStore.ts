@@ -55,7 +55,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const snapStore = useSnapStore()
     const { snap, snapName, snapNameStatus, snapGrid } = snapStore
     const { setLinesFormalPts } = useFormalizedLineStore()
-    const { setStaNameRects } = useStaNameRectStore()
+    const { setStaNameRect } = useStaNameRectStore()
     const { onPt, onLine, onStaName, onLineExtendBtn, onTextTag } = useOnDetectStore()
     const { removeLineExtendBtn } = useLineExtendStore()
     const discardAreaStore = useDiscardAreaStore()
@@ -371,7 +371,7 @@ export const useEnvStore = defineStore('env', ()=>{
                         pt.name = undefined
                         pt.nameS = undefined 
                         pt.nameP = undefined
-                        setStaNameRects(pt.id, undefined)
+                        setStaNameRect(pt.id, undefined)
                         nameEditStore.targetPtId = transferRes.id
                         activePt.value = transferRes
                         pt = transferRes
@@ -503,7 +503,7 @@ export const useEnvStore = defineStore('env', ()=>{
         const rmPtCb = ()=>{
             if(activePt.value){
                 saveStore.removePt(activePt.value.id);
-                setStaNameRects(activePt.value.id, undefined);
+                setStaNameRect(activePt.value.id, undefined);
             }
             activePt.value = undefined
             activeLine.value = undefined

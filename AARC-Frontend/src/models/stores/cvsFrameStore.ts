@@ -48,8 +48,8 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         }
         return 1
     }
-    function getViewRectBiggerSideLength(){
-        //当前屏幕上显示的最大边长(像素数)
+    function getViewRectSideLengths():[number, number]{
+        //当前屏幕上显示的边长(像素数)
         const wf = cvsFrame.value?.clientWidth || 0
         const hf = cvsFrame.value?.clientHeight || 0
         const wc = cvsCont.value?.clientWidth || 0
@@ -58,7 +58,10 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         const hr = hf/hc
         const wpx = wr*cvsWidth.value
         const hpx = hr*cvsHeight.value
-        return Math.max(wpx, hpx)
+        return [wpx, hpx]
+    }
+    function getViewRectBiggerSideLength(){
+        return Math.max(...getViewRectSideLengths())
     }
     function updateScaleLock(){
         const cw = cvsCont.value?.clientWidth || 0
@@ -141,7 +144,7 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     }
     return {
         cvsFrame, cvsCont, initScaler,
-        getDisplayRatio, getViewRectBiggerSideLength,
+        getDisplayRatio, getViewRectSideLengths, getViewRectBiggerSideLength,
         getViewCenterOffset, getViewRectInRatio,
         updateScaleLock,
         translateFromOffset, translateFromClient,
