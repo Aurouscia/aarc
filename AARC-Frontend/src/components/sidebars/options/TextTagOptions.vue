@@ -78,6 +78,16 @@ defineExpose({
                         </select>
                     </td>
                 </tr>
+                <tr v-if="editing.forId">
+                    <td>宽度</td>
+                    <td>
+                        <div class="viewableRange">
+                            <input type="range" v-model="editing.width" :min="0" :max="300" :step="10" @change="emit('changed')"/>
+                            <input type="number" v-model="editing.width" :step="10" @change="emit('changed')"/>
+                            <div class="smallNote">如果短于指定宽度，将会拉长</div>
+                        </div>
+                    </td>
+                </tr>
             </tbody></table>
         </div>
         <h2>主文字样式</h2>

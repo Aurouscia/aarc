@@ -57,7 +57,8 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             text: !subEmpty ? t.textS?.trim() : lineInfo.nameSub
         }
         const lineNameRectAlign:SgnCoord = [1, 0]
-        const drawLineNameRes = drawTextForLineName(ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, false, 'measure')
+        const drawLineNameRes = drawTextForLineName(
+            ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, false, 'measure', t.width)
         if(drawLineNameRes?.rect){
             const rect = drawLineNameRes.rect
             const lu = rect[0]

@@ -254,7 +254,8 @@ export const devSave:Save = {
         {
             id: 1002,
             forId: 103,
-            pos: [100,300]
+            pos: [100,300],
+            width: 180
         },
         {
             id: 1003,

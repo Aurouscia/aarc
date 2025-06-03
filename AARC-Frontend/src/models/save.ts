@@ -110,6 +110,7 @@ export interface TextTag{
     textSOp?:TextOptions
     padding?:number
     textAlign?:SgnNumber
+    width?:number
     //rot?:FormalRotation
 }
 export interface TextOptions{

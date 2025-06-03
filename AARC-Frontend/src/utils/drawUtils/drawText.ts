@@ -18,7 +18,8 @@ export interface DrawTextStrokeOption{
 }
 export function drawText(
     ctx:CvsContext, pos:Coord, align:SgnCoord, textAlignOverride: SgnNumber|undefined,
-    main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false, task:'draw'|'measure'|'both' = 'both'
+    main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false,
+    task:'draw'|'measure'|'both' = 'both', width?:number
     ): {rectFull:RectCoord, rectMain:RectCoord}|undefined
 {
     const [x, y] = pos
@@ -115,6 +116,10 @@ export function drawText(
     if(needMeasure){
         const rectFull = getRect(x, y, xSgn, ySgn, biggestWidth, totalHeight)
         const rectMain = getMainRectByFullRect(rectFull, xSgn, biggestWidth, mainWidth, totalHeight, mainHeight)
+        if(width){
+            //如果指定了宽度，将矩形的宽度调整为指定宽度
+            enlargeRectToWidth(rectFull, xSgn, width)
+        }
         return {
             rectFull,
             rectMain
@@ -125,7 +130,8 @@ export function drawText(
 const chineseStyleDropCapPattern = /^[0-9a-zA-Z]{1,3}(?=\s?号?环?线$)/
 export function drawTextForLineName(
     ctx:CvsContext, pos:Coord, align:SgnCoord, textAlignOverride:SgnNumber|undefined,
-    main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false, task:'draw'|'measure'|'both' = 'both'):
+    main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false,
+    task:'draw'|'measure'|'both' = 'both', width?:number):
     {isDropCap:boolean, rect:RectCoord|undefined}|undefined
 {
     const mainText = main.text?.trim() || ''
@@ -136,7 +142,7 @@ export function drawTextForLineName(
         //如果不是需要dropCap的线路名，则fallback到一般的写法
         return {
             isDropCap:false,
-            rect:drawText(ctx, pos, align, textAlignOverride, main, sub, stroke, task)?.rectFull
+            rect:drawText(ctx, pos, align, textAlignOverride, main, sub, stroke, task, width)?.rectFull
         }
     }
     const needDraw = task === 'draw' || task === 'both'
@@ -195,7 +201,16 @@ export function drawTextForLineName(
         ctx.fillText(subText, subX, subY)
     }
     if(needMeasure){
-        return {isDropCap: true, rect: getRect(x, y, xSgn, ySgn, totalWidth, totalHeight)}
+        const rect = getRect(x, y, xSgn, ySgn, totalWidth, totalHeight)
+        if(width){
+            //如果指定了宽度，将矩形的宽度调整为指定宽度
+            //在dropCap的情况下，此处的xSgn固定为1（向右加大）
+            enlargeRectToWidth(rect, 1, width)
+        }
+        return {
+            isDropCap: true,
+            rect
+        }
     }
 }
 
@@ -258,6 +273,22 @@ function getMainRectByFullRect(
     }
     mainRect[1][1] -= heightDiff
     return mainRect
+}
+function enlargeRectToWidth(rect:RectCoord, xSgn:SgnNumber, width:number):void{
+    //若rect的宽度小于width，则放大rect到指定宽度（以xSgn指定的方向）
+    const widthDiff = width - (rect[1][0] - rect[0][0])
+    if(widthDiff <= 0)
+        return
+    if(xSgn == -1){
+        rect[0][0] -= widthDiff 
+    }
+    else if(xSgn == 0){
+        rect[0][0] -= widthDiff/2
+        rect[1][0] += widthDiff/2 
+    }
+    else{
+        rect[1][0] += widthDiff 
+    }
 }
 
 type ActualBaselineResult = {shouldUseY:number, m:TextMetricsSelected}
