@@ -16,6 +16,8 @@ function startEditing(tag: TextTag) {
     editing.value = tag
     if(tag.forId && tag.padding === undefined)
         tag.padding = 0
+    if(tag.forId && tag.width === undefined)
+        tag.width = 0
     if(!tag.textOp) 
         tag.textOp = { size:0, color: cs.config.textTagFontColorHex }
     if(!tag.textSOp)
@@ -68,12 +70,36 @@ defineExpose({
                         </div>
                     </td>
                 </tr>
-                <tr v-if="!editing.forId">
+                <tr>
+                    <td>横向<br/>锚点</td>
+                    <td>
+                        <select v-model="editing.anchorX" @change="emit('changed')">
+                            <option :value="undefined">默认</option>
+                            <option :value="1">左侧</option>
+                            <option :value="0">中心</option>
+                            <option :value="-1">右侧</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>纵向<br/>锚点</td>
+                    <td>
+                        <select v-model="editing.anchorY" @change="emit('changed')">
+                            <option :value="undefined">默认</option>
+                            <option :value="1">顶部</option>
+                            <option :value="0">中心</option>
+                            <option :value="-1">底部</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
                     <td>文字<br/>对齐</td>
                     <td>
                         <select v-model="editing.textAlign" @change="emit('changed')">
+                            <option :value="undefined">默认</option>
+                            <option :value="null">跟随横向锚点</option>
                             <option :value="1">靠左</option>
-                            <option :value="undefined">居中</option>
+                            <option :value="0">居中</option>
                             <option :value="-1">靠右</option>
                         </select>
                     </td>
@@ -84,8 +110,27 @@ defineExpose({
                         <div class="viewableRange">
                             <input type="range" v-model="editing.width" :min="0" :max="300" :step="10" @change="emit('changed')"/>
                             <input type="number" v-model="editing.width" :step="10" @change="emit('changed')"/>
-                            <div class="smallNote">如果短于指定宽度，将会拉长</div>
+                            <div class="smallNote">如果短于指定宽度<br/>将会向锚点对侧拉长</div>
+                            <div class="smallNote">设为0使用默认值</div>
                         </div>
+                    </td>
+                </tr>
+                <tr v-if="editing.forId">
+                    <td>数字<br/>放大</td>
+                    <td>
+                        <select v-model="editing.dropCap" @change="emit('changed')">
+                            <option :value="undefined">默认</option>
+                            <option :value="true">开启</option>
+                            <option :value="false">关闭</option>
+                        </select>
+                        <div class="smallNote">若字母数字+"线"结尾</div>
+                        <div class="smallNote">将会无视文字对齐</div>
+                    </td>
+                </tr>
+                <tr v-if="editing.forId">
+                    <td colspan="2" class="smallNote">
+                        以上设置均可在“设置”侧栏中<br/>
+                        定义全局默认值
                     </td>
                 </tr>
             </tbody></table>

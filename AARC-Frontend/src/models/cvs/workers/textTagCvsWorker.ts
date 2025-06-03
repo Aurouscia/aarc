@@ -9,6 +9,7 @@ import { drawText, DrawTextBodyOption, drawTextForLineName } from "@/utils/drawU
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { enlargeRect } from "@/utils/coordUtils/coordRect";
+import { TextTagPerTypeGlobalConfig } from "@/models/config";
 
 export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     const saveStore = useSaveStore()
@@ -56,9 +57,10 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             rowHeight: cs.config.textTagSubRowHeightBase * subRatio,
             text: !subEmpty ? t.textS?.trim() : lineInfo.nameSub
         }
-        const lineNameRectAlign:SgnCoord = [1, 0]
+        const { anchor, textAlign, width } = getParams(cs.config.textTagForLine, t)
+        const dropCap = t.dropCap ?? cs.config.textTagForLineDropCap
         const drawLineNameRes = drawTextForLineName(
-            ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, false, 'measure', t.width)
+            ctx, t.pos, anchor, textAlign, optMain, optSub, false, 'measure', width, dropCap)
         if(drawLineNameRes?.rect){
             const rect = drawLineNameRes.rect
             const lu = rect[0]
@@ -73,7 +75,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
                 ctx.lineWidth = paddingLineWidth
                 ctx.strokeRect(...lu, ...wh)
             }
-            drawTextForLineName(ctx, t.pos, lineNameRectAlign, 0, optMain, optSub, false, 'draw')
+            drawTextForLineName(ctx, t.pos, anchor, textAlign, optMain, optSub, false, 'draw', width, dropCap)
             const rectEnlarged = enlargeRect(rect, paddingValue)
             textTagRectStore.setTextTagRect(t.id, rectEnlarged)
         }
@@ -101,8 +103,8 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             rowHeight: cs.config.textTagSubRowHeightBase * subRatio,
             text: !subEmpty ? t.textS?.trim() : lineInfo.nameSub
         }
-        const lineNameRectAlign:SgnCoord = [0, 0]
-        const drawLineNameRes = drawTextForLineName(ctx, t.pos, lineNameRectAlign, undefined, optMain, optSub, {
+        const { anchor, textAlign } = getParams(cs.config.textTagForTerrain, t)
+        const drawLineNameRes = drawTextForLineName(ctx, t.pos, anchor, textAlign, optMain, optSub, {
             width: cs.config.textTagFontSizeBase * mainRatio/4,
             color: terrainColor,
             opacity: 1
@@ -133,8 +135,8 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             rowHeight: cs.config.textTagSubRowHeightBase * subRatio,
             text: !subEmpty ? t.textS?.trim(): 'Empty TextTag'
         }
-        const lineNameRectAlign:SgnCoord = [0, 0]
-        const drawTextResRect = drawText(ctx, t.pos, lineNameRectAlign, t.textAlign, optMain, optSub, {
+        const { anchor, textAlign } = getParams(cs.config.textTagPlain, t)
+        const drawTextResRect = drawText(ctx, t.pos, anchor, textAlign, optMain, optSub, {
             width: cs.config.textTagFontSizeBase * mainRatio/4,
             color: cs.config.bgColor,
             opacity: 1
@@ -169,6 +171,27 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         if(val > 16)
             val = 16
         return val || fallback
+    }
+    function getParams(config:TextTagPerTypeGlobalConfig, options:TextTag){
+        const anchorX = options.anchorX ?? config.anchorX ?? 0
+        const anchorY = options.anchorY ?? config.anchorY ?? 0
+        const anchor:SgnCoord = [anchorX, anchorY]
+
+        const width = Number(options.width) || Number(config.width) || 0
+        
+        //textAlign全局设置为undefined其实指的是默认值null(跟随anchorX)
+        const globalTextAlignMean = config.textAlign ?? null 
+
+        //仅在options为undefined时使用全局设置，null也是个有效值(跟随anchorX)
+        let textAlign = options.textAlign===undefined ? globalTextAlignMean : options.textAlign
+        
+        if(textAlign === null)
+            textAlign = anchorX //textAlign为null指的是跟随anchorX
+        return{
+            anchor,
+            textAlign,
+            width
+        }
     }
     return { renderAllTextTags, renderOneTextTag }
 })

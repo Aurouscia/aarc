@@ -109,8 +109,11 @@ export interface TextTag{
     textOp?:TextOptions
     textSOp?:TextOptions
     padding?:number
-    textAlign?:SgnNumber
+    textAlign?:SgnNumber|null //undefined表示“使用全局设置”，null表示“跟随anchorX”
     width?:number
+    anchorX?:SgnNumber
+    anchorY?:SgnNumber
+    dropCap?:boolean
     //rot?:FormalRotation
 }
 export interface TextOptions{

@@ -1,4 +1,5 @@
 import { AllKeysOptional } from "@/utils/type/AllKeysOptional"
+import { SgnNumber } from "./coord"
 
 export interface Config{
     bgColor: string,
@@ -60,7 +61,10 @@ export interface Config{
     textTagSubRowHeightBase: number,
     textTagPlain:TextTagPerTypeGlobalConfig,
     textTagForLine:TextTagPerTypeGlobalConfig,
+    textTagForLineDropCap:boolean
     textTagForTerrain:TextTagPerTypeGlobalConfig
+
+    configVersion:number
 }
 export type LineWidthMappedConfig = Record<string, {
     staSize?:number,
@@ -78,8 +82,12 @@ export type BgRefImageConfig = {
 }
 export type TextTagPerTypeGlobalConfig = {
     padding?: number,
-    fontSize?: number
-    subFontSize?: number
+    fontSize?: number,
+    subFontSize?: number,
+    textAlign?: SgnNumber,
+    anchorX?: SgnNumber,
+    anchorY?: SgnNumber,
+    width?: number
 }
 
 export type ConfigInSave = AllKeysOptional<Config>

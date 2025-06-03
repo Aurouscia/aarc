@@ -13,7 +13,7 @@ function c(){
     window.clearTimeout(rtimer)
     rtimer = window.setTimeout(()=>{
         envStore.rerender([], [])
-    }, 200)
+    }, 500)
 }
 onMounted(()=>{
     config.value.textTagPlain.fontSize ??= 1
@@ -77,6 +77,59 @@ onMounted(()=>{
             </td>
         </tr>
         <tr>
+            <td>横向<br/>锚点</td>
+            <td>
+                <select v-model="config.textTagForLine.anchorX" @change="c">
+                    <option :value="1">左侧</option>
+                    <option :value="undefined">中心</option>
+                    <option :value="-1">右侧</option>
+                </select>
+                <div class="explain">可能需要重新定位</div>
+            </td>
+        </tr>
+        <tr>
+            <td>纵向<br/>锚点</td>
+            <td>
+                <select v-model="config.textTagForLine.anchorY" @change="c">
+                    <option :value="1">顶部</option>
+                    <option :value="undefined">中心</option>
+                    <option :value="-1">底部</option>
+                </select>
+                <div class="explain">可能需要重新定位</div>
+            </td>
+        </tr>
+        <tr>
+            <td>文字<br/>对齐</td>
+            <td>
+                <select v-model="config.textTagForLine.textAlign" @change="c">
+                    <option :value="undefined">跟随横向锚点</option>
+                    <option :value="1">靠左</option>
+                    <option :value="0">居中</option>
+                    <option :value="-1">靠右</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>宽度</td>
+            <td>
+                <input type="range" v-model="config.textTagForLine.width" :min="0" :max="300" :step="10" @input="c"/>
+                <div>{{ config.textTagForLine.width ?? '未设置' }}</div>
+                <div class="explain">如果短于指定宽度<br/>将会向锚点对侧拉长</div>
+                <div class="explain">设为0将其关闭</div>
+            </td>
+        </tr>
+        <tr>
+            <td>数字<br/>放大</td>
+            <td>
+                <select v-model="config.textTagForLineDropCap" @click="c">
+                    <option :value="true">开启</option>
+                    <option :value="false">关闭</option>
+                </select>
+                <div class="explain">若字母数字+"线"结尾</div>
+                <div class="explain">将会无视文字对齐</div>
+            </td>
+        </tr>
+        <tr>
             <th colspan="2">
                 地形名标签
             </th>
@@ -97,7 +150,7 @@ onMounted(()=>{
         </tr>
         <tr>
             <td colspan="2" class="explain">
-                对所有标签生效<br/>（设置过非0值的除外）
+                以上设置对所有标签生效<br/>（设置过非0/非默认值的除外）
             </td>
         </tr>
     </tbody></table>

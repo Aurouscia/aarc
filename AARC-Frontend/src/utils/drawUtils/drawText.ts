@@ -129,20 +129,22 @@ export function drawText(
 
 const chineseStyleDropCapPattern = /^[0-9a-zA-Z]{1,3}(?=\s?号?环?线$)/
 export function drawTextForLineName(
-    ctx:CvsContext, pos:Coord, align:SgnCoord, textAlignOverride:SgnNumber|undefined,
+    ctx:CvsContext, pos:Coord, align:SgnCoord, textAlignOverride:SgnNumber,
     main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false,
-    task:'draw'|'measure'|'both' = 'both', width?:number):
+    task:'draw'|'measure'|'both' = 'both', width?:number, dropCap?:boolean):
     {isDropCap:boolean, rect:RectCoord|undefined}|undefined
 {
     const mainText = main.text?.trim() || ''
     const subText = sub.text?.trim() || ''
     const match = chineseStyleDropCapPattern.exec(mainText)
-    if(!subText || !match || match.length===0)
+    const useDropCap = dropCap && match && match.length>0 && subText
+    if(!useDropCap)
     {
         //如果不是需要dropCap的线路名，则fallback到一般的写法
+        const textAlign = textAlignOverride
         return {
             isDropCap:false,
-            rect:drawText(ctx, pos, align, textAlignOverride, main, sub, stroke, task, width)?.rectFull
+            rect:drawText(ctx, pos, align, textAlign, main, sub, stroke, task, width)?.rectFull
         }
     }
     const needDraw = task === 'draw' || task === 'both'
@@ -150,7 +152,7 @@ export function drawTextForLineName(
     const totalHeight = main.rowHeight + sub.rowHeight
 
     ctx.textBaseline = 'middle'
-    ctx.textAlign = 'left' //如果是dropCap线路名，textAlign无视参数，参数仅用来控制矩形相对坐标的位置
+    ctx.textAlign = 'left' //如果是dropCap线路名，固定靠左
     const [x, y] = pos
     const [xSgn, ySgn] = align
     const yTop = getYTop(y, ySgn, totalHeight)
@@ -204,8 +206,7 @@ export function drawTextForLineName(
         const rect = getRect(x, y, xSgn, ySgn, totalWidth, totalHeight)
         if(width){
             //如果指定了宽度，将矩形的宽度调整为指定宽度
-            //在dropCap的情况下，此处的xSgn固定为1（向右加大）
-            enlargeRectToWidth(rect, 1, width)
+            enlargeRectToWidth(rect, xSgn, width)
         }
         return {
             isDropCap: true,
@@ -276,6 +277,8 @@ function getMainRectByFullRect(
 }
 function enlargeRectToWidth(rect:RectCoord, xSgn:SgnNumber, width:number):void{
     //若rect的宽度小于width，则放大rect到指定宽度（以xSgn指定的方向）
+    width = Number(width)
+    if(isNaN(width)) return
     const widthDiff = width - (rect[1][0] - rect[0][0])
     if(widthDiff <= 0)
         return
