@@ -200,12 +200,14 @@ button.logout{
     right: 0px;
 }
 .loginInfo{
+    background-color: white;
+    padding: 10px;
     color:gray;
     font-size:small;
     text-align: center;
     position: fixed;
     margin: 0px;
-    left:20px;
-    bottom: 35px;
+    left:10px;
+    bottom: 25px;
 }
 </style>

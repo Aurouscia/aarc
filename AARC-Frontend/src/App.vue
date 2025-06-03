@@ -10,9 +10,9 @@ const { pop, wait, topbarShow } = storeToRefs(useUniqueComponentsStore())
 </script>
 
 <template>
-<TopbarParent v-if="topbarShow"></TopbarParent>
 <div class="mainOuter">
     <div class="main">
+        <TopbarParent v-if="topbarShow"></TopbarParent>
         <RouterView></RouterView>
         <Footer v-if="topbarShow"></Footer>
     </div>

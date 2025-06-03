@@ -168,7 +168,7 @@ onMounted(async()=>{
 <div style="overflow-x: auto;">
 <table v-if="saveList" class="fullWidth index"><tbody>
     <tr>
-        <th style="width: 100px;">点击进入</th>
+        <th style="width: 100px;min-width: 100px">点击进入</th>
         <th style="min-width: 200px;">
             名称
             <span class="introNote">简介点击展开</span>
