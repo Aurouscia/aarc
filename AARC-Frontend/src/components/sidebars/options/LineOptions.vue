@@ -270,4 +270,7 @@ onMounted(()=>{
         white-space: nowrap;
     }
 }
+table{
+    margin-bottom: 60px;
+}
 </style>
