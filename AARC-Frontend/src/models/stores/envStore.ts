@@ -436,8 +436,7 @@ export const useEnvStore = defineStore('env', ()=>{
             }
             else if(activePt.value){
                 if(activePtType.value == 'body'){
-                    saveStore.removePt(activePt.value.id)
-                    activePt.value = undefined
+                    delActivePt_withoutRerender()
                 }else if(activePtType.value == 'name'){
                     activePt.value.name = undefined
                     activePt.value.nameS = undefined
@@ -446,7 +445,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     activePt.value = undefined
                 }
             }
-            rerender.value([], [])
+            rerender.value()
         }
         discardAreaStore.resetDiscarding()
     }
@@ -501,16 +500,8 @@ export const useEnvStore = defineStore('env', ()=>{
             }
         })
         const rmPtCb = ()=>{
-            if(activePt.value){
-                saveStore.removePt(activePt.value.id);
-                setStaNameRect(activePt.value.id, undefined);
-            }
-            activePt.value = undefined
-            activeLine.value = undefined
-            cursorPos.value = undefined
-            setOpsPos(false)
-            rerender.value(relatedLineIds, [])
-            pointlessLineScan()
+            delActivePt_withoutRerender();
+            rerender.value(relatedLineIds, []);
         }
         const swDirCb = ()=>{
             if(pt){
@@ -600,6 +591,19 @@ export const useEnvStore = defineStore('env', ()=>{
                 text:'标签'
             }
         ]]
+    }
+
+    function delActivePt_withoutRerender(){
+        if(activePt.value){
+            saveStore.removePt(activePt.value.id);
+            setStaNameRect(activePt.value.id, undefined);
+        }
+        activePt.value = undefined
+        activeLine.value = undefined
+        cursorPos.value = undefined
+        nameEditStore.endEditing()
+        setOpsPos(false)
+        pointlessLineScan()
     }
 
     function delLine(lineId:number, suppressRender:boolean = false, delWithSta:boolean = false){
