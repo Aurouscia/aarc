@@ -27,7 +27,7 @@ const {
 })
 watch(editing, newVal=>{
     if(newVal){
-        enableContextMenu()
+        enableContextMenu(10)
     }else{
         disableContextMenu()
     }
