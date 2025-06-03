@@ -534,6 +534,15 @@ export const useEnvStore = defineStore('env', ()=>{
                 text:'切换',
                 textSub:'是否显示'
             })
+        }else{
+            firstCol.splice(1, 0, {
+                cb:()=>{
+                    nameEditStore.controlPointOptionsPanelOpen(pt.id)
+                    setOpsPos(false)
+                },
+                text:'设置',
+                textSub:'打开面板'
+            })
         }
         const relatedLinks = saveStore.getPointLinksByPt(pt.id)
         if(relatedLinks.length>0){

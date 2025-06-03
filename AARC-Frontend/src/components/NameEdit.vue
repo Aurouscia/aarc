@@ -42,7 +42,7 @@ watch(editing, newVal=>{
         <textarea v-model="nameSub" ref="nameSubInput" :rows="nameSubRows" @input="inputHandler('sub')"
             @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler" class="secondary"
             spellcheck="false" placeholder="请输入外语站名/副站名"></textarea>
-        <div @click="nameEditStore.controlPointOptionsPanelOpen" class="settingsBtn sqrBtn withShadow">
+        <div @click="nameEditStore.controlPointOptionsPanelOpen()" class="settingsBtn sqrBtn withShadow">
             <img :src="settingsImg"/>
         </div>
         <div @click="nameEditStore.endEditing()" class="retractBtn sqrBtn withShadow">

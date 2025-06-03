@@ -35,10 +35,10 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
             controlPointOptionsPanelOpen()
         }
     }
-    function controlPointOptionsPanelOpen(){
-        if(!editing.value)
-            return
-        const pt = saveStore.getPtById(targetPtId.value || -1)
+    function controlPointOptionsPanelOpen(forPtId?:number){
+        // if(!editing.value)
+        //     return
+        const pt = saveStore.getPtById(forPtId || targetPtId.value || -1)
         if(!pt)
             return
         if(controlPointOptionsPanel.value){
