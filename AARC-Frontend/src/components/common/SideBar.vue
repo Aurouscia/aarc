@@ -109,7 +109,7 @@ const emit = defineEmits<{
     transition: 0.3s;
     background-color: white;
     box-shadow: none;
-    z-index: 1001;
+    z-index: 1002;
 }
 .cover{
     opacity: 0;
@@ -119,6 +119,6 @@ const emit = defineEmits<{
     left: 0px;right:0px;
     display: none;
     transition: 0.3s;
-    z-index: 1000;
+    z-index: 1001;
 }
 </style>

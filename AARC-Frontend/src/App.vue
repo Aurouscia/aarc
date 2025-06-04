@@ -10,9 +10,9 @@ const { pop, wait, topbarShow } = storeToRefs(useUniqueComponentsStore())
 </script>
 
 <template>
+<TopbarParent v-if="topbarShow"></TopbarParent>
 <div class="mainOuter">
     <div class="main">
-        <TopbarParent v-if="topbarShow"></TopbarParent>
         <RouterView></RouterView>
         <Footer v-if="topbarShow"></Footer>
     </div>
@@ -26,7 +26,7 @@ const { pop, wait, topbarShow } = storeToRefs(useUniqueComponentsStore())
 
 .mainOuter{
     width: 100vw;
-    position: fixed;
+    position: absolute; //只能absolute不能fixed
     top: globalValues.$topbar-height;
     height: globalValues.$body-height;
     transition: 0s;
