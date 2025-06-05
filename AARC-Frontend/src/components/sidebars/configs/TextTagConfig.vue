@@ -22,6 +22,7 @@ onMounted(()=>{
     config.value.textTagForLine.padding??= 1
     config.value.textTagForLine.fontSize??= 1
     config.value.textTagForLine.subFontSize??= 1
+    config.value.textTagForLine.width??= 0
 
     config.value.textTagForTerrain.fontSize??= 1
     config.value.textTagForTerrain.subFontSize??= 1
@@ -112,8 +113,10 @@ onMounted(()=>{
         <tr>
             <td>宽度</td>
             <td>
-                <input type="range" v-model="config.textTagForLine.width" :min="0" :max="300" :step="10" @input="c"/>
-                <div>{{ config.textTagForLine.width ?? '未设置' }}</div>
+                <input type="range" v-model="config.textTagForLine.width" :min="0" :max="300" :step="5" @input="c"/>
+                <div>
+                    <input type="number" v-model="config.textTagForLine.width" :min="0" :step="1" @input="c"/>
+                </div>
                 <div class="explain">如果短于指定宽度<br/>将会向锚点对侧拉长</div>
                 <div class="explain">设为0将其关闭</div>
             </td>

@@ -108,8 +108,8 @@ defineExpose({
                     <td>宽度</td>
                     <td>
                         <div class="viewableRange">
-                            <input type="range" v-model="editing.width" :min="0" :max="300" :step="10" @change="emit('changed')"/>
-                            <input type="number" v-model="editing.width" :step="10" @change="emit('changed')"/>
+                            <input type="range" v-model="editing.width" :min="0" :max="300" :step="5" @change="emit('changed')"/>
+                            <input type="number" v-model="editing.width" :min="0" :step="1" @change="emit('changed')"/>
                             <div class="smallNote">如果短于指定宽度<br/>将会向锚点对侧拉长</div>
                             <div class="smallNote">设为0使用默认值</div>
                         </div>
