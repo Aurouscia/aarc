@@ -6,7 +6,7 @@ import SideBar from '@/components/common/SideBar.vue';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { storeToRefs } from 'pinia';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
-import { UserListOrderBy, useUserListLocalConfigStore } from '@/app/localConfig/userListLocalConfig';
+import { useUserListLocalConfigStore } from '@/app/localConfig/userListLocalConfig';
 import { UserDto, UserType } from '@/app/com/apiGenerated';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
@@ -16,13 +16,12 @@ const list = ref<WithIntroShow<UserDto>[]>()
 const api = useApiStore()
 const { someonesSavesRoute } = useSavesRoutesJump()
 const { loginRouteJump } = useIdentitiesRoutesJump()
-const { readOrderby, saveOrderby, defaultOrderby } = useUserListLocalConfigStore()
+const configStore = useUserListLocalConfigStore()
+const { orderby } = storeToRefs(configStore)
 const searchStr = ref<string>()
-const orderby = ref<UserListOrderBy>(defaultOrderby)
 const orderbySave = computed(() => orderby.value === 'save')
 const orderbyActive = computed(() => !orderby.value || orderby.value === 'active')
 async function loadList() {
-    saveOrderby(orderby.value)
     list.value = await api.user.index(searchStr.value, orderby.value)
 }
 
@@ -67,7 +66,8 @@ function summerizeNameAndPwd(){
 }
 
 onMounted(async()=>{
-    orderby.value = readOrderby()
+    configStore.backCompat()
+    orderby.value ??= 'active'
     await loadList()
 })
 </script>

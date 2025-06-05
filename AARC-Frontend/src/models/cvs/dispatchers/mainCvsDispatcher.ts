@@ -13,7 +13,8 @@ import { useConfigStore } from "@/models/stores/configStore";
 import { timestampMS } from "@/utils/timeUtils/timestamp";
 import { useTimeSpanClock } from "@/utils/timeUtils/timeSpanClock";
 import { CvsContext } from "../common/cvsContext";
-import { AdsRenderType, useAdsCvsWorker } from "../workers/adsCvsWorker";
+import { useAdsCvsWorker } from "../workers/adsCvsWorker";
+import { AdsRenderType } from "@/app/localConfig/exportLocalConfig";
 import { usePointLinkStore } from "@/models/stores/pointLinkStore";
 import { usePointLinkCvsWorker } from "../workers/pointLinkCvsWorker";
 import { useWatermarkCvsWorker } from "../workers/watermarkCvsWorker";
@@ -31,6 +32,13 @@ export interface MainCvsRenderingOptions{
     ctx?: CvsContext
     /** 广告水印 (no/less/more) */
     withAds?: AdsRenderType
+    /** 导出强调 */
+    // emphasis?: {
+    //     /** 目标线路或线路组id */
+    //     ids:number[]
+    //     othersOpacity:number
+    //     othersMutate:'asis'|''
+    // }
 }
 
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{

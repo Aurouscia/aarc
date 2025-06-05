@@ -1,0 +1,1 @@
+export const localConfigKeyPrefix = 'aarc-localConfig'

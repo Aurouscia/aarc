@@ -1,29 +1,27 @@
 import { defineStore } from "pinia";
-import { LocalConfig } from "./common/localConfig";
 import { ref } from "vue";
-
-class EditorLocalConfig extends LocalConfig{
-    protected storageSectorName() { return 'editor'}
-    private readonly staNameFobKey = 'staNameFob'
-    readStaNameFob(){
-        return parseFloat(this.readLocalConfig(this.staNameFobKey) || '') || 0
-    }
-    saveStaNameFob(fob:number|string){
-        if(typeof fob === 'string')
-            fob = parseFloat(fob) || 0
-        if(fob < 0)
-            fob = 0
-        this.saveLocalConfig(this.staNameFobKey, fob.toString())
-        return fob
-    }
-}
+import { localConfigKeyPrefix } from "./common/keyPrefix";
 
 export const useEditorLocalConfigStore = defineStore('editorLocalConfig',()=>{
-    const cfg = new EditorLocalConfig()
-    const staNameFob = ref(cfg.readStaNameFob())
+    const staNameFob = ref<number|string>()
+
+    //旧版兼容性
+    function backCompat(){
+        const legacyStaNameFobKey = 'localConfig_editor_staNameFob'
+        const legacyStaNameFob = localStorage.getItem(legacyStaNameFobKey)
+        if(legacyStaNameFob){
+            staNameFob.value = legacyStaNameFob
+        }
+        localStorage.removeItem(legacyStaNameFobKey)
+    }
+
     return {
         staNameFob,
-        readStaNameFob: ()=>cfg.readStaNameFob(),
-        saveStaNameFob: (fob:number|string)=>{staNameFob.value = cfg.saveStaNameFob(fob)}
+        backCompat
+    }
+},
+{
+    persist:{
+        key: `${localConfigKeyPrefix}-editor`
     }
 })

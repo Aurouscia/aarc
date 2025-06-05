@@ -7,7 +7,7 @@ export const useWatermarkCvsWorker = defineStore('watermarkCvsWorker',()=>{
     const exportLocalConfig = useExportLocalConfigStore()
     const saveStore = useSaveStore()
     function renderWatermark(ctx:CvsContext, nowTime:'beforeMain'|'afterMain', forExport?:boolean){
-        const cfg = exportLocalConfig.readExportWatermarkLocalConfig()
+        const cfg = exportLocalConfig.watermark ?? exportLocalConfig.waterMarkDefault()
         if(forExport){
             if(!cfg.enabled)
                 return

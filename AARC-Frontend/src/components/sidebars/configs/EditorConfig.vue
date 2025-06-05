@@ -1,14 +1,15 @@
 <script lang="ts" setup>
 import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
 import ConfigSection from './shared/ConfigSection.vue';
-import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { onMounted } from 'vue';
 
-const { readStaNameFob, saveStaNameFob } = useEditorLocalConfigStore()
-const staNameFob = ref(readStaNameFob())
-function setStaNameFobTo(fob:number){
-    staNameFob.value = fob
-    saveStaNameFob(fob)
-}
+const configStore = useEditorLocalConfigStore()
+const { staNameFob } = storeToRefs(configStore)
+
+onMounted(()=>{
+    configStore.backCompat()
+})
 </script>
 
 <template>
@@ -17,13 +18,12 @@ function setStaNameFobTo(fob:number){
         <tr><th>站名糊弄机制</th></tr>
         <tr>
             <td>
-                <input v-model="staNameFob" @blur="saveStaNameFob(staNameFob)"
-                    class="staNameFob" placeholder="0.1-10"/>
+                <input v-model="staNameFob" class="staNameFob" placeholder="0.1-10"/>
                 <div class="staNameFobBtns">
-                    <button class="minor" @click="setStaNameFobTo(0.01)">关闭</button>
-                    <button class="minor" @click="setStaNameFobTo(0.7)">严格</button>
-                    <button class="minor" @click="setStaNameFobTo(1)">标准</button>
-                    <button class="minor" @click="setStaNameFobTo(3)">宽松</button>
+                    <button class="minor" @click="staNameFob = 0.01">关闭</button>
+                    <button class="minor" @click="staNameFob = 0.7">严格</button>
+                    <button class="minor" @click="staNameFob = 1">标准</button>
+                    <button class="minor" @click="staNameFob = 3">宽松</button>
                 </div>
                 <div class="explain">
                     <p>在视角拉远时，站名可被渲染为一个尺寸相同的矩形，以加快响应速度。</p>

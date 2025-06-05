@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { guideInfo } from '@/app/guideInfo';
@@ -9,20 +9,19 @@ import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { userTypeReadable } from './models/utils';
 import { RouterLink } from 'vue-router';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
-import { useAuthLocalConfigStore } from '@/app/localConfig/authLocalConfig';
+import { loginExpireHrsDefault, useAuthLocalConfigStore } from '@/app/localConfig/authLocalConfig';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 
 const props = defineProps<{
     backAfterSuccess?:string
 }>();
 const router = useRouter()
-const { readLoginExpireHrs, saveLoginExpireHrs, loginExpireHrsDefault }
-    = useAuthLocalConfigStore()
+const configStore = useAuthLocalConfigStore()
+const { loginExpireHrs } = storeToRefs(configStore)
 const { isWebkit } = useBrowserInfoStore()
 
 const userName = ref<string>("")
 const password = ref<string>("")
-const expireHrs = ref<number>(loginExpireHrsDefault);
 const setExpire = ref<boolean>(false);
 const failedGuide = ref<string>();
 const userInfoStore = useUserInfoStore()
@@ -32,11 +31,10 @@ const { pop } = useUniqueComponentsStore()
 const { registerRoute } = useIdentitiesRoutesJump()
 
 async function Login(){
-    saveLoginExpireHrs(expireHrs.value);
     const loginResp = await api.auth.login(
         userName.value,
         password.value,
-        expireHrs.value
+        Number(loginExpireHrs.value) || loginExpireHrsDefault
     )
     if (loginResp && loginResp.token) {
         pop?.show("登录成功", "success");
@@ -71,11 +69,8 @@ const leftTimeDisplay = computed<string>(()=>{
 })
 
 onMounted(async()=>{
-    expireHrs.value = readLoginExpireHrs()
+    configStore.backCompat()
     await userInfoStore.getIdentityInfo(true);
-})
-onUnmounted(()=>{
-    //recoverTitle()
 })
 </script>
 
@@ -106,7 +101,7 @@ onUnmounted(()=>{
         </div>
         <div class="needExpire">
             <div @click="setExpire=!setExpire" style="cursor: pointer;text-decoration: underline;">登录状态保持</div>
-            <select v-show="setExpire" v-model="expireHrs">
+            <select v-show="setExpire" v-model="loginExpireHrs">
                 <option :value="3">3小时</option>
                 <option :value="24">24小时</option>
                 <option :value="168">7天</option>
@@ -135,9 +130,6 @@ onUnmounted(()=>{
         登录有效期：{{ leftTimeDisplay }}<br/>
         <button @click="Logout" class="logout">退出登录</button>
     </div>
-    <!-- <div class="footer">
-        <Footer></Footer>
-    </div> -->
 </template>
 
 <style scoped lang="scss">

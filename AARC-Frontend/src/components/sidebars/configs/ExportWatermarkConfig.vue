@@ -1,32 +1,29 @@
 <script lang="ts" setup>
-import { ExportWatermarkLocalConfig, useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
+import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
 import ConfigSection from './shared/ConfigSection.vue';
-import { ref, watch } from 'vue';
+import { watch } from 'vue';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
+import { storeToRefs } from 'pinia';
 
-const configStore = useExportLocalConfigStore()
 const mainCvsDispatcher = useMainCvsDispatcher()
-const cfg = ref<ExportWatermarkLocalConfig>(configStore.readExportWatermarkLocalConfig())
-watch(cfg, (newVal) => {
-    configChangeHandler(newVal)
+const store = useExportLocalConfigStore()
+const { watermark:cfg } = storeToRefs(store)
+watch(cfg, () => {
+    configChangeHandler()
 }, {deep:true})
 
 let configApplyTimer = 0
-function configChangeHandler(newVal: ExportWatermarkLocalConfig){
+function configChangeHandler(){
     clearTimeout(configApplyTimer)
     configApplyTimer = window.setTimeout(() => {
-        configStore.saveExportWatermarkLocalConfig(newVal)
         mainCvsDispatcher.renderMainCvs({suppressRenderedCallback:true})
     }, 600)
-}
-function reset(){
-    cfg.value = configStore.resetExportWatermarkLocalConfig()
 }
 </script>
 
 <template>
 <ConfigSection :title="'自定义水印'">
-    <table><tbody>
+    <table v-if="cfg"><tbody>
         <tr>
             <td style="width: 70px;">启用导出</td>
             <td>
@@ -91,7 +88,7 @@ function reset(){
         </tr>
         <tr>
             <td colspan="2">
-                <button class="minor" @click="reset">恢复默认值</button>
+                <button class="minor" @click="store.watermarkReset">恢复默认值</button>
             </td>
         </tr>
     </tbody></table>

@@ -1,27 +1,30 @@
 import { defineStore } from "pinia";
-import { LocalConfig } from "./common/localConfig";
+import { ref } from "vue";
+import { localConfigKeyPrefix } from "./common/keyPrefix";
 
 
-const loginExpireHrsDefault = 7*24
-
-class AuthLocalConfig extends LocalConfig{
-    protected storageSectorName(): string {
-        return 'auth'
-    }
-    private readonly loginExpireHrsKey = 'loginExpireHrs'
-    readLoginExpireHrs(){
-        return parseInt(this.readLocalConfig(this.loginExpireHrsKey)||'') || loginExpireHrsDefault
-    }
-    saveLoginExpireHrs(hrs:number){
-        this.saveLocalConfig(this.loginExpireHrsKey, hrs.toString())
-    }
-}
+export const loginExpireHrsDefault = 30*24
 
 export const useAuthLocalConfigStore = defineStore('authLocalConfig',()=>{
-    const cfg = new AuthLocalConfig()
+    const loginExpireHrs = ref(loginExpireHrsDefault)
+
+    function backCompat(){
+        const legacyKey = 'localConfig_auth_loginExpireHrs'
+        const legacyVal = localStorage.getItem(legacyKey)
+        if(legacyVal){
+            loginExpireHrs.value = Number(legacyVal) || loginExpireHrsDefault
+        }
+        localStorage.removeItem(legacyKey)
+    }
+
     return {
-        readLoginExpireHrs: ()=>cfg.readLoginExpireHrs(),
-        saveLoginExpireHrs: (hrs:number)=>cfg.saveLoginExpireHrs(hrs),
-        loginExpireHrsDefault
+        loginExpireHrs,
+
+        backCompat
+    }
+},
+{
+    persist:{
+        key: `${localConfigKeyPrefix}-auth`
     }
 })

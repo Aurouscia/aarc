@@ -1,8 +1,7 @@
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { useSaveStore } from "@/models/stores/saveStore";
-
-export type AdsRenderType = 'no'|'less'|'more'
+import { AdsRenderType } from "@/app/localConfig/exportLocalConfig";
 
 export const useAdsCvsWorker = defineStore('adsCvsWorker',()=>{
     const saveStore = useSaveStore()

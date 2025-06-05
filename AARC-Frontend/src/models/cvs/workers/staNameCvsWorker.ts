@@ -54,7 +54,7 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
         if(!noOmit){
             //决定要不要糊弄
             const rowToAreaRatio = rowHeight / viewRectArea
-            const thrs = staNameFobThrsBase * (editorLocalConfigStore.staNameFob || 1)
+            const thrs = staNameFobThrsBase * (Number(editorLocalConfigStore.staNameFob) || 1)
             const fob = rowToAreaRatio < thrs
             if(fob){
                 const rect = staNameMainRectStore.getStaNameMainRect(pt.id)

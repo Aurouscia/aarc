@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useApiStore } from '@/app/com/apiStore';
@@ -10,13 +10,13 @@ import { timeStr } from '@/utils/timeUtils/timeStr';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
-import { AdsRenderType } from '@/models/cvs/workers/adsCvsWorker';
 import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import Notice from '../common/Notice.vue';
 import ExportWatermarkConfig from './configs/ExportWatermarkConfig.vue';
 import ConfigSection from './configs/shared/ConfigSection.vue';
+import { storeToRefs } from 'pinia';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -29,6 +29,7 @@ const exported = ref<boolean>(false)
 const exporting = ref<boolean>(false)
 
 const exportLocalConfig = useExportLocalConfigStore()
+const { fileNameStyle, pixelRestrict, ads } = storeToRefs(exportLocalConfig)
 async function downloadMainCvsAsPng() {
     if(exporting.value)
         return
@@ -47,7 +48,7 @@ async function downloadMainCvsAsPng() {
             suppressRenderedCallback:true,
             forExport:true,
             ctx,
-            withAds: exportWithAds.value as AdsRenderType|undefined
+            withAds: ads.value
         }
         mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
 
@@ -108,7 +109,7 @@ async function getExportPngFileName(isMini?:boolean){
         saveName = info?.name ?? '??'
     }
     let name = ''
-    const style = exportPngFileNameStyle.value
+    const style = fileNameStyle.value
     if (style == 'date')
         name = `${saveName}-${timeStr('date')}`
     else if (style == 'dateTime')
@@ -126,7 +127,7 @@ async function getExportPngFileName(isMini?:boolean){
     return `${name}.png`
 }
 function getExportRenderSize():{scale:number, cvsWidth:number, cvsHeight:number}{
-    const epr = parseInt(exportPixelRestrict.value||'')
+    const epr = Number(pixelRestrict.value||'')
     const asIs = ()=>{
         return{
             scale:1,
@@ -147,11 +148,6 @@ function getExportRenderSize():{scale:number, cvsWidth:number, cvsHeight:number}
         cvsHeight: saveStore.cvsHeight*scale
     }
 }
-const exportPngFileNameStyle = ref<string>()
-exportPngFileNameStyle.value = exportLocalConfig.readExportFileNameStyle() || 'plain'
-function exportPngFileNameStyleChanged(){
-    exportLocalConfig.saveExportFileNameStyle(exportPngFileNameStyle.value || 'plain')
-}
 async function cvsToDataUrl(cvs:OffscreenCanvas):Promise<string>{
     const blob = await cvs.convertToBlob({ type: 'image/png' });
     return URL.createObjectURL(blob);
@@ -162,26 +158,21 @@ function getDownloadAnchor(){
     return document.getElementById(downloadAnchorElementId)
 }
 
-const exportWithAds = ref<AdsRenderType>()
-exportWithAds.value = (exportLocalConfig.readExportWithAds() || 'no') as AdsRenderType
-function exportWithAdsChanged(){
-    exportLocalConfig.saveExportWithAds(exportWithAds.value || 'no')
-    if(exportWithAds.value && exportWithAds.value !== 'no'){
+watch(ads, ()=>{
+    if(ads.value && ads.value !== 'no'){
         pop?.show('感谢支持', 'success')
     }
-}
-
-const exportPixelRestrict = ref<string>()
-exportPixelRestrict.value = exportLocalConfig.readExportPixelRestrict()||''
-function exportPixelRestrictChanged(){
-    exportLocalConfig.saveExportPixelRestrict(exportPixelRestrict.value||'')
-}
+})
 
 const { isWebkit } = useBrowserInfoStore()
 
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
     fold: ()=>{sidebar.value?.fold()}
+})
+
+onMounted(()=>{
+    exportLocalConfig.backCompat()
 })
 </script>
 
@@ -191,7 +182,7 @@ defineExpose({
 <div class="exportOps">
     <div class="configItem">
         <div class="itemName">文件名</div>
-        <select v-model="exportPngFileNameStyle" @change="exportPngFileNameStyleChanged">
+        <select v-model="fileNameStyle">
             <option :value="'plain'">存档名</option>
             <option :value="'date'">日期</option>
             <option :value="'dateTime'">日期时间</option>
@@ -200,11 +191,11 @@ defineExpose({
     </div>
     <div class="configItem">
         <div class="itemName">像素上限</div>
-        <input v-model="exportPixelRestrict" @change="exportPixelRestrictChanged" type="number"/>
+        <input v-model="pixelRestrict" type="number"/>
     </div>
     <div class="configItem">
         <div class="itemName">宣传水印</div>
-        <select v-model="exportWithAds" @change="exportWithAdsChanged">
+        <select v-model="ads">
             <option :value="'no'">无</option>
             <option :value="'less'">简略</option>
             <option :value="'more'">详细</option>
