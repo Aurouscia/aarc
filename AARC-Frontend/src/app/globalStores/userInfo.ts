@@ -44,7 +44,7 @@ export const useUserInfoStore = defineStore('userInfo', ()=>{
         const stored = localStorage.getItem(localStorageKey);
         if(stored){
             const data = JSON.parse(stored)
-            if(data.update && data.info){
+            if(data.update && data.info && typeof data.update==='number'){
                 if(timestampMS() - identityCacheExpireMs < (data.update as number)) //缓存未过期
                     return data;
             }
@@ -58,11 +58,15 @@ export const useUserInfoStore = defineStore('userInfo', ()=>{
         localStorage.setItem(localStorageKey, JSON.stringify(stored));
     }
 
+    //TODO：过段时间删除下面这行和旧key
+    localStorage.removeItem(localStorageKeyLegacy);
+
     return { userInfo, isAdmin, getIdentityInfo, clearCache }
 })
 
 
-const localStorageKey = "aarcUserInfo";
+const localStorageKeyLegacy = "aarcUserInfo";
+const localStorageKey = "aarc-userInfo";
 const logPrefix = "[身份信息]"
 const log = (msg:string, ...data:any[])=>console.log(`${logPrefix}${msg}`, ...data)
 const defaultValue:HttpUserInfo = {

@@ -6,11 +6,19 @@ import * as api from "./apiGenerated";
 import { getTypeName as tn } from "@/utils/lang/getTypeName";
 import { AllFuncsReturnTypeOptional } from "@/utils/type/AllFuncsReturnTypeOptional";
 
-const jwtTokenStorageKey = "aarcAuthToken"
+const jwtTokenStorageKeyLegacy = "aarcAuthToken"
+const jwtTokenStorageKey = "aarc-authToken"
 const timeoutMs = 16*1000
 export const apiCancelableMs = 4 * 1000
 export const apiWaitKeyPrefix = 'api-'
 export const useApiStore = defineStore('api', () => {
+    //旧版兼容性
+    const legacyKeyedValue = localStorage.getItem(jwtTokenStorageKeyLegacy)
+    if(legacyKeyedValue){
+        localStorage.setItem(jwtTokenStorageKey, legacyKeyedValue)
+    } 
+    localStorage.removeItem(jwtTokenStorageKeyLegacy)
+
     //初始化时，从localStorage中读取token
     const jwtToken = ref<string|null|undefined>(localStorage.getItem(jwtTokenStorageKey))
     const clearJwtToken = ()=>{
