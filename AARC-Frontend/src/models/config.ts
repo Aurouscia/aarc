@@ -87,7 +87,8 @@ export type TextTagPerTypeGlobalConfig = {
     textAlign?: SgnNumber,
     anchorX?: SgnNumber,
     anchorY?: SgnNumber,
-    width?: number
+    width?: number,
+    edgeAnchorOutsidePadding?: boolean
 }
 
 export type ConfigInSave = AllKeysOptional<Config>

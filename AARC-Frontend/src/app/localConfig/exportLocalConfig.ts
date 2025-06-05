@@ -16,6 +16,10 @@ export interface ExportWatermarkLocalConfig{
     xOffset?:number|string
     rotate?:number|string
 }
+// export interface ExportEmphasisLocalConfig{
+//     othersOpacity?:number|string
+//     othersSaturationRatio?:number|string
+// }
 
 export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
     const fileNameStyle = ref<ExportFileNameStyle>('lineCount')

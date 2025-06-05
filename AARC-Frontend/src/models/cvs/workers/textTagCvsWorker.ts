@@ -1,4 +1,4 @@
-import { SgnCoord } from "@/models/coord";
+import { Coord, SgnCoord } from "@/models/coord";
 import { Line, LineType, TextOptions, TextTag } from "@/models/save";
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { useConfigStore } from "@/models/stores/configStore";
@@ -59,8 +59,14 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         }
         const { anchor, textAlign, width } = getParams(cs.config.textTagForLine, t)
         const dropCap = t.dropCap ?? cs.config.textTagForLineDropCap
+        const paddingLineWidth = cs.config.lineWidth * getPadding(t, cs.config.textTagForLine.padding??1)
+        const paddingValue = paddingLineWidth/2
+        const needJustifyPos = cs.config.textTagForLine.edgeAnchorOutsidePadding ?? false
+        const justifiedPos = needJustifyPos 
+            ? justifyPosByAnchorAndPadding(t.pos, anchor, paddingValue) 
+            : t.pos
         const drawLineNameRes = drawTextForLineName(
-            ctx, t.pos, anchor, textAlign, optMain, optSub, false, 'measure', width, dropCap)
+            ctx, justifiedPos, anchor, textAlign, optMain, optSub, false, 'measure', width, dropCap)
         if(drawLineNameRes?.rect){
             const rect = drawLineNameRes.rect
             const lu = rect[0]
@@ -69,13 +75,11 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             ctx.fillRect(...lu, ...wh)
             ctx.lineJoin = 'round'
             ctx.strokeStyle = lineInfo.color
-            const paddingLineWidth = cs.config.lineWidth * getPadding(t, cs.config.textTagForLine.padding??1)
-            const paddingValue = paddingLineWidth/2
             if(paddingValue>0){
                 ctx.lineWidth = paddingLineWidth
                 ctx.strokeRect(...lu, ...wh)
             }
-            drawTextForLineName(ctx, t.pos, anchor, textAlign, optMain, optSub, false, 'draw', width, dropCap)
+            drawTextForLineName(ctx, justifiedPos, anchor, textAlign, optMain, optSub, false, 'draw', width, dropCap)
             const rectEnlarged = enlargeRect(rect, paddingValue)
             textTagRectStore.setTextTagRect(t.id, rectEnlarged)
         }
@@ -192,6 +196,18 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             textAlign,
             width
         }
+    }
+    function justifyPosByAnchorAndPadding(originalPos:Coord, anchor:SgnCoord, paddingValue:number):Coord{
+        let [ x, y ] = originalPos
+        if(anchor[0]===-1)
+            x -= paddingValue
+        else if(anchor[0]===1)
+            x += paddingValue
+        if(anchor[1]===-1)
+            y -= paddingValue
+        else if(anchor[1]===1)
+            y += paddingValue
+        return [ x, y ]
     }
     return { renderAllTextTags, renderOneTextTag }
 })

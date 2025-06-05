@@ -71,10 +71,22 @@ onMounted(()=>{
             </td>
         </tr>
         <tr>
-            <td>边距</td>
+            <td rowspan="2">边距</td>
             <td>
                 <input type="range" v-model="config.textTagForLine.padding" :min="0.5" :max="5" :step="0.25" @input="c"/>
-                <div>{{ config.textTagForLine.padding ?? 1 }}</div>
+                <div>
+                    <input type="number" v-model="config.textTagForLine.width" :min="0" :step="1" @input="c"/>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div>
+                    <input type="checkbox" v-model="config.textTagForLine.edgeAnchorOutsidePadding" @input="c"/>
+                    <div class="explain">
+                        边缘锚点设为边距外侧
+                    </div>
+                </div>
             </td>
         </tr>
         <tr>
