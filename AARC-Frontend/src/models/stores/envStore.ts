@@ -20,7 +20,7 @@ import { useTextTagEditStore } from "./textTagEditStore";
 import rfdc from "rfdc";
 import { coordRound } from "@/utils/coordUtils/coordRound";
 import { usePointLinkStore } from "./pointLinkStore";
-import { assignAllProps } from "@/utils/lang/assignAllProps";
+import { assignAllProps, removeNonexistentKeys } from "@/utils/lang/assignAllProps";
 
 export const useEnvStore = defineStore('env', ()=>{
     const saveStore = useSaveStore();
@@ -73,6 +73,7 @@ export const useEnvStore = defineStore('env', ()=>{
         cvsCont.value.addEventListener('touchmove', movingHandler)
         cvsCont.value.addEventListener('mouseup', moveEndHandler)
         cvsCont.value.addEventListener('touchend', moveEndHandler)
+        ensureChildrenOptionsSameForAll()
     }
     let rescaleSteppedLastCall = 0
     function viewRescaleHandler(){
@@ -725,9 +726,17 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!children || children.length===0)
             return []
         for(const c of children){
+            removeNonexistentKeys<Line>(c, parentLine, ['id', 'name', 'nameSub', 'parent', 'pts'])
             assignAllProps<Line>(c, parentLine, ['id', 'name', 'nameSub', 'parent', 'pts'])
         }
         return children;
+    }
+    function ensureChildrenOptionsSameForAll(){
+        saveStore.save?.lines.forEach(line=>{
+            if(!line.parent){
+                ensureChildrenOptionsSame(line.id)
+            }
+        })
     }
 
     function createTextTag(forLine?:number){
