@@ -82,6 +82,9 @@ function assignParent(){
         }
     }
 }
+const haveChildren = computed(()=>{
+    return saveStore.save?.lines.some(x=>x.parent && x.parent == props.line.id) || false
+})
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 defineExpose({
@@ -233,13 +236,16 @@ onMounted(()=>{
     </tr>
     <tr v-if="!line.parent">
         <td>归为<br/>支线</td>
-        <td>
+        <td v-if="!haveChildren">
             <select v-model="selectedForParentAssignment" style="max-width: 160px;">
                 <option :value="undefined">无所属</option>
                 <option v-for="l in selectableParent"
                     :value="l.id">{{ l.name ?? '未命名线路' }}</option>
             </select><br/>
             <button v-if="selectedForParentAssignment" @click="assignParent">归为选中线路的支线</button>
+        </td>
+        <td v-else>
+            <div class="smallNote">请先删除该线路的支线</div>
         </td>
     </tr>
     </tbody></table>
