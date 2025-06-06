@@ -234,7 +234,7 @@ onMounted(()=>{
     <tr v-if="!line.parent">
         <td>归为<br/>支线</td>
         <td>
-            <select v-model="selectedForParentAssignment">
+            <select v-model="selectedForParentAssignment" style="max-width: 160px;">
                 <option :value="undefined">无所属</option>
                 <option v-for="l in selectableParent"
                     :value="l.id">{{ l.name ?? '未命名线路' }}</option>
