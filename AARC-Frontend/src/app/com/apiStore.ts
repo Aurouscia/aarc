@@ -113,6 +113,8 @@ export const useApiStore = defineStore('api', () => {
                                 }
                                 if(!errmsg)
                                     errmsg='未知错误'
+                                if(errmsg.includes('Site') && errmsg.includes('Construction'))
+                                    errmsg='正在更新，请等几秒'
                                 console.error(`[http]异常：${path}\n`, errmsg)
                                 pop.value?.show(errmsg, 'failed')
                             }
