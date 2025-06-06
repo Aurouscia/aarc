@@ -9,9 +9,15 @@ h2{
     padding-top: 5px;
     cursor: pointer;
     user-select: none;
+    .special{
+        color: rgb(120, 179, 120);
+    }
     &.sectorShown{
         font-weight: bold;
-        color: black
+        color: black;
+        .special{
+            color: green;
+        }
     }
     .shownStatusIcon{
         width: 20px;

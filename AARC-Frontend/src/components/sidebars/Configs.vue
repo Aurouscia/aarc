@@ -13,6 +13,7 @@ import TextTagConfig from './configs/TextTagConfig.vue';
 import LineGroupConfig from './configs/LineGroupConfig.vue';
 import LineStylesConfig from './configs/LineStylesConfig.vue';
 import EditorConfig from './configs/EditorConfig.vue';
+import FaqAsConfig from './configs/FaqAsConfig.vue';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
@@ -61,10 +62,10 @@ function applyBgImage(type:'url'|'opacity'|'left'|'top'|'right'|'bottom'|'width'
 }
 
 const showOthers = ref(false)
-function removeNoLinePoints(){
-    saveStore.removeNoLinePoints()
-    envStore.rerender([], undefined)
-}
+// function removeNoLinePoints(){
+//     saveStore.removeNoLinePoints()
+//     envStore.rerender([], undefined)
+// }
 function removeDanglingPointLinks(){
     saveStore.removeDanglingPointLinks()
     envStore.rerender([], [])
@@ -213,6 +214,7 @@ defineExpose({
 </tbody>
 </table>
 
+<FaqAsConfig></FaqAsConfig>
 
 <h2 :class="{sectorShown:showOthers}" @click="showOthers = !showOthers">
     <div class="shownStatusIcon">{{ showOthers ? '×':'+' }}</div>
@@ -222,7 +224,8 @@ defineExpose({
     <tbody>
     <tr>
         <td>
-            <button @click="removeNoLinePoints">执行</button>
+            暂停<br/>使用
+            <!-- <button @click="removeNoLinePoints">执行</button> -->
         </td>
         <td>
             <b>清除无线路车站</b>

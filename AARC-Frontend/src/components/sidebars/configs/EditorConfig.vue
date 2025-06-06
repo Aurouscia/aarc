@@ -13,7 +13,7 @@ onMounted(()=>{
 </script>
 
 <template>
-<ConfigSection :title="'编辑器（站名糊弄机制）'">
+<ConfigSection :title="'编辑器'">
     <table><tbody>
         <tr><th>站名糊弄机制</th></tr>
         <tr>
