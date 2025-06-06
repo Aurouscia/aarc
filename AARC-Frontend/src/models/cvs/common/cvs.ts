@@ -68,6 +68,7 @@ export const useCvsBlocksControlStore = defineStore('cvsBlocksControl', ()=>{
         window.clearTimeout(viewMutateEndedTimer)
         viewMutateEndedTimer = window.setTimeout(()=>{
             refreshBlocks()
+            fStore.touchStatusClear()
         }, 100)
     }
 

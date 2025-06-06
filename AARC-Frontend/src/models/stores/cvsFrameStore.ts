@@ -142,6 +142,9 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
             cvsCont.value.style.height = heightShould+'px'
         }
     }
+    function touchStatusClear(){
+        scaler?.touchStatusClearBinded()
+    }
     return {
         cvsFrame, cvsCont, initScaler,
         getDisplayRatio, getViewRectSideLengths, getViewRectBiggerSideLength,
@@ -150,6 +153,7 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         translateFromOffset, translateFromClient,
         translateToOffset, translateToClient,
         clientCoordRatio, initContSizeStyle,
+        touchStatusClear,
         viewMoveHandlers, viewScaleHandlers
     }
 })

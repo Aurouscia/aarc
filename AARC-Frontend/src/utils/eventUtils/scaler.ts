@@ -37,11 +37,9 @@ export class Scaler{
         frame.addEventListener('mousedown',()=>this.mouseDown = true)
         frame.addEventListener("touchmove",this.moveHandlerBinded)
         frame.addEventListener("mousemove",this.moveHandlerBinded)
-        frame.addEventListener("touchend",()=>{
-            this.touchDist=-1; this.touchCx=-1; this.touchCy=-1
-        })
+        frame.addEventListener("touchend",this.touchStatusClearBinded)
         frame.addEventListener("mouseup",()=>{
-            this.touchDist=-1; this.touchCx=-1; this.touchCy=-1; this.mouseDown = false
+            this.touchStatusClearBinded(); this.mouseDown = false
         })
         frame.addEventListener("wheel", this.wheelHandlerBinded)
         //window.addEventListener("keypress", this.keyHandlerBinded)
@@ -56,7 +54,7 @@ export class Scaler{
     private moveHandlerBinded = this.moveHandler.bind(this)
     private moveHandler(e:TouchEvent|MouseEvent){
         e.preventDefault()
-        const time = +new Date();
+        const time = Date.now()
         if(time - this.lastTouchResponse < this.touchTimeThrs)
             return;
         this.lastTouchResponse = time;
@@ -257,6 +255,10 @@ export class Scaler{
             bottom: (fst + fh) / ah
         }
     }
+    private touchStatusClear(){
+        this.touchDist=-1; this.touchCx=-1; this.touchCy=-1
+    }
+    touchStatusClearBinded = this.touchStatusClear.bind(this)
 
     private arenaHWCache = -1
     getArenaHW(){
