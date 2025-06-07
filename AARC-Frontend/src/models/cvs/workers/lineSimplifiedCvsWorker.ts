@@ -30,7 +30,8 @@ export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker',
         //按照saveStore.linesSortedByZIndex的顺序渲染（这个顺序一直都是对的）
         saveStore.linesSortedByZIndex.forEach(line=>{
             const pts = formalizedLines.find(x=>x.lineId === line.id)?.pts
-            if(pts)
+            //isFake的线不绘入略缩图
+            if(pts && !line.isFake)
                 targets.push({lineInfo:line, pts}) 
         })
         for(const target of targets){

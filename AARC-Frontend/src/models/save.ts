@@ -72,6 +72,7 @@ export interface Line{
     tagTextColor?:string
     zIndex?:number
     parent?:number
+    isFake?:boolean
 }
 export interface LineStyle{
     id:number
@@ -136,7 +137,7 @@ export function saveStaCount(save:Save){
 export function saveLineCount(save:Save){
     let lineCount = 0
     for(let line of save.lines){
-        if(line.type === LineType.common && !line.parent)
+        if(line.type === LineType.common && !line.parent && !line.isFake)
             lineCount+=1
     }
     return lineCount

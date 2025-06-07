@@ -256,6 +256,17 @@ onMounted(()=>{
             <div class="smallNote">请先删除该线路的支线</div>
         </td>
     </tr>
+    <tr>
+        <td>伪线</td>
+        <td>
+            <input v-model="line.isFake" type="checkbox" @change="envStore.lineInfoChanged(line)"/>
+            <div class="smallNote">
+                如果线路是类似"图例"的作用<br/>
+                请勾选，将不会出现在略缩图中<br/>
+                也不会被算入线路数量
+            </div>
+        </td>
+    </tr>
     </tbody></table>
     <table v-else class="fullWidth"><tbody>
         <tr>
