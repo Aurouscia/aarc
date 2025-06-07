@@ -166,11 +166,15 @@ onMounted(()=>{
         <td class="viewableRange">
             <input type="range" v-model="lineStaNameSizeBinded"
                 :min="0"
-                :max="lineWidthRange.max"
-                :step="lineWidthRange.step"
+                :max="2"
+                :step="0.25"
                 @change="lineStaNameSizeChanged"/>
-            <div>{{ lineStaNameSizeBinded || 0 }}×</div>
-            <div class="smallNote">(设为0使用全局设置)</div>
+            <input type="number" v-model="lineStaNameSizeBinded"
+                :min="0"
+                :max="2"
+                :step="0.05"
+                @change="lineStaNameSizeChanged"/>
+            <div class="smallNote">(设为0使用"设置-线宽对应<br/>车站尺寸"中的全局设置)</div>
         </td>
     </tr>
     <tr v-if="line.type===LineType.common">
@@ -178,11 +182,15 @@ onMounted(()=>{
         <td class="viewableRange">
             <input type="range" v-model="lineStaSizeBinded"
                 :min="0"
-                :max="lineWidthRange.max"
-                :step="lineWidthRange.step"
+                :max="2"
+                :step="0.25"
                 @change="lineStaSizeChanged"/>
-            <div>{{ lineStaSizeBinded || 0 }}×</div>
-            <div class="smallNote">(设为0使用全局设置)</div>
+            <input type="number" v-model="lineStaSizeBinded"
+                :min="0"
+                :max="2"
+                :step="0.05"
+                @change="lineStaSizeChanged"/>
+            <div class="smallNote">(设为0使用"设置-线宽对应<br/>车站尺寸"中的全局设置)</div>
         </td>
     </tr>
     <tr v-if="line.type===LineType.terrain">
