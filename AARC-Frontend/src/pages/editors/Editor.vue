@@ -65,11 +65,13 @@ async function load() {
         await iconStore.ensureAllLoaded()
         mainCvsDispatcher.visitorMode = false
         loadComplete.value = true
-        pop.value?.show('此处为体验环境，不能保存', 'warning')
         savingDisabledWarning.value = '此处为体验环境，不能保存'
-        window.setTimeout(()=>{
-            pop.value?.show('如需创作，请注册账户并新建存档', 'warning')
-        }, 3000)
+        if(import.meta.env.PROD){
+            pop.value?.show('此处为体验环境，不能保存', 'warning')
+            window.setTimeout(()=>{
+                pop.value?.show('如需创作，请注册账户并新建存档', 'warning')
+            }, 3000)
+        }
     }
     loadedSaveIdNum = saveIdNum.value || 0
 }
