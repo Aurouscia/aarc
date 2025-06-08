@@ -9,6 +9,7 @@ export interface Save{
     lineStyles?: LineStyle[]
     lineGroups?: LineGroup[]
     textTags: TextTag[]
+    textTagIcons?: TextTagIcon[]
     cvsSize: Coord
     config: ConfigInSave
 }
@@ -115,6 +116,7 @@ export interface TextTag{
     anchorX?:SgnNumber
     anchorY?:SgnNumber
     dropCap?:boolean
+    icon?:number
     //rot?:FormalRotation
 }
 export interface TextOptions{
@@ -125,6 +127,12 @@ export interface TextOptions{
     //u?:boolean
 }
 
+export interface TextTagIcon{
+    id:number,
+    name:string,
+    url?:string,
+    width?:number
+}
 
 export function saveStaCount(save:Save){
     let staCount = 0

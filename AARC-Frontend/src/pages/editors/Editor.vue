@@ -20,12 +20,14 @@ import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvs
 import { useCachePreventer } from '@/utils/timeUtils/cachePreventer';
 import { DocumentHiddenLongWatcher } from '@/utils/eventUtils/documentHiddenLong';
 import HiddenLongWarnPrompt from './components/HiddenLongWarnPrompt.vue';
+import { useIconStore } from '@/models/stores/iconStore';
 
 const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
 const saveStore = useSaveStore()
 const configStore = useConfigStore()
 const resetterStore = useResetterStore()
+const iconStore = useIconStore()
 const api = useApiStore()
 const userInfoStore = useUserInfoStore()
 const saveIdNum = computed(()=>parseInt(props.saveId))
@@ -46,6 +48,8 @@ async function load() {
             const obj = resp ? JSON.parse(resp) : undefined
             saveStore.save = ensureValidSave(obj)
             resetterStore.resetDerivedStores()
+            saveStore.ensureLinesOrdered()
+            await iconStore.ensureAllLoaded()
             loadComplete.value = true
         }catch{
             pop.value?.show('存档损坏，请联系管理员', 'failed')
@@ -58,6 +62,7 @@ async function load() {
         saveStore.save = ensureValidSave(deepClone(devSave))
         resetterStore.resetDerivedStores()
         saveStore.ensureLinesOrdered()
+        await iconStore.ensureAllLoaded()
         mainCvsDispatcher.visitorMode = false
         loadComplete.value = true
         pop.value?.show('此处为体验环境，不能保存', 'warning')

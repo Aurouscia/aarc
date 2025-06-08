@@ -4,7 +4,7 @@ import { ControlPointDir, ControlPointSta } from "@/models/save";
 //开发/展示用存档数据
 export const devSave:Save = {
     cvsSize: [2000, 2000],
-    idIncre: 2000,
+    idIncre: 10000000,
     points: [
         {
             id: 1,
@@ -300,6 +300,14 @@ export const devSave:Save = {
                     opacity: 1
                 }
             ]
+        }
+    ],
+    textTagIcons:[
+        {
+            id: 1000000,
+            name: '机场',
+            url: '/icons/airport.png',
+            width: 100
         }
     ],
     config:{}

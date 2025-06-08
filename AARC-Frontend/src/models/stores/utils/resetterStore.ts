@@ -7,6 +7,7 @@ import { useCvsBlocksControlStore } from "@/models/cvs/common/cvs";
 import { useStaClusterStore } from "../saveDerived/staClusterStore";
 import { useEnvStore } from "../envStore";
 import { usePointLinkStore } from "../pointLinkStore";
+import { useIconStore } from "../iconStore";
 
 export const useResetterStore = defineStore('resetter', ()=>{
     const envStore = useEnvStore()
@@ -18,7 +19,8 @@ export const useResetterStore = defineStore('resetter', ()=>{
         useLineExtendStore,
         useCvsBlocksControlStore,
         useStaClusterStore,
-        usePointLinkStore
+        usePointLinkStore,
+        useIconStore
     ]
 
     function resetDerivedStores(){
