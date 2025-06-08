@@ -43,7 +43,7 @@ async function load() {
         const iden = await userInfoStore.getIdentityInfo()
         mainCvsDispatcher.visitorMode = iden.id!== ownerId
         try{
-            const obj = resp ? JSON.parse(resp) : {}
+            const obj = resp ? JSON.parse(resp) : undefined
             saveStore.save = ensureValidSave(obj)
             resetterStore.resetDerivedStores()
             loadComplete.value = true

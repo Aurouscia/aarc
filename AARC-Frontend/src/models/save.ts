@@ -143,24 +143,45 @@ export function saveLineCount(save:Save){
     return lineCount
 }
 export function ensureValidSave(obj:any){
-    if(typeof obj != 'object')
+    let freshNew = false
+    if(typeof obj != 'object'){
         obj = {}
+        freshNew = true
+    }
     const ownPropNames = Object.getOwnPropertyNames(obj)
-    const fillDefault = (propName:keyof Save, defaultVal:object|(()=>object))=>{
-        if(!ownPropNames.includes(propName)){
+    const fillDefault = (propName:keyof Save, mustBe:'array'|'object'|'number', defaultVal:object|(()=>object))=>{
+        let needFill = false
+        if(!ownPropNames.includes(propName))
+            needFill = true
+        else{
+            const value = obj[propName]
+            if(mustBe == 'array'){
+                needFill = !(value instanceof Array)
+            }else if(mustBe == 'object'){
+                needFill = !(value instanceof Object) 
+            }else if(mustBe == 'number'){
+                needFill = !(typeof value === 'number')
+            }
+        }
+        if(needFill){
+            console.warn(`属性"${propName}"缺失，已使用默认值补充`)
             if(typeof defaultVal === 'object')
                 obj[propName] = defaultVal
             else
                 obj[propName] = defaultVal()
         }
     }
-    fillDefault('lines', [])
-    fillDefault('points', [])
-    fillDefault('cvsSize', [1000, 1000]),
-    fillDefault('textTags', [])
-    fillDefault('config', {})
-    fillDefault('idIncre', ()=>recaculateIdIncre(obj))
-    fillDefault('lineStyles', ()=>defaultLineStyles(obj))
+    fillDefault('lines', 'array', [])
+    fillDefault('points', 'array', [])
+    fillDefault('cvsSize', 'array', [1000, 1000]),
+    fillDefault('textTags', 'array', [])
+    fillDefault('config', 'object', {})
+    fillDefault('idIncre', 'number', ()=>recaculateIdIncre(obj))
+    //确认了idIncre有值后，才能进行下面的“全新存档初始化”步骤（会使idIncre自增）
+    const getNewId = ()=>obj.idIncre++
+    if(freshNew){
+        fillDefault('lineStyles', 'array', ()=>defaultLineStyles(getNewId))
+    }
     ensureValidCvsSize(obj)
     return obj as Save
 }
@@ -168,23 +189,25 @@ function recaculateIdIncre(save:Save){
     const lineIds = save.lines.map(x=>x.id)
     const ptIds = save.points.map(x=>x.id)
     const ttIds = save.textTags.map(x=>x.id)
-    const allIds = [...lineIds, ...ptIds, ...ttIds]
+    const lsIds = save.lineStyles?.map(x=>x.id) ?? []
+    const lgIds = save.lineGroups?.map(x=>x.id) ?? []
+    const allIds = [...lineIds, ...ptIds, ...ttIds, ...lsIds, ...lgIds]
     if(allIds.length===0)
         return 1
     const maxId = Math.max(...allIds)
     return maxId + 1
 }
-function defaultLineStyles(save:Save):LineStyle[]{
+function defaultLineStyles(getNewId:()=>number):LineStyle[]{
     return [
         {
-            id: save.idIncre++,    //idIncre使用后自增
+            id: getNewId(),
             name: '快线',
             layers:[
                 {color:'#FFFFFF', width:0.15, opacity:1}
             ]
         },
         {
-            id: save.idIncre++,    //idIncre使用后自增
+            id: getNewId(),
             name: '铁路',
             layers:[
                 {color:'#FFFFFF', width:0.6, opacity:1, dash:'4 4'}

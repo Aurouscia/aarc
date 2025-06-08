@@ -131,9 +131,7 @@ export const useSaveStore = defineStore('save', () => {
     function getNewId() {
         if(!save.value)
             throw Error("找不到存档")
-        const current = save.value.idIncre;
-        save.value.idIncre += 1
-        return current
+        return save.value.idIncre++
     }
     function getPtById(id:number){
         return ptDict.value[id]
