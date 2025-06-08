@@ -638,6 +638,10 @@ export const useEnvStore = defineStore('env', ()=>{
                 }
             }
             saveStore.save.lines.splice(idx, 1)
+            const itsTagIds = saveStore.save.textTags.filter(x=>x.forId && x.forId==lineId).map(x=>x.id)
+            itsTagIds.forEach(tId=>{
+                saveStore.removeTextTag(tId)
+            })
         }
         setLinesFormalPts(lineId, undefined)
         if(!suppressRender)
