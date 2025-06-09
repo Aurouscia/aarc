@@ -66,7 +66,7 @@ defineExpose({
                             <input type="range" v-model="editing.padding" :min="0" :max="5" :step="0.25" @change="emit('changed')"/>
                             <input type="number" v-model="editing.padding" :min="0" :max="5" @change="emit('changed')"/>
                             <div class="smallNote">设为0使用全局设置</div>
-                            <div class="smallNote">暂时仅对线路名称标签有效</div>
+                            <div class="smallNote">仅对线路名称标签有效</div>
                         </div>
                     </td>
                 </tr>
@@ -151,8 +151,8 @@ defineExpose({
                     <td>大小</td>
                     <td>
                         <div class="viewableRange" v-if="editing.textOp">
-                            <input type="range" v-model="editing.textOp.size" :min="0" :max="5" :step="0.25" @change="emit('changed')"/>
-                            <input type="number" v-model="editing.textOp.size" :min="0" :max="16" @change="emit('changed')"/>
+                            <input type="range" v-model="editing.textOp.size" :min="0" :max="5" :step="0.05" @change="emit('changed')"/>
+                            <input type="number" v-model="editing.textOp.size" :min="0" :max="16" :step="0.05" @change="emit('changed')"/>
                             <div class="smallNote">设为0使用全局设置</div>
                         </div>
                     </td>
@@ -175,8 +175,8 @@ defineExpose({
                     <td>大小</td>
                     <td>
                         <div class="viewableRange" v-if="editing.textSOp">
-                            <input type="range" v-model="editing.textSOp.size" :min="0" :max="5" :step="0.25" @change="emit('changed')"/>
-                            <input type="number" v-model="editing.textSOp.size" :min="0" :max="16" @change="emit('changed')"/>
+                            <input type="range" v-model="editing.textSOp.size" :min="0" :max="5" :step="0.05" @change="emit('changed')"/>
+                            <input type="number" v-model="editing.textSOp.size" :min="0" :max="16" :step="0.05" @change="emit('changed')"/>
                             <div class="smallNote">设为0使用全局设置</div>
                         </div>
                     </td>
