@@ -10,12 +10,14 @@ import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { enlargeRect } from "@/utils/coordUtils/coordRect";
 import { TextTagPerTypeGlobalConfig } from "@/models/config";
+import { TextTagIconData, useIconStore } from "@/models/stores/iconStore";
 
 export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const cs = useConfigStore()
     const textTagRectStore = useTextTagRectStore()
     const colorProcStore = useColorProcStore()
+    const iconStore = useIconStore()
     function renderAllTextTags(ctx:CvsContext){
         const allTags = saveStore.save?.textTags
         allTags?.forEach(t=>{
@@ -33,7 +35,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
                 }
             }
         }else{
-            renderSingle(ctx, t)
+            renderPlain(ctx, t)
         }
     }
     function renderForCommonLine(ctx:CvsContext, t:TextTag, lineInfo:Line){
@@ -118,13 +120,81 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             textTagRectStore.setTextTagRect(t.id, rect)
         }
     }
-    function renderSingle(ctx:CvsContext, t:TextTag){
+    function renderPlain(ctx:CvsContext, t:TextTag){
         const mo = t.textOp
         const so = t.textSOp
         const mainEmpty = !t.text?.trim()
         const subEmpty = mainEmpty && !t.textS?.trim()
         const mainRatio = getFontSize(mo, cs.config.textTagPlain.fontSize??1)
         const subRatio = getFontSize(so, cs.config.textTagPlain.subFontSize??1)
+        const { anchor, textAlign } = getParams(cs.config.textTagPlain, t)
+        const textDrawPos:Coord = [...t.pos]
+
+        const iconId = t.icon
+        const icon = saveStore.save?.textTagIcons?.find(x=>x.id==iconId)
+        let idata:TextTagIconData|undefined = undefined
+        let iconWidth = 0, iconHeight = 0
+        let getIconPosX:((tposX:number, tw:number)=>number) = (x)=>x;//怎么通过t.pos和文本部分的宽高确定icon中心位置
+        let getIconPosY:((tposY:number, th:number)=>number) = (y)=>y;
+        if(icon){
+            idata = iconStore.getDataByIconId(icon.id)
+            if(idata?.status==='loaded' && idata?.naturalWidth && idata.naturalHeight){
+                const iw = icon.width ?? 50
+                const iwhr = idata.naturalWidth / idata.naturalHeight
+                const ih = iw / iwhr
+                iconWidth = iw; iconHeight = ih;
+                if(textAlign===0){
+                    //文本居中时，icon放在顶部，可能会把text往下挤
+                    if(anchor[1]===-1){
+                        //y锚点在底部时，text不动
+                        getIconPosY = (posY, th)=>posY-(th+ih/2)
+                    }else if(anchor[1]===0){
+                        textDrawPos[1]+=ih/2 
+                        getIconPosY = (posY, th)=>posY-th/2
+                    }else{
+                        textDrawPos[1]+=ih
+                        getIconPosY = (posY)=>posY+ih/2
+                    }
+                    if(anchor[0]===-1){
+                        getIconPosX = (posX, tw)=>posX-tw/2
+                    }else if(anchor[0]===1){
+                        getIconPosX = (posX, tw)=>posX+tw/2
+                    }
+                }else{
+                    if(textAlign===-1){
+                        //文本靠右时，icon放在右侧，可能会把text往左挤
+                        if(anchor[0]===1){
+                            //x锚点在左侧时，text不动
+                            getIconPosX = (posX, tw)=>posX+tw+iw/2
+                        }else if(anchor[0]===0){
+                            textDrawPos[0]-=iw/2
+                            getIconPosX = (posX, tw)=>posX+tw/2
+                        }else{
+                            textDrawPos[0]-=iw
+                            getIconPosX = (posX)=>posX-=iw/2
+                        }
+                    }else{
+                        //文本靠左时，icon放在左侧，可能会把text往右挤
+                        if(anchor[0]===-1){
+                            //x锚点在右侧时，text不动
+                            getIconPosX = (posX, tw)=>posX-(tw+iw/2)
+                        }else if(anchor[0]===0){
+                            textDrawPos[0]+=iw/2
+                            getIconPosX = (posX, tw)=>posX-tw/2
+                        }else{
+                            textDrawPos[0]+=iw
+                            getIconPosX = (posX)=>posX+iw/2
+                        }
+                    }
+                    if(anchor[1]===-1){
+                        getIconPosY = (posY, th)=>posY-th/2
+                    }else if(anchor[1]===1){
+                        getIconPosY = (posY, th)=>posY+th/2
+                    }
+                }
+            }
+        }
+
         const optMain:DrawTextBodyOption = {
             color: mo?.color || cs.config.textTagFontColorHex,
             font: cs.config.textTagFont,
@@ -139,12 +209,24 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             rowHeight: cs.config.textTagSubRowHeightBase * subRatio,
             text: !subEmpty ? t.textS?.trim(): 'Empty TextTag'
         }
-        const { anchor, textAlign } = getParams(cs.config.textTagPlain, t)
-        const drawTextResRect = drawText(ctx, t.pos, anchor, textAlign, optMain, optSub, {
+        const drawTextResRect = drawText(ctx, textDrawPos, anchor, textAlign, optMain, optSub, {
             width: cs.config.textTagFontSizeBase * mainRatio/4,
             color: cs.config.bgColor,
             opacity: 1
         }, 'both')
+        if(icon && idata?.img && getIconPosY && getIconPosX){
+            let tw = 0, th = 0;
+            const rectFull = drawTextResRect?.rectFull
+            if(rectFull){
+                tw = rectFull[1][0] - rectFull[0][0]
+                th = rectFull[1][1] - rectFull[0][1]
+            }
+            const ipx = getIconPosX(t.pos[0], tw)
+            const ipy = getIconPosY(t.pos[1], th)
+            const iconPos:Coord = [ipx, ipy]
+            iconPos[0]-=iconWidth/2; iconPos[1]-=iconHeight/2
+            ctx.drawImage(idata.img, ...iconPos, iconWidth, iconHeight)
+        }
         if(drawTextResRect){
             const rect = drawTextResRect
             textTagRectStore.setTextTagRect(t.id, rect.rectFull)

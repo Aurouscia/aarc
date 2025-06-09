@@ -78,6 +78,13 @@ export class CvsContext{
             b.ctx2d.setLineDash(segments.map(x=>x*b.scale))
         })
     }
+    drawImage(image:CanvasImageSource, dx:number, dy:number, dw:number, dh:number){
+        this.enumerate(b=>{
+            dx = b.mapX(dx); dy = b.mapY(dy)
+            dw *= b.scale; dh *= b.scale
+            b.ctx2d.drawImage(image, dx, dy, dw, dh)
+        })
+    }
     clear(){
         this.enumerate(b=>{
             const cvs = b.ctx2d.canvas

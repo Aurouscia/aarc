@@ -1,7 +1,7 @@
 import { defineStore, storeToRefs } from "pinia";
 import { useSaveStore } from "./saveStore";
 
-interface TextTagIconData{
+export interface TextTagIconData{
     img?:HTMLImageElement
     naturalWidth?:number
     naturalHeight?:number

@@ -269,6 +269,13 @@ export const devSave:Save = {
             textS: "some city subway route map",
             textOp: {size:2, color:'#008FFA'},
             textSOp: {size:2, color:'#999999'}
+        },
+        {
+            id: 1005,
+            pos: [900, 350],
+            text: "噜噜噗噗机场",
+            textS: "Lulupupu Airport",
+            icon:1000000
         }
     ],
     pointLinks:[
@@ -307,7 +314,7 @@ export const devSave:Save = {
             id: 1000000,
             name: '机场',
             url: '/icons/airport.png',
-            width: 100
+            width: 50
         }
     ],
     config:{}
