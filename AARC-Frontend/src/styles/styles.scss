@@ -60,6 +60,17 @@ h1.h1WithBtns{
             font-size: 18px;
         }
     }
+    div.searchControl{
+        input{
+            width: 160px;
+        }
+    }
+    @media screen and (max-width:500px) {
+        div.searchControl{
+            flex-direction: column;
+            align-items: flex-end;
+        }   
+    }
 }
 
 

@@ -60,8 +60,11 @@ onMounted(()=>{
 <template>
 <h1 class="h1WithBtns">
     <div>搜索存档</div>
-    <div>
-        <input v-model="search" class="saveSearchInput" placeholder="搜索存档名称" @blur="load"/>
+    <div class="searchControl">
+        <div>
+            <button v-show="search" class="lite" @click="search=undefined;load()">清空</button>
+            <input v-model="search" class="saveSearchInput" placeholder="搜索存档名称" @blur="load"/>
+        </div>
         <select v-model="orderBy" @change="load">
             <option :value="undefined">最新更新</option>
             <option :value="'sta'">车站最多</option>
@@ -119,9 +122,6 @@ onMounted(()=>{
 @use '@/styles/itemIntro.scss';
 @use '@/styles/saveList.scss';
 
-.saveSearchInput{
-    width: 160px;
-}
 .noMatch{
     color: #666; 
     font-size: 16px;

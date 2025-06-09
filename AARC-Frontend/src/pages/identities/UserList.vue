@@ -75,10 +75,10 @@ onMounted(async()=>{
 <template>
 <h1 class="h1WithBtns">
     用户列表
-    <div>
+    <div class="searchControl">
         <div>
-            <button v-show="searchStr" class="lite" @click="searchStr=undefined;loadList()">清空搜索</button>
-            <input v-model="searchStr" @blur="loadList" placeholder="搜索用户名称" style="width: 120px;"/>
+            <button v-show="searchStr" class="lite" @click="searchStr=undefined;loadList()">清空</button>
+            <input v-model="searchStr" @blur="loadList" placeholder="搜索用户名称"/>
         </div>
         <select v-model="orderby" @change="loadList">
             <option :value="'active'">最新活跃</option>
