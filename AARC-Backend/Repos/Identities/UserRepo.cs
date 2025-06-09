@@ -1,4 +1,5 @@
 ﻿using AARC.Models.Db.Context;
+using AARC.Models.Db.Context.Specific;
 using AARC.Models.DbModels.Identities;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Services.App.Mapping;
@@ -28,9 +29,15 @@ namespace AARC.Repos.Identities
         {
             int takeCount = 50;
             var myId = httpUserInfoService.UserInfo.Value.Id;
-            var userQ = string.IsNullOrWhiteSpace(search)
-                ? Existing
-                : Existing.Where(x => x.Name.Contains(search));
+            var userQ = Existing;
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                //sqlite默认大小写敏感，此处强制转为不敏感的（应该不怎么影响性能）
+                if (Context is AarcSqliteContext)
+                    userQ = userQ.Where(x => x.Name.ToLower().Contains(search.ToLower()));
+                else
+                    userQ = userQ.Where(x => x.Name.Contains(search));
+            }
             var orderbySave = orderby == "save";
             var validSavesOwnerIds =
                 orderbySave ? 

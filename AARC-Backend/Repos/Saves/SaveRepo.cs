@@ -1,4 +1,5 @@
 ﻿using AARC.Models.Db.Context;
+using AARC.Models.Db.Context.Specific;
 using AARC.Models.DbModels.Saves;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Services.App.Mapping;
@@ -41,8 +42,12 @@ namespace AARC.Repos.Saves
         public List<SaveDto> Search(
             string search, string orderby, int pageIdx)
         {
-            var q = base.Existing
-                .Where(x => x.Name.Contains(search));
+            var q = base.Existing;
+            //sqlite默认大小写敏感，此处强制转为不敏感的（应该不怎么影响性能）
+            if (Context is AarcSqliteContext)
+                q = q.Where(x => x.Name.ToLower().Contains(search.ToLower()));
+            else
+                q = q.Where(x => x.Name.Contains(search));
             if (orderby == "sta")
             {
                 q = q
