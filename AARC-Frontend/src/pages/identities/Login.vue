@@ -115,7 +115,8 @@ onMounted(async()=>{
             <div><b>本应用对系统版本/浏览器版本非常敏感</b></div>
             <div>如果遇到异常现象，请先</div>
             <!--苹果设备的浏览器内核是系统的一部分，应该提示检查系统版本-->
-            <div v-if="isWebkit">在设置中确认设备<b>是否有系统更新</b></div>
+            <div v-if="isWebkit">在设置中确认设备<b>是否有苹果系统更新</b></div>
+            <div v-if="isWebkit"><b>如果苹果设备较旧，即使系统最新也可能出问题</b></div>
             <!--其他设备提示检查浏览器版本-->
             <div v-else>确认浏览器<b>是否有版本更新</b></div>
             <div><b>不要</b>使用IE等已停止更新的旧型浏览器</div>
@@ -123,6 +124,7 @@ onMounted(async()=>{
             <div>否则程序将无法正常工作</div>
             <div>如果确认版本后问题仍存在，请向管理员报告</div>
         </div>
+        <div style="height: 15vh;"></div>
     </div>
     <div class="loginInfo" v-if="userInfo">
         当前登录：
@@ -193,13 +195,15 @@ button.logout{
 }
 .loginInfo{
     background-color: white;
-    padding: 10px;
+    padding: 5px;
     color:gray;
     font-size:small;
     text-align: center;
     position: fixed;
     margin: 0px;
     left:10px;
-    bottom: 25px;
+    bottom: 10px;
+    box-shadow: 0px 0px 8px 0px gray;
+    border-radius: 5px;
 }
 </style>
