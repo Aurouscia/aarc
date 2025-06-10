@@ -80,7 +80,13 @@ const deepClone = rfdc()
 const preventLeaveStore = usePreventLeavingUnsavedStore()
 const { preventLeaving, releasePreventLeaving } = preventLeaveStore
 const { showUnsavedWarning, preventLeavingDisabled } = storeToRefs(preventLeaveStore)
+let lastSavedTime = 0
 async function saveData(){
+    if(lastSavedTime + 1000 > Date.now()){
+        console.warn('保存过于频繁（1秒内），已忽略本次保存请求')
+        return
+    }
+    lastSavedTime = Date.now()
     configStore.writeConfigToSave()
     if(isNaN(saveIdNum.value)){
         if(import.meta.env.DEV){
