@@ -1,0 +1,105 @@
+<script lang="ts" setup>
+import logoImg from '@/assets/logo/aarc-new.svg';
+</script>
+
+<template>
+    <div class="about">
+        <div class="logoContainer">
+            <img :src="logoImg"/>
+            <div class="appName0">
+                <div>A</div>
+                <div>A</div>
+                <div>R</div>
+                <div>C</div>
+            </div>
+            <div class="appName1">线路图画布</div>
+        </div>
+        <div class="license">
+            本项目以<a href="https://www.apache.org/licenses/LICENSE-2.0.html" target="_blank">Apache-2.0</a>许可证提供<br/>
+            任何人有权下载、使用、修改、再分发本项目的源代码和可执行文件，且无需保持开源<br/>
+            本项目的所有本地和云端功能都不会以任何方式收取费用
+        </div>
+        <div class="getSource">
+            <a href="https://gitee.com/au114514/aarc" target="_blank">Gitee(本体)</a>&nbsp;
+            <a href="https://github.com/Aurouscia/aarc" target="_blank">Github(自动同步镜像)</a>
+        </div>
+        <div class="contributors">
+            <div>源码贡献者：Au</div>
+            <div>主要issue贡献者：滨蜀</div>
+            <div>新版logo设计者：三几几</div>
+            <div>主要软件框架/工具：
+                <a href="https://dotnet.microsoft.com/zh-cn/" target="_blank">.NET</a>、
+                <a href="https://vuejs.org" target="_blank">Vue.js</a>、
+                <a href="https://vite.dev" target="_blank">Vite</a>、
+                <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a>
+            </div>
+            <div>域名和服务器提供者：Au的父亲(武汉被看见科技有限公司)</div>
+            <div>首批活跃用户：滨蜀、四氨合铜离子、Xueshen234、南京精灵的灵芝、哦、NonstopExpress、Hikorta等</div>
+        </div>
+        <div class="copyright">
+            <div>
+                版权所有© 2024-2025
+                Au(<a href="https://github.com/Aurouscia" target="_blank">Aurouscia</a>/<a href="https://gitee.com/au114514" target="_blank">au114514</a>)<br/>
+                保留所有权利(Apache-2.0中开放的除外)
+            </div>
+        </div>
+    </div>
+</template>
+
+<style lang="scss" scoped>
+.about{
+    padding-top: 40px;
+    text-align: center;
+    color: gray;
+    a{
+        text-decoration: underline;
+    }
+    &>*{
+        margin-bottom: 20px;
+    }
+}
+.contributors{
+    font-size: 14px;
+    text-align: left;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+.logoContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0px auto 20px auto;
+    padding: 10px;
+    border-radius: 30px;
+    background-color: #f0f0f0;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    width: fit-content;
+    img{
+        width: 100px;
+        height: 100px;
+        margin-bottom: 4px;
+    }
+    .appName0{
+        font-size: 22px;
+        line-height: 28px;
+        font-weight: bold;
+        color: #333;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        div{
+            text-align: center;
+            flex-basis: 16px;
+            flex-shrink: 0;
+            flex-grow: 0;
+            border-bottom: 1.5px solid #999;
+        }
+    }
+    .appName1{
+        font-size: 16px;
+        margin-top: 6px;
+        color: #666;
+    }
+}
+</style>
