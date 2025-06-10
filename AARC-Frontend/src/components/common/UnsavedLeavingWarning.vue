@@ -2,13 +2,18 @@
 import { ref } from 'vue';
 
 const props = defineProps<{
-    release: ()=>void
+    release: ()=>void,
+    save: ()=>Promise<void>
 }>();
 const noSave = ref<boolean>(false);
 function ok(){
     if(noSave.value){
         props.release();
     }
+    emits('ok')
+}
+async function clickSave(){
+    await props.save()
     emits('ok')
 }
 const emits = defineEmits<{
@@ -23,6 +28,9 @@ const emits = defineEmits<{
             <h2>警告</h2>
             <div>
                 有未保存的更改，离开前应先保存
+            </div>
+            <div>
+                <button @click="clickSave">点击保存</button>
             </div>
             <div class="noSave">
                 <input v-model="noSave" type="checkbox"> 我要不保存直接离开
@@ -61,10 +69,12 @@ input{
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
+    padding: 10px;
 }
 .noSave{
     display: flex;
     align-items: center;
+    margin-top: 20px;
 }
 .fixFill{
   position: fixed;

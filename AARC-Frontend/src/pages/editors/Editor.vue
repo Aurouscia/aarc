@@ -160,7 +160,8 @@ onUnmounted(()=>{
 <template>
     <Cvs v-if="loadComplete" ref="cvsComponent"></Cvs>
     <Menu v-if="loadComplete" @save-data="saveData"></Menu>
-    <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
+    <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving"
+        :save="saveData" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
     <HiddenLongWarnPrompt v-if="showHiddenLongWarn" @ok="showHiddenLongWarn=false"></HiddenLongWarnPrompt>
     <div v-if="savingDisabledWarning" class="statusDisplay savingDisabledWarning">{{ savingDisabledWarning }}</div>
     <div class="cachePreventer">
