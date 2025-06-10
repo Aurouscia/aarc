@@ -9,7 +9,7 @@ import fileDownload from 'js-file-download';
 import Loading from '@/components/common/Loading.vue';
 import { Save, saveLineCount, saveStaCount } from '@/models/save';
 import { guideInfo } from '@/app/guideInfo';
-import defaultMini from '@/assets/logo/aarc.svg'
+import defaultMini from '@/assets/defaultMini.svg'
 import { SaveDto } from '@/app/com/apiGenerated';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';

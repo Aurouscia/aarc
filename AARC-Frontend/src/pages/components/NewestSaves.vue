@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useApiStore } from '@/app/com/apiStore';
 import { onMounted, ref } from 'vue';
-import defaultMini from '@/assets/logo/aarc.svg'
+import defaultMini from '@/assets/defaultMini.svg';
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { SaveDto } from '@/app/com/apiGenerated';

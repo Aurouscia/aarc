@@ -2,7 +2,7 @@
 import { SaveDto } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import { onMounted, ref } from 'vue';
-import defaultMini from '@/assets/logo/aarc.svg'
+import defaultMini from '@/assets/defaultMini.svg';
 import Loading from '@/components/common/Loading.vue';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
 import { useSavesRoutesJump } from './routes/routesJump';

@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { getTopbarData } from './model/topbarData';
 import itemsImg from '@/assets/ui/items.svg';
-import aarcLogo from '@/assets/logo/aarc.svg'
+import aarcLogo from '@/assets/logo/aarc-new.svg'
 import defaultAvatar from '@/assets/defaultAvatar.svg'
 import { TopbarModel } from './model/topbarModel';
 import TopbarBodyHorizontal from './TopbarBodyHorizontal.vue';
@@ -87,6 +87,7 @@ $topbar-logo-area-width : 110px;
         color: #333;
         .logoText1{
             font-size: 18px;
+            height: 23px;
         }
         .logoText2{
             font-size: 10px;
