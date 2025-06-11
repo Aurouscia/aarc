@@ -6,6 +6,8 @@ using AARC.Services.App.Mapping;
 using AARC.Services.App.OpenApi;
 using AARC.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCompression;
+using System.IO.Compression;
 
 namespace AARC.Services.App
 {
@@ -27,6 +29,15 @@ namespace AARC.Services.App
             services.Configure<ApiBehaviorOptions>(opt =>
             {
                 opt.SuppressModelStateInvalidFilter = true;
+            });
+            services.AddResponseCompression();
+            services.Configure<BrotliCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.Optimal;
+            });
+            services.Configure<GzipCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.Optimal;
             });
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<HttpUserIdProvider>();

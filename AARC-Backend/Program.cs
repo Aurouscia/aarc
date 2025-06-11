@@ -33,6 +33,7 @@ try
     app.UseRouting();
     app.UseAuthorization();
     app.UseSerilog();
+    app.UseResponseCompression();
     app.MapControllers();
 
     Log.Information("AARC启动成功=============================================");
