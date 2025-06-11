@@ -6,7 +6,6 @@ import { enableContextMenu, disableContextMenu } from '@/utils/eventUtils/contex
 import foldImg from '@/assets/ui/fold.svg'
 import settingsImg from '@/assets/ui/settings.svg'
 import ControlPointOptions from './sidebars/options/ControlPointOptions.vue';
-import { watch } from 'vue';
 
 const nameEditStore = useNameEditStore()
 const { nameMain, nameSub, editing, edited, nameEditorDiv, controlPointOptionsPanel } = storeToRefs(nameEditStore)
@@ -25,22 +24,21 @@ const {
     apply: nameEditStore.applyName,
     endEditing: nameEditStore.endEditing
 })
-watch(editing, newVal=>{
-    if(newVal){
-        enableContextMenu(10)
-    }else{
-        disableContextMenu()
-    }
-})
+function focusHandler(){
+    enableContextMenu(10)
+}
+function blurHandler(){
+    disableContextMenu()
+}
 </script>
 
 <template>
     <div class="nameEditor bangPanel" :class="{retracted:!editing}" ref="nameEditorDiv">
         <textarea v-model="nameMain" ref="nameMainInput" :rows="nameMainRows" @input="inputHandler('main')"
-            @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler"
+            @focus="nameEditStore.nameInputFocusHandler();focusHandler()" @blur="blurHandler()" @keydown="keyHandler"
             spellcheck="false" placeholder="请输入站名"></textarea>
         <textarea v-model="nameSub" ref="nameSubInput" :rows="nameSubRows" @input="inputHandler('sub')"
-            @focus="nameEditStore.nameInputFocusHandler" @keydown="keyHandler" class="secondary"
+            @focus="nameEditStore.nameInputFocusHandler();focusHandler()" @blur="blurHandler()" @keydown="keyHandler" class="secondary"
             spellcheck="false" placeholder="请输入外语站名/副站名"></textarea>
         <div @click="nameEditStore.controlPointOptionsPanelOpen()" class="settingsBtn sqrBtn withShadow">
             <img :src="settingsImg"/>

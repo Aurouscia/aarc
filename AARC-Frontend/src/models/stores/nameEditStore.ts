@@ -17,7 +17,7 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
     const nameSub = ref<string>()
     const edited = ref(false)
     const editing = ref(false)
-    const nameInputFocusHandler = ref<()=>void>()
+    const nameInputFocusHandler = ref<()=>void>(()=>{})
     const nameEditorDiv = ref<HTMLDivElement>()
     const controlPointOptionsPanel = ref<InstanceType<typeof ControlPointOptions>>()
     function startEditing(ptId:number, openOptionsPanel?:boolean){
