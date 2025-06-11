@@ -10,6 +10,7 @@ namespace AARC.Services.Files
             this IServiceCollection services)
         {
             services.AddSingleton<SaveMiniatureFileService>();
+            services.AddSingleton<SaveBackupFileService>();
             return services;
         }
     }

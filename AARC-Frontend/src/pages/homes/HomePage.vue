@@ -33,9 +33,10 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-6-11更新'">
+    <Notice :type="'info'" :title="'2025-6-12更新'">
         1. 加载和保存压缩机制（速度提升2-3倍）<br/>
         2. 修复删空线路的点造成其支线无法访问的问题<br/>
+        3. 存档自动备份机制（用户无法访问，可联系服主获取）<br/>
         注意：根据需求调研，“客流量模拟”被调整到中期规划，而“多人协作”被调整到远期规划
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">
@@ -118,8 +119,9 @@ onMounted(()=>{
 <div class="openSourceNote">
     本项目以<a href="https://apache.org/licenses/LICENSE-2.0" target="_blank">Apache-2.0</a>开源许可证提供，可私有部署和商用。
     欢迎对本项目源码作出贡献或提出改进意见。<br/>
-    <a href="https://gitee.com/au114514/aarc" target="_blank">Gitee(本体)</a><br/>
-    <a href="https://github.com/Aurouscia/aarc" target="_blank">Github(自动同步镜像)</a><br/>
+    <a href="https://gitee.com/au114514/aarc" target="_blank">Gitee(本体)</a>&nbsp;
+    <a href="https://github.com/Aurouscia/aarc" target="_blank">Github(自动同步镜像)</a>
+    <div>本项目将用户的劳动成果保护放在第一位，不限制保存次数，请尽可能多保存。若出现误操作/他人破坏/恶性bug导致进度大量丢失，可联系服主获取备份。</div>
     <div style="color:cornflowerblue">承诺：不管后期添加多少功能，本项目永不以任何形式收取任何费用，所有功能全部开源免费。</div>
 </div>
 </template>

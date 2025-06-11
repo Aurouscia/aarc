@@ -33,6 +33,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Data\Backups\此处用于存储备份.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Data\Miniatures\此处用于存储略缩图.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

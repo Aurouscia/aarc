@@ -15,7 +15,7 @@ namespace AARC.Services.Files
             var cvsDir = new DirectoryInfo(cvsDirPath);
             if (!cvsDir.Exists)
                 cvsDir.Create();
-            CleanUp(cvsId);
+            CleanUp(cvsDir);
             var fileName = DateTime.Now.ToString("yyyyMMdd-HHmmss-fff");
             fileName = Path.ChangeExtension(fileName, "png");
             var filePath = Path.Combine(cvsDirPath, fileName);
@@ -42,10 +42,8 @@ namespace AARC.Services.Files
             }
             return null;
         }
-        public void CleanUp(int id)
+        public void CleanUp(DirectoryInfo cvsDir)
         {
-            var cvsDirPath = Path.Combine(miniFileBaseDir, id.ToString());
-            var cvsDir = new DirectoryInfo(cvsDirPath);
             var oneDayAgo = DateTime.Now.AddDays(-1);
             if (cvsDir.Exists)
             {

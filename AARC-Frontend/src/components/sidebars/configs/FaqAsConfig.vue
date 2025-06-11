@@ -53,6 +53,13 @@ import ConfigSection from './shared/ConfigSection.vue';
         </div>
     </div>
     <div>
+        <h3>获取备份</h3>
+        <div>
+            <p>若出现误操作/他人破坏/恶性bug导致进度大量丢失，可联系服主获取备份（每日一份、最多10分钟覆盖一次）。</p>
+            <p>建议定期进行“我的存档-信息设置-导出工程文件”，保存存档到自己的设备上。</p>
+        </div>
+    </div>
+    <div>
         <h3>有任何用着不爽的地方</h3>
         <div>
             <p>请加首页的qq群联系群主反映</p>

@@ -14,7 +14,9 @@ namespace AARC.Controllers.Saves
     public class SaveController(
         SaveRepo saveRepo,
         UserRepo userRepo,
-        SaveMiniatureFileService saveMiniatureFileService
+        SaveMiniatureFileService saveMiniatureFileService,
+        SaveBackupFileService saveBackupFileService,
+        ILogger<SaveController> logger
         ) : Controller
     {
         [AllowAnonymous]
@@ -69,11 +71,7 @@ namespace AARC.Controllers.Saves
             [FromForm]int staCount,
             [FromForm]int lineCount)
         {
-            var success = saveRepo.UpdateData(id, data, staCount, lineCount, out var errmsg);
-            userRepo.UpdateCurrentUserLastActive();
-            if (success)
-                return true;
-            throw new RqEx(errmsg);
+            return SaveDataToDbAndBackup(id, data, staCount, lineCount);
         }
         [HttpPost]
         public bool UpdateDataCompressed(
@@ -86,11 +84,7 @@ namespace AARC.Controllers.Saves
             using var gzipStream = new GZipStream(dataStream, CompressionMode.Decompress);
             using var streamReader = new StreamReader(gzipStream);
             var data = streamReader.ReadToEnd();
-            var success = saveRepo.UpdateData(id, data, staCount, lineCount, out var errmsg);
-            userRepo.UpdateCurrentUserLastActive();
-            if (success)
-                return true;
-            throw new RqEx(errmsg);
+            return SaveDataToDbAndBackup(id, data, staCount, lineCount);
         }
         [HttpPost]
         public bool UpdateMiniature(int id, IFormFile mini)
@@ -135,7 +129,6 @@ namespace AARC.Controllers.Saves
                 s.MiniUrl = url;
             }
         }
-
         [NonAction]
         private void EnrichSaveOwner(List<SaveDto> saves)
         {
@@ -149,6 +142,25 @@ namespace AARC.Controllers.Saves
                 var uname = users.Find(u => u.Id == s.OwnerUserId)?.Name;
                 s.OwnerName = uname;
             }
+        }
+        [NonAction]
+        private bool SaveDataToDbAndBackup(int id, string data, int staCount, int lineCount)
+        {
+            var success = saveRepo.UpdateData(id, data, staCount, lineCount, out var errmsg);
+            userRepo.UpdateCurrentUserLastActive();
+            if (success)
+            {
+                try
+                {
+                    saveBackupFileService.Write(data, id);
+                }
+                catch(Exception ex)
+                {
+                    logger.LogError(ex, "{id}号画布备份失败，长度{length}", id, data.Length);
+                }
+                return true;
+            }
+            throw new RqEx(errmsg);
         }
     }
 }
