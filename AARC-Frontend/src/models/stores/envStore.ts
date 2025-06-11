@@ -642,6 +642,10 @@ export const useEnvStore = defineStore('env', ()=>{
             itsTagIds.forEach(tId=>{
                 saveStore.removeTextTag(tId)
             })
+            const itsChildren = saveStore.save.lines.filter(x=>x.parent==lineId)
+            for(const child of itsChildren){
+                child.parent = undefined
+            }
         }
         setLinesFormalPts(lineId, undefined)
         if(!suppressRender)
