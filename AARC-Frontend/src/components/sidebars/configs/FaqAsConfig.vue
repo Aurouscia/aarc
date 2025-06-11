@@ -6,7 +6,7 @@ import ConfigSection from './shared/ConfigSection.vue';
 <ConfigSection :title="'常见问题'" :special="true">
 <div class="faqs">
     <div>
-        <h3>怎么避免卡顿</h3>
+        <h3>避免卡顿</h3>
         <div>
             <p>你应该：干净利落地移动/缩放视角，并在两次移动/缩放间留出稍长的空隙。</p>
             <p>卡顿是由于js的单线程性质造成的，无法根治，但如果操作者能与工具紧密配合，就能避免发生卡顿。</p>
@@ -17,9 +17,16 @@ import ConfigSection from './shared/ConfigSection.vue';
         </div>
     </div>
     <div>
-        <h3>怎么控制线路走向</h3>
+        <h3>控制线路走向</h3>
         <div>
             <p>请点击首页的紫色“查看使用说明”链接，并跟随里面的引导。</p>
+        </div>
+    </div>
+    <div>
+        <h3>鼠标快捷操作</h3>
+        <div>
+            <p>右键点击车站，将其旋转。</p>
+            <p>ctrl+右键点击车站，切换是否显示。</p>
         </div>
     </div>
     <div>
