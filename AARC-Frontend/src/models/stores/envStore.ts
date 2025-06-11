@@ -384,11 +384,11 @@ export const useEnvStore = defineStore('env', ()=>{
                     const snapRes = snapName(pt)
                     if(snapRes){
                         pt.nameP = snapRes.to
-                        coordRound(pt.nameP)
                         activePtNameSnapped.value = snapRes.type
                     }else{
                         activePtNameSnapped.value = 'no'
                     }
+                    coordRound(pt.nameP)
                 }
                 movedPoint.value = true
             }
