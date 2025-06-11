@@ -33,9 +33,9 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-6-8更新'">
-        1. 添加线路-“是否伪线路”设置（可让图例、图例的框等不出现在略缩图中，也不算线路数）<br/>
-        2. 添加设置-常见问题解答<br/>
+    <Notice :type="'info'" :title="'2025-6-11更新'">
+        1. 加载和保存压缩机制（速度提升2-3倍）<br/>
+        2. 修复删空线路的点造成其支线无法访问的问题<br/>
         注意：根据需求调研，“客流量模拟”被调整到中期规划，而“多人协作”被调整到远期规划
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">

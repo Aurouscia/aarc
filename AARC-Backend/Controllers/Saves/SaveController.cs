@@ -3,6 +3,7 @@ using AARC.Repos.Saves;
 using AARC.Services.Files;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IO.Compression;
 using RqEx = AARC.Utils.Exceptions.RequestInvalidException;
 
 namespace AARC.Controllers.Saves
@@ -68,6 +69,23 @@ namespace AARC.Controllers.Saves
             [FromForm]int staCount,
             [FromForm]int lineCount)
         {
+            var success = saveRepo.UpdateData(id, data, staCount, lineCount, out var errmsg);
+            userRepo.UpdateCurrentUserLastActive();
+            if (success)
+                return true;
+            throw new RqEx(errmsg);
+        }
+        [HttpPost]
+        public bool UpdateDataCompressed(
+            int id,
+            IFormFile dataCompressed,
+            [FromForm]int staCount,
+            [FromForm]int lineCount)
+        {
+            using var dataStream = dataCompressed.OpenReadStream();
+            using var gzipStream = new GZipStream(dataStream, CompressionMode.Decompress);
+            using var streamReader = new StreamReader(gzipStream);
+            var data = streamReader.ReadToEnd();
             var success = saveRepo.UpdateData(id, data, staCount, lineCount, out var errmsg);
             userRepo.UpdateCurrentUserLastActive();
             if (success)

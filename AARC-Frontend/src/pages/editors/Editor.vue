@@ -21,6 +21,7 @@ import { useCachePreventer } from '@/utils/timeUtils/cachePreventer';
 import { DocumentHiddenLongWatcher } from '@/utils/eventUtils/documentHiddenLong';
 import HiddenLongWarnPrompt from './components/HiddenLongWarnPrompt.vue';
 import { useIconStore } from '@/models/stores/iconStore';
+import { compressObjectToGzip } from '@/utils/dataUtils/compressObjectToGzip';
 
 const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
@@ -96,10 +97,26 @@ async function saveData(){
         pop.value?.show('此处不能保存', 'failed')
         return
     }
-    const data = JSON.stringify(saveStore.save)
     const staCount = saveStore.getStaCount()
     const lineCount = saveStore.getLineCount()
-    const resp = await api.save.updateData(saveIdNum.value, data, staCount, lineCount)
+
+    let resp:boolean|undefined = false
+    let blob:Blob|'notSupported';
+    try{  
+        blob = await compressObjectToGzip(saveStore.save??{})
+    }
+    catch{
+        blob = 'notSupported'
+        console.warn('存档数据压缩失败，使用原版保存机制')
+    }
+    if(blob instanceof Blob){
+        resp = await api.save.updateDataCompressed(saveIdNum.value, {fileName:'data', data:blob}, staCount, lineCount)
+    }
+    else{
+        //若blob不是Blob（浏览器不支持压缩或出了问题）则直接明文保存
+        const data = JSON.stringify(saveStore.save??{})
+        resp = await api.save.updateData(saveIdNum.value, data, staCount, lineCount)
+    }
     if(resp){
         releasePreventLeaving()
         pop.value?.show('保存成功', 'success')
