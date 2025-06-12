@@ -45,7 +45,8 @@ async function load() {
         searchRes.value = res
         searchedUsing.value = search.value
         searchedUsingOrderBy.value = orderBy.value
-        router.replace(searchSaveRoute(search.value, orderBy.value))
+        await router.replace(searchSaveRoute(search.value, orderBy.value))
+        setEnteredFrom()
     }
 }
 
