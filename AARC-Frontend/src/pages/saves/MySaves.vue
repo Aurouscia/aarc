@@ -13,6 +13,7 @@ import defaultMini from '@/assets/defaultMini.svg'
 import { SaveDto } from '@/app/com/apiGenerated';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
+import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 
 const saveList = ref<WithIntroShow<SaveDto>[]>()
 const api = useApiStore();
@@ -151,7 +152,9 @@ async function downloadJson(){
         fileDownload(json, `${editingSave.value.name}.aarc.json`)
 }
 
+const { setEnteredFrom } = useEnteredCanvasFromStore()
 onMounted(async()=>{
+    setEnteredFrom()
     await load()
     await appVersionCheck()
 })

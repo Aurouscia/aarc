@@ -6,9 +6,13 @@ import Notice from '@/components/common/Notice.vue';
 import { onMounted } from 'vue';
 import { appVersionCheck } from '@/app/appVersionCheck';
 import SearchSaveEntrance from '../components/SearchSaveEntrance.vue';
+import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
+
+const { setEnteredFrom } = useEnteredCanvasFromStore()
 
 onMounted(()=>{
     appVersionCheck()
+    setEnteredFrom()
 })
 </script>
 

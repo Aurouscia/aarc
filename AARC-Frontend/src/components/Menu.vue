@@ -15,8 +15,8 @@ import snapInterPtImg from '@/assets/ui/editor/snapInterPt.svg';
 import snapInterPtEnabledImg from '@/assets/ui/editor/snapInterPtEnabled.svg';
 import snapNeighborExtendImg from '@/assets/ui/editor/snapNeighborExtend.svg';
 import snapNeighborExtendEnabledImg from '@/assets/ui/editor/snapNeighborExtendEnabled.svg';
-import { useRouter } from 'vue-router';
 import ToolBox from './sidebars/ToolBox.vue';
+import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 
 const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()
@@ -24,7 +24,6 @@ const toolBox = ref<InstanceType<typeof ToolBox>>()
 const sizeEdit = ref<InstanceType<typeof Terrains>>()
 const exportPng = ref<InstanceType<typeof ExportPng>>()
 const configs = ref<InstanceType<typeof Configs>>()
-const router = useRouter()
 const { preventingLeaving, unsavedForALongTime } = storeToRefs(usePreventLeavingUnsavedStore())
 const { 
     snapNeighborExtendsEnabled:snee,
@@ -74,14 +73,17 @@ function openSidebarOf(name:SidebarNames){
     else
         toolBox.value?.fold()
 }
+
+const { goBackToWhereWeEntered } = useEnteredCanvasFromStore()
 function saveData(e:Event){
     if(e instanceof TouchEvent){
         e.preventDefault() //避免重复触发click事件
     }
     if(saveBtnMode.value=='save')
         emit('saveData')
-    else if(saveBtnMode.value=='leave')
-        router.back()
+    else if(saveBtnMode.value=='leave'){
+        goBackToWhereWeEntered()
+    }
 }
 const emit = defineEmits<{
     (e:'saveData'):void

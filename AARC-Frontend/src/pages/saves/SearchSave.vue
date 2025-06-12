@@ -8,6 +8,7 @@ import { WithIntroShow } from '@/utils/type/WithIntroShow';
 import { useSavesRoutesJump } from './routes/routesJump';
 import { useRouter } from 'vue-router';
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
+import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 
 const api = useApiStore()
 const { someonesSavesRoute, searchSaveRoute } = useSavesRoutesJump()
@@ -48,7 +49,9 @@ async function load() {
     }
 }
 
+const { setEnteredFrom } = useEnteredCanvasFromStore()
 onMounted(()=>{
+    setEnteredFrom()
     if(search.value){
         load()
     }else{
