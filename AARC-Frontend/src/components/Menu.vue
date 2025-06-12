@@ -75,10 +75,7 @@ function openSidebarOf(name:SidebarNames){
 }
 
 const { goBackToWhereWeEntered } = useEnteredCanvasFromStore()
-function saveData(e:Event){
-    if(e instanceof TouchEvent){
-        e.preventDefault() //避免重复触发click事件
-    }
+function saveData(){
     if(saveBtnMode.value=='save')
         emit('saveData')
     else if(saveBtnMode.value=='leave'){
@@ -98,7 +95,7 @@ const emit = defineEmits<{
         <div @click="openSidebarOf('sizeEdit')" class="sqrBtn withShadow">画布</div>
         <div @click="openSidebarOf('configs')" class="sqrBtn withShadow">设置</div>
         <div @click="openSidebarOf('exportPng')" class="sqrBtn withShadow">导出</div>
-        <div @click="saveData" @touchstart="saveData" class="sqrBtn withShadow saveBtn">
+        <div @click="saveData" class="sqrBtn withShadow saveBtn">
             <div v-show="preventingLeaving" class="saveRedDot" :class="{unsavedForALongTime}"></div>
             {{ saveBtnText }}
         </div>
