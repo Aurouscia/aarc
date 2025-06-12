@@ -1,5 +1,5 @@
 import { RouteLocationRaw, useRouter } from "vue-router"
-import { loginName, registerName } from "./routesNames"
+import { loginName, registerName, userListName } from "./routesNames"
 
 export const useIdentitiesRoutesJump = ()=>{
     const router = useRouter()
@@ -19,5 +19,13 @@ export const useIdentitiesRoutesJump = ()=>{
             name:registerName
         }
     }
-    return { loginRoute, loginRouteJump, registerRoute }
+    function userListRoute(search?:string){
+        return {
+            name:userListName,
+            query:{
+                search
+            }
+        }
+    }
+    return { loginRoute, loginRouteJump, registerRoute, userListRoute }
 }

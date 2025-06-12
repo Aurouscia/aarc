@@ -11,18 +11,24 @@ import { UserDto, UserType } from '@/app/com/apiGenerated';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
+import { useRouter } from 'vue-router';
 
 const list = ref<WithIntroShow<UserDto>[]>()
 const api = useApiStore()
 const { someonesSavesRoute } = useSavesRoutesJump()
-const { loginRouteJump } = useIdentitiesRoutesJump()
+const { loginRouteJump, userListRoute } = useIdentitiesRoutesJump()
 const configStore = useUserListLocalConfigStore()
 const { orderby } = storeToRefs(configStore)
-const searchStr = ref<string>()
 const orderbySave = computed(() => orderby.value === 'save')
 const orderbyActive = computed(() => !orderby.value || orderby.value === 'active')
+const router = useRouter()
+
+const searchInit = router.currentRoute.value.query["search"] as string|undefined
+const searchStr = ref<string|undefined>(searchInit)
+
 async function loadList() {
     list.value = await api.user.index(searchStr.value, orderby.value)
+    await router.replace(userListRoute(searchStr.value))
 }
 
 const { pop } = useUniqueComponentsStore()
