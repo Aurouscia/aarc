@@ -53,10 +53,16 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
         }
         const ctx = getCtx();
         cvsCleared = false
-        if(envStore.activeLine){
-            renderLine(ctx, envStore.activeLine)
-            renderLinePoints(ctx, envStore.activeLine)
-            renderEmphasizesForRingLines(ctx, [envStore.activeLine])
+        if(envStore.activeLine || envStore.activeTextTag?.forId){
+            let line = envStore.activeLine
+            if(!line){
+                line = saveStore.getLineById(envStore.activeTextTag?.forId ?? 0)
+            }
+            if(line){
+                renderLine(ctx, line)
+                renderLinePoints(ctx, line)
+                renderEmphasizesForRingLines(ctx, [line])
+            }
         }
         let lineExtendWays:SgnCoord[] = []
         lineExtendStore.clearLineExtendBtns()
