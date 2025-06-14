@@ -23,7 +23,7 @@ namespace AARC.Services.App.Logging
                 options.MessageTemplate 
                     = "HTTP {RequestMethod} by {UserId} {RequestPath}{QueryString}" +
                     " with {RequestLength} bytes" +
-                    " => code {StatusCode} with {ResponseLength} bytes in {Elapsed}ms";
+                    " => code {StatusCode} with {ResponseLength} bytes in {Elapsed:0.000}ms";
 
                 options.GetLevel = (httpContext, elapsed, ex) =>
                 {
