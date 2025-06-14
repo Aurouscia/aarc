@@ -1,4 +1,4 @@
-import { Coord, SgnCoord } from "@/models/coord";
+import { Coord, RectCoord, SgnCoord } from "@/models/coord";
 import { Line, LineType, TextOptions, TextTag } from "@/models/save";
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { useConfigStore } from "@/models/stores/configStore";
@@ -12,6 +12,7 @@ import { enlargeRect } from "@/utils/coordUtils/coordRect";
 import { TextTagPerTypeGlobalConfig } from "@/models/config";
 import { TextTagIconData, useIconStore } from "@/models/stores/iconStore";
 import { drawRect } from "@/utils/drawUtils/drawRect";
+import { drawCross } from "@/utils/drawUtils/drawCross";
 
 export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     const saveStore = useSaveStore()
@@ -30,7 +31,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             const line = saveStore.getLineById(t.forId)
             if(line){
                 if(line.type===LineType.common)
-                    renderForCommonLine(ctx, t, line)
+                    renderForCommonLine(ctx, t, line, strokeRect)
                 else if(line.type===LineType.terrain){
                     renderForTerrainLine(ctx, t, line, strokeRect)
                 }
@@ -39,7 +40,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             renderPlain(ctx, t, strokeRect)
         }
     }
-    function renderForCommonLine(ctx:CvsContext, t:TextTag, lineInfo:Line){
+    function renderForCommonLine(ctx:CvsContext, t:TextTag, lineInfo:Line, strokeRect?:boolean){
         const commonLineBuiltinRatio = 1.2
         const mainRatio = getFontSize(t.textOp, cs.config.textTagForLine.fontSize??1) * commonLineBuiltinRatio
         const subRatio = getFontSize(t.textSOp, cs.config.textTagForLine.subFontSize??1) * commonLineBuiltinRatio
@@ -85,8 +86,10 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             drawTextForLineName(ctx, justifiedPos, anchor, textAlign, optMain, optSub, false, 'draw', width, dropCap)
             const rectEnlarged = enlargeRect(rect, paddingValue)
             textTagRectStore.setTextTagRect(t.id, rectEnlarged)
+            if(strokeRect){
+                drawRectAndAnchor(ctx, t.pos, rectEnlarged)
+            }
         }
-        
     }
     function renderForTerrainLine(ctx:CvsContext, t:TextTag, lineInfo:Line, strokeRect?:boolean){
         const terrainLineBuiltinRatio = 1.2
@@ -120,7 +123,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             const rect = drawLineNameRes.rect
             textTagRectStore.setTextTagRect(t.id, rect)
             if(strokeRect){
-                drawRect(ctx, rect)
+                drawRectAndAnchor(ctx, t.pos, rect)
             }
         }
     }
@@ -235,7 +238,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             const rect = drawTextResRect
             textTagRectStore.setTextTagRect(t.id, rect.rectFull)
             if(strokeRect){
-                drawRect(ctx, rect.rectFull)
+                drawRectAndAnchor(ctx, t.pos, rect.rectFull)
             }
         }
     }
@@ -297,6 +300,22 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         else if(anchor[1]===1)
             y += paddingValue
         return [ x, y ]
+    }
+    function drawRectAndAnchor(ctx:CvsContext, anchorPos:Coord, rectFull?:RectCoord){
+        if(rectFull)
+            drawRect(ctx, rectFull, 'black', 1.5)
+        drawCross(ctx, {
+            pos: anchorPos,
+            dir: "vertical",
+            armLength: 6,
+            repetitions: [{
+                armWidth: 7,
+                color: 'white'
+            },{
+                armWidth: 2,
+                color: 'black'
+            }]
+        })
     }
     return { renderAllTextTags, renderOneTextTag }
 })
