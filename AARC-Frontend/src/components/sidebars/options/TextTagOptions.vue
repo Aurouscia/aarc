@@ -47,147 +47,173 @@ defineExpose({
 </script>
 
 <template>
-<SideBar ref="sidebar" @click="picker1?.closePanel();picker2?.closePanel()">
-    <div v-if="editing">
-        <h2>标签设置</h2>
-        <div class="optionSection">
-            <table class="fullWidth"><tbody>
-                <tr>
-                    <td>坐标</td>
-                    <td class="coord">
-                        <input type="number" v-model="editing.pos[0]" @change="emit('changed')"/><br/>
-                        <input type="number" v-model="editing.pos[1]" @change="emit('changed')"/>
-                    </td>
-                </tr>
-                <tr v-if="editing.forId">
-                    <td>边距</td>
-                    <td>
-                        <div class="viewableRange">
-                            <input type="range" v-model="editing.padding" :min="0" :max="5" :step="0.25" @change="emit('changed')"/>
-                            <input type="number" v-model="editing.padding" :min="0" :max="5" @change="emit('changed')"/>
-                            <div class="smallNote">设为0使用全局设置</div>
-                            <div class="smallNote">仅对线路名称标签有效</div>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>横向<br/>锚点</td>
-                    <td>
-                        <select v-model="editing.anchorX" @change="emit('changed')">
-                            <option :value="undefined">默认</option>
-                            <option :value="1">左侧</option>
-                            <option :value="0">中心</option>
-                            <option :value="-1">右侧</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>纵向<br/>锚点</td>
-                    <td>
-                        <select v-model="editing.anchorY" @change="emit('changed')">
-                            <option :value="undefined">默认</option>
-                            <option :value="1">顶部</option>
-                            <option :value="0">中心</option>
-                            <option :value="-1">底部</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>文字<br/>对齐</td>
-                    <td>
-                        <select v-model="editing.textAlign" @change="emit('changed')">
-                            <option :value="undefined">默认</option>
-                            <option :value="null">跟随横向锚点</option>
-                            <option :value="1">靠左</option>
-                            <option :value="0">居中</option>
-                            <option :value="-1">靠右</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr v-if="editing.forId">
-                    <td>宽度</td>
-                    <td>
-                        <div class="viewableRange">
-                            <input type="range" v-model="editing.width" :min="0" :max="300" :step="5" @change="emit('changed')"/>
-                            <input type="number" v-model="editing.width" :min="0" :step="1" @change="emit('changed')"/>
-                            <div class="smallNote">如果短于指定宽度<br/>将会向锚点对侧拉长</div>
-                            <div class="smallNote">设为0使用默认值</div>
-                        </div>
-                    </td>
-                </tr>
-                <tr v-if="editing.forId">
-                    <td>数字<br/>放大</td>
-                    <td>
-                        <select v-model="editing.dropCap" @change="emit('changed')">
-                            <option :value="undefined">默认</option>
-                            <option :value="true">开启</option>
-                            <option :value="false">关闭</option>
-                        </select>
-                        <div class="smallNote">若字母数字+"线"结尾</div>
-                        <div class="smallNote">将会无视文字对齐</div>
-                    </td>
-                </tr>
-                <tr v-if="editing.forId">
-                    <td colspan="2" class="smallNote">
-                        以上设置均可在“设置”侧栏中<br/>
-                        定义全局默认值
-                    </td>
-                </tr>
-            </tbody></table>
+    <SideBar ref="sidebar" @click="picker1?.closePanel();picker2?.closePanel()">
+        <div v-if="editing">
+            <h2>标签设置</h2>
+            <div class="optionSection">
+                <table class="fullWidth">
+                    <tbody>
+                        <tr>
+                            <td>坐标</td>
+                            <td class="coord">
+                                <input type="number" v-model="editing.pos[0]" @change="emit('changed')" /><br />
+                                <input type="number" v-model="editing.pos[1]" @change="emit('changed')" />
+                            </td>
+                        </tr>
+                        <tr v-if="editing.forId">
+                            <td>边距</td>
+                            <td>
+                                <div class="viewableRange">
+                                    <input type="range" v-model="editing.padding" :min="0" :max="5" :step="0.25"
+                                        @change="emit('changed')" />
+                                    <input type="number" v-model="editing.padding" :min="0" :max="5"
+                                        @change="emit('changed')" />
+                                    <div class="smallNote">设为0使用全局设置</div>
+                                    <div class="smallNote">仅对线路名称标签有效</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>横向<br />锚点</td>
+                            <td>
+                                <select v-model="editing.anchorX" @change="emit('changed')">
+                                    <option :value="undefined">默认</option>
+                                    <option :value="1">左侧</option>
+                                    <option :value="0">中心</option>
+                                    <option :value="-1">右侧</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>纵向<br />锚点</td>
+                            <td>
+                                <select v-model="editing.anchorY" @change="emit('changed')">
+                                    <option :value="undefined">默认</option>
+                                    <option :value="1">顶部</option>
+                                    <option :value="0">中心</option>
+                                    <option :value="-1">底部</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>文字<br />对齐</td>
+                            <td>
+                                <select v-model="editing.textAlign" @change="emit('changed')">
+                                    <option :value="undefined">默认</option>
+                                    <option :value="null">跟随横向锚点</option>
+                                    <option :value="1">靠左</option>
+                                    <option :value="0">居中</option>
+                                    <option :value="-1">靠右</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr v-if="!editing.forId">
+                            <td>白边</td>
+                            <td>
+                                <div v-if="editing.whiteStroke || editing.whiteStroke == undefined">
+                                    <input type="checkbox" v-model="editing.whiteStroke" @change="emit('changed')"
+                                        checked />
+                                </div>
+                                <div v-else>
+                                    <input type="checkbox" v-model="editing.whiteStroke" @change="emit('changed')" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr v-if="editing.forId">
+                            <td>宽度</td>
+                            <td>
+                                <div class="viewableRange">
+                                    <input type="range" v-model="editing.width" :min="0" :max="300" :step="5"
+                                        @change="emit('changed')" />
+                                    <input type="number" v-model="editing.width" :min="0" :step="1"
+                                        @change="emit('changed')" />
+                                    <div class="smallNote">如果短于指定宽度<br />将会向锚点对侧拉长</div>
+                                    <div class="smallNote">设为0使用默认值</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr v-if="editing.forId">
+                            <td>数字<br />放大</td>
+                            <td>
+                                <select v-model="editing.dropCap" @change="emit('changed')">
+                                    <option :value="undefined">默认</option>
+                                    <option :value="true">开启</option>
+                                    <option :value="false">关闭</option>
+                                </select>
+                                <div class="smallNote">若字母数字+"线"结尾</div>
+                                <div class="smallNote">将会无视文字对齐</div>
+                            </td>
+                        </tr>
+                        <tr v-if="editing.forId">
+                            <td colspan="2" class="smallNote">
+                                以上设置均可在“设置”侧栏中<br />
+                                定义全局默认值
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <h2>主文字样式</h2>
+            <div class="optionSection">
+                <table class="fullWidth">
+                    <tbody>
+                        <tr v-if="!editing.forId">
+                            <td>颜色</td>
+                            <td class="colorPickerTd">
+                                <AuColorPicker ref="picker1" :initial="editing.textOp?.color" :pos="-120"
+                                    @change="c=>colorChangeHandler('main', c)" @done="c=>colorChangeHandler('main', c)"
+                                    :panel-click-stop-propagation="true" :entry-respond-delay="1">
+                                </AuColorPicker>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>大小</td>
+                            <td>
+                                <div class="viewableRange" v-if="editing.textOp">
+                                    <input type="range" v-model="editing.textOp.size" :min="0" :max="5" :step="0.05"
+                                        @change="emit('changed')" />
+                                    <input type="number" v-model="editing.textOp.size" :min="0" :max="16" :step="0.05"
+                                        @change="emit('changed')" />
+                                    <div class="smallNote">设为0使用全局设置</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <h2>副文字样式</h2>
+            <div class="optionSection">
+                <table class="fullWidth">
+                    <tbody>
+                        <tr v-if="!editing.forId">
+                            <td>颜色</td>
+                            <td class="colorPickerTd">
+                                <AuColorPicker ref="picker2" :initial="editing.textSOp?.color" :pos="-120"
+                                    @change="c=>colorChangeHandler('sub', c)" @done="c=>colorChangeHandler('sub', c)"
+                                    :panel-click-stop-propagation="true" :entry-respond-delay="1">
+                                </AuColorPicker>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>大小</td>
+                            <td>
+                                <div class="viewableRange" v-if="editing.textSOp">
+                                    <input type="range" v-model="editing.textSOp.size" :min="0" :max="5" :step="0.05"
+                                        @change="emit('changed')" />
+                                    <input type="number" v-model="editing.textSOp.size" :min="0" :max="16" :step="0.05"
+                                        @change="emit('changed')" />
+                                    <div class="smallNote">设为0使用全局设置</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <h2>主文字样式</h2>
-        <div class="optionSection">
-            <table class="fullWidth"><tbody>
-                <tr v-if="!editing.forId">
-                    <td>颜色</td>
-                    <td class="colorPickerTd">
-                        <AuColorPicker ref="picker1" :initial="editing.textOp?.color" :pos="-120"
-                            @change="c=>colorChangeHandler('main', c)" @done="c=>colorChangeHandler('main', c)"
-                            :panel-click-stop-propagation="true" :entry-respond-delay="1">
-                        </AuColorPicker>
-                    </td>
-                </tr>
-                <tr>
-                    <td>大小</td>
-                    <td>
-                        <div class="viewableRange" v-if="editing.textOp">
-                            <input type="range" v-model="editing.textOp.size" :min="0" :max="5" :step="0.05" @change="emit('changed')"/>
-                            <input type="number" v-model="editing.textOp.size" :min="0" :max="16" :step="0.05" @change="emit('changed')"/>
-                            <div class="smallNote">设为0使用全局设置</div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody></table>
-        </div>
-        <h2>副文字样式</h2>
-        <div class="optionSection">
-            <table class="fullWidth"><tbody>
-                <tr v-if="!editing.forId">
-                    <td>颜色</td>
-                    <td class="colorPickerTd">
-                        <AuColorPicker ref="picker2" :initial="editing.textSOp?.color" :pos="-120"
-                            @change="c=>colorChangeHandler('sub', c)" @done="c=>colorChangeHandler('sub', c)"
-                            :panel-click-stop-propagation="true" :entry-respond-delay="1">
-                        </AuColorPicker>
-                    </td>
-                </tr>
-                <tr>
-                    <td>大小</td>
-                    <td>
-                        <div class="viewableRange" v-if="editing.textSOp">
-                            <input type="range" v-model="editing.textSOp.size" :min="0" :max="5" :step="0.05" @change="emit('changed')"/>
-                            <input type="number" v-model="editing.textSOp.size" :min="0" :max="16" :step="0.05" @change="emit('changed')"/>
-                            <div class="smallNote">设为0使用全局设置</div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody></table>
-        </div>
-    </div>
-    <div class="smallNote" style="text-align: center;"><b>
-        提示：右键点击文本标签可直接打开本菜单
-    </b></div>
-</SideBar>
+        <div class="smallNote" style="text-align: center;"><b>
+                提示：右键点击文本标签可直接打开本菜单
+            </b></div>
+    </SideBar>
 </template>
 
 <style scoped lang="scss">

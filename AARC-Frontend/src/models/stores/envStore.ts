@@ -728,6 +728,15 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         rerender.value([], line.pts)
     }
+
+    function lineWhiteStrokeChanged(line: Line, WhiteStrokeChanged?: boolean) {
+        //白边（默认有）
+        if (WhiteStrokeChanged) {
+            line.whiteStroke = !line.whiteStroke
+        }
+        rerender.value([line.id], [])
+    }
+
     function ensureChildrenOptionsSame(parentLineId:number){
         const parentLine = saveStore.getLineById(parentLineId)
         if(!parentLine)
@@ -863,7 +872,7 @@ export const useEnvStore = defineStore('env', ()=>{
         delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
         createTextTag, duplicateTextTag, createPlainPt,
         startCreatingPtLink, abortCreatingPtLink,
-        endEveryEditing, cancelActive, 
+        endEveryEditing, cancelActive, lineWhiteStrokeChanged,
         closeOps:()=>setOpsPos(false)
     }
 })

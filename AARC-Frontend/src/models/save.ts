@@ -74,6 +74,7 @@ export interface Line{
     zIndex?:number
     parent?:number
     isFake?:boolean
+    whiteStroke?: boolean
 }
 export interface LineStyle{
     id:number
@@ -117,6 +118,7 @@ export interface TextTag{
     anchorY?:SgnNumber
     dropCap?:boolean
     icon?:number
+    whiteStroke?:boolean
     //rot?:FormalRotation
 }
 export interface TextOptions{

@@ -210,10 +210,11 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             text: !subEmpty ? t.textS?.trim(): 'Empty TextTag'
         }
         const drawTextResRect = drawText(ctx, textDrawPos, anchor, textAlign, optMain, optSub, {
-            width: cs.config.textTagFontSizeBase * mainRatio/4,
+            width: cs.config.textTagFontSizeBase * mainRatio / 4,
             color: cs.config.bgColor,
             opacity: 1
-        }, 'both')
+        }, 'both', undefined, t.whiteStroke || t.whiteStroke==undefined)
+        
         if(icon && idata?.img && getIconPosY && getIconPosX){
             let tw = 0, th = 0;
             const rectFull = drawTextResRect?.rectFull
