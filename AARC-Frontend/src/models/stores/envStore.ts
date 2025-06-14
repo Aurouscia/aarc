@@ -728,6 +728,13 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         rerender.value([], line.pts)
     }
+    function lineCarpetChanged(line: Line, lineCarpetChanged?: boolean) {
+        //白边（默认有）
+        if (lineCarpetChanged) {
+            line.carpet = !line.carpet
+        }
+        rerender.value([line.id], [])
+    }
     function ensureChildrenOptionsSame(parentLineId:number){
         const parentLine = saveStore.getLineById(parentLineId)
         if(!parentLine)
@@ -863,7 +870,7 @@ export const useEnvStore = defineStore('env', ()=>{
         delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
         createTextTag, duplicateTextTag, createPlainPt,
         startCreatingPtLink, abortCreatingPtLink,
-        endEveryEditing, cancelActive, 
+        endEveryEditing, cancelActive, lineCarpetChanged,
         closeOps:()=>setOpsPos(false)
     }
 })

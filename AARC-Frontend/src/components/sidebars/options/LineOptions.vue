@@ -161,6 +161,19 @@ onMounted(()=>{
             <div class="smallNote">(可在设置-线路样式<br/>自定义更多选项)</div>
         </td>
     </tr>
+    <tr>
+                        <td>白边</td>
+                        <td v-if="line.type === LineType.common">
+                            <div v-if="line.carpet || line.carpet == undefined">
+                                <input type="checkbox" v-model="line.carpet"
+                                    @change="envStore.lineCarpetChanged(line)" checked />
+                            </div>
+                            <div v-else>
+                                <input type="checkbox" v-model="line.carpet"
+                                    @change="envStore.lineCarpetChanged(line)" />
+                            </div>
+                        </td>
+                    </tr>
     <tr v-if="line.type===LineType.common">
         <td>站名</td>
         <td class="viewableRange">

@@ -19,7 +19,7 @@ export interface DrawTextStrokeOption{
 export function drawText(
     ctx:CvsContext, pos:Coord, align:SgnCoord, textAlignOverride: SgnNumber|undefined,
     main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false,
-    task:'draw'|'measure'|'both' = 'both', width?:number
+    task:'draw'|'measure'|'both' = 'both', width?:number,carpet?:boolean
     ): {rectFull:RectCoord, rectMain:RectCoord}|undefined
 {
     const [x, y] = pos
@@ -87,7 +87,7 @@ export function drawText(
     const needDraw = task === 'draw' || task === 'both'
     const needMeasure = task === 'measure' || task === 'both'
 
-    if(stroke && needDraw){
+    if(stroke && needDraw && carpet){
         ctx.strokeStyle = stroke.color
         ctx.globalAlpha = stroke.opacity
         ctx.lineWidth = stroke.width
