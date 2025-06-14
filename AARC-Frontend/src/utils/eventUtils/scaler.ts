@@ -146,11 +146,20 @@ export class Scaler{
     //         }
     //     }
     // }
+
+    private wheelSens = 0.002
     private wheelHandlerBinded = this.wheelHandler.bind(this)
     private wheelHandler(e:WheelEvent){
         const anchor = this.getAnchorFromEvent(e)
         e.preventDefault()
-        const ratio = 1-e.deltaY*0.001;
+        const d = e.deltaY
+        let ratio = 1
+        if(d > 0){
+            ratio = 1 - d * this.wheelSens;
+        }else{
+            const ratioInversed = 1 + d * this.wheelSens;
+            ratio = 1/ratioInversed;
+        }
         this.scale(ratio,anchor)
     }
 
