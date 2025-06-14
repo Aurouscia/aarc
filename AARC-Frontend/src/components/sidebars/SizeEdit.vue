@@ -10,6 +10,7 @@ import { minCvsSide } from '@/models/save';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 import Notice from '../common/Notice.vue';
+import { useStaNameMainRectStore } from '@/models/stores/saveDerived/staNameRectStore';
 
 const { pop } = useUniqueComponentsStore()
 const saveStore = useSaveStore()
@@ -18,6 +19,7 @@ const cvsFrameStore = useCvsFrameStore()
 const cvsBlocksControlStore = useCvsBlocksControlStore()
 const baseCvsDispatcher = useBaseCvsDispatcher()
 const mainCvsDispatcher = useMainCvsDispatcher()
+const staNameMainRectStore = useStaNameMainRectStore()
 const pendingChanges = ref<[number, number, number, number]>([0,0,0,0]) //上，右，下，左
 const changeIncrement = ref<number>(100)
 const changeCompensate = ref<boolean>(false)
@@ -99,11 +101,12 @@ function applyChange(){
         moveDownward = 0
     if(newW < minCvsSide)
         moveRightward = 0
+    staNameMainRectStore.clearItems()
     saveStore.moveEverything([moveRightward, moveDownward])
     saveStore.setCvsSize([newW, newH])
     cvsFrameStore.initContSizeStyle()
     nextTick(()=>{
-        cvsBlocksControlStore.refreshBlocks()
+        cvsBlocksControlStore.refreshBlocks(false)
         nextTick(()=>{
             baseCvsDispatcher.renderBaseCvs()
             mainCvsDispatcher.renderMainCvs({})
