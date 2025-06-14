@@ -20,19 +20,19 @@ export class Scaler{
         this.moveLocked = moveLocked
         this.scaleLocked = scaleLocked
         this.steppedScale = steppedScale
-        frame.addEventListener("click",(e)=>{
-            const x = e.clientX
-            const y = e.clientY
-            const fw = this.frame.clientWidth;
-            const fh = this.frame.clientHeight;
-            const ax = x/fw;
-            const ay = y/fh;
-            if(e.altKey){
-                this.scale(1.2,{x:ax,y:ay});
-            }else if(e.ctrlKey){
-                this.scale(0.8,{x:ax,y:ay});
-            }
-        })
+        // frame.addEventListener("click",(e)=>{
+        //     const x = e.clientX
+        //     const y = e.clientY
+        //     const fw = this.frame.clientWidth;
+        //     const fh = this.frame.clientHeight;
+        //     const ax = x/fw;
+        //     const ay = y/fh;
+        //     if(e.altKey){
+        //         this.scale(1.2,{x:ax,y:ay});
+        //     }else if(e.ctrlKey){
+        //         this.scale(0.8,{x:ax,y:ay});
+        //     }
+        // })
 
         frame.addEventListener('mousedown',()=>this.mouseDown = true)
         frame.addEventListener("touchmove",this.moveHandlerBinded)
