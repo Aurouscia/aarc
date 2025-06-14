@@ -12,6 +12,7 @@ import { Coord } from "@/models/coord";
 import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
 import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
 import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
+import { drawRect } from "@/utils/drawUtils/drawRect";
 
 //糊弄阈值
 const staNameFobThrsBase = 0.000001
@@ -108,6 +109,9 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
         if(rects){
             staNameRectStore.setStaNameRect(pt.id, rects.rectFull)
             staNameMainRectStore.setStaNameMainRect(pt.id, rects.rectMain)
+            if(markRoot){
+                drawRect(ctx, rects.rectFull)
+            }
         }
 
         if(markRoot){

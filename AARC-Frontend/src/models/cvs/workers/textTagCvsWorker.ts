@@ -1,4 +1,4 @@
-import { Coord, RectCoord, SgnCoord } from "@/models/coord";
+import { Coord, SgnCoord } from "@/models/coord";
 import { Line, LineType, TextOptions, TextTag } from "@/models/save";
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { useConfigStore } from "@/models/stores/configStore";
@@ -11,6 +11,7 @@ import { CvsContext } from "../common/cvsContext";
 import { enlargeRect } from "@/utils/coordUtils/coordRect";
 import { TextTagPerTypeGlobalConfig } from "@/models/config";
 import { TextTagIconData, useIconStore } from "@/models/stores/iconStore";
+import { drawRect } from "@/utils/drawUtils/drawRect";
 
 export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     const saveStore = useSaveStore()
@@ -119,7 +120,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             const rect = drawLineNameRes.rect
             textTagRectStore.setTextTagRect(t.id, rect)
             if(strokeRect){
-                strokeRectLine(ctx, rect)
+                drawRect(ctx, rect)
             }
         }
     }
@@ -234,7 +235,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             const rect = drawTextResRect
             textTagRectStore.setTextTagRect(t.id, rect.rectFull)
             if(strokeRect){
-                strokeRectLine(ctx, rect.rectFull)
+                drawRect(ctx, rect.rectFull)
             }
         }
     }
@@ -296,15 +297,6 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         else if(anchor[1]===1)
             y += paddingValue
         return [ x, y ]
-    }
-    function strokeRectLine(ctx:CvsContext, rect:RectCoord) {
-        const [x, y] = rect[0]
-        const [xr, yb] = rect[1]
-        const w = xr - x
-        const h = yb - y
-        ctx.strokeStyle = 'black'
-        ctx.lineWidth = 1.5
-        ctx.strokeRect(x, y, w, h)
     }
     return { renderAllTextTags, renderOneTextTag }
 })
