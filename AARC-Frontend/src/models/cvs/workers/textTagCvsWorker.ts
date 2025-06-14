@@ -1,4 +1,4 @@
-import { Coord, SgnCoord } from "@/models/coord";
+import { Coord, RectCoord, SgnCoord } from "@/models/coord";
 import { Line, LineType, TextOptions, TextTag } from "@/models/save";
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { useConfigStore } from "@/models/stores/configStore";
@@ -24,18 +24,18 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             renderOneTextTag(ctx, t)
         })
     }
-    function renderOneTextTag(ctx:CvsContext, t:TextTag){
+    function renderOneTextTag(ctx:CvsContext, t:TextTag, strokeRect?:boolean){
         if(t?.forId){
             const line = saveStore.getLineById(t.forId)
             if(line){
                 if(line.type===LineType.common)
                     renderForCommonLine(ctx, t, line)
                 else if(line.type===LineType.terrain){
-                    renderForTerrainLine(ctx, t, line)
+                    renderForTerrainLine(ctx, t, line, strokeRect)
                 }
             }
         }else{
-            renderPlain(ctx, t)
+            renderPlain(ctx, t, strokeRect)
         }
     }
     function renderForCommonLine(ctx:CvsContext, t:TextTag, lineInfo:Line){
@@ -87,7 +87,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         }
         
     }
-    function renderForTerrainLine(ctx:CvsContext, t:TextTag, lineInfo:Line){
+    function renderForTerrainLine(ctx:CvsContext, t:TextTag, lineInfo:Line, strokeRect?:boolean){
         const terrainLineBuiltinRatio = 1.2
         const mainRatio = getFontSize(t.textOp, cs.config.textTagForTerrain.fontSize??1) * terrainLineBuiltinRatio
         const subRatio = getFontSize(t.textSOp, cs.config.textTagForTerrain.subFontSize??1) * terrainLineBuiltinRatio
@@ -118,9 +118,12 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         if(drawLineNameRes?.rect){
             const rect = drawLineNameRes.rect
             textTagRectStore.setTextTagRect(t.id, rect)
+            if(strokeRect){
+                strokeRectLine(ctx, rect)
+            }
         }
     }
-    function renderPlain(ctx:CvsContext, t:TextTag){
+    function renderPlain(ctx:CvsContext, t:TextTag, strokeRect?:boolean){
         const mo = t.textOp
         const so = t.textSOp
         const mainEmpty = !t.text?.trim()
@@ -230,6 +233,9 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         if(drawTextResRect){
             const rect = drawTextResRect
             textTagRectStore.setTextTagRect(t.id, rect.rectFull)
+            if(strokeRect){
+                strokeRectLine(ctx, rect.rectFull)
+            }
         }
     }
     function getFontSize(textOptions:TextOptions|undefined, fallback:number):number{
@@ -290,6 +296,15 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         else if(anchor[1]===1)
             y += paddingValue
         return [ x, y ]
+    }
+    function strokeRectLine(ctx:CvsContext, rect:RectCoord) {
+        const [x, y] = rect[0]
+        const [xr, yb] = rect[1]
+        const w = xr - x
+        const h = yb - y
+        ctx.strokeStyle = 'black'
+        ctx.lineWidth = 1.5
+        ctx.strokeRect(x, y, w, h)
     }
     return { renderAllTextTags, renderOneTextTag }
 })

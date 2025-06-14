@@ -107,7 +107,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
             })
         }
         if(envStore.activeTextTag){
-            renderOneTextTag(ctx, envStore.activeTextTag)
+            renderOneTextTag(ctx, envStore.activeTextTag, true)
         }
         renderCursor(ctx)
         renderDiscardArea(ctx)
