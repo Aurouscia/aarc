@@ -214,7 +214,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             color: cs.config.bgColor,
             opacity: 1
         }, 'both')
-        if(icon && idata?.img && getIconPosY && getIconPosX){
+        if(icon && idata?.img && idata.status==='loaded' && getIconPosY && getIconPosX){
             let tw = 0, th = 0;
             const rectFull = drawTextResRect?.rectFull
             if(rectFull){
