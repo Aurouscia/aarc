@@ -152,7 +152,10 @@ export function saveLineCount(save:Save){
 }
 export function ensureValidSave(obj:any){
     let freshNew = false
-    if(typeof obj != 'object'){
+    if(
+        !(obj instanceof Object)
+        || (obj instanceof Object && Object.keys(obj).length === 0))
+    {
         obj = {}
         freshNew = true
     }
@@ -189,6 +192,12 @@ export function ensureValidSave(obj:any){
     const getNewId = ()=>obj.idIncre++
     if(freshNew){
         fillDefault('lineStyles', 'array', ()=>defaultLineStyles(getNewId))
+        const defaultConfig:ConfigInSave = {
+            textTagForLine:{
+                edgeAnchorOutsidePadding: true
+            }
+        }
+        obj['config'] = defaultConfig
     }
     ensureValidCvsSize(obj)
     return obj as Save
