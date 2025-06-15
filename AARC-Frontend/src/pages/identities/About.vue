@@ -41,9 +41,12 @@ import logoImg from '@/assets/logo/aarc-new.svg';
             <div>新版logo设计者：三几几</div>
             <div>主要软件框架/工具：
                 <a href="https://dotnet.microsoft.com/zh-cn/" target="_blank">.NET</a>、
+                <a href="https://dotnet.microsoft.com/zh-cn/apps/aspnet" target="_blank">AspNetCore</a>、
+                <a href="https://github.com/RicoSuter/NSwag" target="_blank">NSwag</a>、
                 <a href="https://vuejs.org" target="_blank">Vue.js</a>、
                 <a href="https://vite.dev" target="_blank">Vite</a>、
-                <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a>
+                <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a>、
+                <a href="https://sass-lang.com/" target="_blank">Sass</a>
             </div>
             <div>域名和服务器提供者：Au的父亲(武汉被看见科技有限公司)</div>
             <div>首批活跃用户：滨蜀、四氨合铜离子、Xueshen234、南京精灵的灵芝、哦、NonstopExpress、Hikorta等</div>
@@ -113,7 +116,7 @@ import logoImg from '@/assets/logo/aarc-new.svg';
         .af{
             position: absolute;
             font-size: 16px;
-            bottom: -50px;
+            top: -50px;
             height: 0px;
             padding: 0px 4px 0px 4px;
             box-sizing: border-box;
@@ -132,7 +135,7 @@ import logoImg from '@/assets/logo/aarc-new.svg';
         .ab:hover{
             background-color: #ddd;
             .af{
-                bottom: -30px;
+                top: -28px;
                 height: 24px;
                 padding: 4px;
                 opacity: 1;
