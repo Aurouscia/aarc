@@ -26,10 +26,7 @@ export function drawText(
     const [xSgn, ySgn] = align
 
     ctx.textBaseline = 'middle'
-    const mainLines = splitLinesClean(main.text)
-    const mainHeight = mainLines.length * main.rowHeight
-    const subLines = splitLinesClean(sub.text)
-    const subHeight = subLines.length * sub.rowHeight
+    const { mainHeight, subHeight, mainLines, subLines } = splitLines(main, sub)
     const totalHeight = mainHeight+subHeight
     const mainRowMargin = main.rowHeight - main.fontSize
     const subRowMargin = sub.rowHeight - sub.fontSize
@@ -215,6 +212,13 @@ export function drawTextForLineName(
     }
 }
 
+export function splitLines(main:DrawTextBodyOption, sub:DrawTextBodyOption){
+    const mainLines = splitLinesClean(main.text)
+    const mainHeight = mainLines.length * main.rowHeight
+    const subLines = splitLinesClean(sub.text)
+    const subHeight = subLines.length * sub.rowHeight
+    return {mainHeight, subHeight, mainLines, subLines}
+}
 
 function getTextAlign(xSgn:SgnNumber){
     if(xSgn==-1)

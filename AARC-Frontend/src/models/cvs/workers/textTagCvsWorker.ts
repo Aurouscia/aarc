@@ -5,7 +5,7 @@ import { useConfigStore } from "@/models/stores/configStore";
 import { useTextTagRectStore } from "@/models/stores/saveDerived/textTagRectStore";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { coordSub } from "@/utils/coordUtils/coordMath";
-import { drawText, DrawTextBodyOption, drawTextForLineName } from "@/utils/drawUtils/drawText";
+import { drawText, DrawTextBodyOption, drawTextForLineName, splitLines } from "@/utils/drawUtils/drawText";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { enlargeRect } from "@/utils/coordUtils/coordRect";
@@ -144,6 +144,22 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         let getIconPosX:((tposX:number, tw:number)=>number) = (x)=>x;//怎么通过t.pos和文本部分的宽高确定icon中心位置
         let getIconPosY:((tposY:number, th:number)=>number) = (y)=>y;
         const g = mainRatio*7 // gap（icon和文字之间的像素数，确定为mainRatio的固定倍率）
+
+        const optMain:DrawTextBodyOption = {
+            color: mo?.color || cs.config.textTagFontColorHex,
+            font: cs.config.textTagFont,
+            fontSize: cs.config.textTagFontSizeBase * mainRatio,
+            rowHeight: cs.config.textTagRowHeightBase * mainRatio,
+            text: !mainEmpty ? t.text?.trim() : '空文本标签'
+        }
+        const optSub:DrawTextBodyOption = {
+            color: so?.color || cs.config.textTagSubFontColorHex,
+            font: cs.config.textTagSubFont,
+            fontSize: cs.config.textTagSubFontSizeBase * subRatio,
+            rowHeight: cs.config.textTagSubRowHeightBase * subRatio,
+            text: !subEmpty ? t.textS?.trim(): 'Empty TextTag'
+        }
+
         if(icon){
             idata = iconStore.getDataByIconId(icon.id)
             if(idata?.status==='loaded' && idata?.naturalWidth && idata.naturalHeight){
@@ -163,10 +179,24 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
                         textDrawPos[1]+=ih +g
                         getIconPosY = (posY)=>posY+ih/2
                     }
-                    if(anchor[0]===-1){
-                        getIconPosX = (posX, tw)=>posX-tw/2
-                    }else if(anchor[0]===1){
-                        getIconPosX = (posX, tw)=>posX+tw/2
+                    if(anchor[0] !== 0){
+                        //当发生“文本居中，但x锚点不居中而是在左侧，而且icon比文本宽”的情况，
+                        //就需要将整体右移半个宽度差，才能确保锚点在左边缘
+                        //（否则锚点位置完全由文本左边缘决定，即使icon已经把边缘撑大）
+                        //所以此处不得不measure一次
+                        const textRect = drawText(ctx, t.pos, [0, 0], 0, optMain, optSub, false, 'measure')
+                        const rect = textRect?.rectFull
+                        let tw = 0
+                        if(rect)
+                            tw = rect[1][0] - rect[0][0]
+                        const fix = iconWidth>tw ? (iconWidth-tw)/2 : 0
+                        if(anchor[0]===-1){
+                            textDrawPos[0]-=fix
+                            getIconPosX = (posX, tw)=>posX-tw/2 -fix
+                        }else if(anchor[0]===1){
+                            textDrawPos[0]+=fix
+                            getIconPosX = (posX, tw)=>posX+tw/2 +fix
+                        }
                     }
                 }else{
                     if(textAlign===-1){
@@ -194,29 +224,26 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
                             getIconPosX = (posX)=>posX+iw/2
                         }
                     }
-                    if(anchor[1]===-1){
-                        getIconPosY = (posY, th)=>posY-th/2
-                    }else if(anchor[1]===1){
-                        getIconPosY = (posY, th)=>posY+th/2
+                    if(anchor[1]!==0){
+                        //当发生“文本不居中，但y锚点不居中而是在顶部，而且icon比文本高”的情况，
+                        //就需要将整体下移半个高度差，才能确保锚点在上边缘
+                        //（否则锚点位置完全由文本上边缘决定，即使icon已经把边缘撑大）
+                        //所以此处不得不计算文本高度
+                        const { mainHeight:tmh, subHeight:tsh } = splitLines(optMain, optSub)
+                        const th = tmh+tsh
+                        const fix = iconHeight>th ? (iconHeight-th)/2 : 0
+                        if(anchor[1]===-1){
+                            textDrawPos[1] -= fix
+                            getIconPosY = (posY, th)=> posY-th/2 - fix
+                        }else{
+                            textDrawPos[1] += fix
+                            getIconPosY = (posY, th)=>posY+th/2 + fix
+                        }
                     }
                 }
             }
         }
 
-        const optMain:DrawTextBodyOption = {
-            color: mo?.color || cs.config.textTagFontColorHex,
-            font: cs.config.textTagFont,
-            fontSize: cs.config.textTagFontSizeBase * mainRatio,
-            rowHeight: cs.config.textTagRowHeightBase * mainRatio,
-            text: !mainEmpty ? t.text?.trim() : '空文本标签'
-        }
-        const optSub:DrawTextBodyOption = {
-            color: so?.color || cs.config.textTagSubFontColorHex,
-            font: cs.config.textTagSubFont,
-            fontSize: cs.config.textTagSubFontSizeBase * subRatio,
-            rowHeight: cs.config.textTagSubRowHeightBase * subRatio,
-            text: !subEmpty ? t.textS?.trim(): 'Empty TextTag'
-        }
         const drawTextResRect = drawText(ctx, textDrawPos, anchor, textAlign, optMain, optSub, {
             width: cs.config.textTagFontSizeBase * mainRatio/4,
             color: cs.config.bgColor,
