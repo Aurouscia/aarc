@@ -5,7 +5,7 @@ import { useConfigStore } from "@/models/stores/configStore";
 import { useTextTagRectStore } from "@/models/stores/saveDerived/textTagRectStore";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { coordSub } from "@/utils/coordUtils/coordMath";
-import { drawText, DrawTextBodyOption, drawTextForLineName } from "@/utils/drawUtils/drawText";
+import { drawText, DrawTextBodyOption, drawTextForLineName, DrawTextStrokeOption } from "@/utils/drawUtils/drawText";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { enlargeRect } from "@/utils/coordUtils/coordRect";
@@ -209,11 +209,15 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             rowHeight: cs.config.textTagSubRowHeightBase * subRatio,
             text: !subEmpty ? t.textS?.trim(): 'Empty TextTag'
         }
-        const drawTextResRect = drawText(ctx, textDrawPos, anchor, textAlign, optMain, optSub, {
+        let textCarpetOpts:false|DrawTextStrokeOption|undefined={
             width: cs.config.textTagFontSizeBase * mainRatio/4,
             color: cs.config.bgColor,
             opacity: 1
-        }, 'both', undefined, t.carpet || t.carpet==undefined)
+        }
+        if (t.carpet===false){
+            textCarpetOpts=false
+        }
+        const drawTextResRect = drawText(ctx, textDrawPos, anchor, textAlign, optMain, optSub, textCarpetOpts, 'both', undefined)
         if(icon && idata?.img && getIconPosY && getIconPosX){
             let tw = 0, th = 0;
             const rectFull = drawTextResRect?.rectFull

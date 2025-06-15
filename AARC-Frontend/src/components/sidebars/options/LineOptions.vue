@@ -164,7 +164,7 @@ onMounted(()=>{
     <tr>
                         <td>白边</td>
                         <td v-if="line.type === LineType.common">
-                            <div v-if="line.carpet || line.carpet == undefined">
+                            <div v-if="line.carpet == undefined">
                                 <input type="checkbox" v-model="line.carpet"
                                     @change="envStore.lineCarpetChanged(line)" checked />
                             </div>

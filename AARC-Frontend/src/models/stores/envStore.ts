@@ -728,11 +728,8 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         rerender.value([], line.pts)
     }
-    function lineCarpetChanged(line: Line, lineCarpetChanged?: boolean) {
+    function lineCarpetChanged(line: Line) {
         //白边（默认有）
-        if (lineCarpetChanged) {
-            line.carpet = !line.carpet
-        }
         rerender.value([line.id], [])
     }
     function ensureChildrenOptionsSame(parentLineId:number){
