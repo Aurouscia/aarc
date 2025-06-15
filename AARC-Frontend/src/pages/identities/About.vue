@@ -7,10 +7,22 @@ import logoImg from '@/assets/logo/aarc-new.svg';
         <div class="logoContainer">
             <img :src="logoImg"/>
             <div class="appName0">
-                <div>A</div>
-                <div>A</div>
-                <div>R</div>
-                <div>C</div>
+                <div class="ab">
+                    <span>A</span>
+                    <div class="af">Advanced 先进</div>
+                </div>
+                <div class="ab">
+                    <span>A</span>
+                    <div class="af">Abstract 抽象</div>
+                </div>
+                <div class="ab">
+                    <span>R</span>
+                    <div class="af">Route map 线路图</div>
+                </div>
+                <div class="ab">
+                    <span>C</span>
+                    <div class="af">Canvas 画布</div>
+                </div>
             </div>
             <div class="appName1">线路图画布</div>
         </div>
@@ -88,12 +100,43 @@ import logoImg from '@/assets/logo/aarc-new.svg';
         display: flex;
         justify-content: center;
         gap: 8px;
-        div{
+        &>div{
             text-align: center;
             flex-basis: 16px;
             flex-shrink: 0;
             flex-grow: 0;
             border-bottom: 1.5px solid #999;
+            overflow: visible;
+            position: relative;
+            cursor: pointer;
+        }
+        .af{
+            position: absolute;
+            font-size: 16px;
+            bottom: -50px;
+            height: 0px;
+            padding: 0px 4px 0px 4px;
+            box-sizing: border-box;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0px 0px 5px 0px black;
+            left: 0px;
+            opacity: 0;
+            overflow: hidden;
+            user-select: none;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            transition: 0.5s;
+        }
+        .ab:hover{
+            background-color: #ddd;
+            .af{
+                bottom: -30px;
+                height: 24px;
+                padding: 4px;
+                opacity: 1;
+            }
         }
     }
     .appName1{
