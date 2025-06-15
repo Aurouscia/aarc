@@ -214,7 +214,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             color: cs.config.bgColor,
             opacity: 1
         }
-        if (t.carpet===false){
+        if (t.removeCarpet){
             textCarpetOpts=false
         }
         const drawTextResRect = drawText(ctx, textDrawPos, anchor, textAlign, optMain, optSub, textCarpetOpts, 'both', undefined)

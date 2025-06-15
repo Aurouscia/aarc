@@ -105,15 +105,10 @@ defineExpose({
                     </td>
                 </tr>
                 <tr v-if="!editing.forId">
-                            <td>白边</td>
+                            <td>去白边</td>
                             <td>
-                                <div v-if="editing.carpet == undefined">
-                                    <input type="checkbox" v-model="editing.carpet" @change="emit('changed')"
-                                        checked />
-                                </div>
-                                <div v-else>
-                                    <input type="checkbox" v-model="editing.carpet" @change="emit('changed')" />
-                                </div>
+                                    <input type="checkbox" v-model="editing.removeCarpet" @change="emit('changed')" />
+                                
                             </td>
                         </tr>
                 <tr v-if="editing.forId">
