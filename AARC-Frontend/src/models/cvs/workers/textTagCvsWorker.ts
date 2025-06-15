@@ -143,6 +143,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         let iconWidth = 0, iconHeight = 0
         let getIconPosX:((tposX:number, tw:number)=>number) = (x)=>x;//怎么通过t.pos和文本部分的宽高确定icon中心位置
         let getIconPosY:((tposY:number, th:number)=>number) = (y)=>y;
+        const g = mainRatio*7 // gap（icon和文字之间的像素数，确定为mainRatio的固定倍率）
         if(icon){
             idata = iconStore.getDataByIconId(icon.id)
             if(idata?.status==='loaded' && idata?.naturalWidth && idata.naturalHeight){
@@ -154,12 +155,12 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
                     //文本居中时，icon放在顶部，可能会把text往下挤
                     if(anchor[1]===-1){
                         //y锚点在底部时，text不动
-                        getIconPosY = (posY, th)=>posY-(th+ih/2)
+                        getIconPosY = (posY, th)=>posY-(th+ih/2) -g
                     }else if(anchor[1]===0){
-                        textDrawPos[1]+=ih/2 
-                        getIconPosY = (posY, th)=>posY-th/2
+                        textDrawPos[1]+=ih/2 +g/2
+                        getIconPosY = (posY, th)=>posY-th/2 -g/2
                     }else{
-                        textDrawPos[1]+=ih
+                        textDrawPos[1]+=ih +g
                         getIconPosY = (posY)=>posY+ih/2
                     }
                     if(anchor[0]===-1){
@@ -172,24 +173,24 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
                         //文本靠右时，icon放在右侧，可能会把text往左挤
                         if(anchor[0]===1){
                             //x锚点在左侧时，text不动
-                            getIconPosX = (posX, tw)=>posX+tw+iw/2
+                            getIconPosX = (posX, tw)=>posX+tw+iw/2 +g
                         }else if(anchor[0]===0){
-                            textDrawPos[0]-=iw/2
-                            getIconPosX = (posX, tw)=>posX+tw/2
+                            textDrawPos[0]+= -iw/2 -g/2
+                            getIconPosX = (posX, tw)=>posX+tw/2 +g/2
                         }else{
-                            textDrawPos[0]-=iw
+                            textDrawPos[0]+= -iw -g
                             getIconPosX = (posX)=>posX-=iw/2
                         }
                     }else{
                         //文本靠左时，icon放在左侧，可能会把text往右挤
                         if(anchor[0]===-1){
                             //x锚点在右侧时，text不动
-                            getIconPosX = (posX, tw)=>posX-(tw+iw/2)
+                            getIconPosX = (posX, tw)=>posX-(tw+iw/2) -g
                         }else if(anchor[0]===0){
-                            textDrawPos[0]+=iw/2
-                            getIconPosX = (posX, tw)=>posX-tw/2
+                            textDrawPos[0]+=iw/2 +g/2
+                            getIconPosX = (posX, tw)=>posX-tw/2 -g/2
                         }else{
-                            textDrawPos[0]+=iw
+                            textDrawPos[0]+=iw +g
                             getIconPosX = (posX)=>posX+iw/2
                         }
                     }

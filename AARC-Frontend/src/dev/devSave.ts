@@ -136,6 +136,15 @@ export const devSave:Save = {
             nameP: [0, 20]
         },
         {
+            id: 35,
+            pos: [900, 250],
+            dir: ControlPointDir.vertical,
+            sta: ControlPointSta.sta,
+            name: '机场北',
+            nameS: 'N. Airport',
+            nameP: [0, -20]
+        },
+        {
             id: 50,
             pos: [200, 900],
             dir: ControlPointDir.vertical,
@@ -215,7 +224,7 @@ export const devSave:Save = {
         },
         {
             id: 102,
-            pts: [5, 2, 6, 9],
+            pts: [35, 5, 2, 6, 9],
             name: "2号线",
             nameSub: "Line 2",
             color: "#009900",
@@ -264,17 +273,27 @@ export const devSave:Save = {
         },
         {
             id: 1004,
-            pos: [1100, 150],
+            pos: [1700, 150],
             text: "某市轨道交通路线图",
             textS: "some city subway route map",
             textOp: {size:2, color:'#008FFA'},
-            textSOp: {size:2, color:'#999999'}
+            textSOp: {size:2, color:'#999999'},
+            anchorX: -1
         },
         {
             id: 1005,
-            pos: [900, 350],
-            text: "噜噜噗噗机场",
-            textS: "Lulupupu Airport",
+            pos: [1700, 250],
+            text: "作者：某某某",
+            textOp: {size:0.8, color:'#aaaaaa'},
+            anchorX: -1
+        },
+        {
+            id: 1006,
+            pos: [900, 320],
+            text: "噜噜噗噗国际机场",
+            textS: "Lulupupu Int'l Airport",
+            textOp: {size:0.7, color:'#999999'},
+            textSOp: {size:0.8, color:'#999999'},
             icon:1000000
         }
     ],
@@ -313,7 +332,7 @@ export const devSave:Save = {
         {
             id: 1000000,
             name: '机场',
-            url: '/icons/airport.png',
+            url: '/icons/a/airport.svg',
             width: 50
         }
     ],
