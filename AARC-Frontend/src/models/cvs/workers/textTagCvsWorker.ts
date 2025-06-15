@@ -1,4 +1,4 @@
-import { Coord, RectCoord, SgnCoord } from "@/models/coord";
+import { Coord, RectCoord, SgnCoord, SgnNumber } from "@/models/coord";
 import { Line, LineType, TextOptions, TextTag } from "@/models/save";
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { useConfigStore } from "@/models/stores/configStore";
@@ -222,9 +222,9 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             color: cs.config.bgColor,
             opacity: 1
         }, 'both')
+        const rectFull = drawTextResRect?.rectFull //不包括icon，只包括文字的rect
         if(icon && idata?.img && idata.status==='loaded' && getIconPosY && getIconPosX){
             let tw = 0, th = 0;
-            const rectFull = drawTextResRect?.rectFull
             if(rectFull){
                 tw = rectFull[1][0] - rectFull[0][0]
                 th = rectFull[1][1] - rectFull[0][1]
@@ -235,11 +235,13 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             iconPos[0]-=iconWidth/2; iconPos[1]-=iconHeight/2
             ctx.drawImage(idata.img, ...iconPos, iconWidth, iconHeight)
         }
-        if(drawTextResRect){
-            const rect = drawTextResRect
-            textTagRectStore.setTextTagRect(t.id, rect.rectFull)
+        if(rectFull){
+            if(iconWidth && iconHeight)
+                enlargeRectByIcon(rectFull, iconWidth, iconHeight, g, textAlign)
+            //rectFull变为包括icon的rect
+            textTagRectStore.setTextTagRect(t.id, rectFull)
             if(strokeRect){
-                drawRectAndAnchor(ctx, t.pos, rect.rectFull)
+                drawRectAndAnchor(ctx, t.pos, rectFull)
             }
         }
     }
@@ -317,6 +319,29 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
                 color: 'black'
             }]
         })
+    }
+    function enlargeRectByIcon(rect:RectCoord, iconW:number, iconH:number, gap:number, pos:SgnNumber){
+        if(pos == 0){
+            const width = rect[1][0] - rect[0][0]
+            if(iconW > width){
+                rect[0][0] -= (iconW - width)/2
+                rect[1][0] += (iconW - width)/2
+            }
+            rect[0][1] -= (gap + iconH)
+        }
+        else{
+            const height = rect[1][1] - rect[0][1]
+            if(iconH > height){
+                rect[0][1] -= (iconH - height)/2
+                rect[1][1] += (iconH - height)/2
+            }
+            if(pos == 1){
+                rect[0][0] -= (gap + iconW)
+            }
+            else if(pos == -1){
+                rect[1][0] += (gap + iconW)
+            }
+        }
     }
     return { renderAllTextTags, renderOneTextTag }
 })
