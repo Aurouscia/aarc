@@ -8,6 +8,9 @@ import { useStaClusterStore } from "../saveDerived/staClusterStore";
 import { useEnvStore } from "../envStore";
 import { usePointLinkStore } from "../pointLinkStore";
 import { useIconStore } from "../iconStore";
+import { useDiscardAreaStore } from "../discardAreaStore";
+import { useNameEditStore } from "../nameEditStore";
+import { useTextTagEditStore } from "../textTagEditStore";
 
 export const useResetterStore = defineStore('resetter', ()=>{
     const envStore = useEnvStore()
@@ -20,7 +23,10 @@ export const useResetterStore = defineStore('resetter', ()=>{
         useCvsBlocksControlStore,
         useStaClusterStore,
         usePointLinkStore,
-        useIconStore
+        useIconStore,
+        useDiscardAreaStore,
+        useNameEditStore,
+        useTextTagEditStore
     ]
 
     function resetDerivedStores(){

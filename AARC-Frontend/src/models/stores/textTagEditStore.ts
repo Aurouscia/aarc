@@ -94,10 +94,18 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
         }
     }
 
+    function clearItems(){
+        target.value = undefined
+        targetId.value = undefined
+        textMain.value = undefined
+        textSub.value = undefined
+    }
+
     return { targetId, target, textMain, textSub, editing, edited, targetForType, options,
         startEditing, endEditing, toggleEditing, applyText,
         textInputFocusHandler,
         textEditorDiv, getEditorDivEffectiveHeight,
-        textTagOptionsPanel, textTagOptionsPanelOpen
+        textTagOptionsPanel, textTagOptionsPanelOpen,
+        clearItems
     }
 })

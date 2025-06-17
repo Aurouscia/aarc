@@ -97,10 +97,16 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
         return [0, dist]
     }
 
+    function clearItems(){
+        targetPtId.value = undefined
+        nameMain.value = undefined
+        nameSub.value = undefined
+    }
+
     return { targetPtId, nameMain, nameSub, editing, edited,
         startEditing, endEditing, toggleEditing, applyName,
         nameInputFocusHandler, nameEditorDiv, getEditorDivEffectiveHeight,
         controlPointOptionsPanel, controlPointOptionsPanelOpen,
-        newNamePos
+        newNamePos, clearItems
     }
 })

@@ -43,6 +43,7 @@ export const useDiscardAreaStore = defineStore('discardArea', ()=>{
         discardStatus,
         discarding,
         getDiscardAreaInfo,
-        resetDiscarding
+        resetDiscarding,
+        clearItems:resetDiscarding
     }
 })
