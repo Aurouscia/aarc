@@ -16,7 +16,7 @@ import { useTextTagCvsWorker } from "../workers/textTagCvsWorker";
 import { useDiscardAreaCvsWorker } from "../workers/discardAreaCvsWorker";
 import { coordAngle, coordSub } from "@/utils/coordUtils/coordMath";
 import { numberCmpEpsilon } from "@/utils/consts";
-import { ControlPointDir } from "@/models/save";
+import { ControlPointDir, Line } from "@/models/save";
 import { usePointLinkStore } from "@/models/stores/pointLinkStore";
 
 export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
@@ -53,8 +53,9 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
         }
         const ctx = getCtx();
         cvsCleared = false
+        let line:Line|undefined = undefined
         if(envStore.activeLine || envStore.activeTextTag?.forId){
-            let line = envStore.activeLine
+            line = envStore.activeLine
             if(!line){
                 line = saveStore.getLineById(envStore.activeTextTag?.forId ?? 0)
             }
@@ -106,7 +107,15 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
                 renderRay(ctx, l.source, l.way)
             })
         }
-        if(envStore.activeTextTag){
+        if(line){
+            //渲染了某线路（可能是由于选中其本身、或选中其标签），则渲染其所有标签
+            const forItTags = saveStore.save?.textTags.filter(x=>x.forId === line.id)
+            forItTags?.forEach(x=>{
+                const strokeRect = x.id === envStore.activeTextTag?.id
+                renderOneTextTag(ctx, x, strokeRect)
+            })
+        }
+        else if(envStore.activeTextTag){
             renderOneTextTag(ctx, envStore.activeTextTag, true)
         }
         renderCursor(ctx)
