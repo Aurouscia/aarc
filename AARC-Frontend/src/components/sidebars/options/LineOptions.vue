@@ -242,7 +242,7 @@ onMounted(()=>{
             </div>
         </td>
     </tr>
-    <tr v-if="!line.parent">
+    <tr v-if="!line.parent && line.type===LineType.common">
         <td>归为<br/>支线</td>
         <td v-if="!haveChildren">
             <select v-model="selectedForParentAssignment" style="max-width: 160px;">
