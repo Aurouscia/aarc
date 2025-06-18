@@ -36,6 +36,7 @@ namespace AARC.Controllers.Saves
             EnrichSaveMini(list);
             return list;
         }
+        [AllowAnonymous]
         [HttpGet]
         public List<SaveDto> Search(string search, string orderBy, int pageIdx)
         {
