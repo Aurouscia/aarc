@@ -38,6 +38,7 @@ import logoImg from '@/assets/logo/aarc-new.svg';
         <div class="contributors">
             <div>源码贡献者：Au</div>
             <div>主要issue贡献者：滨蜀</div>
+            <div>宣传大使：滨蜀</div>
             <div>新版logo设计者：三几几</div>
             <div>主要软件框架/工具：
                 <a href="https://dotnet.microsoft.com/zh-cn/" target="_blank">.NET</a>、
