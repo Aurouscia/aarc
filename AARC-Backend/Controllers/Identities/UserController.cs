@@ -22,15 +22,25 @@ namespace AARC.Controllers.Identities
             return list;
         }
 
+        private const int registerRestrictSecs = 20;
+        private static DateTime lastRegisterRequest = DateTime.Now.AddSeconds(-registerRestrictSecs * 2);
         [AllowAnonymous]
         [HttpPost]
         public bool Add(
             [FromForm] string? userName,
             [FromForm] string? password)
         {
+            var lastRegisterPassed = 
+                (int)(DateTime.Now - lastRegisterRequest).TotalSeconds;
+            if (lastRegisterPassed < registerRestrictSecs)
+            {
+                int wait = registerRestrictSecs - lastRegisterPassed;
+                throw new RqEx($"【限流】请等待{wait}秒后重试");
+            }
             var success = userRepo.CreateUser(userName, password, out var errmsg);
             if (!success)
                 throw new RqEx(errmsg);
+            lastRegisterRequest = DateTime.Now;
             return true;
         }
 
