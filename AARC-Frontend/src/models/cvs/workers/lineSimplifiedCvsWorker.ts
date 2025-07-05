@@ -5,6 +5,7 @@ import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { Line, LineType } from "@/models/save";
 import { useConfigStore } from "@/models/stores/configStore";
+import { keepOrderSort } from "@/utils/lang/keepOrderSort";
 
 export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker', ()=>{
     const saveStore = useSaveStore()
@@ -34,6 +35,7 @@ export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker',
             if(pts && !line.isFake)
                 targets.push({lineInfo:line, pts}) 
         })
+        keepOrderSort(targets, (a,b)=>b.lineInfo.type-a.lineInfo.type)
         for(const target of targets){
             render(target.lineInfo, target.pts)
         }
