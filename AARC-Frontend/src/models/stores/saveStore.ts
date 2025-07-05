@@ -253,7 +253,7 @@ export const useSaveStore = defineStore('save', () => {
     function getPointLinksByPt(ptId:number){
         return ptRelatedLinks.value[ptId] || []
     }
-    function insertNewPtToLine(lineId:number, afterIdx:number|'head'|'tail', pos:Coord, dir:ControlPointDir){
+    function insertNewPtToLine(lineId:number, afterIdx:number|'head'|'tail', pos:Coord, dir:ControlPointDir, sta:ControlPointSta){
         if(!save.value)
             return;
         const line = save.value.lines.find(x=>x.id == lineId)
@@ -263,7 +263,7 @@ export const useSaveStore = defineStore('save', () => {
                 id,
                 pos,
                 dir,
-                sta: ControlPointSta.sta
+                sta
             }
             save.value.points.push(newPt)
             if(afterIdx==='head')

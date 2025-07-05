@@ -322,7 +322,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 from: activePt.value
             }
             const newPtId = saveStore.insertNewPtToLine(
-                lineExtend.lineId, lineExtend.at, lineExtend.btnPos, lineExtend.btnDir)
+                lineExtend.lineId, lineExtend.at, lineExtend.btnPos, lineExtend.btnDir, ControlPointSta.sta)
             if (newPtId) {
                 if(nameEditStore.edited)
                     rerender.value([], [activePt.value.id])
@@ -535,7 +535,7 @@ export const useEnvStore = defineStore('env', ()=>{
             firstCol.splice(1, 0, {
                 cb:swSta,
                 text:'切换',
-                textSub:'是否显示'
+                textSub:'点类型'
             })
         }else{
             firstCol.splice(1, 0, {
@@ -567,7 +567,7 @@ export const useEnvStore = defineStore('env', ()=>{
         ]
     }
     function setOpsForLine(){
-        const insertPtCb = ()=>{
+        const insertPtCb = (sta:ControlPointSta)=>{
             if(cursorPos.value){
                 if(!activeLine.value)
                     return;
@@ -576,7 +576,8 @@ export const useEnvStore = defineStore('env', ()=>{
                 if(gridSnapped){
                     cur = gridSnapped
                 }
-                const id = saveStore.insertNewPtToLine(activeLine.value.id, cursorOnLineAfterPtIdx.value, cur, cursorDir.value)
+                const id = saveStore.insertNewPtToLine(
+                    activeLine.value.id, cursorOnLineAfterPtIdx.value, cur, cursorDir.value, sta)
                 rerender.value([activeLine.value.id], [])
                 if(id!==undefined){
                     activePt.value = saveStore.getPtById(id)
@@ -595,8 +596,14 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         opsStore.btns = [[
             {
-                cb: insertPtCb,
-                text:'插入'
+                cb: ()=>insertPtCb(ControlPointSta.sta),
+                text: '插入',
+                textSub: '车站'
+            },
+            {
+                cb: ()=>insertPtCb(ControlPointSta.plain),
+                text: '插入',
+                textSub: '控制点'
             },
             {
                 cb: createTagForLine,
