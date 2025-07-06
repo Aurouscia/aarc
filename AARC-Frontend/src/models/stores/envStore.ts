@@ -271,7 +271,7 @@ export const useEnvStore = defineStore('env', ()=>{
             cursorOnLineAfterPtIdx.value = lineMatch.afterPtIdx
             cursorDir.value = lineMatch.dir
             setOpsPos(lineMatch.alignedPos)
-            setOpsForLine()
+            setOpsForLine(activeLine.value)
             endEveryEditing()
             return
         }
@@ -566,7 +566,11 @@ export const useEnvStore = defineStore('env', ()=>{
             [...addToLines]
         ]
     }
-    function setOpsForLine(){
+    function setOpsForLine(line?:Line){
+        if(!line){
+            opsStore.btns = []
+            return
+        }
         const insertPtCb = (sta:ControlPointSta)=>{
             if(cursorPos.value){
                 if(!activeLine.value)
@@ -594,13 +598,16 @@ export const useEnvStore = defineStore('env', ()=>{
                 createTextTag(lineId)
             }
         }
-        opsStore.btns = [[
-            {
+        const isCommon = line.type === LineType.common
+        const btns:OpsBtn[] = []
+        if(isCommon){
+            btns.push({
                 cb: ()=>insertPtCb(ControlPointSta.sta),
                 text: '插入',
                 textSub: '车站'
-            },
-            {
+            })
+        }
+        btns.push({
                 cb: ()=>insertPtCb(ControlPointSta.plain),
                 text: '插入',
                 textSub: '控制点'
@@ -608,8 +615,8 @@ export const useEnvStore = defineStore('env', ()=>{
             {
                 cb: createTagForLine,
                 text:'标签'
-            }
-        ]]
+            })
+        opsStore.btns = [btns]
     }
 
     function delActivePt_withoutRerender(){
