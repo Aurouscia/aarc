@@ -4,7 +4,7 @@
     {
         public const string backupFileBaseDir = "./Data/Backups";
         public const int backupFileMaxCountPerId = 15;
-        public const int backupFileCreateThrsMins = 10;
+        public const int backupFileCreateThrsMins = 20;
         public void Write(string data, int cvsId)
         {
             var baseDir = new DirectoryInfo(backupFileBaseDir);
@@ -22,7 +22,7 @@
             }
             if (latestSave.AddMinutes(backupFileCreateThrsMins) > DateTime.Now)
                 return;
-            var fileName = DateTime.Now.ToString("yyyyMMdd");
+            var fileName = DateTime.Now.ToString("yyyy-MMdd-HHmm");
             fileName = Path.ChangeExtension(fileName, "json");
             var filePath = Path.Combine(cvsDirPath, fileName);
             using var dist = File.Open(filePath, FileMode.Create, FileAccess.Write);
