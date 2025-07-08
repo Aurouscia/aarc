@@ -206,6 +206,8 @@ export function ensureValidSave(obj:any){
             textSOp: {color:'#999999', size: 1.2}
         }]
         obj['textTags'] = initialTTs
+    }else{
+        fillDefault('lineStyles', 'array', [])
     }
     ensureValidCvsSize(obj)
     return obj as Save
