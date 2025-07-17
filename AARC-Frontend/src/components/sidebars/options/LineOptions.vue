@@ -200,6 +200,13 @@ onMounted(()=>{
             <div class="smallNote">勾选本项时<br/>地形必须是环形</div>
         </td>
     </tr>
+    <tr v-if="line.type===LineType.common">
+        <td>去白边</td>
+        <td>
+            <input type="checkbox" v-model="line.removeCarpet" @change="envStore.lineInfoChanged(line)"/>
+            <div class="smallNote">线路将不会有底层的白边</div>
+        </td>
+    </tr>
     <tr>
         <td>层级</td>
         <td class="viewableRange">
