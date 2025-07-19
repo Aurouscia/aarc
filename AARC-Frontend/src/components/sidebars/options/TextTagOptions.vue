@@ -127,6 +127,13 @@ defineExpose({
                         <div class="smallNote">将会无视文字对齐</div>
                     </td>
                 </tr>
+                <tr>
+        <td>去白边</td>
+        <td>
+            <input type="checkbox" v-model="editing.removeCarpet" @change="emit('changed')"/>
+            <div class="smallNote">标签将不会有底层的白边</div>
+        </td>
+    </tr>
                 <tr v-if="editing.forId">
                     <td colspan="2" class="smallNote">
                         以上设置均可在“设置”侧栏中<br/>

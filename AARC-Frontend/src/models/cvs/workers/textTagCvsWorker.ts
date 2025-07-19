@@ -5,7 +5,7 @@ import { useConfigStore } from "@/models/stores/configStore";
 import { useTextTagRectStore } from "@/models/stores/saveDerived/textTagRectStore";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { coordSub } from "@/utils/coordUtils/coordMath";
-import { drawText, DrawTextBodyOption, drawTextForLineName, splitLines } from "@/utils/drawUtils/drawText";
+import { drawText, DrawTextBodyOption, drawTextForLineName, DrawTextStrokeOption, splitLines } from "@/utils/drawUtils/drawText";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { enlargeRect } from "@/utils/coordUtils/coordRect";
@@ -243,12 +243,17 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
                 }
             }
         }
-
-        const drawTextResRect = drawText(ctx, textDrawPos, anchor, textAlign, optMain, optSub, {
+        let textCarpetOpts:false|DrawTextStrokeOption|undefined={
             width: cs.config.textTagFontSizeBase * mainRatio/4,
             color: cs.config.bgColor,
             opacity: 1
-        }, 'both')
+        }
+        if (t.removeCarpet){
+            textCarpetOpts=false
+        }
+
+
+        const drawTextResRect = drawText(ctx, textDrawPos, anchor, textAlign, optMain, optSub, textCarpetOpts, 'both')
         const rectFull = drawTextResRect?.rectFull //不包括icon，只包括文字的rect
         if(icon && idata?.img && idata.status==='loaded' && getIconPosY && getIconPosX){
             let tw = 0, th = 0;
