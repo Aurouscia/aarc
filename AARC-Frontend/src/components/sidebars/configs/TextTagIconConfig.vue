@@ -89,12 +89,15 @@ onMounted(async()=>{
                     </div>
                     <img v-if="item.data?.img?.src"
                         :src="item.data?.img?.src"/>
+                    <div v-else class="prefixedIconErrmsg">
+                        {{ item.data?.errmsg ?? '未知错误' }}
+                    </div>
                 </div>
                 <div class="prefixedIconKV">
                     名称<input v-model.lazy="item.i.name" @blur="ensurePrefixSelectedValid"/>
                 </div>
                 <div class="prefixedIconKV">
-                    链接<input v-model="item.i.url" style="font-size: 12px;"/>
+                    链接<input v-model="item.i.url" style="font-size: 12px;" @blur="ensureAllLoaded"/>
                 </div>
             </div>
         </div>
@@ -143,6 +146,11 @@ onMounted(async()=>{
             display: flex;
             align-items: flex-end;
             justify-content: space-between;
+            .prefixedIconErrmsg{
+                color: red;
+                align-self: center;
+                font-size: 13px;
+            }
         }
         .prefixedIconKV{
             display: flex;
