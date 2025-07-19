@@ -243,16 +243,14 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
                 }
             }
         }
+
         let textCarpetOpts:false|DrawTextStrokeOption|undefined={
             width: cs.config.textTagFontSizeBase * mainRatio/4,
             color: cs.config.bgColor,
             opacity: 1
         }
-        if (t.removeCarpet){
+        if (t.removeCarpet)
             textCarpetOpts=false
-        }
-
-
         const drawTextResRect = drawText(ctx, textDrawPos, anchor, textAlign, optMain, optSub, textCarpetOpts, 'both')
         const rectFull = drawTextResRect?.rectFull //不包括icon，只包括文字的rect
         if(icon && idata?.img && idata.status==='loaded' && getIconPosY && getIconPosX){

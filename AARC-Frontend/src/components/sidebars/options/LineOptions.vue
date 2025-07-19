@@ -201,7 +201,7 @@ onMounted(()=>{
         </td>
     </tr>
     <tr v-if="line.type===LineType.common">
-        <td>去白边</td>
+        <td>去除<br/>白边</td>
         <td>
             <input type="checkbox" v-model="line.removeCarpet" @change="envStore.lineInfoChanged(line)"/>
             <div class="smallNote">线路将不会有底层的白边</div>
