@@ -14,6 +14,7 @@ import LineGroupConfig from './configs/LineGroupConfig.vue';
 import LineStylesConfig from './configs/LineStylesConfig.vue';
 import EditorConfig from './configs/EditorConfig.vue';
 import FaqAsConfig from './configs/FaqAsConfig.vue';
+import TextTagIconConfig from './configs/TextTagIconConfig.vue';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
@@ -145,6 +146,8 @@ defineExpose({
 </tbody></table>
 
 <TextTagConfig></TextTagConfig>
+
+<TextTagIconConfig></TextTagIconConfig>
 
 <EditorConfig></EditorConfig>
 

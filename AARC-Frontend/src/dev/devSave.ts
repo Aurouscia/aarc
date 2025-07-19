@@ -331,10 +331,16 @@ export const devSave:Save = {
     textTagIcons:[
         {
             id: 1000000,
-            name: '机场',
+            name: 'a-机场',
             url: '/icons/a/airport.svg',
             width: 50
-        }
+        },
+        {
+            id: 1000001,
+            name: 'a-火车站',
+            url: '/icons/a/train.svg',
+            width: 50
+        },
     ],
     config:{}
 }

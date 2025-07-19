@@ -26,6 +26,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
                 imgData.img = img
                 img.src = ic.url
                 proms.push(new Promise((res)=>{
+                    //TODO：超时机制
                     img?.addEventListener('load', ()=>{
                         res()
                         imgData.status = 'loaded'

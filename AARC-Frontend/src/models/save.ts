@@ -129,7 +129,7 @@ export interface TextOptions{
 
 export interface TextTagIcon{
     id:number,
-    name:string,
+    name?:string,
     url?:string,
     width?:number
 }
