@@ -7,7 +7,6 @@ import { ColorPreset, Line, LineType } from "../save"
 import { WayRel } from "@/utils/rayUtils/rayParallel"
 import rfdc from "rfdc"
 import { removeKeyIfSame } from "@/utils/lang/removeKeyIfSame"
-import { AllKeysOptional } from "@/utils/type/AllKeysOptional"
 
 export const configDefault:Config = {
     bgColor: '#ffffff',
@@ -84,12 +83,10 @@ export const useConfigStore = defineStore('config', ()=>{
         if(!saveStore.save?.config)
             return;
         const sc = saveStore.save.config;
-        makeSureCompatibilityWhenReading(sc)
         Object.assign(config.value, sc)
     }
     function writeConfigToSave(){
         const configNow = deepClone(config.value)
-        //注意：修改removeKeyIfSame前，关注makeSureCompatibilityWhenReading的逻辑
         removeKeyIfSame(configNow, deepClone(configDefault))
         if(saveStore.save)
             saveStore.save.config = configNow
@@ -147,22 +144,6 @@ export const useConfigStore = defineStore('config', ()=>{
             radius *= 2.4142135*0.618
         }
         return radius
-    }
-
-    function makeSureCompatibilityWhenReading(sc:AllKeysOptional<Config>){
-        const ver = sc.configVersion ?? 0
-        if(ver < 1){
-            // 旧版中，默认线路名标签为“文本居中”且“锚点在左侧”
-            // 为了确保一致性，若对象的configVersion较旧，将上述两个属性设为旧版的值
-            if(!sc.textTagForLine){
-                sc.textTagForLine = {}
-            }
-            sc.textTagForLine.anchorX = 1
-            sc.textTagForLine.textAlign = 0
-            sc.configVersion = 1
-            console.log('已运行ver=1的config兼容性设置')
-        }
-        //有需要时，继续往后加ver条件和赋值
     }
 
     return { 

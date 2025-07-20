@@ -1,5 +1,5 @@
-import { ConfigInSave } from "../config"
 import { Save, SaveMetaData, TextTag } from "../save"
+import { initFreshNewConfig, upgradeConfig } from "./upgrade/config"
 import { freshNewLineStyleVersion, upgradeLineStyles } from "./upgrade/lineStyles"
 import { ensureValidCvsSize } from "./valid/cvsSize"
 
@@ -45,12 +45,7 @@ export function normalizeSave(obj:any){
     const getNewId = ()=>obj.idIncre++
     if(freshNew){
         fillDefault('meta', 'object', getFreshNewMeta())
-        const defaultConfig:ConfigInSave = {
-            textTagForLine:{
-                edgeAnchorOutsidePadding: true
-            }
-        }
-        obj['config'] = defaultConfig
+        initFreshNewConfig(obj)
         const initialTTs:TextTag[] = [{
             id:getNewId(),
             pos: [500, 300],
@@ -64,6 +59,7 @@ export function normalizeSave(obj:any){
     }
     ensureValidCvsSize(obj)
     upgradeLineStyles(obj, getNewId)
+    upgradeConfig(obj)
     return obj as Save
 }
 function recaculateIdIncre(save:Save){
