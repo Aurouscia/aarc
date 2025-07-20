@@ -8,7 +8,7 @@ import { storeToRefs } from 'pinia';
 import { computed, onBeforeMount, onUnmounted, ref, watch } from 'vue';
 import { devSave } from '@/dev/devSave';
 import { useApiStore } from '@/app/com/apiStore';
-import { ensureValidSave } from '@/models/save';
+import { normalizeSave } from '@/models/save/saveNormalize';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useResetterStore } from '@/models/stores/utils/resetterStore';
@@ -47,7 +47,7 @@ async function load() {
         mainCvsDispatcher.visitorMode = iden.id!== ownerId
         try{
             const obj = resp ? JSON.parse(resp) : undefined
-            saveStore.save = ensureValidSave(obj)
+            saveStore.save = normalizeSave(obj)
             resetterStore.resetDerivedStores()
             saveStore.ensureLinesOrdered()
             await iconStore.ensureAllLoaded()
@@ -60,7 +60,7 @@ async function load() {
         }
     }
     else if(isDemo.value){
-        saveStore.save = ensureValidSave(deepClone(devSave))
+        saveStore.save = normalizeSave(deepClone(devSave))
         resetterStore.resetDerivedStores()
         saveStore.ensureLinesOrdered()
         await iconStore.ensureAllLoaded()

@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { computed, ref, watch } from "vue";
-import { ControlPoint, ControlPointDir, ControlPointLink, ControlPointSta, ensureValidCvsSize, Line, LineType, Save, saveLineCount, saveStaCount } from "../save";
+import { ControlPoint, ControlPointDir, ControlPointLink, ControlPointSta, Line, LineType, Save, saveLineCount, saveStaCount } from "../save";
+import { ensureValidCvsSize } from "../save/valid/cvsSize";
 import { Coord } from "../coord";
 import { isSameCoord } from "@/utils/sgn";
 import { useConfigStore } from "./configStore";

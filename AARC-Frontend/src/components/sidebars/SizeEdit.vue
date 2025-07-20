@@ -6,7 +6,7 @@ import { storeToRefs } from 'pinia';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useBaseCvsDispatcher } from '@/models/cvs/dispatchers/baseCvsDispatcher';
-import { minCvsSide } from '@/models/save';
+import { minCvsSide } from '@/models/save/valid/cvsSize';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 import Notice from '../common/Notice.vue';
