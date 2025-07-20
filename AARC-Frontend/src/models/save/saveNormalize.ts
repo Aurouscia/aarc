@@ -1,6 +1,7 @@
-import { Save, SaveMetaData, TextTag } from "../save"
+import { Save, SaveMetaData } from "../save"
 import { initFreshNewConfig, upgradeConfig } from "./upgrade/config"
 import { freshNewLineStyleVersion, initFreshNewLineStyles, upgradeLineStyles } from "./upgrade/lineStyles"
+import { initFreshNewTextTags } from "./upgrade/textTags"
 import { ensureValidCvsSize } from "./valid/cvsSize"
 import { ensureValidIdIncre } from "./valid/idIncre"
 
@@ -49,14 +50,7 @@ export function normalizeSave(obj:any){
         fillDefault('meta', 'object', getFreshNewMeta())
         initFreshNewLineStyles(obj, getNewId)
         initFreshNewConfig(obj)
-        const initialTTs:TextTag[] = [{
-            id:getNewId(),
-            pos: [500, 300],
-            text: "点击左侧的“线路”按钮，创建第一条线路\n点击本标签，然后拖拽到屏幕左上角，即可删除",
-            textS: "如果不清楚怎么控制线路，请查看首页顶部的使用说明",
-            textSOp: {color:'#999999', size: 1.2}
-        }]
-        obj['textTags'] = initialTTs
+        initFreshNewTextTags(obj, getNewId)
     }else{
         fillDefault('meta', 'object', {})
     }
@@ -65,6 +59,7 @@ export function normalizeSave(obj:any){
     upgradeConfig(obj)
     return obj as Save
 }
+
 function getFreshNewMeta():SaveMetaData{
     return {
         lineStylesVersion: freshNewLineStyleVersion
