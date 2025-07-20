@@ -342,5 +342,6 @@ export const devSave:Save = {
             width: 50
         },
     ],
-    config:{}
+    config:{},
+    meta:{}
 }
