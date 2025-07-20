@@ -68,6 +68,7 @@ namespace AARC.Repos.Identities
                     .Select(x => x.UserId)
                     .ToList();
                 finalList = userQ
+                    .Where(x => uids.Contains(x.Id))
                     .ProjectTo<UserDto>(mapper.ConfigurationProvider)
                     .ToList();
                 finalList.ForEach(u =>

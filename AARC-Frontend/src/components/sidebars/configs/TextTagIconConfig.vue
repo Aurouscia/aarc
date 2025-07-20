@@ -73,7 +73,7 @@ onMounted(async()=>{
 </script>
 
 <template>
-<ConfigSection :title="'文本标签图标'">
+<ConfigSection :title="'文本标签图标(制作中)'">
     <div v-if="ok" class="ttIconConfig">
         <div class="ttIconPrefixSelect">
             组

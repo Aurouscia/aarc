@@ -37,14 +37,13 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-07-06更新'">
-        1. 修复略缩图层级异常的问题<br/>
-        2. 可直接在线路中插入控制点（隐形点）<br/>
-        3. 修复无作品的用户在按作品数排序时搜不到用户名的问题<br/>
-        <b>【最近作者忙于工作，大更新仍需暂缓一周左右，敬请期待】</b>
+    <Notice :type="'info'" :title="'2025-07-20更新'">
+        1. 标签和线路“去除白边”选项<br/>
+        2. 修复用户列表按作品数排序时显示一千多人的问题<br/>
+        3. 喜报：近日master分支的代码贡献者出现第二人
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">
-        1. 机场/火车站图标插入<br/>
+        1. 机场/火车站图标插入(即将完成(确信))<br/>
         2. 标签/站名的旋转和压缩<br/>
         3. 站点/线路搜索定位功能<br/>
         4. 指定线路导出<br/>
