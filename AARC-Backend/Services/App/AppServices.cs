@@ -46,7 +46,7 @@ namespace AARC.Services.App
             services.AddNSwagDocument();
             services.AddSingleton<NSwagTsGenService>();
 
-            services.SetupAutoMapper();
+            services.SetupAutoMapper(config);
             return services;
         }
     }

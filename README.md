@@ -1,4 +1,4 @@
-<img src="https://gitee.com/au114514/aarc/raw/master/AARC-Frontend/src/assets/logo/aarc.svg" width="150px" style="display:block;margin:auto"/>
+<img src="https://gitee.com/au114514/aarc/raw/master/AARC-Frontend/src/assets/logo/aarc-new.svg" width="150px" style="display:block;margin:auto"/>
 
 <div style="text-align:center;margin-top:15px">
 <div style="font-size:22px">先进型抽象线路图画布</div>
@@ -53,6 +53,13 @@ TODO：dockerfile
 9. 尝试启动并进入网站
 
 *TODO：部署后更新数据库架构的方法*
+
+### 法律风险
+**本部分仅需“部署者”阅读，使用者无需关心**  
+本项目的依赖项`AutoMapper`(15.0.0+)由MIT许可证改为dual commercial/OSS许可证  
+详情请访问 https://automapper.io 并检查其中“免费使用”的条件  
+可：在上述链接获取许可证key并填入配置文件的`AutoMapper:LicenseKey`处  
+或：确认自己满足“免费使用”条件并自行承担法律风险
 
 ## 帮助
 **部署遇到问题，请加qq群 798877093 联系作者**  

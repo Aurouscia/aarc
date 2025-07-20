@@ -4,9 +4,14 @@ namespace AARC.Services.App.Mapping
 {
     public static class AutoMapperSetup
     {
-        public static IServiceCollection SetupAutoMapper(this IServiceCollection services)
+        public static IServiceCollection SetupAutoMapper(
+            this IServiceCollection services, IConfiguration config)
         {
-            services.AddAutoMapper(Assembly.GetExecutingAssembly());
+            services.AddAutoMapper(cfg => {
+                var key = config["AutoMapper:LicenseKey"];
+                if(!string.IsNullOrWhiteSpace(key))
+                    cfg.LicenseKey = key;
+            }, Assembly.GetExecutingAssembly());
             return services;
         }
     }
