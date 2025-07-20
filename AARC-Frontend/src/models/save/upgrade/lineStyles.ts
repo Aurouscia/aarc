@@ -1,16 +1,7 @@
 import { Save } from "@/models/save";
 
-export const currentlineStyleVersion = 0
-export const freshNewLineStyleVersion = -1
-export function upgradeLineStyles(s:Save, getNewId:()=>number){
-    const ver = s.meta.lineStylesVersion ?? 0
-    if(ver < 0){
-        upgradeTo0(s, getNewId)
-        s.meta.lineStylesVersion = 0
-        console.log("[升级]线路风格:0")
-    }
-}
-function upgradeTo0(s:Save, getNewId:()=>number){
+export const freshNewLineStyleVersion = 0
+export function initFreshNewLineStyles(s:Save, getNewId:()=>number){
     s.lineStyles ??= []
     s.lineStyles.push(
         {
@@ -26,6 +17,12 @@ function upgradeTo0(s:Save, getNewId:()=>number){
             layers:[
                 {color:'#FFFFFF', width:0.6, opacity:1, dash:'4 4'}
             ]
-        }
-    )
+        })
+    console.log('[初始化]线路样式')
+}
+export function upgradeLineStyles(s:Save, _getNewId:()=>number){
+    const ver = s.meta.lineStylesVersion ?? 0
+    if(ver < 1){
+        //预留
+    }
 }

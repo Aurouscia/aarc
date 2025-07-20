@@ -1,6 +1,6 @@
 import { Save, SaveMetaData, TextTag } from "../save"
 import { initFreshNewConfig, upgradeConfig } from "./upgrade/config"
-import { freshNewLineStyleVersion, upgradeLineStyles } from "./upgrade/lineStyles"
+import { freshNewLineStyleVersion, initFreshNewLineStyles, upgradeLineStyles } from "./upgrade/lineStyles"
 import { ensureValidCvsSize } from "./valid/cvsSize"
 
 export function normalizeSave(obj:any){
@@ -45,6 +45,7 @@ export function normalizeSave(obj:any){
     const getNewId = ()=>obj.idIncre++
     if(freshNew){
         fillDefault('meta', 'object', getFreshNewMeta())
+        initFreshNewLineStyles(obj, getNewId)
         initFreshNewConfig(obj)
         const initialTTs:TextTag[] = [{
             id:getNewId(),
