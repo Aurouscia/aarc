@@ -1,5 +1,6 @@
 import { ConfigInSave } from "../config"
-import { LineStyle, Save, TextTag } from "../save"
+import { Save, SaveMetaData, TextTag } from "../save"
+import { freshNewLineStyleVersion, upgradeLineStyles } from "./upgrade/lineStyles"
 import { ensureValidCvsSize } from "./valid/cvsSize"
 
 export function normalizeSave(obj:any){
@@ -27,7 +28,7 @@ export function normalizeSave(obj:any){
             }
         }
         if(needFill){
-            console.warn(`属性"${propName}"缺失，已使用默认值补充`)
+            console.warn(`[规范化]属性"${propName}"缺失，已使用默认值补充`)
             if(typeof defaultVal === 'object')
                 obj[propName] = defaultVal
             else
@@ -43,7 +44,7 @@ export function normalizeSave(obj:any){
     //确认了idIncre有值后，才能进行下面的“全新存档初始化”步骤（会使idIncre自增）
     const getNewId = ()=>obj.idIncre++
     if(freshNew){
-        fillDefault('lineStyles', 'array', ()=>defaultLineStyles(getNewId))
+        fillDefault('meta', 'object', getFreshNewMeta())
         const defaultConfig:ConfigInSave = {
             textTagForLine:{
                 edgeAnchorOutsidePadding: true
@@ -59,9 +60,10 @@ export function normalizeSave(obj:any){
         }]
         obj['textTags'] = initialTTs
     }else{
-        fillDefault('lineStyles', 'array', [])
+        fillDefault('meta', 'object', {})
     }
     ensureValidCvsSize(obj)
+    upgradeLineStyles(obj, getNewId)
     return obj as Save
 }
 function recaculateIdIncre(save:Save){
@@ -76,21 +78,8 @@ function recaculateIdIncre(save:Save){
     const maxId = Math.max(...allIds)
     return maxId + 1
 }
-function defaultLineStyles(getNewId:()=>number):LineStyle[]{
-    return [
-        {
-            id: getNewId(),
-            name: '快线',
-            layers:[
-                {color:'#FFFFFF', width:0.15, opacity:1}
-            ]
-        },
-        {
-            id: getNewId(),
-            name: '铁路',
-            layers:[
-                {color:'#FFFFFF', width:0.6, opacity:1, dash:'4 4'}
-            ]
-        }
-    ]
+function getFreshNewMeta():SaveMetaData{
+    return {
+        lineStylesVersion: freshNewLineStyleVersion
+    }
 }

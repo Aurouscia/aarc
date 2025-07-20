@@ -387,7 +387,6 @@ export const useSaveStore = defineStore('save', () => {
                 save.value.lines.splice(idx+1, 0, ...children)
             }
         }
-        console.log(save.value.lines.map(x=>x.name))
     }
     function arrangeLinesOfType(ids:number[], _lineType:LineType){
         ensureLinesOrdered(ids)

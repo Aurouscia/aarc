@@ -12,6 +12,7 @@ export interface Save{
     textTagIcons?: TextTagIcon[]
     cvsSize: Coord
     config: ConfigInSave
+    meta: SaveMetaData
 }
 
 
@@ -134,6 +135,10 @@ export interface TextTagIcon{
     name?:string,
     url?:string,
     width?:number
+}
+
+export interface SaveMetaData{
+    lineStylesVersion?: number
 }
 
 export function saveStaCount(save:Save){
