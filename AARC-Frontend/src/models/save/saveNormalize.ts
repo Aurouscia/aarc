@@ -2,6 +2,7 @@ import { Save, SaveMetaData, TextTag } from "../save"
 import { initFreshNewConfig, upgradeConfig } from "./upgrade/config"
 import { freshNewLineStyleVersion, initFreshNewLineStyles, upgradeLineStyles } from "./upgrade/lineStyles"
 import { ensureValidCvsSize } from "./valid/cvsSize"
+import { ensureValidIdIncre } from "./valid/idIncre"
 
 export function normalizeSave(obj:any){
     let freshNew = false
@@ -13,7 +14,7 @@ export function normalizeSave(obj:any){
         freshNew = true
     }
     const ownPropNames = Object.getOwnPropertyNames(obj)
-    const fillDefault = (propName:keyof Save, mustBe:'array'|'object'|'number', defaultVal:object|(()=>object))=>{
+    const fillDefault = (propName:keyof Save, mustBe:'array'|'object'|'number', defaultVal:object|number|(()=>object))=>{
         let needFill = false
         if(!ownPropNames.includes(propName))
             needFill = true
@@ -29,7 +30,7 @@ export function normalizeSave(obj:any){
         }
         if(needFill){
             console.warn(`[规范化]属性"${propName}"缺失，已使用默认值补充`)
-            if(typeof defaultVal === 'object')
+            if(typeof defaultVal === 'object' || typeof defaultVal === 'number')
                 obj[propName] = defaultVal
             else
                 obj[propName] = defaultVal()
@@ -40,7 +41,8 @@ export function normalizeSave(obj:any){
     fillDefault('cvsSize', 'array', [1000, 1000]),
     fillDefault('textTags', 'array', [])
     fillDefault('config', 'object', {})
-    fillDefault('idIncre', 'number', ()=>recaculateIdIncre(obj))
+    fillDefault('idIncre', 'number', 1)
+    ensureValidIdIncre(obj)
     //确认了idIncre有值后，才能进行下面的“全新存档初始化”步骤（会使idIncre自增）
     const getNewId = ()=>obj.idIncre++
     if(freshNew){
@@ -62,18 +64,6 @@ export function normalizeSave(obj:any){
     upgradeLineStyles(obj, getNewId)
     upgradeConfig(obj)
     return obj as Save
-}
-function recaculateIdIncre(save:Save){
-    const lineIds = save.lines.map(x=>x.id)
-    const ptIds = save.points.map(x=>x.id)
-    const ttIds = save.textTags.map(x=>x.id)
-    const lsIds = save.lineStyles?.map(x=>x.id) ?? []
-    const lgIds = save.lineGroups?.map(x=>x.id) ?? []
-    const allIds = [...lineIds, ...ptIds, ...ttIds, ...lsIds, ...lgIds]
-    if(allIds.length===0)
-        return 1
-    const maxId = Math.max(...allIds)
-    return maxId + 1
 }
 function getFreshNewMeta():SaveMetaData{
     return {
