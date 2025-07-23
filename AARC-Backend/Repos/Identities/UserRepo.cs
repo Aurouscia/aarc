@@ -30,6 +30,8 @@ namespace AARC.Repos.Identities
             int takeCount = 50;
             var myId = httpUserInfoService.UserInfo.Value.Id;
             var userQ = Existing;
+            var saveQ = base.Context.Saves.Existing().Where(x => x.StaCount > 0);
+
             if (!string.IsNullOrWhiteSpace(search))
             {
                 //sqlite默认大小写敏感，此处强制转为不敏感的（应该不怎么影响性能）
@@ -39,45 +41,31 @@ namespace AARC.Repos.Identities
                     userQ = userQ.Where(x => x.Name.Contains(search));
             }
             var orderbySave = orderby == "save";
-            var validSavesOwnerIds =
-                orderbySave ? 
-                    base.Context.Saves
-                    .Existing()
-                    .Where(x => x.StaCount > 0)
-                    .GroupBy(x => x.OwnerUserId)
-                    .Select(x => new {
-                        UserId = x.Key,
-                        Count = x.Count()
-                    })
-                    .ToList()
-                : [];
-            int getCountOfUser(int uid)
-            {
-                return validSavesOwnerIds
-                    .Where(x => x.UserId == uid)
-                    .Select(x => x.Count)
-                    .FirstOrDefault();
-            }
 
             List<UserDto> finalList;
             if (orderbySave)
             {
-                var uids = validSavesOwnerIds
+                var userIdCountQ = saveQ
+                    .GroupBy(x => x.OwnerUserId)
+                    .Select(x => new
+                    {
+                        UserId = x.Key,
+                        Count = x.Count()
+                    });
+                var userCountList = (
+                    from u in userQ
+                    from uc in userIdCountQ
+                    where uc.UserId == u.Id
+                    select new
+                    {
+                        User = mapper.Map<UserDto>(u),
+                        uc.Count
+                    })
                     .OrderByDescending(x => x.Count)
                     .Take(takeCount)
-                    .Select(x => x.UserId)
                     .ToList();
-                finalList = userQ
-                    .Where(x => uids.Contains(x.Id))
-                    .ProjectTo<UserDto>(mapper.ConfigurationProvider)
-                    .ToList();
-                finalList.ForEach(u =>
-                {
-                    u.SaveCount = getCountOfUser(u.Id);
-                });
-                finalList = finalList
-                    .OrderByDescending(x => x.SaveCount)
-                    .ToList();
+                userCountList.ForEach(x => x.User.SaveCount = x.Count);
+                finalList = userCountList.ConvertAll(x => x.User);
             }
             else
             {
@@ -97,10 +85,10 @@ namespace AARC.Repos.Identities
                         .Where(x => x.Id == myId)
                         .ProjectTo<UserDto>(mapper.ConfigurationProvider)
                         .FirstOrDefault();
-                    var mySaveCount = getCountOfUser(myId);
                     if (me is { })
                     {
-                        me.SaveCount = mySaveCount;
+                        if (orderbySave)
+                            me.SaveCount = saveQ.Where(x => x.OwnerUserId == myId).Count();
                         finalList.Insert(0, me);
                     }
                 }
