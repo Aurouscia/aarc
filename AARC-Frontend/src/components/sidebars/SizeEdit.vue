@@ -117,6 +117,7 @@ function applyChange(){
     })
 }
 
+const manualMode = ref(false)
 const sidebar = ref<InstanceType<typeof SideBar>>()
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
@@ -127,14 +128,20 @@ defineExpose({
 <template>
 <SideBar ref="sidebar" :shrink-way="'v-show'">
     <div class="sizeEdit">
-        <div class="yControl">
+        <div class="yControl" v-if="manualMode">
+            <input v-model.number="pendingChanges[0]" type="number" step="100"/>
+        </div>
+        <div class="yControl" v-else>
             <div class="btnPair">
                 <button @click="changeIncre(0, false)">-</button>
                 <button @click="changeIncre(0, true)">+</button>
             </div>
             <div :style="changeStyleOf(0)">{{ changeTextOf(0) }}</div>
         </div>
-        <div class="xControl">
+        <div class="xControl" v-if="manualMode">
+            <input v-model.number="pendingChanges[3]" type="number" step="100"/>
+        </div>
+        <div class="xControl" v-else>
             <div class="btnPair">
                 <button @click="changeIncre(3, false)">-</button>
                 <button @click="changeIncre(3, true)">+</button>
@@ -149,14 +156,20 @@ defineExpose({
                 <div class="wh">{{ `${cvsWidthPreview}×${cvsHeightPreview}` }}</div>
             </div>
         </div>
-        <div class="xControl">
+        <div class="xControl" v-if="manualMode">
+            <input v-model.number="pendingChanges[1]" type="number" step="100"/>
+        </div>
+        <div class="xControl" v-else>
             <div class="btnPair">
                 <button @click="changeIncre(1, false)">-</button>
                 <button @click="changeIncre(1, true)">+</button>
             </div>
             <div :style="changeStyleOf(1)">{{ changeTextOf(1) }}</div>
         </div>
-        <div class="yControl">
+        <div class="yControl" v-if="manualMode">
+            <input v-model.number="pendingChanges[2]" type="number" step="100"/>
+        </div>
+        <div class="yControl" v-else>
             <div class="btnPair">
                 <button @click="changeIncre(2, false)">-</button>
                 <button @click="changeIncre(2, true)">+</button>
@@ -164,7 +177,11 @@ defineExpose({
             <div :style="changeStyleOf(2)">{{ changeTextOf(2) }}</div>
         </div>
     </div>
-    <div class="incrementEdit">
+    <div class="ops">
+        <button v-if="!manualMode" @click="manualMode=true" class="minor">手动输入增量</button>
+        <button v-else @click="manualMode=false" class="minor">按钮调整增量</button>
+    </div>
+    <div v-if="!manualMode" class="incrementEdit">
         <div class="incTag">步长</div>
         <div class="incCtrl">
             <button @click="changeIncrementIncre(false)" class="off">-</button>
@@ -172,7 +189,7 @@ defineExpose({
             <button @click="changeIncrementIncre(true)" class="off">+</button>
         </div>
     </div>
-    <div class="incrementEdit">
+    <div v-if="!manualMode" class="incrementEdit">
         <div class="incTag">对侧补偿</div>
         <input type="checkbox" v-model="changeCompensate"/>
     </div>
@@ -205,8 +222,8 @@ defineExpose({
     }
 }
 .sizeEdit{
-    width: 250px;
-    height: 250px;
+    width: 270px;
+    height: 270px;
     padding: 5px;
     margin: auto;
     background-color: #ccc;
@@ -319,5 +336,9 @@ defineExpose({
         text-decoration: underline;
         color:white;
     }
+}
+
+input[type=number]{
+    width: 70px;
 }
 </style>
