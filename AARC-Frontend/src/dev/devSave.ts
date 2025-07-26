@@ -337,7 +337,13 @@ export const devSave:Save = {
         },
         {
             id: 1000001,
-            name: 'a-火车站',
+            name: 'b-火车站',
+            url: '/icons/a/train.svg',
+            width: 50
+        },
+        {
+            id: 1000001,
+            name: '火车站',
             url: '/icons/a/train.svg',
             width: 50
         },

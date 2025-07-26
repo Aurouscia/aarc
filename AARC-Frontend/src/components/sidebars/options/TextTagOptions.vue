@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { TextTag } from '@/models/save';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import SideBar from '../../common/SideBar.vue';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
 import { useConfigStore } from '@/models/stores/configStore';
+import { useIconStore } from '@/models/stores/iconStore';
+import { storeToRefs } from 'pinia';
 
 const cs = useConfigStore()
+const iconStore = useIconStore()
+const { prefixSelected } = storeToRefs(iconStore)
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const picker1 = ref<InstanceType<typeof AuColorPicker>>()
@@ -24,6 +28,7 @@ function startEditing(tag: TextTag) {
         tag.textSOp = { size:0, color: cs.config.textTagSubFontColorHex }
     picker1.value?.enforceTo(tag.textOp?.color || '#000000')
     picker2.value?.enforceTo(tag.textSOp?.color || '#000000')
+    iconStore.enforcePrefixSelectedTo(tag.icon??0)
     sidebar.value?.extend()
 }
 
@@ -37,6 +42,23 @@ function colorChangeHandler(from: 'main'|'sub', c:string){
         editing.value.textSOp.color = c
     }
 }
+
+function ensureIconInSelection(){
+    if(editing.value){
+        if(!editing.value.icon || !iconStore.prefixedIcons.some(x=>x.i.id===editing.value?.icon)){
+            editing.value.icon = iconStore.prefixedIcons.at(0)?.i.id ?? -1
+        }
+    }
+}
+function turnOffIcon(){
+    if(editing.value && window.confirm('确认关闭该标签的图标？')){
+        editing.value.icon = undefined
+    }
+}
+watch(()=>editing.value, ()=>{
+    //开销不大
+    emit('changed')
+}, {deep:true})
 
 const emit = defineEmits<{
     (e:'changed'):void
@@ -57,6 +79,21 @@ defineExpose({
                     <td class="coord">
                         <input type="number" v-model="editing.pos[0]" @change="emit('changed')"/><br/>
                         <input type="number" v-model="editing.pos[1]" @change="emit('changed')"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>图标</td>
+                    <td>
+                        <button v-if="!editing.icon" class="lite" @click="ensureIconInSelection">启用图标</button>
+                        <button v-else @click="turnOffIcon" class="lite">关闭图标</button>
+                        <div v-if="editing.icon">
+                            <select v-model="prefixSelected" @change="ensureIconInSelection" class="iconSelect">
+                                <option v-for="ip in iconStore.prefixes" :value="ip">{{ ip }}</option>
+                            </select><br/>
+                            <select v-model="editing.icon" class="iconSelect">
+                                <option v-for="ic in iconStore.prefixedIcons" :value="ic.i.id">{{ ic.i.name }}</option>
+                            </select>
+                        </div>
                     </td>
                 </tr>
                 <tr v-if="editing.forId">
@@ -199,4 +236,9 @@ defineExpose({
 
 <style scoped lang="scss">
 @use './shared/options.scss';
+
+.iconSelect{
+    min-width: 100px;
+    max-width: 170px;
+}
 </style>

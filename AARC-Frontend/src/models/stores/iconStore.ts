@@ -121,10 +121,10 @@ export const useIconStore = defineStore('iconStore', ()=>{
                 hasUngrouped = true
             }
         })
-        if(hasUngrouped || res.size === 0)
-            res.add(noPrefix)
         const resArr = [...res]
         resArr.sort()
+        if(hasUngrouped || res.size === 0)
+            resArr.push(noPrefix)
         return resArr
     })
     const prefixSelected = ref<string>()
@@ -144,6 +144,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
                 data
             })
         })
+        res.sort()
         return res
     })
 
@@ -158,6 +159,13 @@ export const useIconStore = defineStore('iconStore', ()=>{
             prefixSelected.value = prefixes.value.at(0)
         }
     }
+    function enforcePrefixSelectedTo(iconId:number){
+        const icon = save.value?.textTagIcons?.find(x=>x.id===iconId)
+        if(!icon)
+            return
+        const prefix = getPrefixFromIconName(icon.name)
+        prefixSelected.value = prefix ?? noPrefix
+    }
 
     return {
         ensureAllLoaded,
@@ -166,6 +174,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
         prefixes,
         prefixedIcons,
         prefixSelected,
-        ensurePrefixSelectedValid
+        ensurePrefixSelectedValid,
+        enforcePrefixSelectedTo
     }
 })
