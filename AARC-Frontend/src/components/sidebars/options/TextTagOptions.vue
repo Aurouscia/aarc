@@ -94,6 +94,7 @@ defineExpose({
                                 <option v-for="ic in iconStore.prefixedIcons" :value="ic.i.id">{{ ic.i.name }}</option>
                             </select>
                         </div>
+                        <div class="smallNote">暂不支持自定义，请期待后续更新</div>
                     </td>
                 </tr>
                 <tr v-if="editing.forId">
