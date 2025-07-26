@@ -30,11 +30,15 @@ export const useIconStore = defineStore('iconStore', ()=>{
                 imgData = {status:'loading'}
                 data.value.set(ic.id, imgData)
             }
-            if(!imgData?.img || !ic.url || imgData?.img.src !== ic.url){
+            let icUrlFull = ic.url
+            if(icUrlFull?.startsWith('/'))
+                icUrlFull = window.location.origin + icUrlFull
+            if(!imgData?.img || !ic.url || imgData?.img.src !== icUrlFull){
                 proms.push(new Promise((res)=>{
                     if(!ic.url){
                         imgData.status = 'failed'
                         imgData.errmsg = '缺少链接'
+                        console.warn(`[icon]"${ic.name}"(${ic.url})缺少链接`)
                         res()
                         return
                     }
@@ -43,6 +47,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
                             if(checkErr){
                                 imgData.status = 'failed'
                                 imgData.errmsg = checkErr
+                                console.warn(`[icon]"${ic.name}"(${ic.url})${checkErr}`)
                                 res()
                             }else{
                                 const img = new Image()
@@ -51,6 +56,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
                                 let timer = window.setTimeout(()=>{
                                     imgData.status = 'failed'
                                     imgData.errmsg = '加载超时'
+                                    console.warn(`[icon]"${ic.name}"(${ic.url})数据加载超时`)
                                     res()
                                 }, maxLoadWaitMs)
                                 img?.addEventListener('load', ()=>{
