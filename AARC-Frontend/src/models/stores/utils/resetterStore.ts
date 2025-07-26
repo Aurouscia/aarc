@@ -12,6 +12,12 @@ import { useDiscardAreaStore } from "../discardAreaStore";
 import { useNameEditStore } from "../nameEditStore";
 import { useTextTagEditStore } from "../textTagEditStore";
 
+/**
+ * 在加载前重置所有状态（已废弃）  
+ * 依然有“串台”的情况发生，无法定位原因  
+ * 所以改为刷新页面(location.reload)确保状态全新  
+ * 见models\stores\utils\loadedSave.ts
+ */
 export const useResetterStore = defineStore('resetter', ()=>{
     const envStore = useEnvStore()
     const needClearItemsStoreUses:(()=>{clearItems:()=>void})[] = [

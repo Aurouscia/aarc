@@ -22,6 +22,7 @@ import { DocumentHiddenLongWatcher } from '@/utils/eventUtils/documentHiddenLong
 import HiddenLongWarnPrompt from './components/HiddenLongWarnPrompt.vue';
 import { useIconStore } from '@/models/stores/iconStore';
 import { compressObjectToGzip } from '@/utils/dataUtils/compressObjectToGzip';
+import { useLoadedSave } from '@/models/stores/utils/loadedSave';
 
 const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
@@ -32,13 +33,14 @@ const iconStore = useIconStore()
 const api = useApiStore()
 const userInfoStore = useUserInfoStore()
 const saveIdNum = computed(()=>parseInt(props.saveId))
-let loadedSaveIdNum = 0
+const { loadedSave } = storeToRefs(useLoadedSave())
 const loadComplete = ref(false)
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const isDemo = computed(()=>props.saveId.toLowerCase() == 'demo')
 const savingDisabledWarning = ref<string>()
 async function load() {
+    loadedSave.value = true
     if(!isNaN(saveIdNum.value)){
         await checkLoginLeftTime()
         const resp = await api.save.loadData(saveIdNum.value)
@@ -74,7 +76,6 @@ async function load() {
             }, 3000)
         }
     }
-    loadedSaveIdNum = saveIdNum.value || 0
 }
 
 const deepClone = rfdc()
@@ -151,9 +152,7 @@ function setLeavingPreventing(){
 }
 const cvsComponent = ref<InstanceType<typeof Cvs>>()
 watch(props, async()=>{
-    if(loadedSaveIdNum !== saveIdNum.value){
-        window.location.reload()
-    }
+    window.location.reload()
 })
 const saveShortcutListener = new ShortcutListener(saveData, 's', true)
 const cachePreventerInputId = 'cachePreventerInput'
@@ -164,6 +163,9 @@ const hiddenLongWatcher = new DocumentHiddenLongWatcher(30*1000, ()=>{
         showHiddenLongWarn.value = true
 }) 
 onBeforeMount(async()=>{
+    if(loadedSave.value){
+        window.location.reload()
+    }
     setLeavingPreventing()
     topbarShow.value = false
     await load()
