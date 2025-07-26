@@ -145,7 +145,7 @@ export function useSideListShared(lineType:LineType){
             childrenLines.value?.comeOut(line.id)
     }
     function leaveParent(line:Line){
-        if(window.confirm(`确认拆分<${line.name}>为单独线路`)){
+        if(window.confirm(`确认拆分<${line.name||'无名支线'}>为单独线路`)){
             line.parent = undefined
             saveStore.ensureLinesOrdered()
             envStore.rerender([], [])
