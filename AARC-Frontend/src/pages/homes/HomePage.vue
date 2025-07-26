@@ -37,13 +37,13 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-07-20更新'">
-        1. 标签和线路“去除白边”选项<br/>
-        2. 修复用户列表按作品数排序时显示一千多人的问题<br/>
-        3. 喜报：近日master分支的代码贡献者出现第二人
+    <Notice :type="'info'" :title="'2025-07-26更新'">
+        1. 机场和火车站图标（需先创建文本标签）<br/>
+        2. 画布尺寸调整：可手动输入增量<br/>
+        3. 修复网格隐藏（网格对齐关闭时）在移动后失效的问题
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">
-        1. 机场/火车站图标插入(即将完成(确信))<br/>
+        1. 自定义图标插入（使外链图标正常导出）<br/>
         2. 标签/站名的旋转和压缩<br/>
         3. 站点/线路搜索定位功能<br/>
         4. 指定线路导出<br/>
