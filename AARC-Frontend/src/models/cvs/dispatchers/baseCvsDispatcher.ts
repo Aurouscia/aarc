@@ -15,7 +15,7 @@ export const useBaseCvsDispatcher = defineStore('baseCvsDispatcher', ()=>{
     const { renderGrid } = useGridCvsWorker()
     const { snapGridEnabled } = storeToRefs(useSnapStore())
     function renderBaseCvs(){
-        if(!snapGridEnabled)
+        if(!snapGridEnabled.value)
             return
         const ctx = getCtx()
         renderGrid(ctx)
