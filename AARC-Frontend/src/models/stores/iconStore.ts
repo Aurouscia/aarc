@@ -1,6 +1,7 @@
 import { defineStore, storeToRefs } from "pinia";
 import { useSaveStore } from "./saveStore";
-import { ref } from "vue";
+import { computed, ref } from "vue";
+import { TextTagIcon } from "../save";
 
 export interface TextTagIconData{
     img?:HTMLImageElement
@@ -9,6 +10,10 @@ export interface TextTagIconData{
     status?:'loading'|'loaded'|'failed',
     errmsg?:string
 }
+export interface TextTagIconDisplayItem{
+    i:TextTagIcon,
+    data?:TextTagIconData
+} 
 
 const maxLoadWaitMs = 8000
 const maxIconSizeKb = 200
@@ -102,9 +107,65 @@ export const useIconStore = defineStore('iconStore', ()=>{
             return "加载失败"
         }
     }
+
+    const sep = '-'
+    const noPrefix = '其他'
+    const prefixes = computed<string[]>(()=>{
+        const res = new Set<string>()
+        let hasUngrouped = false
+        save.value?.textTagIcons?.forEach(i=>{
+            const prefix = getPrefixFromIconName(i.name)
+            if(prefix){
+                res.add(prefix)
+            }else{
+                hasUngrouped = true
+            }
+        })
+        if(hasUngrouped || res.size === 0)
+            res.add(noPrefix)
+        const resArr = [...res]
+        resArr.sort()
+        return resArr
+    })
+    const prefixSelected = ref<string>()
+    const prefixedIcons = computed<TextTagIconDisplayItem[]>(()=>{
+        const icons = save.value?.textTagIcons?.filter(x=>{
+            const prefix = getPrefixFromIconName(x.name)
+            if(prefix === null){
+                return prefixSelected.value === noPrefix
+            }
+            return prefix == prefixSelected.value
+        }) ?? []
+        const res:TextTagIconDisplayItem[] = []
+        icons.forEach(i=>{
+            const data = getDataByIconId(i.id)
+            res.push({
+                i,
+                data
+            })
+        })
+        return res
+    })
+
+    function getPrefixFromIconName(iName?:string):string|null{
+        if(iName?.includes(sep)){
+            return iName.split(sep).at(0) ?? null
+        }
+        return null
+    }
+    function ensurePrefixSelectedValid(){
+        if(!prefixSelected.value || !prefixes.value.includes(prefixSelected.value)){
+            prefixSelected.value = prefixes.value.at(0)
+        }
+    }
+
     return {
         ensureAllLoaded,
         getDataByIconId,
-        clearItems
+        clearItems,
+        prefixes,
+        prefixedIcons,
+        prefixSelected,
+        ensurePrefixSelectedValid
     }
 })

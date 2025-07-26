@@ -1,68 +1,12 @@
 <script setup lang="ts">
-import { useSaveStore } from '@/models/stores/saveStore';
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
-import { TextTagIcon } from '@/models/save';
 import ConfigSection from './shared/ConfigSection.vue';
-import { TextTagIconData, useIconStore } from '@/models/stores/iconStore';
+import { useIconStore } from '@/models/stores/iconStore';
 
-const { save } = storeToRefs(useSaveStore())
-const { getDataByIconId, ensureAllLoaded } = useIconStore()
-
-const sep = '-'
-const noPrefix = '其他'
-const prefixes = computed<string[]>(()=>{
-    const res = new Set<string>()
-    let hasUngrouped = false
-    save.value?.textTagIcons?.forEach(i=>{
-        const prefix = getPrefixFromIconName(i.name)
-        if(prefix){
-            res.add(prefix)
-        }else{
-            hasUngrouped = true
-        }
-    })
-    if(hasUngrouped || res.size === 0)
-        res.add(noPrefix)
-    const resArr = [...res]
-    resArr.sort()
-    return resArr
-})
-const prefixSelected = ref<string>()
-interface TextTagIconDisplayItem{
-    i:TextTagIcon,
-    data?:TextTagIconData
-} 
-const prefixedIcons = computed<TextTagIconDisplayItem[]>(()=>{
-    const icons = save.value?.textTagIcons?.filter(x=>{
-        const prefix = getPrefixFromIconName(x.name)
-        if(prefix === null){
-            return prefixSelected.value === noPrefix
-        }
-        return prefix == prefixSelected.value
-    }) ?? []
-    const res:TextTagIconDisplayItem[] = []
-    icons.forEach(i=>{
-        const data = getDataByIconId(i.id)
-        res.push({
-            i,
-            data
-        })
-    })
-    return res
-})
-
-function getPrefixFromIconName(iName?:string):string|null{
-    if(iName?.includes(sep)){
-        return iName.split(sep).at(0) ?? null
-    }
-    return null
-}
-function ensurePrefixSelectedValid(){
-    if(!prefixSelected.value || !prefixes.value.includes(prefixSelected.value)){
-        prefixSelected.value = prefixes.value.at(0)
-    }
-}
+const iconStore = useIconStore()
+const { ensureAllLoaded, ensurePrefixSelectedValid } = iconStore
+const { prefixes, prefixSelected, prefixedIcons } = storeToRefs(iconStore)
 
 const ok = ref(false)
 onMounted(async()=>{
