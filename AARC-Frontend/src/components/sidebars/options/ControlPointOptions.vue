@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import SideBar from '@/components/common/SideBar.vue';
 import { ControlPoint } from '@/models/save';
+import { useEnvStore } from '@/models/stores/envStore';
 import { useNameEditStore } from '@/models/stores/nameEditStore';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { computed, ref } from 'vue';
@@ -8,6 +9,7 @@ import { computed, ref } from 'vue';
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const nameEditStore = useNameEditStore()
 const saveStore = useSaveStore()
+const envStore = useEnvStore()
 
 const editing = ref<ControlPoint>()
 function startEditing(pt: ControlPoint) {
@@ -44,8 +46,10 @@ defineExpose({
                 <tr>
                     <td>坐标</td>
                     <td class="coord">
-                        <input type="number" v-model="editing.pos[0]" @change="emit('changed')"/><br/>
-                        <input type="number" v-model="editing.pos[1]" @change="emit('changed')"/>
+                        <input type="number" v-model.number="editing.pos[0]"
+                            @change="emit('changed');envStore.movedPoint=true"/><br/>
+                        <input type="number" v-model.number="editing.pos[1]"
+                            @change="emit('changed');envStore.movedPoint=true"/>
                     </td>
                 </tr>
             </tbody></table>
@@ -54,8 +58,8 @@ defineExpose({
             <h2>站名尺寸</h2>
             <div class="optionSection">
                 <div class="viewableRange" v-if="editing.nameSize!==undefined">
-                    <input type="range" v-model="editing.nameSize" :min="0" :max="3" :step="0.25" @change="emit('changed')"/>
-                    <input type="number" v-model="editing.nameSize" :min="0" :max="3" @change="emit('changed')"/>
+                    <input type="range" v-model.number="editing.nameSize" :min="0" :max="3" :step="0.25" @change="emit('changed')"/>
+                    <input type="number" v-model.number="editing.nameSize" :min="0" :max="3" @change="emit('changed')"/>
                 </div>
                 <div class="smallNote" style="text-align: center;">
                     设为0使用默认大小<br/>
@@ -69,8 +73,8 @@ defineExpose({
                     <tr>
                         <td>坐标</td>
                         <td class="coord">
-                            <input type="number" v-model="editing.nameP[0]" @change="emit('changed')"/><br/>
-                            <input type="number" v-model="editing.nameP[1]" @change="emit('changed')"/>
+                            <input type="number" v-model.number="editing.nameP[0]" @change="emit('changed')"/><br/>
+                            <input type="number" v-model.number="editing.nameP[1]" @change="emit('changed')"/>
                         </td>
                     </tr>
                 </tbody></table>
