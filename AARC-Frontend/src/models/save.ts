@@ -138,7 +138,8 @@ export interface TextTagIcon{
 }
 
 export interface SaveMetaData{
-    lineStylesVersion?: number
+    lineStylesVersion?: number,
+    textTagIconsVersion?: number
 }
 
 export function saveStaCount(save:Save){

@@ -1,6 +1,7 @@
 import { Save, SaveMetaData } from "../save"
 import { initFreshNewConfig, upgradeConfig } from "./upgrade/config"
 import { freshNewLineStyleVersion, initFreshNewLineStyles, upgradeLineStyles } from "./upgrade/lineStyles"
+import { freshNewTextTagIconsVersion, upgradeTextTagIcons } from "./upgrade/textTagIcons"
 import { initFreshNewTextTags } from "./upgrade/textTags"
 import { ensureValidCvsSize } from "./valid/cvsSize"
 import { ensureValidIdIncre } from "./valid/idIncre"
@@ -57,11 +58,13 @@ export function normalizeSave(obj:any){
     ensureValidCvsSize(obj)
     upgradeLineStyles(obj, getNewId)
     upgradeConfig(obj)
+    upgradeTextTagIcons(obj, getNewId)
     return obj as Save
 }
 
 function getFreshNewMeta():SaveMetaData{
     return {
-        lineStylesVersion: freshNewLineStyleVersion
+        lineStylesVersion: freshNewLineStyleVersion,
+        textTagIconsVersion: freshNewTextTagIconsVersion
     }
 }

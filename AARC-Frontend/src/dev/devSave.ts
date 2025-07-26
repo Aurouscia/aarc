@@ -331,22 +331,10 @@ export const devSave:Save = {
     textTagIcons:[
         {
             id: 1000000,
-            name: 'a-机场',
-            url: '/icons/a/airport.svg',
-            width: 50
-        },
-        {
-            id: 1000001,
-            name: 'b-火车站',
-            url: '/icons/a/train.svg',
-            width: 50
-        },
-        {
-            id: 1000001,
-            name: '火车站',
-            url: '/icons/a/train.svg',
-            width: 50
-        },
+            width: 50,
+            name: '测试-机场',
+            url: '/icons/a/airport.svg'
+        }
     ],
     config:{},
     meta:{}
