@@ -81,7 +81,7 @@ defineExpose({
                         <input type="number" v-model="editing.pos[1]" @change="emit('changed')"/>
                     </td>
                 </tr>
-                <tr>
+                <tr v-if="!editing.forId">
                     <td>图标</td>
                     <td>
                         <button v-if="!editing.icon" class="lite" @click="ensureIconInSelection">启用图标</button>

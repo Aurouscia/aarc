@@ -160,10 +160,14 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             text: !subEmpty ? t.textS?.trim(): 'Empty TextTag'
         }
 
+        let iconValid = false
         if(icon){
             idata = iconStore.getDataByIconId(icon.id)
             if(idata?.status==='loaded' && idata?.naturalWidth && idata.naturalHeight){
-                const iw = icon.width ?? 50
+                iconValid = true
+                let iw = icon.width ?? 50
+                if(iw < 10)
+                    iw = 10
                 const iwhr = idata.naturalWidth / idata.naturalHeight
                 const ih = iw / iwhr
                 iconWidth = iw; iconHeight = ih;
@@ -251,9 +255,17 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         }
         if (t.removeCarpet)
             textCarpetOpts=false
-        const drawTextResRect = drawText(ctx, textDrawPos, anchor, textAlign, optMain, optSub, textCarpetOpts, 'both')
-        const rectFull = drawTextResRect?.rectFull //不包括icon，只包括文字的rect
-        if(icon && idata?.img && idata.status==='loaded' && getIconPosY && getIconPosX){
+        let rectFull:RectCoord|undefined //不包括icon，只包括文字的rect
+        if(iconValid && mainEmpty){
+            rectFull = undefined
+        }
+        else{
+            const drawTextResRect = drawText(ctx, textDrawPos, anchor, textAlign, optMain, optSub, textCarpetOpts, 'both')
+            rectFull = drawTextResRect?.rectFull
+        }
+        
+        let iconRect:RectCoord|undefined
+        if(icon && idata?.img && iconValid && getIconPosY && getIconPosX){
             let tw = 0, th = 0;
             if(rectFull){
                 tw = rectFull[1][0] - rectFull[0][0]
@@ -263,16 +275,22 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             const ipy = getIconPosY(t.pos[1], th)
             const iconPos:Coord = [ipx, ipy]
             iconPos[0]-=iconWidth/2; iconPos[1]-=iconHeight/2
+            const iconRightBottomPos:Coord = [...iconPos]
+            iconRightBottomPos[0]+=iconWidth
+            iconRightBottomPos[1]+=iconHeight
+            iconRect = [[...iconPos], [...iconRightBottomPos]]
             ctx.drawImage(idata.img, ...iconPos, iconWidth, iconHeight)
         }
-        if(rectFull){
-            if(iconWidth && iconHeight)
-                enlargeRectByIcon(rectFull, iconWidth, iconHeight, g, textAlign)
-            //rectFull变为包括icon的rect
-            textTagRectStore.setTextTagRect(t.id, rectFull)
-            if(strokeRect){
-                drawRectAndAnchor(ctx, t.pos, rectFull)
-            }
+        if(!rectFull && iconRect){
+            rectFull = iconRect
+        }
+        else if(rectFull && iconWidth && iconHeight){
+            enlargeRectByIcon(rectFull, iconWidth, iconHeight, g, textAlign)
+        }
+        //rectFull变为包括icon的rect
+        textTagRectStore.setTextTagRect(t.id, rectFull)
+        if(strokeRect){
+            drawRectAndAnchor(ctx, t.pos, rectFull)
         }
     }
     function getFontSize(textOptions:TextOptions|undefined, fallback:number):number{

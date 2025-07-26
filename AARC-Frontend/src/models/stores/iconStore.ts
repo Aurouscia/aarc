@@ -166,6 +166,8 @@ export const useIconStore = defineStore('iconStore', ()=>{
         }
     }
     function enforcePrefixSelectedTo(iconId:number){
+        if(!prefixSelected.value)
+            prefixSelected.value = prefixes.value.at(0)
         const icon = save.value?.textTagIcons?.find(x=>x.id===iconId)
         if(!icon)
             return
