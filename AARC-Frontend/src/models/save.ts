@@ -33,6 +33,8 @@ export interface ControlPoint{
     nameS?:string
     nameP?:Coord
     nameSize?:number
+    removeWhiteCarpet?:boolean
+    color?:string
 }
 
 export enum ControlPointLinkType{

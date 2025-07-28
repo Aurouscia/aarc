@@ -5,6 +5,8 @@ import { useEnvStore } from '@/models/stores/envStore';
 import { useNameEditStore } from '@/models/stores/nameEditStore';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { computed, ref } from 'vue';
+import { AuColorPicker } from '@aurouscia/au-color-picker';
+const colorPicker = ref<InstanceType<typeof AuColorPicker>[]>([])
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const nameEditStore = useNameEditStore()
@@ -18,6 +20,9 @@ function startEditing(pt: ControlPoint) {
         editing.value.nameSize = 0
     if(editing.value.nameP===undefined)
         editing.value.nameP = nameEditStore.newNamePos(editing.value.id)
+    if(editing.value.color==undefined){
+        editing.value.color='#000000'
+    }
     sidebar.value?.extend()
 }
 
@@ -78,6 +83,47 @@ defineExpose({
                         </td>
                     </tr>
                 </tbody></table>
+                <div class="smallNote" style="text-align: center;">
+                    指的是相对于站点的坐标
+                </div>
+            </div>
+            <h2>站名样式</h2>
+            <div class="optionSection">
+                <table class="fullWidth"><tbody>
+                    <tr>
+                        <td>去除白边</td>
+                        <td>
+                            <input type="checkbox" v-model.number="editing.removeWhiteCarpet" @change="emit('changed')"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>颜色</td>
+                        <td>
+                            <button @click="editing.color='#000000';editing.removeWhiteCarpet=false">设为黑色</button>
+                            <button @click="editing.color='#ffffff';editing.removeWhiteCarpet=true">设为白色</button>
+                            
+                                    <div class="smallNote" style="text-align: center;">
+                    设为白色会自动将去白边选项打开<br>设为黑色会自动将去白边选项关闭
+                </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            更多颜色
+                        </td>
+                        <td>
+                            <AuColorPicker v-if="editing"
+                                    ref="colorPicker" @change="c=>editing.color=c"
+                                    :initial="editing.color" @done="c=>editing.color=c"
+                                    :entry-styles="{border:'1px solid black'}" :pos="-85"
+                                    :entry-respond-delay="1"
+                                    :panel-click-stop-propagation="true"></AuColorPicker>
+                        </td>
+                    </tr>
+                </tbody></table>
+                <div class="smallNote" style="text-align: center;">
+                此处的设置仅影响本点，若站名被拖入<br/>车站团内其他点，则需要重新设置
+                </div>
             </div>
         </div>
     </div>
