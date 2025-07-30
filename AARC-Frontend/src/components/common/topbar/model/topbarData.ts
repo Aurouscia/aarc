@@ -2,8 +2,10 @@ import { mySavesName, searchSaveName } from "@/pages/saves/routes/routesNames";
 import { TopbarModel } from "./topbarModel";
 import { aboutName, loginName, userListName } from "@/pages/identities/routes/routesNames";
 import { faq } from "@/pages/homes/routes/routesNames";
+import { useCommonLocalConfigStore } from "@/app/localConfig/commonLocalConfig";
 
 export async function getTopbarData(): Promise<TopbarModel> {
+    const faqTitle = "疑问"
     const model: TopbarModel = {
         Items: [
             {
@@ -37,7 +39,7 @@ export async function getTopbarData(): Promise<TopbarModel> {
                 ]
             },
             {
-                Title: "疑问",
+                Title: faqTitle,
                 Link: {name: faq}
             },
             {
@@ -45,6 +47,10 @@ export async function getTopbarData(): Promise<TopbarModel> {
                 Link: {name: loginName}
             }
         ]
+    }
+    const common = useCommonLocalConfigStore()
+    if(!common.showFaqOnTopbar){
+        model.Items = model.Items.filter(x=>x.Title!==faqTitle)
     }
     return model;
 }
