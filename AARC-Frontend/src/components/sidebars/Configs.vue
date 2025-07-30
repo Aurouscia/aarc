@@ -254,6 +254,18 @@ defineExpose({
             </div>
         </td>
     </tr>
+    <tr>
+        <td>全局<br/>移除<br/>白边</td>
+        <td>
+            线路<input v-model="config.lineRemoveCarpet" style="width: 80px;" type="checkbox"/><br/>
+            标签<input v-model="config.textTagRemoveCarpet" style="width: 80px;" type="checkbox"/><br/>
+            站名<input v-model="config.staNameRemoveCarpet" style="width: 80px;" type="checkbox"/><br/>
+            <div class="explain">
+                勾选后将使得全局所有该类白边被移除<br>
+                无视个体的设置
+            </div>
+        </td>
+    </tr>
     <tr v-if="browserInfo">
         <td colspan="2" class="browserInfo">
             <div>

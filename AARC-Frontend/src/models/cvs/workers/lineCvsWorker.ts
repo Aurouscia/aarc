@@ -19,6 +19,8 @@ import { CvsContext } from "../common/cvsContext";
 import { strokeStyledLine } from "../common/strokeStyledLine";
 import { rayToCoordDist } from "@/utils/rayUtils/rayToCoordDist";
 import { numberCmpEpsilon } from "@/utils/consts";
+import { config } from "process";
+import { SaveClient } from "@/app/com/apiGenerated";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill:number}
 type LineRenderType = 'both'|'body'|'carpet'
@@ -398,7 +400,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         }
     }
     function doRender(ctx:CvsContext, lineInfo:Line, enforceNoFill?:boolean, enforceLineWidth?:number, type?:LineRenderType){
-        const drawCarpet =( !type || type==='both' || type==='carpet')&& (!lineInfo.removeCarpet)
+        const drawCarpet =( !type || type==='both' || type==='carpet')&& (!lineInfo.removeCarpet)&& (!cs.config.lineRemoveCarpet)
         const drawBody = !type || type==='both' || type==='body'
         if(!lineInfo.isFilled || enforceNoFill || lineInfo.type!==LineType.terrain){
             const lineWidth = cs.config.lineWidth * (enforceLineWidth||lineInfo.width||1)

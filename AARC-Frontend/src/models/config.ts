@@ -10,6 +10,7 @@ export interface Config{
     lineWidthMapped: LineWidthMappedConfig
     lineExtensionHandleLengthVert: string,
     lineExtensionHandleLengthInc: string,
+    lineRemoveCarpet:boolean
 
     ptBareSize: number,
     ptBareLineWidth: number,
@@ -28,6 +29,7 @@ export interface Config{
     staNameSubFont: string,
     staNameSubRowHeight: number,
     staNameSubColor: string,
+    staNameRemoveCarpet:boolean
 
     gridMainLineColor: string,
     gridSubLineColor: string,
@@ -63,6 +65,7 @@ export interface Config{
     textTagForLine:TextTagPerTypeGlobalConfig,
     textTagForLineDropCap:boolean
     textTagForTerrain:TextTagPerTypeGlobalConfig
+    textTagRemoveCarpet:boolean
 
     configVersion:number
 }

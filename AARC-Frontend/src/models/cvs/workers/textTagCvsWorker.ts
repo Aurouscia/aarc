@@ -253,7 +253,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             color: cs.config.bgColor,
             opacity: 1
         }
-        if (t.removeCarpet)
+        if (t.removeCarpet||cs.config.textTagRemoveCarpet)
             textCarpetOpts=false
         let rectFull:RectCoord|undefined //不包括icon，只包括文字的rect
         if(iconValid && mainEmpty){

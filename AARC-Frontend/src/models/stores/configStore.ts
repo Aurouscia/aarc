@@ -17,6 +17,7 @@ export const configDefault:Config = {
     lineWidthMapped: {},
     lineExtensionHandleLengthVert: '',
     lineExtensionHandleLengthInc: '',
+    lineRemoveCarpet:false,
 
     ptBareSize: 12,
     ptBareLineWidth: 3,
@@ -35,6 +36,7 @@ export const configDefault:Config = {
     staNameSubFont: 'microsoft YaHei',
     staNameSubRowHeight: 20,
     staNameSubColor: '#888888',
+    staNameRemoveCarpet:false,
 
     gridMainLineColor: '#bbbbbb',
     gridSubLineColor: '#cccccc',
@@ -70,6 +72,7 @@ export const configDefault:Config = {
     textTagForLine:{},
     textTagForLineDropCap:true,
     textTagForTerrain:{},
+    textTagRemoveCarpet:false,
 
     configVersion:0
 }

@@ -86,7 +86,14 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             ctx.lineTo(...globalPos)
             ctx.stroke()
         }
-
+let stroke:{width:number,color:string,opacity:any}|false={
+            width: cs.config.staNameFontSize * fontSizeRatio/4,
+            color: cs.config.bgColor,
+            opacity: 0.8
+        }
+        if (cs.config.staNameRemoveCarpet){
+            stroke=false
+        }
         const rects = drawText(ctx, globalPos, align, undefined, {
             text: pt.name,
             color: cs.config.staNameColor,
@@ -100,11 +107,7 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             fontSize: cs.config.staNameSubFontSize * fontSizeRatio,
             rowHeight: cs.config.staNameSubRowHeight * fontSizeRatio
         },
-        {
-            width: cs.config.staNameFontSize * fontSizeRatio/4,
-            color: cs.config.bgColor,
-            opacity: 0.8
-        }, needReportRect ? 'both' : 'draw')
+        stroke, needReportRect ? 'both' : 'draw')
 
         if(rects){
             staNameRectStore.setStaNameRect(pt.id, rects.rectFull)
