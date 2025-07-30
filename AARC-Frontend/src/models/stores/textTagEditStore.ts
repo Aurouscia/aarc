@@ -4,6 +4,7 @@ import { useSaveStore } from "./saveStore";
 import { LineType, TextOptions, TextTag } from "../save";
 import TextTagOptions from "@/components/sidebars/options/TextTagOptions.vue";
 
+export const introHead = '【入门引导】'
 export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
     const saveStore = useSaveStore()
     const { deletedTextTag } = storeToRefs(saveStore)
@@ -29,7 +30,10 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
         targetForType.value = getTargetForType()
         textMain.value = tt.text
         textSub.value = tt.textS
-        editing.value = true
+        if(!tt.text?.startsWith(introHead)){
+            //如果是入门引导，不弹出编辑框
+            editing.value = true
+        }
         if(openOptionsPanel){
             textTagOptionsPanelOpen()
         }
