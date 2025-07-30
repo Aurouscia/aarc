@@ -1,15 +1,17 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 
-const show = ref(false);
-defineProps<{
+const props = defineProps<{
     title: string,
-    special?: boolean
+    special?: boolean,
+    defaultShow?: boolean,
+    noTitle?: boolean
 }>()
+const show = ref(props.defaultShow??false);
 </script>
 
 <template>
-<h2 :class="{sectorShown:show}" @click="show = !show">
+<h2 v-if="!noTitle" :class="{sectorShown:show}" @click="show = !show">
     <div class="shownStatusIcon">{{ show ? '×':'+' }}</div>
     <div :class="{special}">{{ title }}</div>
 </h2>

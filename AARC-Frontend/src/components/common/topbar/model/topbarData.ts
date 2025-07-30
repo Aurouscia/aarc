@@ -1,6 +1,7 @@
 import { mySavesName, searchSaveName } from "@/pages/saves/routes/routesNames";
 import { TopbarModel } from "./topbarModel";
 import { aboutName, loginName, userListName } from "@/pages/identities/routes/routesNames";
+import { faq } from "@/pages/homes/routes/routesNames";
 
 export async function getTopbarData(): Promise<TopbarModel> {
     const model: TopbarModel = {
@@ -34,6 +35,10 @@ export async function getTopbarData(): Promise<TopbarModel> {
                         Link: {name:aboutName}
                     }
                 ]
+            },
+            {
+                Title: "疑问",
+                Link: {name: faq}
             },
             {
                 Title: "登录",

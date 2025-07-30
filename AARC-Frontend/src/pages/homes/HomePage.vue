@@ -23,7 +23,8 @@ onMounted(()=>{
     <p>
         <b>
             <a style="color:green" href="/#/Editor/demo">点击此处立即试用</a>&nbsp;
-            <a style="color:blueviolet" href="http://aarc.jowei19.com/#/Editor/188">查看使用说明</a>
+            <a style="color:blueviolet" href="http://aarc.jowei19.com/#/Editor/188">使用说明</a>&nbsp;
+            <a style="color:#cc88cc" href="/#/FAQ">常见问题</a>
         </b>
     </p>
     <p style="color: #2C71BD">正式使用，请注册账户并登录、在“作品-我的作品”中点击新建，并进入编辑</p>
