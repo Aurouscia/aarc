@@ -89,7 +89,14 @@ export const useLineExtendStore = defineStore('lineExtend', ()=>{
             if(isNaN(factor))
                 factor = 1
             return defaultVal * factor
-        }else{
+        }
+        else if(configVal.startsWith("^")){
+            let val = parseFloat(configVal.slice(1))
+            if(isNaN(val))
+                val = defaultVal
+            return val*sqrt2
+        }
+        else{
             let val = parseFloat(configVal)
             if(isNaN(val))
                 val = defaultVal

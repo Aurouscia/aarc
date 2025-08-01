@@ -250,7 +250,8 @@ defineExpose({
             斜<input v-model="config.lineExtensionHandleLengthInc" style="width: 80px;"/><br/>
             <div class="explain">
                 可填固定值，例如 200 <br/>
-                可填倍率，例如 *1.5
+                可填倍率，例如 *1.5<br/>
+                斜着的填写例如^200，则识别为直角边为200的等腰直角三角形的斜边
             </div>
         </td>
     </tr>
