@@ -62,8 +62,15 @@ namespace AARC.Controllers.System
         {
             if (IPAddress.TryParse(host, out var ip))
                 return IsPrivateIP(ip);
-            var addresses = Dns.GetHostAddresses(host);
-            return addresses.Any(IsPrivateIP);
+            try
+            {
+                var addresses = Dns.GetHostAddresses(host);
+                return addresses.Any(IsPrivateIP);
+            }
+            catch
+            {
+                return true; //悲观
+            }
         }
         private static bool IsPrivateIP(IPAddress ip)
             => IPAddress.IsLoopback(ip) || IsPrivateIPv4(ip) || IsPrivateIPv6(ip);
