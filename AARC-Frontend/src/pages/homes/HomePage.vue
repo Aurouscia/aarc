@@ -40,6 +40,7 @@ onMounted(()=>{
 <div class="releaseNotes">
     <Notice :type="'info'" :title="'2025-08-01更新'">
         1. 自定义图标（设置-文本标签图标）可用于自己设计的地铁公司logo、城市地标等<br/>
+        2. 可通过“^100”格式设置手柄长度（设置-杂项），值将会乘以根号2
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">
         1. 标签/站名的旋转和压缩<br/>
@@ -51,8 +52,8 @@ onMounted(()=>{
 <GiteeInfo></GiteeInfo>
 <div class="roadmap">
     <h2>近期规划</h2>
-    <div>
-        <h3>自由插入图片</h3>
+    <div class="done">
+        <h3>自由插入图片（已完成✔）</h3>
         <p>作为公司logo、特殊站标识、底图参考等</p>
     </div>
     <div class="done">
