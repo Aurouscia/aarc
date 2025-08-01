@@ -158,13 +158,13 @@ export const useIconStore = defineStore('iconStore', ()=>{
                 data
             })
         })
-        res.sort()
+        res.sort((a,b)=> (a.i.name??"").localeCompare(b.i.name??""))
         return res
     })
 
     function getPrefixFromIconName(iName?:string):string|null{
         if(iName?.includes(sep)){
-            return iName.split(sep).at(0) ?? null
+            return iName.split(sep).at(0) || null
         }
         return null
     }

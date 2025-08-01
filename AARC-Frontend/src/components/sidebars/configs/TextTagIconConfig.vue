@@ -1,16 +1,40 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import ConfigSection from './shared/ConfigSection.vue';
 import { useIconStore } from '@/models/stores/iconStore';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
-import Notice from '@/components/common/Notice.vue';
+import { TextTagIcon } from '@/models/save';
+import { useSaveStore } from '@/models/stores/saveStore';
 
+const saveStore = useSaveStore()
 const iconStore = useIconStore()
 const mainCvs = useMainCvsDispatcher()
 const rr = ()=>mainCvs.renderMainCvs({})
-const { ensureAllLoaded, ensurePrefixSelectedValid } = iconStore
+const { ensureAllLoaded, ensurePrefixSelectedValid, enforcePrefixSelectedTo } = iconStore
 const { prefixes, prefixSelected, prefixedIcons } = storeToRefs(iconStore)
+
+const hideImgs = ref(false)
+const creatingIcon = ref<TextTagIcon>({id:0})
+const createAllowed = computed<boolean>(()=>{
+    const i = creatingIcon.value
+    return !!i.name && !!i.url
+})
+async function createIcon(){
+    const i = creatingIcon.value
+    if(!createAllowed.value || !saveStore.save)
+        return
+    i.id = saveStore.getNewId()
+    i.width = 50
+    saveStore.save.textTagIcons ??= []
+    saveStore.save.textTagIcons.push(i)
+    creatingIcon.value = {id:0}
+    hideImgs.value = true
+    await ensureAllLoaded()
+    await nextTick()
+    enforcePrefixSelectedTo(i.id)
+    hideImgs.value = false
+}
 
 const ok = ref(false)
 onMounted(async()=>{
@@ -24,7 +48,7 @@ onMounted(async()=>{
 <ConfigSection :title="'文本标签图标'">
     <div v-if="ok" class="ttIconConfig">
         <div class="ttIconPrefixSelect">
-            组
+            图标组
             <select v-model="prefixSelected">
                 <option v-for="p in prefixes" :value="p">{{ p }}</option>
             </select>
@@ -35,26 +59,32 @@ onMounted(async()=>{
                     <div class="prefixedIconKV">
                         宽度<input v-model.number="item.i.width" style="width: 90px;" :min="10" :max="1000" :step="10" @blur="rr"/>
                     </div>
-                    <img v-if="item.data?.img?.src"
+                    <img v-if="!hideImgs && item.data?.img?.src"
                         :src="item.data?.img?.src"/>
                     <div v-else class="prefixedIconErrmsg">
                         {{ item.data?.errmsg ?? '未知错误' }}
                     </div>
                 </div>
                 <div class="prefixedIconKV">
-                    名称<input v-model.lazy="item.i.name" @blur="ensurePrefixSelectedValid"/>
+                    名称<input v-model.lazy="item.i.name" @blur="enforcePrefixSelectedTo(item.i.id)"/>
                 </div>
                 <div class="prefixedIconKV">
                     链接<input v-model="item.i.url" style="font-size: 12px;" @blur="ensureAllLoaded().then(rr)"/>
                 </div>
             </div>
+            <div class="newIcon">
+                <div>添加自定义图标</div>
+                <div class="prefixedIconKV">
+                    名称<input v-model="creatingIcon.name" :placeholder="'组名-图标名'"/>
+                </div>
+                <div class="prefixedIconKV">
+                    链接<input v-model="creatingIcon.url" style="font-size: 12px;"/>
+                </div>
+                <button @click="createIcon" :class="createAllowed ? 'ok':'off'">添加</button>
+            </div>
         </div>
     </div>
     <div v-else>加载图标文件中，请稍后</div>
-    <Notice :type="'warn'">
-        暂不支持自定义图标，请勿修改链接，绘制外链图标将导致画布无法导出（正在解决该问题）<br/>
-        <a target="_blank" style="color: white;text-decoration: underline;" href="https://developer.mozilla.org/zh-CN/docs/Web/HTML/How_to/CORS_enabled_image">原因详细解释</a>
-    </Notice>
 </ConfigSection>
 </template>
 
@@ -65,17 +95,19 @@ onMounted(async()=>{
     align-items: stretch;
 }
 .ttIconPrefixSelect{
-    background-color: #eee;
+    background-color: cornflowerblue;
+    color: white;
+    align-self: stretch;
     width: unset;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 2px;
-    padding: 6px;
+    padding: 10px;
     font-size: 18px;
     select{
         min-width: 100px;
-        max-width: 200px;
+        max-width: 180px;
         margin: 0px;
     }
 }
@@ -113,6 +145,12 @@ onMounted(async()=>{
             height: 40px;
             margin: 5px;
             object-fit: contain;
+        }
+    }
+    .newIcon{
+        border-color: #aaa;
+        input::placeholder{
+            color: #bbb;
         }
     }
 }
