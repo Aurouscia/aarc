@@ -14,7 +14,7 @@ const rr = ()=>mainCvs.renderMainCvs({})
 const { ensureAllLoaded, ensurePrefixSelectedValid, enforcePrefixSelectedTo } = iconStore
 const { prefixes, prefixSelected, prefixedIcons } = storeToRefs(iconStore)
 
-const hideImgs = ref(false)
+const hideImgs = ref(false) //使img标签强制重新创建，否则无响应式效果
 const creatingIcon = ref<TextTagIcon>({id:0})
 const createAllowed = computed<boolean>(()=>{
     const i = creatingIcon.value
@@ -73,11 +73,13 @@ onMounted(async()=>{
                         宽度<input v-model.number="item.i.width" style="width: 90px;" :min="10" :max="1000" :step="10"
                             @blur="rerenderIfNeeded([item.i.id])"/>
                     </div>
-                    <img v-if="!hideImgs && item.data?.img?.src"
-                        :src="item.data?.img?.src"/>
-                    <div v-else class="prefixedIconErrmsg">
-                        {{ item.data?.errmsg ?? '未知错误' }}
-                    </div>
+                    <template v-if="!hideImgs">
+                        <img v-if="item.data?.img?.src"
+                            :src="item.data?.img?.src"/>
+                        <div v-else class="prefixedIconErrmsg">
+                            {{ item.data?.errmsg ?? '未知错误' }}
+                        </div>
+                    </template>
                 </div>
                 <div class="prefixedIconKV">
                     名称<input v-model.lazy="item.i.name" @blur="enforcePrefixSelectedTo(item.i.id)"/>
@@ -95,6 +97,7 @@ onMounted(async()=>{
                     链接<input v-model="creatingIcon.url" style="font-size: 12px;"/>
                 </div>
                 <button @click="createIcon" :class="createAllowed ? 'ok':'off'">添加</button>
+                <div class="smallNote">使用：“工具-创建文本标签”，然后在标签的设置中启用并选择图标</div>
             </div>
         </div>
     </div>
