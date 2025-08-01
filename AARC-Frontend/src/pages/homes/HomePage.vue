@@ -38,16 +38,14 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-07-26更新'">
-        1. 机场和火车站图标（需先创建文本标签）<br/>
-        2. 画布尺寸调整：可手动输入增量<br/>
-        3. 修复网格隐藏（网格对齐关闭时）在移动后失效的问题
+    <Notice :type="'info'" :title="'2025-08-01更新'">
+        1. 自定义图标（设置-文本标签图标）可用于自己设计的地铁公司logo、城市地标等<br/>
     </Notice>
     <Notice :type="'warn'" :title="'正在开发'">
-        1. 自定义图标插入（使外链图标正常导出）<br/>
-        2. 标签/站名的旋转和压缩<br/>
-        3. 站点/线路搜索定位功能<br/>
-        4. 指定线路导出<br/>
+        1. 标签/站名的旋转和压缩<br/>
+        2. 多选和创建“元素组”功能<br/>
+        2. 站点/线路搜索定位功能<br/>
+        3. 指定线路导出<br/>
     </Notice>
 </div>
 <GiteeInfo></GiteeInfo>

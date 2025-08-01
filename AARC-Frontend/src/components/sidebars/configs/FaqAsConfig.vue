@@ -18,7 +18,7 @@ import ConfigSection from './shared/ConfigSection.vue';
         <h3>收费</h3>
         <div>
             <p>本项目永远不会以任何理由收费，现有以及未来更新的所有功能（包括云服务）全部开源免费。</p>
-            <p>这是由于：作者制作本项目仅仅是为了满足马斯洛需求层次理论的后三条，即社交、尊重、自我实现，而不包括“生计”。</p>
+            <p>这是由于：作者制作本项目仅仅是爱慕虚荣，而非为了生计。</p>
             <p>你可以在“关于”页找到本项目全部源代码并自己修改或私下使用。</p>
         </div>
     </div>
@@ -59,6 +59,15 @@ import ConfigSection from './shared/ConfigSection.vue';
         <div>
             <p>右键点击车站，将其旋转。</p>
             <p>ctrl+右键点击车站，切换是否显示。</p>
+            <p>右键站名/文本标签，快速打开侧栏。</p>
+        </div>
+    </div>
+    <div>
+        <h3>无法对齐网格</h3>
+        <div>
+            <p>这是较为罕见的情况。</p>
+            <p>“对齐线路上相邻车站”比“对齐网格”的优先级更高，若隔壁的控制点略微偏离网格，则当前点也无法对齐网格。</p>
+            <p>解决办法：先将隔壁点拖动到偏离线路，再拖动当前点就可以对齐网格，最后恢复隔壁点的位置。</p>
         </div>
     </div>
     <div>
@@ -66,6 +75,14 @@ import ConfigSection from './shared/ConfigSection.vue';
         <div>
             <p>请进入同页面的“编辑器”设置，查看“站名糊弄机制”。</p>
             <p>在站名较多时，这将显著提高性能，建议设为“宽松”。</p>
+        </div>
+    </div>
+    <div>
+        <h3>背景图/图标的链接</h3>
+        <div>
+            <p>请自行寻找图床（上传图片，生成链接）。</p>
+            <p>或：考虑我们的<a href="http://wiki.jowei19.com" target="_blank">FicCloud</a>网站，可当作图床使用。</p>
+            <p>若图片链接无法使用，可能是由于其所属网站的防盗链机制。</p>
         </div>
     </div>
     <div>
@@ -120,5 +137,8 @@ p{
     margin-bottom: 5px;
     font-size: 14px;
     text-indent: 2em;
+}
+a{
+    text-decoration: underline;
 }
 </style>
