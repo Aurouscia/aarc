@@ -21,19 +21,23 @@ const maxIconSize = maxIconSizeKb*1000
 export const useIconStore = defineStore('iconStore', ()=>{
     const { save } = storeToRefs(useSaveStore())
     const data = ref(new Map<number, TextTagIconData>())
-    async function ensureAllLoaded(){
+    async function ensureAllLoaded():Promise<number[]>{
         const proms:Promise<void>[] = []
         const icons = save.value?.textTagIcons ?? []
+        let triedIds:number[] = []
         for(const ic of icons){
             let imgData = data.value.get(ic.id)
             if(!imgData){
                 imgData = {status:'loading'}
                 data.value.set(ic.id, imgData)
             }
-            let icUrlFull = ic.url
+            let icUrlFull = ic.url ?? ""
             if(icUrlFull?.startsWith('/'))
                 icUrlFull = window.location.origin + icUrlFull
+            else
+                icUrlFull = convertToProxyUrlIfNeeded(icUrlFull)
             if(!imgData?.img || !ic.url || imgData?.img.src !== icUrlFull){
+                triedIds.push(ic.id)
                 proms.push(new Promise((res)=>{
                     if(!ic.url){
                         imgData.status = 'failed'
@@ -86,6 +90,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
                 item.img = undefined
             }
         }
+        return triedIds
     }
     function getDataByIconId(id:number){
         return data.value.get(id)

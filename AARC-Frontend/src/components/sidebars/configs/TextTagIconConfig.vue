@@ -36,6 +36,19 @@ async function createIcon(){
     hideImgs.value = false
 }
 
+async function urlInputBlurHandler(){
+    const triedIds = await ensureAllLoaded()
+    rerenderIfNeeded(triedIds)
+}
+async function rerenderIfNeeded(iconIds:number[]) {
+    if(iconIds.length>0){
+        const usedIcons = saveStore.save?.textTags.map(x=>x.icon) ?? []
+        if(iconIds.some(id=>usedIcons.includes(id))){
+            rr()
+        }
+    }
+}
+
 const ok = ref(false)
 onMounted(async()=>{
     await ensureAllLoaded()
@@ -57,7 +70,8 @@ onMounted(async()=>{
             <div v-for="item in prefixedIcons" :key="item.i.id">
                 <div class="prefixedIconImgAndWidth">
                     <div class="prefixedIconKV">
-                        宽度<input v-model.number="item.i.width" style="width: 90px;" :min="10" :max="1000" :step="10" @blur="rr"/>
+                        宽度<input v-model.number="item.i.width" style="width: 90px;" :min="10" :max="1000" :step="10"
+                            @blur="rerenderIfNeeded([item.i.id])"/>
                     </div>
                     <img v-if="!hideImgs && item.data?.img?.src"
                         :src="item.data?.img?.src"/>
@@ -69,7 +83,7 @@ onMounted(async()=>{
                     名称<input v-model.lazy="item.i.name" @blur="enforcePrefixSelectedTo(item.i.id)"/>
                 </div>
                 <div class="prefixedIconKV">
-                    链接<input v-model="item.i.url" style="font-size: 12px;" @blur="ensureAllLoaded().then(rr)"/>
+                    链接<input v-model="item.i.url" style="font-size: 12px;" @blur="urlInputBlurHandler"/>
                 </div>
             </div>
             <div class="newIcon">
