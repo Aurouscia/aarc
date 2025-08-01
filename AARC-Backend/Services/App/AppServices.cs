@@ -5,6 +5,7 @@ using AARC.Services.App.Logging;
 using AARC.Services.App.Mapping;
 using AARC.Services.App.OpenApi;
 using AARC.Utils;
+using AspNetCore.Proxy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
@@ -19,6 +20,7 @@ namespace AARC.Services.App
             services.AddCors(config);
             services.AddSerilog(config);
             services.AddJwtService(config);
+            services.AddProxies();
             services.AddControllers(options =>
             {
                 options.Filters.Add<ApiExceptionFilter>();

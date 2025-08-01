@@ -333,7 +333,7 @@ export const devSave:Save = {
             id: 1000000,
             width: 50,
             name: '测试-机场',
-            url: '/icons/a/airport.svg'
+            url: 'http://wiki.jowei19.com/fcloud.svg'
         }
     ],
     config:{},

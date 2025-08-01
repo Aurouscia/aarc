@@ -52,7 +52,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
                             }else{
                                 const img = new Image()
                                 imgData.img = img
-                                img.src = ic.url ?? ''
+                                img.src = convertToProxyUrlIfNeeded(ic.url ?? '')
                                 let timer = window.setTimeout(()=>{
                                     imgData.status = 'failed'
                                     imgData.errmsg = '加载超时'
@@ -95,6 +95,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
     }
     async function checkUrlValid(url:string):Promise<string|undefined>{
         try{
+            url = convertToProxyUrlIfNeeded(url)
             const res = await fetch(url, {method:'HEAD'})
             if(!res.ok)
                 return "加载失败"
@@ -112,6 +113,13 @@ export const useIconStore = defineStore('iconStore', ()=>{
         catch(error){
             return "加载失败"
         }
+    }
+    function convertToProxyUrlIfNeeded(url:string){
+        if(url.startsWith('/'))
+            return url
+        const encoded = encodeURIComponent(url)
+        const baseUrl = import.meta.env.VITE_ApiUrlBase
+        return `${baseUrl}/proxy/icon/${encoded}`
     }
 
     const sep = '-'
