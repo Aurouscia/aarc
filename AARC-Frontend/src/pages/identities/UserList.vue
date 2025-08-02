@@ -34,6 +34,7 @@ async function loadList() {
 const { pop } = useUniqueComponentsStore()
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const editingUser = ref<UserDto>()
+const pwdRepeat = ref<string>()
 const isCreatingUser = ref(false)
 const userInfoStore = useUserInfoStore()
 const { userInfo } = storeToRefs(userInfoStore)
@@ -50,6 +51,10 @@ async function doneEditing(){
     if(isCreatingUser.value){
         success = await api.user.add(editingUser.value.name || "", editingUser.value.password || "")
     }else{
+        if(editingUser.value.password && editingUser.value.password !== pwdRepeat.value){
+            pop?.show("两次输入的密码不一致", "failed")
+            return
+        }
         success = await api.user.update(editingUser.value)
     }
     if(success){
@@ -147,6 +152,12 @@ onMounted(async()=>{
                 <td>密码</td>
                 <td>
                     <input v-model="editingUser.password" type="password" autocomplete="new-password"/>
+                </td>
+            </tr>
+            <tr>
+                <td>重复<br/>密码</td>
+                <td>
+                    <input v-model="pwdRepeat" type="password" autocomplete="new-password"/>
                 </td>
             </tr>
             <tr v-if="!isCreatingUser">
