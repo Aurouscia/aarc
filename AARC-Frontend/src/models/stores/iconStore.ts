@@ -16,8 +16,8 @@ export interface TextTagIconDisplayItem{
 } 
 
 const maxLoadWaitMs = 8000
-const maxIconSizeKb = 200
-const maxIconSize = maxIconSizeKb*1000
+const maxIconSizeMb = 1
+const maxIconSize = maxIconSizeMb*1024*1024
 export const useIconStore = defineStore('iconStore', ()=>{
     const { save } = storeToRefs(useSaveStore())
     const data = ref(new Map<number, TextTagIconData>())
@@ -113,7 +113,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
             if(isNaN(length))
                 return "链接异常"
             if(length>maxIconSize)
-                return `不可大于${maxIconSizeKb}KB`
+                return `不可大于${maxIconSizeMb}MB`
         }
         catch(error){
             return "加载失败"
