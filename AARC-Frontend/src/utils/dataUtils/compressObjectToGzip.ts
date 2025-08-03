@@ -20,7 +20,7 @@ export async function compressObjectToGzip(data: object):Promise<Blob|'notSuppor
     const compressedStream = readableStream.pipeThrough(compressionStream);
 
     // 用于存储压缩后的数据块
-    const chunks: Uint8Array[] = [];
+    const chunks: Uint8Array<ArrayBuffer>[] = [];
 
     // 创建一个 WritableStream 来收集数据
     const writer = new WritableStream({

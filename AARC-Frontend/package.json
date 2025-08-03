@@ -35,9 +35,9 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "execa": "^9.6.0",
     "sass": "^1.89.2",
-    "typescript": "^5.8.3",
+    "typescript": "^5.9.2",
     "vite": "^7.0.6",
     "vite-plugin-full-reload": "^1.2.0",
-    "vue-tsc": "^3.0.4"
+    "vue-tsc": "^3.0.5"
   }
 }
