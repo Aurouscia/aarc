@@ -11,7 +11,8 @@
     "dev": "vite",
     "build": "node build.mjs",
     "build-here": "node build.mjs --here",
-    "toggleEnvLocal": "node env/toggleLocalEnvFile.cjs"
+    "toggleEnvLocal": "node env/toggleLocalEnvFile.cjs",
+    "commitSum": "node src/utils/gitCommitSum/commitSum.mjs"
   },
   "dependencies": {
     "@aurouscia/au-color-picker": "^0.5.1",

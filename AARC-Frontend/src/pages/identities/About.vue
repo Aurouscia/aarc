@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import logoImg from '@/assets/logo/aarc-new.svg';
+import contribution from '@/utils/gitCommitSum/commitSumRes';
 </script>
 
 <template>
@@ -35,8 +36,18 @@ import logoImg from '@/assets/logo/aarc-new.svg';
             <a href="https://gitee.com/au114514/aarc" target="_blank">Gitee(本体)</a>&nbsp;
             <a href="https://github.com/Aurouscia/aarc" target="_blank">Github(自动同步镜像)</a>
         </div>
-        <div class="contributors">
-            <div>源码贡献者：Au</div>
+        <div class="thankList">
+            <div>源码贡献者：
+                <div class="contributors">
+                    <div v-for="c in contribution.contributors">
+                        <div class="contributorName">{{ c.name }}</div>
+                        <div>{{ c.count }}提交</div>
+                    </div>
+                    <div>
+                        <div>(更新于{{ contribution.updatedAt }})</div>
+                    </div>
+                </div>
+            </div>
             <div>主要issue贡献者：滨蜀</div>
             <div>宣传大使：滨蜀</div>
             <div>新版logo设计者：三几几</div>
@@ -74,12 +85,44 @@ import logoImg from '@/assets/logo/aarc-new.svg';
         margin-bottom: 20px;
     }
 }
-.contributors{
+.thankList{
     font-size: 14px;
     text-align: left;
     width: fit-content;
     margin-left: auto;
     margin-right: auto;
+    .contributors{
+        vertical-align: bottom;
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 5px;
+        padding-right: 6px;
+        &>div{
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: space-between;
+            color: #666;
+            background-color: #eee;
+            &>div{
+                height: 22px;
+                padding: 0px 5px;
+                font-size: 12px;
+                white-space: nowrap;
+                display: flex;
+                align-items: center;
+            }
+            .contributorName{
+                font-size: 14px;
+                background-color: #666;
+                color: white;
+            }
+            &, .contributorName{
+                border-radius: 6px;
+            }
+        }
+    }
 }
 .logoContainer{
     display: flex;
