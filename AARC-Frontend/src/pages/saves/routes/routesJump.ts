@@ -19,8 +19,8 @@ export const useSavesRoutesJump = ()=>{
         return {
             name:searchSaveName,
             query:{
-                search,
-                orderby
+                s:search,
+                o:orderby
             }
         }
     }

@@ -9,16 +9,19 @@ import { useSavesRoutesJump } from './routes/routesJump';
 import { useRouter } from 'vue-router';
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
+import { SaveListOrderBy, useSaveListLocalConfigStore } from '@/app/localConfig/saveListLocalConfig';
+import { storeToRefs } from 'pinia';
 
 const api = useApiStore()
 const { someonesSavesRoute, searchSaveRoute } = useSavesRoutesJump()
 const { editorRoute } = useEditorsRoutesJump()
 const router = useRouter()
-const searchInit = router.currentRoute.value.query["search"] as string|undefined
-const orderbyInit = router.currentRoute.value.query["orderby"] as string|undefined
+const searchInit = router.currentRoute.value.query["s"] as string|undefined
+const orderbyInit = router.currentRoute.value.query["o"] as string|undefined
 
 const search = ref<string|undefined>(searchInit)
-const orderBy = ref<string|undefined>(orderbyInit)
+const { searchOrderby:orderBy } = storeToRefs(useSaveListLocalConfigStore())
+if(orderbyInit) orderBy.value = orderbyInit as SaveListOrderBy
 const pageIdx = ref(0)
 
 const searchRes = ref<WithIntroShow<SaveDto>[]>()
@@ -70,7 +73,7 @@ onMounted(()=>{
             <input v-model="search" class="saveSearchInput" placeholder="搜索存档名称" @blur="load"/>
         </div>
         <select v-model="orderBy" @change="load">
-            <option :value="undefined">最新更新</option>
+            <option :value="'active'">最新更新</option>
             <option :value="'sta'">车站最多</option>
         </select>
     </div>
@@ -108,14 +111,20 @@ onMounted(()=>{
             <div class="lastActive">{{ s.lastActive }}</div>
         </td>
     </tr>
-    <tr v-if="search != searchedUsing" class="noMatch">
+    <tr v-if="search != searchedUsing" class="searchStatus">
         <td colspan="4">点击输入框外任意处搜索</td>
     </tr>
-    <tr v-else-if="!search && searchRes.length===0" class="noMatch">
+    <tr v-else-if="!search && searchRes.length===0" class="searchStatus">
         <td colspan="4">请输入搜索关键词</td>
     </tr>
-    <tr v-else-if="searchRes.length===0" class="noMatch">
+    <tr v-else-if="searchRes.length===0" class="searchStatus">
         <td colspan="4">无匹配结果</td>
+    </tr>
+    <tr v-else class="searchStatus">
+        <td colspan="4">
+            {{ searchRes.length }}个结果
+            {{ searchRes.length == 50 ? '（仅显示当前排序前50个）' : '' }}
+        </td>
     </tr>
 </tbody></table>
 <Loading v-else></Loading>
@@ -126,7 +135,7 @@ onMounted(()=>{
 @use '@/styles/itemIntro.scss';
 @use '@/styles/saveList.scss';
 
-.noMatch{
+.searchStatus{
     color: #666; 
     font-size: 16px;
 }

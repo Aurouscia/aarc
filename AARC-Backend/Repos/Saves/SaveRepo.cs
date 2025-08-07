@@ -57,7 +57,8 @@ namespace AARC.Repos.Saves
             else
                 q = q
                     .OrderByDescending(x => x.LastActive);
-            int pageSize = 20;
+            //分页：并未使用（前端没有做翻页按钮，pageIdx始终为0）
+            int pageSize = 50;
             int skip = pageIdx * pageSize;
             int take = pageSize;
             var res = q
