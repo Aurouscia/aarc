@@ -46,7 +46,8 @@ async function load() {
         const resp = await api.save.loadData(saveIdNum.value)
         const ownerId = (await api.save.loadInfo(saveIdNum.value))?.ownerUserId || -1
         const iden = await userInfoStore.getIdentityInfo()
-        mainCvsDispatcher.visitorMode = iden.id!== ownerId
+        const isOwner = ownerId && ownerId === iden.id
+        mainCvsDispatcher.visitorMode = !isOwner
         try{
             const obj = resp ? JSON.parse(resp) : undefined
             saveStore.save = normalizeSave(obj)
@@ -57,8 +58,9 @@ async function load() {
         }catch{
             pop.value?.show('存档损坏，请联系管理员', 'failed')
         }
-        if(!!iden.id && iden.id !== ownerId){
+        if(iden.id && !isOwner){
             savingDisabledWarning.value = '非存档所有者，仅供浏览，不能保存'
+            preventLeavingDisabled.value = true //登录了但不是所有者，不阻止未保存退出
         }
     }
     else if(isDemo.value){
@@ -69,6 +71,7 @@ async function load() {
         mainCvsDispatcher.visitorMode = false
         loadComplete.value = true
         savingDisabledWarning.value = '此处为体验环境，不能保存'
+        preventLeavingDisabled.value = true //demo环境，不阻止未保存退出
         if(import.meta.env.PROD){
             pop.value?.show('此处为体验环境，不能保存', 'warning')
             window.setTimeout(()=>{
@@ -135,6 +138,7 @@ async function checkLoginLeftTime(){
     if(!userInfo.leftHours){
         pop.value?.show(noLoginMsg, 'warning')
         savingDisabledWarning.value = noLoginMsg
+        preventLeavingDisabled.value = true //未登录：不阻止未保存退出（也没法保存）
     }
     else if(userInfo.leftHours <= 6){
         pop.value?.show(nearExpireMsg, 'warning')
@@ -148,7 +152,6 @@ async function checkLoginLeftTime(){
 function setLeavingPreventing(){
     //将“主画布重新渲染”当成“存档信息变化”，当主画布重新渲染时，阻止用户离开/刷新页面/关闭页面
     mainCvsDispatcher.afterMainCvsRendered = preventLeaving
-    preventLeavingDisabled.value = isDemo.value
 }
 const cvsComponent = ref<InstanceType<typeof Cvs>>()
 watch(props, async()=>{
