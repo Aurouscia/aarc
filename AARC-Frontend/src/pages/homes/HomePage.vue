@@ -38,15 +38,15 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-08-01更新'">
-        1. 自定义图标（设置-文本标签图标）可用于自己设计的地铁公司logo、城市地标等<br/>
-        2. 可通过“^100”格式设置手柄长度（设置-杂项），值将会乘以根号2
+    <Notice :type="'info'" :title="'2025-08-11更新'">
+        1. 修复图标无文字时，位置偏移向上的的问题<br/>（更新后位置可能有微小变动，不好看的话需重新设置，造成不便敬请谅解）<br/>
+        2. 进入他人存档编辑后，不阻拦退出
     </Notice>
-    <Notice :type="'warn'" :title="'正在开发'">
+    <Notice :type="'info'" :title="'正在开发'">
         1. 标签/站名的旋转和压缩<br/>
         2. 多选和创建“元素组”功能<br/>
-        2. 站点/线路搜索定位功能<br/>
-        3. 指定线路导出<br/>
+        3. 站点/线路搜索定位功能<br/>
+        4. 指定线路导出<br/>
     </Notice>
 </div>
 <GiteeInfo></GiteeInfo>

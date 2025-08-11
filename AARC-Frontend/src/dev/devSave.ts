@@ -122,8 +122,8 @@ export const devSave:Save = {
             pos: [750, 900],
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta,
-            name: '火车北站\n西广场(假日酒店)',
-            nameS: 'Northern Railway Station\nSouth Square (Holiday Inn)',
+            name: '火车南站\n西广场(假日酒店)',
+            nameS: 'S. Railway Station\nW. Square (Holiday Inn)',
             nameP: [0, 20]
         },
         {
