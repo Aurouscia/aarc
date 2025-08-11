@@ -137,13 +137,15 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         const { anchor, textAlign } = getParams(cs.config.textTagPlain, t)
         const textDrawPos:Coord = [...t.pos]
 
+        const onlyIcon = mainEmpty
         const iconId = t.icon
         const icon = saveStore.save?.textTagIcons?.find(x=>x.id==iconId)
         let idata:TextTagIconData|undefined = undefined
         let iconWidth = 0, iconHeight = 0
         let getIconPosX:((tposX:number, tw:number)=>number) = (x)=>x;//怎么通过t.pos和文本部分的宽高确定icon中心位置
         let getIconPosY:((tposY:number, th:number)=>number) = (y)=>y;
-        const g = mainRatio*7 // gap（icon和文字之间的像素数，确定为mainRatio的固定倍率）
+        const g = onlyIcon ? 0 : mainRatio*7 // gap（icon和文字之间的像素数，确定为mainRatio的固定倍率）
+        //无文字时gap设为0，否则图标会偏上
 
         const optMain:DrawTextBodyOption = {
             color: mo?.color || cs.config.textTagFontColorHex,
@@ -256,7 +258,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         if (t.removeCarpet)
             textCarpetOpts=false
         let rectFull:RectCoord|undefined //不包括icon，只包括文字的rect
-        if(iconValid && mainEmpty){
+        if(iconValid && onlyIcon){
             rectFull = undefined
         }
         else{
