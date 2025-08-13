@@ -1,23 +1,31 @@
 import { homePageName } from "@/pages/homes/routes/routesNames";
 import { defineStore } from "pinia";
-import { RouteLocationNormalized, useRouter } from "vue-router";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 
-export const useEnteredCanvasFromStore = defineStore('enteredCanvasFrom',()=>{
+const storeId = 'enteredCanvasFrom'
+export const useEnteredCanvasFromStore = defineStore(storeId,()=>{
     const router = useRouter()
-    let route:RouteLocationNormalized|undefined = undefined
+    const route = ref<string>()
     function setEnteredFrom(){
-        route = router.currentRoute.value
+        route.value = router.currentRoute.value.fullPath
     }
     function goBackToWhereWeEntered(){
-        if(route){
-            router.push(route)
+        if(route.value){
+            router.push(route.value)
         }
         else{
             router.push({name: homePageName})
         }
     }
     return {
+        route,
         setEnteredFrom,
         goBackToWhereWeEntered
+    }
+}, {
+    persist:{
+        key:`aarc-${storeId}`,
+        pick: ['route']
     }
 })
