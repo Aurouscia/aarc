@@ -7,7 +7,9 @@ import { computed } from 'vue';
 import { useEnvStore } from '@/models/stores/envStore';
 import foldImg from '@/assets/ui/fold.svg'
 import settingsImg from '@/assets/ui/settings.svg'
+import pinyinConvertImg from '@/assets/ui/pinyinConvert.svg'
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
+import { usePinyinConvertStore } from '@/models/stores/utils/pinyinConvertStore';
 
 const textTagEditStore = useTextTagEditStore()
 const envStore = useEnvStore()
@@ -23,6 +25,14 @@ const inputPlaceholder = computed<string|undefined>(()=>{
         return "留空使用地形名"
     return "请输入文本"
 })
+
+const { convertPinyin } = usePinyinConvertStore()
+async function convertPinyinCall(){
+    const res = await convertPinyin(textMain.value)
+    if(res)
+        textSub.value = res
+    textTagEditStore.applyText()
+}
 
 const { 
     mainRows, mainInput,
@@ -55,6 +65,9 @@ function blurHandler(){
         </div>
         <div @click="envStore.duplicateTextTag();textTagEditStore.endEditing()" class="duplicateBtn sqrBtn withShadow">
             <div class="dupA"></div><div class="dupB"></div>
+        </div>
+        <div @click="convertPinyinCall" class="pinyinConvertBtn sqrBtn withShadow">
+            <img :src="pinyinConvertImg"/>
         </div>
         <div @click="textTagEditStore.textTagOptionsPanelOpen" class="settingsBtn sqrBtn withShadow">
             <img :src="settingsImg"/>

@@ -146,6 +146,7 @@ export const useApiStore = defineStore('api', () => {
     const auth = w(new api.AuthClient(baseUrl, instance))
     const user = w(new api.UserClient(baseUrl, instance))
     const save = w(new api.SaveClient(baseUrl, instance))
+    const saveUtils = w(new api.SaveUtilsClient(baseUrl, instance))
 
     return {
         abortAll,
@@ -153,6 +154,7 @@ export const useApiStore = defineStore('api', () => {
         clearJwtToken,
         auth,
         user,
-        save
+        save,
+        saveUtils
     }
 })

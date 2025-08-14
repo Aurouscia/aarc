@@ -13,7 +13,7 @@
     z-index: 10;
     transition: 0.2s;
     transition-timing-function: ease-out;
-    .retractBtn,.duplicateBtn,.settingsBtn{
+    .retractBtn,.duplicateBtn,.settingsBtn,.pinyinConvertBtn{
         position: absolute;
         bottom: -22px;
         width: 27px;
@@ -45,10 +45,20 @@
             height: 80%;
         }
     }
+    .pinyinConvertBtn{
+        right: 70px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        img{
+            width: 80%;
+            height: 80%;
+        }
+    }
     .duplicateBtn{
         $size:10px;
         $dist:5px;
-        right: 70px;
+        right: 105px;
         .dupA,.dupB{
             background-color: white;
             position: absolute;

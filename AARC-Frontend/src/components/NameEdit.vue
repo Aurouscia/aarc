@@ -5,7 +5,9 @@ import { useTwinTextarea } from './composables/useTwinTextarea';
 import { enableContextMenu, disableContextMenu } from '@/utils/eventUtils/contextMenu';
 import foldImg from '@/assets/ui/fold.svg'
 import settingsImg from '@/assets/ui/settings.svg'
+import pinyinConvertImg from '@/assets/ui/pinyinConvert.svg'
 import ControlPointOptions from './sidebars/options/ControlPointOptions.vue';
+import { usePinyinConvertStore } from '@/models/stores/utils/pinyinConvertStore';
 
 const nameEditStore = useNameEditStore()
 const { nameMain, nameSub, editing, edited, nameEditorDiv, controlPointOptionsPanel } = storeToRefs(nameEditStore)
@@ -24,6 +26,15 @@ const {
     apply: nameEditStore.applyName,
     endEditing: nameEditStore.endEditing
 })
+
+const { convertPinyin } = usePinyinConvertStore()
+async function convertPinyinCall(){
+    const res = await convertPinyin(nameMain.value)
+    if(res)
+        nameSub.value = res
+    nameEditStore.applyName()
+}
+
 function focusHandler(){
     enableContextMenu(10)
 }
@@ -40,6 +51,9 @@ function blurHandler(){
         <textarea v-model="nameSub" ref="nameSubInput" :rows="nameSubRows" @input="inputHandler('sub')"
             @focus="nameEditStore.nameInputFocusHandler();focusHandler()" @blur="blurHandler()" @keydown="keyHandler" class="secondary"
             spellcheck="false" placeholder="请输入外语站名/副站名"></textarea>
+        <div @click="convertPinyinCall" class="pinyinConvertBtn sqrBtn withShadow">
+            <img :src="pinyinConvertImg"/>
+        </div>
         <div @click="nameEditStore.controlPointOptionsPanelOpen()" class="settingsBtn sqrBtn withShadow">
             <img :src="settingsImg"/>
         </div>
