@@ -1,10 +1,12 @@
 ﻿using AspNetCore.Proxy;
 using AspNetCore.Proxy.Options;
 using Microsoft.AspNetCore.Mvc;
+using NSwag.Annotations;
 using System.Net;
 
 namespace AARC.Controllers.System
 {
+    [OpenApiIgnore]
     public class ProxyController : Controller
     {
         [Route("/proxy/icon/{url}")]
