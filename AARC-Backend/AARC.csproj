@@ -13,6 +13,7 @@
   <ItemGroup>
 	<PackageReference Include="AspNetCore.Proxy" Version="4.5.0" />
 	<PackageReference Include="AutoMapper" Version="15.0.1" />
+	<PackageReference Include="EzPinyin" Version="1.1.2" />
 	<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.7" />
 	<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.7" />
 	<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7" />
