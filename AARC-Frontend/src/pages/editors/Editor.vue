@@ -23,6 +23,7 @@ import HiddenLongWarnPrompt from './components/HiddenLongWarnPrompt.vue';
 import { useIconStore } from '@/models/stores/iconStore';
 import { compressObjectToGzip } from '@/utils/dataUtils/compressObjectToGzip';
 import { useLoadedSave } from '@/models/stores/utils/loadedSave';
+import { HttpUserInfo } from '@/app/com/apiGenerated';
 
 const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
@@ -42,11 +43,11 @@ const savingDisabledWarning = ref<string>()
 async function load() {
     loadedSave.value = true
     if(!isNaN(saveIdNum.value)){
-        await checkLoginLeftTime()
+        const userInfo = await userInfoStore.getIdentityInfo(true)
+        await checkLoginLeftTime(userInfo)
         const resp = await api.save.loadData(saveIdNum.value)
         const ownerId = (await api.save.loadInfo(saveIdNum.value))?.ownerUserId || -1
-        const iden = await userInfoStore.getIdentityInfo()
-        const isOwner = ownerId && ownerId === iden.id
+        const isOwner = ownerId && ownerId === userInfo.id
         mainCvsDispatcher.visitorMode = !isOwner
         try{
             const obj = resp ? JSON.parse(resp) : undefined
@@ -58,7 +59,7 @@ async function load() {
         }catch{
             pop.value?.show('存档损坏，请联系管理员', 'failed')
         }
-        if(iden.id && !isOwner){
+        if(userInfo.id && !isOwner){
             savingDisabledWarning.value = '非存档所有者，仅供浏览，不能保存'
             preventLeavingDisabled.value = true //登录了但不是所有者，不阻止未保存退出
         }
@@ -131,8 +132,7 @@ async function saveData(){
         await api.save.updateMiniature(saveIdNum.value, {data:miniBlob, fileName:'mini.png'})
     }
 }
-async function checkLoginLeftTime(){
-    const userInfo = await userInfoStore.getIdentityInfo()
+async function checkLoginLeftTime(userInfo:HttpUserInfo){
     const nearExpireMsg = '登录即将过期\n尽快重新登录'
     const noLoginMsg = '当前没有登录\n不能保存'
     if(!userInfo.leftHours){
@@ -205,6 +205,14 @@ onUnmounted(()=>{
 }
 .savingDisabledWarning{
     color:white;
-    background-color: orange;
+    animation: colorBlink 0.5s ease-out infinite alternate;
+}
+@keyframes colorBlink {
+    0% {
+        background-color: red;
+    }
+    100% {
+        background-color: orange;
+    }
 }
 </style>
