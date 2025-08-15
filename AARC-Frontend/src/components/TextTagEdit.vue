@@ -9,7 +9,7 @@ import foldImg from '@/assets/ui/fold.svg'
 import settingsImg from '@/assets/ui/settings.svg'
 import pinyinConvertImg from '@/assets/ui/pinyinConvert.svg'
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
-import { usePinyinConvertStore } from '@/models/stores/utils/pinyinConvertStore';
+import { usePinyinConvert } from './composables/usePinyinConvert';
 
 const textTagEditStore = useTextTagEditStore()
 const envStore = useEnvStore()
@@ -26,12 +26,9 @@ const inputPlaceholder = computed<string|undefined>(()=>{
     return "请输入文本"
 })
 
-const { convertPinyin } = usePinyinConvertStore()
+const { convertPinyin, pinyinOverriding } = usePinyinConvert(textMain, textSub, ()=>textTagEditStore.applyText())
 async function convertPinyinCall(){
-    const res = await convertPinyin(textMain.value)
-    if(res)
-        textSub.value = res
-    textTagEditStore.applyText()
+    await convertPinyin()
 }
 
 const { 
@@ -66,8 +63,9 @@ function blurHandler(){
         <div @click="envStore.duplicateTextTag();textTagEditStore.endEditing()" class="duplicateBtn sqrBtn withShadow">
             <div class="dupA"></div><div class="dupB"></div>
         </div>
-        <div @click="convertPinyinCall" class="pinyinConvertBtn sqrBtn withShadow">
-            <img :src="pinyinConvertImg"/>
+        <div @click="convertPinyinCall" class="pinyinConvertBtn sqrBtn withShadow" :class="{pinyinOverriding}">
+            <img v-if="!pinyinOverriding" :src="pinyinConvertImg"/>
+            <div v-else>再次<br/>点击</div>
         </div>
         <div @click="textTagEditStore.textTagOptionsPanelOpen" class="settingsBtn sqrBtn withShadow">
             <img :src="settingsImg"/>

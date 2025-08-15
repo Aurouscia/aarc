@@ -54,6 +54,14 @@
             width: 80%;
             height: 80%;
         }
+        &.pinyinOverriding{
+            background-color: rgb(255, 132, 0);
+            div{
+                color: white;
+                font-size: 10px;
+                line-height: 12px;
+            }
+        }
     }
     .duplicateBtn{
         $size:10px;

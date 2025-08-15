@@ -38,9 +38,8 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-08-11更新'">
-        1. 修复图标无文字时，位置偏移向上的的问题<br/>（更新后位置可能有微小变动，不好看的话需重新设置，造成不便敬请谅解）<br/>
-        2. 进入他人存档编辑后，不阻拦退出
+    <Notice :type="'info'" :title="'2025-08-15更新'">
+        1. 站名拼音转换（半成品，暂无设置页面和快捷键）
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
         1. 标签/站名的旋转和压缩<br/>
