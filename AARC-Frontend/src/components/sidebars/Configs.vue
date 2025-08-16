@@ -15,6 +15,7 @@ import LineStylesConfig from './configs/LineStylesConfig.vue';
 import EditorConfig from './configs/EditorConfig.vue';
 import FaqAsConfig from './configs/FaqAsConfig.vue';
 import TextTagIconConfig from './configs/TextTagIconConfig.vue';
+import PinyinConvertConfig from './configs/PinyinConvertConfig.vue';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
@@ -150,6 +151,8 @@ defineExpose({
 <TextTagIconConfig></TextTagIconConfig>
 
 <EditorConfig></EditorConfig>
+
+<PinyinConvertConfig></PinyinConvertConfig>
 
 <h2 :class="{sectorShown:showBgRefImage}" @click="showBgRefImage =!showBgRefImage">
     <div class="shownStatusIcon">{{ showBgRefImage? '×':'+' }}</div>

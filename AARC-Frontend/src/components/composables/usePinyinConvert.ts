@@ -1,12 +1,29 @@
 import { useApiStore } from "@/app/com/apiStore";
+import { useConfigStore } from "@/models/stores/configStore";
+import { storeToRefs } from "pinia";
 import { computed, ref, Ref } from "vue";
 
 type TargetRef = Ref<string|undefined|null>
 export const usePinyinConvert = (source:TargetRef, dest:TargetRef, afterDone:()=>void)=>{
     const api = useApiStore()
+    const { config } = storeToRefs(useConfigStore())
     const overridingForSource = ref<string>()
     const overridingToDest = ref<string>()
-    const overridingReady = computed<boolean>(()=>overridingForSource.value === source.value)
+    const overridingReady = computed<boolean>(()=>!!source.value && overridingForSource.value === source.value)
+    const rules = computed<{[key:string]:string}>(()=>{
+        const res:{[key:string]:string} = {}
+        const str = config.value.pinyinConvert?.rules
+        if(str){
+            const lines = str.split('\n')
+            for(const line of lines){
+                const kv = line.split(/[:：]/, 2)
+                if(kv.length === 2){
+                    res[kv[0]] = kv[1]
+                }
+            }
+        }
+        return res
+    })
     async function convertPinyin(){
         if(!source.value)
             return
@@ -16,8 +33,14 @@ export const usePinyinConvert = (source:TargetRef, dest:TargetRef, afterDone:()=
             res = overridingToDest.value
         }
         else{
+            const c = config.value.pinyinConvert
             res = await api.saveUtils.pinyinConvert({
-                text: source.value
+                text: source.value,
+                options:{
+                    rules: rules.value,
+                    spaceBetweenChars: c?.spaceBetweenChars,
+                    caseType: c?.caseType
+                }
             })
         }
         const apply = ()=>{

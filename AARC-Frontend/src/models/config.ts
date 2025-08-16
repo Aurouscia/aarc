@@ -64,6 +64,8 @@ export interface Config{
     textTagForLineDropCap:boolean
     textTagForTerrain:TextTagPerTypeGlobalConfig
 
+    pinyinConvert?:PinyinConvertConfig
+
     configVersion:number
 }
 export type LineWidthMappedConfig = Record<string, {
@@ -89,6 +91,11 @@ export type TextTagPerTypeGlobalConfig = {
     anchorY?: SgnNumber,
     width?: number,
     edgeAnchorOutsidePadding?: boolean
+}
+export type PinyinConvertConfig = {
+    rules?:string,
+    caseType?:number,
+    spaceBetweenChars?:boolean
 }
 
 export type ConfigInSave = AllKeysOptional<Config>
