@@ -678,8 +678,8 @@ export const useEnvStore = defineStore('env', ()=>{
         ensureCoordInCanvas(viewCenterCoord)
         const pt1Pos:Coord = [...viewCenterCoord]
         const pt2Pos:Coord = [...viewCenterCoord]
-        pt1Pos[0] -= 50
-        pt2Pos[0] += 50
+        pt1Pos[0] -= 75
+        pt2Pos[0] += 75
         ensureSpaceForNewPt(pt1Pos)
         ensureSpaceForNewPt(pt2Pos)
         const pt1:ControlPoint = {
@@ -867,6 +867,51 @@ export const useEnvStore = defineStore('env', ()=>{
             coord[0] = cvsWidth.value - margin
         }
     }
+    function splitLineByPt(lineId:number,ptId:number){
+        if (!saveStore.save)
+            return ;
+        let line=saveStore.save.lines.find(x=>x.id==lineId)
+        if (!line)
+            return ;
+        let ptsFrontPt=line.pts.slice(0,line.pts.indexOf(ptId))
+        let ptsBackPt=line.pts.slice(line.pts.indexOf(ptId)+1)
+        //新建线路
+        let copyLine={...line}
+        copyLine.id=saveStore.getNewId()
+        line.pts=ptsFrontPt
+        copyLine.pts=ptsBackPt
+        copyLine.name+='（拆分后）'
+        saveStore.save.lines.push(copyLine)
+    }
+    //用于判断是不是简单线路
+function hasNoDuplicateNumbers(pts: number[]): boolean {
+    let hasNoDuplicate=true
+    pts.forEach(p=>{
+        if (pts.filter(x=>x==p).length!=1)
+        hasNoDuplicate= false
+    })
+    return hasNoDuplicate
+}
+    function removeRepeatPtOnLines(){
+        if (!saveStore.save)
+            return ;
+        saveStore.save.lines.forEach(line=>{
+            if (!hasNoDuplicateNumbers(line.pts))
+            {
+                //因为有重复 先去怀疑它
+                //要去除所有连续的重复项
+                let newpts=[line.pts[0]]
+                for(let i=1;i<line.pts.length;i++){
+                    let frontPt=line.pts[i-1]
+                    let thisPt=line.pts[i]
+                    if (frontPt!=thisPt){
+                        newpts.push(thisPt)
+                    }
+                }
+            line.pts=newpts
+            }
+        })
+    }
     
     return { 
         init, activePt, activePtType, activePtNameSnapped,
@@ -877,7 +922,7 @@ export const useEnvStore = defineStore('env', ()=>{
         delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
         createTextTag, duplicateTextTag, createPlainPt,
         startCreatingPtLink, abortCreatingPtLink,
-        endEveryEditing, cancelActive, 
+        endEveryEditing, cancelActive, splitLineByPt,removeRepeatPtOnLines,hasNoDuplicateNumbers,
         closeOps:()=>setOpsPos(false)
     }
 })
