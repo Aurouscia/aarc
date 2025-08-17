@@ -33,7 +33,7 @@ function isTerminal(line:Line): boolean{
     if(!editing.value)
         return false
     let indexofPt=line.pts.indexOf(editing.value.id)
-    if (indexofPt==0||indexofPt==line.pts.length-1)
+    if (indexofPt==0||indexofPt==line.pts.length-1||indexofPt==line.pts.length-2||indexofPt==1)
     return true
     else
     return false
