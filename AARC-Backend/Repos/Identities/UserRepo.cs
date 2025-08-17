@@ -151,6 +151,13 @@ namespace AARC.Repos.Identities
                 return false;
             }
             mapper.Map(u, user);
+            //不在mapper处理Password，需另外手动处理
+            if (!string.IsNullOrWhiteSpace(u.Password))
+            {
+                //若密码不为空，设置新密码
+                var pwdEncrypted = UserPwdEncryption.Encrypt(u.Password);
+                user.Password = pwdEncrypted;
+            }
             base.Update(user, true);
             return true;
         }
@@ -233,9 +240,7 @@ namespace AARC.Repos.Identities
                 .ForMember(x => x.LastActive,
                     mem => mem.MapFrom(source => source.LastActive.ToString("yyyy-MM-dd HH:mm")));
             CreateMap<UserDto, User>()
-                .IgnoreLastActive()
-                .ForMember(x => x.Password,
-                    mem => mem.MapFrom(source => UserPwdEncryption.Encrypt(source.Password ?? "")));
+                .ForMember(x => x.Password, mem => mem.Ignore());
         }
     }
 }
