@@ -52,10 +52,29 @@ function lineZIndexChanged(){
     props.line.zIndex = lineZIndexBinded.value
     envStore.lineInfoChanged(props.line)
 }
+
+function isInSameFamily(line:Line){
+    const p = props.line
+    if(line.id===p.id)
+        return true
+    if(line.parent && line.parent===p.parent)
+        return true
+    if(line.id===p.parent || line.parent===p.id)
+        return true
+    return false
+}
 const lineZIndexSameLines = computed<{n:string,c:string}[]>(()=>{
     if(lineZIndexBinded.value===0)
         return []
-    const sameLines = saveStore.save?.lines.filter(x=>x.id!==props.line.id && x.zIndex===lineZIndexBinded.value)
+    const sameLines = saveStore.save?.lines.filter(x=>{
+        if(x.parent)
+            return false
+        if(isInSameFamily(x))
+            return false
+        if(x.zIndex!==lineZIndexBinded.value)
+            return false
+        return true
+    })
     return sameLines?.map(x=>{
         return {n:x.name||'未命名线路', c:saveStore.getLineActualColor(x)}
     }) ?? []
