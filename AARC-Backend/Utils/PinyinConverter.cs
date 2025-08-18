@@ -42,8 +42,11 @@ namespace AARC.Utils
         private static List<PinyinSegment> SplitToSegments(string text, Dictionary<string, string> rules)
         {
             List<PinyinSegment> res = [];
+            rules = rules
+                .Select(x => new KeyValuePair<string, string>(x.Key.Trim(), x.Value.Trim()))
+                .Where(x => x.Key.Length > 0) //排除长度为0的Key，否则会死循环
+                .ToDictionary();
             var keys = rules.Keys
-                .Select(x => x.Trim())
                 .OrderByDescending(x => x.Length)
                 .ToList();
             ReadOnlySpan<char> targetSpan = text;
