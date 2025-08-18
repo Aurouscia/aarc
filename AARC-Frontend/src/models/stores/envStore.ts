@@ -678,8 +678,8 @@ export const useEnvStore = defineStore('env', ()=>{
         ensureCoordInCanvas(viewCenterCoord)
         const pt1Pos:Coord = [...viewCenterCoord]
         const pt2Pos:Coord = [...viewCenterCoord]
-        pt1Pos[0] -= 75
-        pt2Pos[0] += 75
+        pt1Pos[0] -= 50
+        pt2Pos[0] += 50
         ensureSpaceForNewPt(pt1Pos)
         ensureSpaceForNewPt(pt2Pos)
         const pt1:ControlPoint = {
