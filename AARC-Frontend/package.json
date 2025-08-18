@@ -9,9 +9,9 @@
   "license": "Apache-2.0",
   "scripts": {
     "dev": "vite",
-    "build": "node build.mjs",
-    "build-here": "node build.mjs --here",
-    "toggleEnvLocal": "node env/toggleLocalEnvFile.cjs",
+    "build": "tsx build.ts",
+    "build-here": "tsx build.ts --here",
+    "toggleEnvLocal": "tsx env/toggleLocalEnvFile.ts",
     "commitSum": "tsx src/utils/gitCommitSum/commitSum.ts"
   },
   "dependencies": {

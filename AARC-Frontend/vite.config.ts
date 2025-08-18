@@ -36,12 +36,5 @@ export default defineConfig({
       '~': resolve('')
     }
   },
-  css:{
-    preprocessorOptions:{
-      scss:{
-        api: 'modern-compiler'
-      }
-    }
-  },
   envDir: "env"
 })
