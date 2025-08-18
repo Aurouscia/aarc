@@ -886,11 +886,9 @@ export const useEnvStore = defineStore('env', ()=>{
         let linesBeforeThisLine=saveStore.save.lines.slice(0,lineIndex+1)
         linesBeforeThisLine.push(copyLine)
         saveStore.save.lines=linesBeforeThisLine.concat(saveStore.save.lines.slice(lineIndex+1))
+        setOpsPos(false) //隐藏悬浮菜单
+        rerender.value()
     }
-    //用于判断是不是简单线路
-function hasNoDuplicateNumbers(pts: number[]): boolean {
-    return new Set(pts).size === pts.length;
-}
     function removeRepeatPtOnLines(){
         if (!saveStore.save)
             return;
