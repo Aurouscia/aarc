@@ -881,11 +881,9 @@ export const useEnvStore = defineStore('env', ()=>{
         copyLine.id=saveStore.getNewId()
         line.pts=ptsFrontPt
         copyLine.pts=ptsBackPt
-        copyLine.name+='（拆分后）'
-        let lineIndex=saveStore.save.lines.findIndex(x=>x.id==line.id)
-        let linesBeforeThisLine=saveStore.save.lines.slice(0,lineIndex+1)
-        linesBeforeThisLine.push(copyLine)
-        saveStore.save.lines=linesBeforeThisLine.concat(saveStore.save.lines.slice(lineIndex+1))
+        copyLine.name+='(拆分)'
+        const originalLineIdx = saveStore.save.lines.findIndex(x=>x.id==line.id)
+        saveStore.save.lines.splice(originalLineIdx+1, 0, copyLine)
         setOpsPos(false) //隐藏悬浮菜单
         rerender.value()
     }
