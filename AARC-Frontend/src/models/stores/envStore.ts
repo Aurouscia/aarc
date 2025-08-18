@@ -881,7 +881,10 @@ export const useEnvStore = defineStore('env', ()=>{
         line.pts=ptsFrontPt
         copyLine.pts=ptsBackPt
         copyLine.name+='（拆分后）'
-        saveStore.save.lines.push(copyLine)
+        let lineIndex=saveStore.save.lines.findIndex(x=>x.id==line.id)
+        let linesBeforeThisLine=saveStore.save.lines.slice(0,lineIndex+1)
+        linesBeforeThisLine.push(copyLine)
+        saveStore.save.lines=linesBeforeThisLine.concat(saveStore.save.lines.slice(lineIndex+1))
     }
     //用于判断是不是简单线路
 function hasNoDuplicateNumbers(pts: number[]): boolean {
