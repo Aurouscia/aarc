@@ -12,7 +12,7 @@
     "build": "node build.mjs",
     "build-here": "node build.mjs --here",
     "toggleEnvLocal": "node env/toggleLocalEnvFile.cjs",
-    "commitSum": "node src/utils/gitCommitSum/commitSum.mjs"
+    "commitSum": "tsx src/utils/gitCommitSum/commitSum.ts"
   },
   "dependencies": {
     "@aurouscia/au-color-picker": "^0.5.1",
@@ -35,6 +35,7 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "execa": "^9.6.0",
     "sass": "^1.89.2",
+    "tsx": "^4.20.4",
     "typescript": "^5.9.2",
     "vite": "^7.0.6",
     "vite-plugin-full-reload": "^1.2.0",
