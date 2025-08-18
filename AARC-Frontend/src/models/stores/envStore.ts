@@ -888,12 +888,7 @@ export const useEnvStore = defineStore('env', ()=>{
     }
     //用于判断是不是简单线路
 function hasNoDuplicateNumbers(pts: number[]): boolean {
-    let hasNoDuplicate=true
-    pts.forEach(p=>{
-        if (pts.filter(x=>x==p).length!=1)
-        hasNoDuplicate= false
-    })
-    return hasNoDuplicate
+    return new Set(pts).size === pts.length;
 }
     function removeRepeatPtOnLines(){
         if (!saveStore.save)
