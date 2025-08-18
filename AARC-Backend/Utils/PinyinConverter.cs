@@ -9,6 +9,7 @@ namespace AARC.Utils
         {
             var segs = SplitToSegments(text, options.Rules ?? []);
             List<string> segsConverted = new(segs.Count);
+            bool isFirstSeg = true;
             foreach (var seg in segs)
             {
                 if (seg.IsFromRule || !seg.IsChinese)
@@ -30,11 +31,15 @@ namespace AARC.Utils
                         {
                             PinyinCaseType.AllUpper => segConverted.ToUpper(),
                             PinyinCaseType.AllLower => segConverted.ToLower(),
+                            PinyinCaseType.FirstUpper => isFirstSeg
+                                ? segConverted.ToPascal()
+                                : segConverted.ToLower(),
                             _ => segConverted
                         };
                     }
                     segsConverted.Add(segConverted);
                 }
+                isFirstSeg = false;
             }
             string res = string.Join(" ", segsConverted);
             return res;
@@ -135,6 +140,7 @@ namespace AARC.Utils
     {
         Pascal = 0,
         AllUpper = 1,
-        AllLower = 2
+        AllLower = 2,
+        FirstUpper = 3
     }
 }

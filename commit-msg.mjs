@@ -12,7 +12,7 @@ import { readFileSync } from 'fs';
 
 const commitMsgFilePath = process.argv[2]
 const commitMsg = readFileSync(commitMsgFilePath, 'utf-8');
-const requiredKeywords = ['【后端】','【前端】','【前端/后端】','【编辑器】','【项目】','Merge branch'];
+const requiredKeywords = ['【后端】','【前端】','【前端/后端】','【编辑器】','【编辑器/后端】','【项目】','Merge branch'];
 const hasKeyword = requiredKeywords.some(keyword => commitMsg.startsWith(keyword));
 
 if (!hasKeyword) {

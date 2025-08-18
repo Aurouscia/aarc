@@ -38,8 +38,8 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-08-16更新'">
-        1. 站名拼音转换（可设置大小写和自定义规则）
+    <Notice :type="'info'" :title="'2025-08-18更新'">
+        1. 站名拼音转换：修复死循环bug、添加“整体首字母大写”模式
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
         1. 标签/站名的旋转和压缩<br/>
