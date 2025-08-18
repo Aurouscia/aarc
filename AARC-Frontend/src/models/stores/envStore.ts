@@ -21,6 +21,7 @@ import rfdc from "rfdc";
 import { coordRound } from "@/utils/coordUtils/coordRound";
 import { usePointLinkStore } from "./pointLinkStore";
 import { assignAllProps, removeNonexistentKeys } from "@/utils/lang/assignAllProps";
+import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
 
 export const useEnvStore = defineStore('env', ()=>{
     const saveStore = useSaveStore();
@@ -867,6 +868,34 @@ export const useEnvStore = defineStore('env', ()=>{
             coord[0] = cvsWidth.value - margin
         }
     }
+    function splitLineByPt(lineId:number,ptId:number){
+        if (!saveStore.save)
+            return ;
+        let line=saveStore.save.lines.find(x=>x.id==lineId)
+        if (!line)
+            return ;
+        let ptsFrontPt=line.pts.slice(0,line.pts.indexOf(ptId))
+        let ptsBackPt=line.pts.slice(line.pts.indexOf(ptId)+1)
+        //新建线路
+        let copyLine={...line}
+        copyLine.id=saveStore.getNewId()
+        line.pts=ptsFrontPt
+        copyLine.pts=ptsBackPt
+        copyLine.name+='(拆分)'
+        const originalLineIdx = saveStore.save.lines.findIndex(x=>x.id==line.id)
+        saveStore.save.lines.splice(originalLineIdx+1, 0, copyLine)
+        setOpsPos(false) //隐藏悬浮菜单
+        rerender.value()
+    }
+    function removeRepeatPtOnLines(){
+        if (!saveStore.save)
+            return;
+        saveStore.save.lines.forEach(line=>{
+            const newPts = removeConsecutiveSameItem(line.pts)
+            line.pts = newPts
+        })
+        rerender.value()
+    }
     
     return { 
         init, activePt, activePtType, activePtNameSnapped,
@@ -877,7 +906,8 @@ export const useEnvStore = defineStore('env', ()=>{
         delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
         createTextTag, duplicateTextTag, createPlainPt,
         startCreatingPtLink, abortCreatingPtLink,
-        endEveryEditing, cancelActive, 
+        endEveryEditing, cancelActive, splitLineByPt,
+        removeRepeatPtOnLines,
         closeOps:()=>setOpsPos(false)
     }
 })

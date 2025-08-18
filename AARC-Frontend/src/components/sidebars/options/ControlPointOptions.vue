@@ -5,20 +5,60 @@ import { useEnvStore } from '@/models/stores/envStore';
 import { useNameEditStore } from '@/models/stores/nameEditStore';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { computed, ref } from 'vue';
-
+import { Line } from '@/models/save';
+import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
+import { indicesInArrayByPred } from '@/utils/lang/indicesInArray';
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const nameEditStore = useNameEditStore()
 const saveStore = useSaveStore()
 const envStore = useEnvStore()
+const colorProcStore = useColorProcStore()
 
 const editing = ref<ControlPoint>()
+const splittableLinesHere = ref<Line[]>([])
+const showLineSplitMenu = ref(false)
 function startEditing(pt: ControlPoint) {
     editing.value = pt
     if(editing.value.nameSize===undefined)
         editing.value.nameSize = 0
     if(editing.value.nameP===undefined)
         editing.value.nameP = nameEditStore.newNamePos(editing.value.id)
+    showLineSplitMenu.value = false
+    initSplittableLines()
     sidebar.value?.extend()
+}
+function initSplittableLines() {
+    if(editing.value){
+        splittableLinesHere.value = saveStore
+            .getLinesByPt(editing.value.id)
+            .filter(x => {
+                if (isOrCloseToTerminal(x))
+                    return false;
+                const idxs = indicesInArrayByPred(x.pts, (ptId => ptId === editing.value?.id))
+                return idxs.length === 1
+            })
+    }
+}
+
+//终点站和接近终点站的站不应该显示拆分
+function isOrCloseToTerminal(line:Line): boolean{
+    if(!editing.value)
+        return false
+    let indexofPt=line.pts.indexOf(editing.value.id)
+    if (indexofPt==0||indexofPt==line.pts.length-1||indexofPt==line.pts.length-2||indexofPt==1)
+        return true
+    else
+        return false
+}
+function splitLineByThisPt(lineId:number, lineName:string){
+    if(!editing.value){
+        return
+    }
+    if(!window.confirm(`确认以本点为界拆分[${lineName}]？`)){
+        return
+    }
+    envStore.splitLineByPt(lineId, editing.value.id)
+    initSplittableLines() //完成后立即更新可拆分的线路
 }
 
 const isLineTypeWithoutSta = computed<boolean>(()=>{
@@ -32,6 +72,7 @@ const isLineTypeWithoutSta = computed<boolean>(()=>{
 const emit = defineEmits<{
     (e:'changed'):void
 }>()
+
 defineExpose({
     startEditing
 })
@@ -78,6 +119,36 @@ defineExpose({
                         </td>
                     </tr>
                 </tbody></table>
+            </div>
+            <h2>拆分线路</h2>
+            <div class="optionSection">
+                <button v-if="!showLineSplitMenu" @click="showLineSplitMenu=true"
+                    class="minor" style="margin: auto;display: block;"
+                >此处可拆{{ splittableLinesHere.length }}条线路</button>
+                <template v-else>
+                    <table class="fullWidth"><tbody>
+                        <tr>
+                            <td>拆分</td>
+                            <td v-if="splittableLinesHere.length>0">
+                                <div v-for="spl in splittableLinesHere">
+                                    <button :style="{
+                                        backgroundColor:spl.color,
+                                        color:spl.tagTextColor ?? colorProcStore.colorProcInvBinary.convert(spl.color)
+                                        }"
+                                        @click="splitLineByThisPt(spl.id, spl.name)"
+                                    >
+                                    {{ spl.name }}
+                                    </button>
+                                </div>
+                            </td>
+                            <td v-else>此处无可拆线路</td>
+                        </tr>
+                    </tbody></table>
+                    <div class="smallNote">
+                        无法拆分：线路端点、线路端点的邻点、线路自交点（注：环线也有端点）<br>
+                        如果非上述情况依然不能拆分，请尝试使用“设置-杂项-修复线路节点重复问题”或咨询管理员
+                    </div>
+                </template>
             </div>
         </div>
     </div>
