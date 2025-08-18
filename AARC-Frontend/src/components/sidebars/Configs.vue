@@ -74,7 +74,6 @@ function removeDanglingPointLinks(){
 }
 function removeRepeatPt(){
     envStore.removeRepeatPtOnLines()
-    envStore.rerender([], [])
 }
 const { browserInfo } = storeToRefs(useBrowserInfoStore())
 const visibilityChangedTimes = ref(0)
@@ -255,7 +254,7 @@ defineExpose({
             <button @click="removeRepeatPt">执行</button>
         </td>
         <td>
-            <b>修复线路上相邻两点重复问题</b>
+            <b>修复线路节点重复问题</b>
         </td>
     </tr>
     <tr>

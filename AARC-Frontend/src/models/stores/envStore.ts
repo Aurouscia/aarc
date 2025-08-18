@@ -21,6 +21,7 @@ import rfdc from "rfdc";
 import { coordRound } from "@/utils/coordUtils/coordRound";
 import { usePointLinkStore } from "./pointLinkStore";
 import { assignAllProps, removeNonexistentKeys } from "@/utils/lang/assignAllProps";
+import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
 
 export const useEnvStore = defineStore('env', ()=>{
     const saveStore = useSaveStore();
@@ -892,23 +893,12 @@ function hasNoDuplicateNumbers(pts: number[]): boolean {
 }
     function removeRepeatPtOnLines(){
         if (!saveStore.save)
-            return ;
+            return;
         saveStore.save.lines.forEach(line=>{
-            if (!hasNoDuplicateNumbers(line.pts))
-            {
-                //因为有重复 先去怀疑它
-                //要去除所有连续的重复项
-                let newpts=[line.pts[0]]
-                for(let i=1;i<line.pts.length;i++){
-                    let frontPt=line.pts[i-1]
-                    let thisPt=line.pts[i]
-                    if (frontPt!=thisPt){
-                        newpts.push(thisPt)
-                    }
-                }
-            line.pts=newpts
-            }
+            const newPts = removeConsecutiveSameItem(line.pts)
+            line.pts = newPts
         })
+        rerender.value()
     }
     
     return { 
@@ -920,7 +910,8 @@ function hasNoDuplicateNumbers(pts: number[]): boolean {
         delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
         createTextTag, duplicateTextTag, createPlainPt,
         startCreatingPtLink, abortCreatingPtLink,
-        endEveryEditing, cancelActive, splitLineByPt,removeRepeatPtOnLines,hasNoDuplicateNumbers,
+        endEveryEditing, cancelActive, splitLineByPt,
+        removeRepeatPtOnLines,
         closeOps:()=>setOpsPos(false)
     }
 })
