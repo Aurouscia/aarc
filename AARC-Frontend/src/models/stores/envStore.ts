@@ -896,6 +896,51 @@ export const useEnvStore = defineStore('env', ()=>{
         })
         rerender.value()
     }
+    function mergeLinesByPt(line1id:number,line2id:number,ptid:number){
+        if ((!saveStore.save)||line1id==line2id)
+        {return}
+        let Line1=saveStore.save.lines.find(x=>x.id==line1id)
+        let Line2=saveStore.save.lines.find(x=>x.id==line2id)
+        if (!(Line1&&Line2)){
+            return
+        }
+        //检查line2是不是有 下属的支线 因为line2要被移除 如果不检查 有支线下属 就会bug
+        let LineBelongToLine2=saveStore.getLinesByParent(line2id)
+        if (LineBelongToLine2!=undefined){
+            //首先把2下面的所有支线给1
+            LineBelongToLine2.forEach(branchline=>{
+                branchline.parent=line1id
+                ensureChildrenOptionsSame(line1id)
+                saveStore.ensureLinesOrdered()
+            })
+        }
+        //处理
+        let firstStaOfLine1=Line1.pts[0]
+        let lastStaOfLine1=Line1.pts[Line1.pts.length-1]
+        let firstStaOfLine2=Line2.pts[0]
+        let lastStaOfLine2=Line2.pts[Line2.pts.length-1]
+        //不仅首尾相接 而且相接点应该是这个点（组合环线可能有俩相接点）
+        if (firstStaOfLine1==firstStaOfLine2&&ptid==firstStaOfLine1){
+            //1头接2头，需要反转2然后放在1前面
+            Line2.pts.reverse()
+            Line1.pts=Line2.pts.concat(Line1.pts)
+        }
+        else if (lastStaOfLine1==firstStaOfLine2&&ptid==lastStaOfLine1){
+            //1尾接2头，2接在1后面
+            Line1.pts=Line1.pts.concat(Line2.pts)
+        }
+        else if (lastStaOfLine1==lastStaOfLine2&&ptid==lastStaOfLine1){
+            //1尾接2尾，需要反转2然后放在1后面
+            Line2.pts.reverse()
+            Line1.pts=Line1.pts.concat(Line2.pts)
+        }
+        else if (firstStaOfLine1==lastStaOfLine2&&ptid==firstStaOfLine1){
+            //1头接2尾，1接在2后面
+            Line1.pts=Line2.pts.concat(Line1.pts)
+        }
+        //2可以删了
+        delLine(line2id)
+    }
     
     return { 
         init, activePt, activePtType, activePtNameSnapped,
@@ -906,7 +951,7 @@ export const useEnvStore = defineStore('env', ()=>{
         delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
         createTextTag, duplicateTextTag, createPlainPt,
         startCreatingPtLink, abortCreatingPtLink,
-        endEveryEditing, cancelActive, splitLineByPt,
+        endEveryEditing, cancelActive, splitLineByPt,mergeLinesByPt,
         removeRepeatPtOnLines,
         closeOps:()=>setOpsPos(false)
     }
