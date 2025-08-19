@@ -44,10 +44,6 @@ function initSplittableLines() {
                 const idxs = indicesInArrayByPred(x.pts, (ptId => ptId === editing.value?.id))
                 return idxs.length === 1
             })
-            //也初始化一下能合并的线路（就是在这个站是idx=0或者是length-1的）
-            canBeMergedLinesHere.value = saveStore
-            .getLinesByPt(editing.value.id)
-            .filter(x => isTerminal(x))
     }
 }
 function initmergeableLines() {
@@ -55,7 +51,10 @@ function initmergeableLines() {
             //初始化一下能合并的线路（就是在这个站是idx=0或者是length-1的）
             canBeMergedLinesHere.value = saveStore
             .getLinesByPt(editing.value.id)
-            .filter(x => isTerminal(x))
+            .filter(x => {
+                const idxs = indicesInArrayByPred(x.pts, (ptId => ptId === editing.value?.id))
+                return idxs.length === 1&&isTerminal(x)
+            })
             mergingLine1Id=-1
             mergingLine2Id=-1
     }
@@ -200,7 +199,7 @@ defineExpose({
             </div>
             <h2>合并线路</h2>
             <div class="optionSection">
-                <button v-if="!showLineMergeMenu" @click="showLineMergeMenu=true"
+                <button v-if="!showLineMergeMenu&&canBeMergedLinesHere.length>1" @click="showLineMergeMenu=true"
                     class="minor" style="margin: auto;display: block;"
                 >有{{ canBeMergedLinesHere.length }}条线路以此为端点</button>
                 <template v-else>
@@ -243,7 +242,7 @@ defineExpose({
                         </div>
                     </div>
                     <div class="smallNote">
-                        首尾相接的线路都可以合并，包括环线和自交线的端点
+                        首尾相接的线路都可以合并，除非这个点是自交点
                         <br>
                         合并后，线路2将自动被移除，线路属性和线路1相同
                         <br>

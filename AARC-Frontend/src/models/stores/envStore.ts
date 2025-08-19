@@ -923,20 +923,20 @@ export const useEnvStore = defineStore('env', ()=>{
         if (firstStaOfLine1==firstStaOfLine2&&ptid==firstStaOfLine1){
             //1头接2头，需要反转2然后放在1前面
             Line2.pts.reverse()
-            Line1.pts=Line2.pts.concat(Line1.pts)
+            Line1.pts=Line2.pts.concat(Line1.pts.slice(1))
         }
         else if (lastStaOfLine1==firstStaOfLine2&&ptid==lastStaOfLine1){
             //1尾接2头，2接在1后面
-            Line1.pts=Line1.pts.concat(Line2.pts)
+            Line1.pts=Line1.pts.concat(Line2.pts.slice(1))
         }
         else if (lastStaOfLine1==lastStaOfLine2&&ptid==lastStaOfLine1){
             //1尾接2尾，需要反转2然后放在1后面
             Line2.pts.reverse()
-            Line1.pts=Line1.pts.concat(Line2.pts)
+            Line1.pts=Line1.pts.concat(Line2.pts.slice(1))
         }
         else if (firstStaOfLine1==lastStaOfLine2&&ptid==firstStaOfLine1){
             //1头接2尾，1接在2后面
-            Line1.pts=Line2.pts.concat(Line1.pts)
+            Line1.pts=Line2.pts.concat(Line1.pts.slice(1))
         }
         //2可以删了
         delLine(line2id)
