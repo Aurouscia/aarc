@@ -10,6 +10,7 @@ export interface Config{
     lineWidthMapped: LineWidthMappedConfig
     lineExtensionHandleLengthVert: string,
     lineExtensionHandleLengthInc: string,
+    lineRemoveCarpet:boolean,
 
     ptBareSize: number,
     ptBareLineWidth: number,
@@ -19,6 +20,8 @@ export interface Config{
     ptStaLineWidth: number,
     ptStaFillColor: string,
     ptStaExchangeLineColor: string,
+    ptStaNormalStaFollowLineColor:boolean,
+    ptStaNormalStaColor:string,
 
     staNameFontSize: number,
     staNameFont: string,
@@ -28,6 +31,7 @@ export interface Config{
     staNameSubFont: string,
     staNameSubRowHeight: number,
     staNameSubColor: string,
+    staNameRemoveCarpet:boolean,
 
     gridMainLineColor: string,
     gridSubLineColor: string,
@@ -63,6 +67,7 @@ export interface Config{
     textTagForLine:TextTagPerTypeGlobalConfig,
     textTagForLineDropCap:boolean
     textTagForTerrain:TextTagPerTypeGlobalConfig
+    textTagRemoveCarpet:boolean
 
     pinyinConvert?:PinyinConvertConfig
 

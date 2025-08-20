@@ -3,7 +3,7 @@ import { useConfigStore } from "@/models/stores/configStore";
 import { useStaNameMainRectStore, useStaNameRectStore } from "@/models/stores/saveDerived/staNameRectStore";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { coordAdd, coordTwinShrink } from "@/utils/coordUtils/coordMath";
-import { drawText } from "@/utils/drawUtils/drawText";
+import { drawText, DrawTextStrokeOption } from "@/utils/drawUtils/drawText";
 import { sgnCoord } from "@/utils/sgn";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
@@ -86,7 +86,14 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             ctx.lineTo(...globalPos)
             ctx.stroke()
         }
-
+        let carpetOption:DrawTextStrokeOption|false={
+            width: cs.config.staNameFontSize * fontSizeRatio/4,
+            color: cs.config.bgColor,
+            opacity: 0.8
+        }
+        if(cs.config.staNameRemoveCarpet){
+            carpetOption=false
+        }
         const rects = drawText(ctx, globalPos, align, undefined, {
             text: pt.name,
             color: cs.config.staNameColor,
@@ -100,11 +107,7 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             fontSize: cs.config.staNameSubFontSize * fontSizeRatio,
             rowHeight: cs.config.staNameSubRowHeight * fontSizeRatio
         },
-        {
-            width: cs.config.staNameFontSize * fontSizeRatio/4,
-            color: cs.config.bgColor,
-            opacity: 0.8
-        }, needReportRect ? 'both' : 'draw')
+        carpetOption, needReportRect ? 'both' : 'draw')
 
         if(rects){
             staNameRectStore.setStaNameRect(pt.id, rects.rectFull)

@@ -80,9 +80,21 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             const arcRadius = cs.config.ptStaSize * sizeRatio
             const lineWidth = cs.config.ptStaLineWidth * sizeRatio
             if(relatedLines.length>0 && isLineFamily(relatedLines) && !active){
-                ctx.strokeStyle = saveStore.getLineActualColor(relatedLines[0])
-            }else{
-                ctx.strokeStyle = markColor
+                if (cs.config.ptStaNormalStaFollowLineColor){
+                    ctx.strokeStyle = saveStore.getLineActualColor(relatedLines[0])
+                }
+                else{
+                    ctx.strokeStyle =cs.config.ptStaNormalStaColor
+                }
+            }
+            else{
+                if (relatedLines.length>0 && !isLineFamily(relatedLines) && !active){
+                    //单点换乘站
+                    ctx.strokeStyle =cs.config.ptStaExchangeLineColor
+                }
+                else{
+                    ctx.strokeStyle = markColor
+                }
                 ctx.beginPath()
                 ctx.fillStyle = cs.config.bgColor
                 ctx.arc(pos[0], pos[1], arcRadius + lineWidth, 0, 2*Math.PI)

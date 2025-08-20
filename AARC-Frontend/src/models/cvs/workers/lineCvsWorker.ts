@@ -398,7 +398,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         }
     }
     function doRender(ctx:CvsContext, lineInfo:Line, enforceNoFill?:boolean, enforceLineWidth?:number, type?:LineRenderType){
-        const drawCarpet =( !type || type==='both' || type==='carpet')&& (!lineInfo.removeCarpet)
+        const drawCarpet =( !type || type==='both' || type==='carpet')&& (!lineInfo.removeCarpet)&& (!cs.config.lineRemoveCarpet)
         const drawBody = !type || type==='both' || type==='body'
         if(!lineInfo.isFilled || enforceNoFill || lineInfo.type!==LineType.terrain){
             const lineWidth = cs.config.lineWidth * (enforceLineWidth||lineInfo.width||1)

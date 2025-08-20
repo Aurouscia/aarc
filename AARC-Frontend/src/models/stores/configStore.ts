@@ -17,6 +17,7 @@ export const configDefault:Config = {
     lineWidthMapped: {},
     lineExtensionHandleLengthVert: '',
     lineExtensionHandleLengthInc: '',
+    lineRemoveCarpet:false,
 
     ptBareSize: 12,
     ptBareLineWidth: 3,
@@ -26,6 +27,8 @@ export const configDefault:Config = {
     ptStaLineWidth: 4,
     ptStaFillColor: '#ffffff',
     ptStaExchangeLineColor: '#999999',
+    ptStaNormalStaFollowLineColor:true,
+    ptStaNormalStaColor:'#000000',
 
     staNameFontSize: 26,
     staNameFont: 'microsoft YaHei',
@@ -35,6 +38,7 @@ export const configDefault:Config = {
     staNameSubFont: 'microsoft YaHei',
     staNameSubRowHeight: 20,
     staNameSubColor: '#888888',
+    staNameRemoveCarpet:false,
 
     gridMainLineColor: '#bbbbbb',
     gridSubLineColor: '#cccccc',
@@ -70,6 +74,7 @@ export const configDefault:Config = {
     textTagForLine:{},
     textTagForLineDropCap:true,
     textTagForTerrain:{},
+    textTagRemoveCarpet:false,
 
     configVersion:0
 }
@@ -119,7 +124,7 @@ export const useConfigStore = defineStore('config', ()=>{
         if(presetType == ColorPreset.area)
             return config.value.colorPresetArea
         if(presetType == ColorPreset.island)
-            return config.value.colorPresetIsland
+            return config.value.bgColor
         return 'black'
     }
     function getTurnRadiusOf(line:Line|number, turnRel:WayRel, justify:'outer'|'middle'|'inner' = 'inner'){
