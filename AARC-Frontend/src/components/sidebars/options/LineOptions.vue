@@ -11,6 +11,7 @@ const saveStore = useSaveStore()
 const { save } = storeToRefs(saveStore)
 const props = defineProps<{
     line:Line,
+    lineTypeCalled:string,
     lineWidthRange:{
         min:number,
         max:number,
@@ -130,12 +131,12 @@ onMounted(()=>{
 
 <template>
 <SideBar ref="sidebar" @extend="init">
-<h1>线路更多设置</h1>
+<h1>{{lineTypeCalled}}更多设置</h1>
 <div class="lineConfig">
     <table v-if="!line.parent" class="fullWidth"><tbody>
     <tr>
         <td colspan="2">
-            {{ line.name || '未命名线路' }}
+            {{ line.name || '未命名'+lineTypeCalled }}
         </td>
     </tr>
     <tr>
@@ -308,6 +309,9 @@ onMounted(()=>{
         </tr>
     </tbody></table>
 </div>
+<div class="smallNote" style="text-align: center;margin-bottom: 60px;"><b>
+    提示：右键点击线路可直接打开本菜单
+</b></div>
 </SideBar>
 </template>
 
@@ -320,8 +324,5 @@ onMounted(()=>{
         margin-right: 3px;
         white-space: nowrap;
     }
-}
-table{
-    margin-bottom: 60px;
 }
 </style>

@@ -22,6 +22,7 @@ import { coordRound } from "@/utils/coordUtils/coordRound";
 import { usePointLinkStore } from "./pointLinkStore";
 import { assignAllProps, removeNonexistentKeys } from "@/utils/lang/assignAllProps";
 import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
+import { useOptionsOpenerStore } from "./utils/optionsOpenerStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const saveStore = useSaveStore();
@@ -61,6 +62,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const { removeLineExtendBtn } = useLineExtendStore()
     const discardAreaStore = useDiscardAreaStore()
     const pointLinkStore = usePointLinkStore()
+    const optionsOpenerStore = useOptionsOpenerStore()
     const deepClone = rfdc()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
@@ -263,7 +265,7 @@ export const useEnvStore = defineStore('env', ()=>{
         
         //判断是否在线上
         //如果已经移动过点，这时formalPts还未更新，不应该进行点击线路判断，直接视为点击空白处
-        const lineMatches = !isRightBtn && onLine(coord);
+        const lineMatches = onLine(coord);
         if(lineMatches && lineMatches.length>0){
             //点到线上了
             const lineMatch = lineMatches[0]
@@ -271,8 +273,12 @@ export const useEnvStore = defineStore('env', ()=>{
             cursorPos.value = [...lineMatch.alignedPos]
             cursorOnLineAfterPtIdx.value = lineMatch.afterPtIdx
             cursorDir.value = lineMatch.dir
-            setOpsPos(lineMatch.alignedPos)
-            setOpsForLine(activeLine.value)
+            if(isRightBtn){
+                optionsOpenerStore.openOptionsFor(activeLine.value)
+            }else{
+                setOpsPos(lineMatch.alignedPos)
+                setOpsForLine(activeLine.value)
+            }
             endEveryEditing()
             return
         }
@@ -604,20 +610,26 @@ export const useEnvStore = defineStore('env', ()=>{
         if(isCommon){
             btns.push({
                 cb: ()=>insertPtCb(ControlPointSta.sta),
-                text: '插入',
-                textSub: '车站'
+                text: '车站',
+                textSub: '在此插入'
             })
         }
         btns.push({
                 cb: ()=>insertPtCb(ControlPointSta.plain),
-                text: '插入',
-                textSub: '控制点'
-            },
-            {
-                cb: createTagForLine,
-                text:'标签'
+                text: '节点',
+                textSub: '在此插入'
             })
-        opsStore.btns = [btns]
+        const btns1:OpsBtn[] = [{
+                cb: ()=>optionsOpenerStore.openOptionsFor(activeLine.value),
+                text: '设置',
+                textSub: '打开侧栏'
+            },{
+                cb: createTagForLine,
+                text:'标签',
+                textSub:'创建'
+            }
+        ]
+        opsStore.btns = [btns, btns1]
     }
 
     function delActivePt_withoutRerender(){

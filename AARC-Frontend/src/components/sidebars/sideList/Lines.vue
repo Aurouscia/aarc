@@ -21,8 +21,9 @@ const {
     createLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe,
     showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
-    showingBtns, showingChildrenOf, showingChildrenOfInfo,
-    showChildrenOf, leaveParent, childrenLines
+    showingBtns, showingChildrenOfInfo,
+    showChildrenOf, leaveParent, childrenLines,
+    showListSidebar, hideListSidebar
 } = useSideListShared(LineType.common)
 
 const colorPicker = ref<InstanceType<typeof AuColorPicker>[]>([])
@@ -31,15 +32,8 @@ function clickContainer(){
 }
 
 defineExpose({
-    comeOut: (parentLineId?:number)=>{
-        showingChildrenOf.value = parentLineId
-        sidebar.value?.extend()
-    },
-    fold: ()=>{
-        childrenLines.value?.fold()
-        sidebar.value?.fold()
-        lineOptions.value?.fold()
-    }
+    comeOut: (lineId?:number)=>showListSidebar(lineId),
+    fold: ()=>hideListSidebar()
 })
 onMounted(()=>{
     //因为本组件在编辑器中始终存在，所以仅会执行一次
@@ -95,7 +89,8 @@ onUnmounted(()=>{
     </SideBar>
     <LineDelPrompt :line="wantDelLine" :line-called="'线路'" :pt-called="'车站'" :with-sta-default="false"
         @abort="delLineAbort" @exe="delLineExe"></LineDelPrompt>
-    <LineOptions ref="lineOptions" v-if="editingInfoLine" :line="editingInfoLine" :line-width-range="{min:0.5, max:2, step:0.25}"></LineOptions>
+    <LineOptions ref="lineOptions" v-if="editingInfoLine" :line="editingInfoLine"
+        :line-type-called="'线路'" :line-width-range="{min:0.5, max:2, step:0.25}"></LineOptions>
     <Lines v-if="!isChildrenList" ref="childrenLines" :is-children-list="true"></Lines>
 </template>
 

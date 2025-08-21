@@ -15,7 +15,8 @@ const {
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
     createLine, editingInfoLine, editInfoOfLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe,
-    showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup
+    showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
+    showListSidebar, hideListSidebar
 } = useSideListShared(LineType.terrain)
 
 const { getPresetNameByEnum, getPresetEnumByName, presets } = useColorPresetNames()
@@ -38,11 +39,8 @@ function clickContainer(){
 }
 
 defineExpose({
-    comeOut: ()=>{sidebar.value?.extend()},
-    fold: ()=>{
-        sidebar.value?.fold();
-        lineOptions.value?.fold()
-    },
+    comeOut: showListSidebar,
+    fold: hideListSidebar
 })
 onMounted(()=>{
     //因为本组件在编辑器中始终存在，所以仅会执行一次
@@ -90,7 +88,8 @@ onUnmounted(()=>{
     </SideBar>
     <LineDelPrompt :line="wantDelLine" :line-called="'地形'" :pt-called="'节点'" :with-sta-default="true"
         @abort="delLineAbort" @exe="delLineExe"></LineDelPrompt>
-    <LineOptions ref="lineOptions" v-if="editingInfoLine" :line="editingInfoLine" :line-width-range="{min:0.5, max:12, step:0.5}"></LineOptions>
+    <LineOptions ref="lineOptions" v-if="editingInfoLine" :line="editingInfoLine"
+        :line-type-called="'地形'" :line-width-range="{min:0.5, max:12, step:0.5}"></LineOptions>
 </template>
 
 <style scoped lang="scss">

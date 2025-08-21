@@ -80,7 +80,7 @@ import ConfigSection from './shared/ConfigSection.vue';
     <div>
         <h3>拉远时站名变成方块</h3>
         <div>
-            <p>请进入同页面的“编辑器”设置，查看“站名糊弄机制”。</p>
+            <p>请进入“设置-编辑器”，查看“站名糊弄机制”。</p>
             <p>在站名较多时，这将显著提高性能，建议设为“宽松”。</p>
         </div>
     </div>

@@ -8,6 +8,8 @@ import { computed, ref } from "vue"
 import LineOptions from "../../options/LineOptions.vue"
 import Lines from "../Lines.vue"
 import { useUniqueComponentsStore } from "@/app/globalStores/uniqueComponents"
+import { useOptionsOpenerStore } from "@/models/stores/utils/optionsOpenerStore"
+import { storeToRefs } from "pinia"
 
 export function useSideListShared(lineType:LineType){
     const saveStore = useSaveStore()
@@ -152,6 +154,39 @@ export function useSideListShared(lineType:LineType){
         }
     }
 
+
+    function showListSidebar(parentLineId?:number){
+        showingChildrenOf.value = parentLineId
+        sidebar.value?.extend()
+    }
+    function hideListSidebar(){
+        childrenLines.value?.fold()
+        sidebar.value?.fold()
+        lineOptions.value?.fold()
+    }
+
+    const optionsOpener = storeToRefs(useOptionsOpenerStore())
+    if(lineType===LineType.common){
+        optionsOpener.openOptionsForCommonLine.value = openOptions
+    }else if(lineType===LineType.terrain){
+        optionsOpener.openOptionsForTerrainLine.value = openOptions
+    }
+    function openOptions(lineId?:number){
+        if(!lineId)
+            return
+        let line = saveStore.getLineById(lineId)
+        if(line?.parent){
+            line = saveStore.getLineById(line.parent)
+            lineId = line?.id ?? 0
+        }
+        if(!line)
+            return
+        if(line.group){
+            showingLineGroup.value = line.group
+        }
+        editInfoOfLine(line)
+    }
+
     return {
         sidebar, lineOptions, lines, envStore, saveStore,
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
@@ -159,7 +194,8 @@ export function useSideListShared(lineType:LineType){
         createLine, 
         wantDelLine, delLineStart, delLineAbort, delLineExe,
         showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
-        showingBtns, showingChildrenOf, showingChildrenOfInfo,
-        showChildrenOf, leaveParent, childrenLines
+        showingBtns, showingChildrenOfInfo,
+        showChildrenOf, leaveParent, childrenLines,
+        showListSidebar, hideListSidebar
     }
 }
