@@ -896,50 +896,53 @@ export const useEnvStore = defineStore('env', ()=>{
         })
         rerender.value()
     }
-    function mergeLinesByPt(line1id:number,line2id:number,ptid:number){
-        if ((!saveStore.save)||line1id==line2id)
-        {return}
-        let Line1=saveStore.save.lines.find(x=>x.id==line1id)
-        let Line2=saveStore.save.lines.find(x=>x.id==line2id)
-        if (!(Line1&&Line2)){
+    function mergeLinesByPt(line1Id:number, line2Id:number, ptId:number){
+        if ((!saveStore.save)||line1Id==line2Id)
+            return
+        let line1 = saveStore.save.lines.find(x=>x.id==line1Id)
+        let line2 = saveStore.save.lines.find(x=>x.id==line2Id)
+        if (!line1 || !line2)
+            return
+        //根据不同连接方式，进行不同操作
+        let firstStaOfLine1 = line1.pts[0]
+        let lastStaOfLine1 = line1.pts[line1.pts.length-1]
+        let firstStaOfLine2 = line2.pts[0]
+        let lastStaOfLine2 = line2.pts[line2.pts.length-1]
+        //不仅首尾相接 而且相接点应该是这个点（组合环线可能有俩相接点）
+        if (firstStaOfLine1 == firstStaOfLine2 && ptId == firstStaOfLine1){
+            //1头接2头，需要反转2然后放在1前面
+            line2.pts.reverse()
+            line1.pts = line2.pts.concat(line1.pts.slice(1))
+        }
+        else if (lastStaOfLine1 == firstStaOfLine2 && ptId == lastStaOfLine1){
+            //1尾接2头，2接在1后面
+            line1.pts = line1.pts.concat(line2.pts.slice(1))
+        }
+        else if (lastStaOfLine1 == lastStaOfLine2 && ptId == lastStaOfLine1){
+            //1尾接2尾，需要反转2然后放在1后面
+            line2.pts.reverse()
+            line1.pts = line1.pts.concat(line2.pts.slice(1))
+        }
+        else if (firstStaOfLine1 == lastStaOfLine2 && ptId == firstStaOfLine1){
+            //1头接2尾，1接在2后面
+            line1.pts = line2.pts.concat(line1.pts.slice(1))
+        }
+        else{
+            //以上情况都不是：什么都不做
             return
         }
-        //检查line2是不是有 下属的支线 因为line2要被移除 如果不检查 有支线下属 就会bug
-        let LineBelongToLine2=saveStore.getLinesByParent(line2id)
-        if (LineBelongToLine2!=undefined){
-            //首先把2下面的所有支线给1
-            LineBelongToLine2.forEach(branchline=>{
-                branchline.parent=line1id
-                ensureChildrenOptionsSame(line1id)
+        //把line2下的支线全部给line1
+        const linesBelongToLine2 = saveStore.getLinesByParent(line2Id)
+        if (linesBelongToLine2){
+            linesBelongToLine2.forEach(branchline=>{
+                branchline.parent = line1Id
+                ensureChildrenOptionsSame(line1Id)
                 saveStore.ensureLinesOrdered()
             })
         }
-        //处理
-        let firstStaOfLine1=Line1.pts[0]
-        let lastStaOfLine1=Line1.pts[Line1.pts.length-1]
-        let firstStaOfLine2=Line2.pts[0]
-        let lastStaOfLine2=Line2.pts[Line2.pts.length-1]
-        //不仅首尾相接 而且相接点应该是这个点（组合环线可能有俩相接点）
-        if (firstStaOfLine1==firstStaOfLine2&&ptid==firstStaOfLine1){
-            //1头接2头，需要反转2然后放在1前面
-            Line2.pts.reverse()
-            Line1.pts=Line2.pts.concat(Line1.pts.slice(1))
-        }
-        else if (lastStaOfLine1==firstStaOfLine2&&ptid==lastStaOfLine1){
-            //1尾接2头，2接在1后面
-            Line1.pts=Line1.pts.concat(Line2.pts.slice(1))
-        }
-        else if (lastStaOfLine1==lastStaOfLine2&&ptid==lastStaOfLine1){
-            //1尾接2尾，需要反转2然后放在1后面
-            Line2.pts.reverse()
-            Line1.pts=Line1.pts.concat(Line2.pts.slice(1))
-        }
-        else if (firstStaOfLine1==lastStaOfLine2&&ptid==firstStaOfLine1){
-            //1头接2尾，1接在2后面
-            Line1.pts=Line2.pts.concat(Line1.pts.slice(1))
-        }
-        //2可以删了
-        delLine(line2id)
+        //删除line2（阻止重绘、不删站点）
+        delLine(line2Id, true, false)
+        rerender.value()
     }
     
     return { 
@@ -951,7 +954,7 @@ export const useEnvStore = defineStore('env', ()=>{
         delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
         createTextTag, duplicateTextTag, createPlainPt,
         startCreatingPtLink, abortCreatingPtLink,
-        endEveryEditing, cancelActive, splitLineByPt,mergeLinesByPt,
+        endEveryEditing, cancelActive, splitLineByPt, mergeLinesByPt,
         removeRepeatPtOnLines,
         closeOps:()=>setOpsPos(false)
     }

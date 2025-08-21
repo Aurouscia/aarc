@@ -8,6 +8,7 @@ import { computed, ref } from 'vue';
 import { Line } from '@/models/save';
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { indicesInArrayByPred } from '@/utils/lang/indicesInArray';
+import { isRing } from '@/utils/lineUtils/isRing';
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const nameEditStore = useNameEditStore()
 const saveStore = useSaveStore()
@@ -15,13 +16,14 @@ const envStore = useEnvStore()
 const colorProcStore = useColorProcStore()
 
 const editing = ref<ControlPoint>()
-const splittableLinesHere = ref<Line[]>([])
-const canBeMergedLinesHere = ref<Line[]>([])
 const showLineSplitMenu = ref(false)
+const splittableLinesHere = ref<Line[]>([])
 const showLineMergeMenu = ref(false)
+const mergeableLinesHere = ref<Line[]>([])
+const canMergeLinesHere = computed<boolean>(()=>mergeableLinesHere.value.length>1)
+const mergingLine1Id = ref<number>(0)
+const mergingLine2Id = ref<number>(0)
 
-let mergingLine1Id=-1
-let mergingLine2Id=-1
 function startEditing(pt: ControlPoint) {
     editing.value = pt
     if(editing.value.nameSize===undefined)
@@ -31,7 +33,7 @@ function startEditing(pt: ControlPoint) {
     showLineSplitMenu.value = false
     showLineMergeMenu.value = false
     initSplittableLines()
-    initmergeableLines()
+    initMergeableLines()
     sidebar.value?.extend()
 }
 function initSplittableLines() {
@@ -46,17 +48,20 @@ function initSplittableLines() {
             })
     }
 }
-function initmergeableLines() {
+function initMergeableLines() {
     if(editing.value){
-            //初始化一下能合并的线路（就是在这个站是idx=0或者是length-1的）
-            canBeMergedLinesHere.value = saveStore
+        //初始化一下能合并的线路（就是在这个站是端点的）
+        mergeableLinesHere.value = saveStore
             .getLinesByPt(editing.value.id)
             .filter(x => {
-                const idxs = indicesInArrayByPred(x.pts, (ptId => ptId === editing.value?.id))
-                return idxs.length === 1&&isTerminal(x)
+                if(!isTerminal(x))
+                    return false //此处不是端点：排除
+                if(isRing(x))
+                    return false //此处是环线端点：排除
+                return true //其他情况（是端点而且不是环线）：加入
             })
-            mergingLine1Id=-1
-            mergingLine2Id=-1
+        mergingLine1Id.value = 0
+        mergingLine2Id.value = 0
     }
 }
 
@@ -64,48 +69,49 @@ function initmergeableLines() {
 function isOrCloseToTerminal(line:Line): boolean{
     if(!editing.value)
         return false
-    let indexofPt=line.pts.indexOf(editing.value.id)
-    return indexofPt==0||indexofPt==line.pts.length-1||indexofPt==line.pts.length-2||indexofPt==1
+    if(isTerminal(line))
+        return true
+    const pt = editing.value.id
+    const pt1 = line.pts.at(1)
+    const ptLastBut1 = line.pts.at(-2)
+    return pt == pt1 || pt == ptLastBut1
 }
 function isTerminal(line:Line): boolean{
     if(!editing.value)
         return false
-    let indexofPt=line.pts.indexOf(editing.value.id)
-    return indexofPt==0||indexofPt==line.pts.length-1
+    const pt = editing.value.id
+    const pt0 = line.pts.at(0)
+    const ptLast = line.pts.at(-1)
+    return pt == pt0 || pt == ptLast
 }
 function splitLineByThisPt(lineId:number, lineName:string){
     if(!editing.value){
         return
     }
-    if(!window.confirm(`确认以本点为界拆分[${lineName}]？`)){
+    if(!window.confirm(`确认以本点为界拆分【${lineName}】？`)){
         return
     }
     envStore.splitLineByPt(lineId, editing.value.id)
     initSplittableLines() //完成后立即更新可拆分的线路
 }
-function mergeLinesByThisPt(line1Id:number,line2Id:number){
-    if(!editing.value){
+function mergeLinesByThisPt(){
+    const line1Id = mergingLine1Id.value
+    const line2Id = mergingLine2Id.value
+    if(!editing.value || !saveStore.save || !line1Id || !line2Id)
         return
-    }
-    if (!saveStore.save)
-    {return}
-    let Line1=saveStore.save.lines.find(x=>x.id==line1Id)
-    let Line2=saveStore.save.lines.find(x=>x.id==line2Id)
-    if (!Line1){
-        return
-    }
-    if (!Line2){
-        return
-    }
-    if (line1Id==line2Id){
+    if (line1Id == line2Id){
         window.alert('不能把线路和自己合并！')
         return
     }
-    if(!window.confirm(`确认将[${Line2.name}]合并到[${Line1.name}]？`)){
+    let line1 = saveStore.save.lines.find(x=>x.id==line1Id)
+    let line2 = saveStore.save.lines.find(x=>x.id==line2Id)
+    if(!line1 || !line2)
+        return
+    if(!window.confirm(`确认删除【${line2.name}】并将其站点合并到【${line1.name}】？`)){
         return
     }
-    envStore.mergeLinesByPt(line1Id,line2Id, editing.value.id)
-    initmergeableLines() //完成后立即更新可合并的线路
+    envStore.mergeLinesByPt(line1Id, line2Id, editing.value.id)
+    initMergeableLines() //完成后立即更新可合并的线路
 }
 
 const isLineTypeWithoutSta = computed<boolean>(()=>{
@@ -199,54 +205,48 @@ defineExpose({
             </div>
             <h2>合并线路</h2>
             <div class="optionSection">
-                <button v-if="!showLineMergeMenu&&canBeMergedLinesHere.length>1" @click="showLineMergeMenu=true"
+                <button v-if="!showLineMergeMenu" @click="showLineMergeMenu=true"
                     class="minor" style="margin: auto;display: block;"
-                >有{{ canBeMergedLinesHere.length }}条线路以此为端点</button>
+                >{{ canMergeLinesHere ? '此处可以合并线路':'此处无法合并线路' }}</button>
                 <template v-else>
-                    <div v-if="canBeMergedLinesHere.length>1">
-                    <table class="fullWidth" ><tbody>
-                        <tr>
-                            <td>线路1：</td>
-                            <td >
-                                <select v-model="mergingLine1Id"  @change="emit('changed')">
-                                    <div  v-for="line in canBeMergedLinesHere">
-                                        <option :value="line.id">
+                    <table class="fullWidth"><tbody>
+                        <template v-if="canMergeLinesHere">
+                            <tr>
+                                <td>保留</td>
+                                <td>
+                                    <select v-model="mergingLine1Id" class="lineMergeSelect">
+                                        <option :value="0">请选择线路</option>
+                                        <option v-for="line in mergeableLinesHere" :value="line.id">
                                             {{line.name}}
                                         </option>
-                                    </div>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>线路2：</td>
-                            <td >
-                                <select v-model="mergingLine2Id"  @change="emit('changed')">
-                                    <div  v-for="line in canBeMergedLinesHere">
-                                        <option :value="line.id">
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>消失</td>
+                                <td>
+                                    <select v-model="mergingLine2Id" class="lineMergeSelect">
+                                        <option :value="0">请选择线路</option>
+                                        <option v-for="line in mergeableLinesHere" :value="line.id">
                                             {{line.name}}
                                         </option>
-                                    </div>
-                                </select>
-                            </td>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr v-if="mergingLine1Id && mergingLine2Id && mergingLine1Id!==mergingLine2Id">
+                                <td colspan="2">
+                                    <button @click="mergeLinesByThisPt">
+                                        合并
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
+                        <tr v-else>
+                            <td>此处无法合并线路</td>
                         </tr>
                     </tbody></table>
-                    <button @click="mergeLinesByThisPt(mergingLine1Id,mergingLine2Id)">
-                        合并
-                    </button>
-                    </div>
-                    
-                    <div v-else>
-                        此处无可合并线路
-                        <div class="smallNote" style="text-align: center;">
-                            （显然，有至少两条符合条件的线路才能进行合并）
-                        </div>
-                    </div>
                     <div class="smallNote">
-                        首尾相接的线路都可以合并，除非这个点是自交点
-                        <br>
-                        合并后，线路2将自动被移除，线路属性和线路1相同
-                        <br>
-                        线路2如果有支线，也会被归为线路1的支线
+                        无法合并：至少2条线路以此为端点（环线端点除外）才能进行合并，环线需先手动移除端点
                     </div>
                 </template>
             </div>
@@ -262,4 +262,8 @@ defineExpose({
 
 <style scoped lang="scss">
 @use './shared/options.scss';
+
+.lineMergeSelect{
+    max-width: 180px;
+}
 </style>
