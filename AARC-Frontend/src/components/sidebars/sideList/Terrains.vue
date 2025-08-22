@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import SideBar from '../../common/SideBar.vue';
 import { onMounted, onUnmounted, ref } from 'vue';
-import { Line, LineType } from '@/models/save';
+import { LineType } from '@/models/save';
 import { useSideListShared } from './shared/useSideListShared';
 import LineOptions from '../options/LineOptions.vue';
-import { AuColorPickerPresetsNested } from '@aurouscia/au-color-picker';
-import { useColorPresetNames } from './shared/useColorPresetNames';
 import LineDelPrompt from './shared/LineDelPrompt.vue';
 import LineItemBtns from './shared/LineItemBtns.vue';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
+import ColorPickerForTerrain from '../shared/ColorPickerForTerrain.vue';
 
 const { 
-    sidebar, lineOptions, lines: terrains, envStore,
+    sidebar, lineOptions, lines: terrains,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
     createLine, editingInfoLine, editInfoOfLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe,
@@ -19,23 +18,9 @@ const {
     showListSidebar, hideListSidebar
 } = useSideListShared(LineType.terrain)
 
-const { getPresetNameByEnum, getPresetEnumByName, presets } = useColorPresetNames()
-
-function colorPreChanged(l:Line, presetName:string|undefined){
-    l.colorPre = getPresetEnumByName(presetName)
-    window.setTimeout(()=>{
-        envStore.lineInfoChanged(l)
-    },1)
-}
-function colorPickerDone(l:Line, c:string){
-    l.color = c
-    if(!l.colorPre)
-        envStore.lineInfoChanged(l)
-}
-
-const colorPicker = ref<InstanceType<typeof AuColorPickerPresetsNested>[]>([])
+const pickers = ref<InstanceType<typeof ColorPickerForTerrain>[]>([])
 function clickContainer(){
-    colorPicker.value.forEach(cp=>cp.closePanel())
+    pickers.value.forEach(cp=>cp.close())
 }
 
 defineExpose({
@@ -64,18 +49,8 @@ onUnmounted(()=>{
             </select>
         </div>
         <div class="lines" :class="{arranging: arrangingId >= 0}">
-            <div v-for="l in terrains" :key="l.id" :class="{arranging: arrangingId==l.id}">
-                <AuColorPickerPresetsNested
-                    :initial="l.color"
-                    :presets="presets"
-                    :initial-selected-preset="getPresetNameByEnum(l.colorPre)"
-                    @preset-switched="n=>colorPreChanged(l, n)"
-                    @done="c=>colorPickerDone(l,c)"
-                    :show-package-name="true"
-                    :entry-respond-delay="1"
-                    ref="colorPicker"
-                    :panel-click-stop-propagation="true"
-                    ></AuColorPickerPresetsNested>
+            <div v-for="l,idx in terrains" :key="l.id" :class="{arranging: arrangingId==l.id}">
+                <ColorPickerForTerrain ref="pickers" :line="l" :z-index="idx"></ColorPickerForTerrain>
                 <LineItemBtns :showing-btns="'arrange'"
                     :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
                     :edit-info-of-line="editInfoOfLine" :show-children-of="()=>{}" :leave-parent="()=>{}"
