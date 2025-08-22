@@ -4,7 +4,9 @@ import { Line, LineStyle, LineType } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, ref } from 'vue';
+import { computed, CSSProperties, onMounted, ref, watch } from 'vue';
+import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
+import ColorPickerForTerrain from '../shared/ColorPickerForTerrain.vue';
 
 const envStore = useEnvStore()
 const saveStore = useSaveStore()
@@ -106,6 +108,25 @@ const haveChildren = computed(()=>{
     return saveStore.save?.lines.some(x=>x.parent && x.parent == props.line.id) || false
 })
 
+const picker0 = ref<InstanceType<typeof ColorPickerForLine>>()
+const picker1 = ref<InstanceType<typeof ColorPickerForTerrain>>()
+function closePickers(){
+    picker0.value?.close()
+    picker1.value?.close()
+}
+const pickerEntryStyles:CSSProperties = {
+    width: '240px', height: '26px'
+}
+
+watch(()=>{
+    return {
+        name: props.line.name,
+        nameSub: props.line.nameSub
+    }
+}, ()=>{
+    envStore.lineInfoChanged(props.line)
+})
+
 const sidebar = ref<InstanceType<typeof SideBar>>()
 defineExpose({
     open: ()=>{sidebar.value?.extend()}, 
@@ -130,17 +151,20 @@ onMounted(()=>{
 </script>
 
 <template>
-<SideBar ref="sidebar" @extend="init">
-<h1>{{lineTypeCalled}}更多设置</h1>
+<SideBar ref="sidebar" @extend="init" @click="closePickers">
 <div class="lineConfig">
     <table v-if="!line.parent" class="fullWidth"><tbody>
     <tr>
-        <td colspan="2">
-            {{ line.name || '未命名'+lineTypeCalled }}
+        <td colspan="2" class="nameAndColorTd">
+            <div>
+                <input v-model.lazy="line.name"/>
+                <input v-model.lazy="line.nameSub"/>
+                <ColorPickerForLine ref="picker0" v-if="line.type===LineType.common" :line="line"
+                    :entry-styles="pickerEntryStyles"></ColorPickerForLine> 
+                <ColorPickerForTerrain ref="picker1" v-if="line.type===LineType.terrain" :line="line"
+                    :entry-styles="pickerEntryStyles"></ColorPickerForTerrain> 
+            </div>
         </td>
-    </tr>
-    <tr>
-        <td colspan="2" :style="{backgroundColor: saveStore.getLineActualColor(line)}"></td>
     </tr>
     <tr>
         <td>分组</td>
@@ -252,7 +276,7 @@ onMounted(()=>{
     <tr>
         <td>标签<br/>创建</td>
         <td>
-            <button @click="envStore.createTextTag(line.id)">
+            <button @click="envStore.createTextTag(line.id)" class="minor">
                 点击创建
             </button>
         </td>
@@ -318,6 +342,27 @@ onMounted(()=>{
 <style scoped lang="scss">
 @use './shared/options.scss';
 
+.nameAndColorTd{
+    background-color: white;
+    &>div{
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        input{
+            background-color: #eee;
+            text-align: center;
+            margin: 0px;
+            font-size: 14px;
+            width: 240px;
+            border: none;
+        }
+        input:first-child{
+            font-size: 18px;
+        }
+    }
+}
 .sameZIndexLines{
     max-width: 200px;
     span{

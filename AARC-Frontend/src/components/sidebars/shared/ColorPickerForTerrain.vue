@@ -2,7 +2,7 @@
 import { Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { AuColorPickerPresetsNested } from '@aurouscia/au-color-picker';
-import { ref } from 'vue';
+import { CSSProperties, ref } from 'vue';
 import { useColorPresetNames } from '../sideList/shared/useColorPresetNames';
 
 const envStore = useEnvStore()
@@ -24,7 +24,8 @@ function colorPickerDone(c:string){
 
 const props = defineProps<{
     line:Line,
-    zIndex:number
+    zIndex?:number,
+    entryStyles?:CSSProperties
 }>()
 defineExpose({
     close:()=>picker.value?.closePanel()
@@ -42,5 +43,6 @@ defineExpose({
         :entry-respond-delay="1"
         ref="picker" :panel-base-z-index="zIndex"
         :panel-click-stop-propagation="true"
+        :entry-styles="entryStyles"
         ></AuColorPickerPresetsNested>
 </template>

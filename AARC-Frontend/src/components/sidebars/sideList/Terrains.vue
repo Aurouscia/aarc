@@ -69,41 +69,4 @@ onUnmounted(()=>{
 
 <style scoped lang="scss">
 @use './shared/arrangableList.scss';
-
-.lines>div{
-    position: relative;
-    .colorPanel{
-        position: absolute;
-        z-index: 10;
-        top: 55px;
-        left: 10px;
-        padding: 5px;
-        border-radius: inherit;
-        background-color: inherit;
-        display: flex;
-        gap: 5px;
-        flex-direction: column;
-        .preset{
-            width: 25px;
-            height: 25px;
-            border-radius: 1000px;
-        }
-        .colorInputConatainer{
-            label{
-                width: 25px;
-                height: 25px;
-                border-radius: 5px;
-            }
-        }
-    }
-    .colorPanel>div{
-        display: flex;
-        gap: 3px
-    }
-    .colorPanel>div:first-child{
-        border-bottom: 1px solid #ccc;
-        padding-bottom: 4px;
-        margin-bottom: -2px;
-    }
-}
 </style>

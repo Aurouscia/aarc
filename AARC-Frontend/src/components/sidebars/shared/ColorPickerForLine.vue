@@ -2,13 +2,14 @@
 import { Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
-import { ref } from 'vue';
+import { CSSProperties, ref } from 'vue';
 
 const envStore = useEnvStore()
 const picker = ref<InstanceType<typeof AuColorPicker>>()
 defineProps<{
     line:Line,
-    zIndex?:number
+    zIndex?:number,
+    entryStyles?:CSSProperties
 }>()
 defineExpose({
     close:()=>picker.value?.closePanel()
@@ -21,5 +22,6 @@ defineExpose({
         ref="picker" :panel-base-z-index="zIndex"
         :show-package-name="true"
         :entry-respond-delay="1"
-        :panel-click-stop-propagation="true"></AuColorPicker>
+        :panel-click-stop-propagation="true"
+        :entry-styles="entryStyles"></AuColorPicker>
 </template>
