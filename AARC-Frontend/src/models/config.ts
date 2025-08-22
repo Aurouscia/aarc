@@ -10,7 +10,7 @@ export interface Config{
     lineWidthMapped: LineWidthMappedConfig
     lineExtensionHandleLengthVert: string,
     lineExtensionHandleLengthInc: string,
-    lineRemoveCarpet:boolean,
+    lineRemoveCarpet:boolean,//所有线路白边
 
     ptBareSize: number,
     ptBareLineWidth: number,
@@ -20,8 +20,8 @@ export interface Config{
     ptStaLineWidth: number,
     ptStaFillColor: string,
     ptStaExchangeLineColor: string,
-    ptStaNormalStaFollowLineColor:boolean,
-    ptStaNormalStaColor:string,
+    ptStaNormalStaFollowLineColor:boolean,//普通站颜色是否跟随线路颜色
+    ptStaNormalStaColor:string,//如果上面那个不跟随，那么是什么颜色
 
     staNameFontSize: number,
     staNameFont: string,
@@ -31,7 +31,7 @@ export interface Config{
     staNameSubFont: string,
     staNameSubRowHeight: number,
     staNameSubColor: string,
-    staNameRemoveCarpet:boolean,
+    staNameRemoveCarpet:boolean,//所有站名白边
 
     gridMainLineColor: string,
     gridSubLineColor: string,
@@ -53,7 +53,7 @@ export interface Config{
     colorPresetArea: string,
     colorPresetWater :string,
     colorPresetGreenland: string,
-    colorPresetIsland: string
+    colorPresetIsland: string,//现在应该跟随背景颜色
 
     textTagFont: string,
     textTagFontSizeBase: number,
@@ -67,7 +67,7 @@ export interface Config{
     textTagForLine:TextTagPerTypeGlobalConfig,
     textTagForLineDropCap:boolean
     textTagForTerrain:TextTagPerTypeGlobalConfig
-    textTagRemoveCarpet:boolean
+    textTagRemoveCarpet:boolean,//所有文本标签白边
 
     pinyinConvert?:PinyinConvertConfig
 

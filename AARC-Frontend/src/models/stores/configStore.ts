@@ -17,7 +17,7 @@ export const configDefault:Config = {
     lineWidthMapped: {},
     lineExtensionHandleLengthVert: '',
     lineExtensionHandleLengthInc: '',
-    lineRemoveCarpet:false,
+    lineRemoveCarpet:false,//所有线路白边
 
     ptBareSize: 12,
     ptBareLineWidth: 3,
@@ -27,8 +27,8 @@ export const configDefault:Config = {
     ptStaLineWidth: 4,
     ptStaFillColor: '#ffffff',
     ptStaExchangeLineColor: '#999999',
-    ptStaNormalStaFollowLineColor:true,
-    ptStaNormalStaColor:'#000000',
+    ptStaNormalStaFollowLineColor:true,//普通站颜色是否跟随线路颜色
+    ptStaNormalStaColor:'#000000',//如果上面那个不跟随，那么是什么颜色
 
     staNameFontSize: 26,
     staNameFont: 'microsoft YaHei',
@@ -38,7 +38,7 @@ export const configDefault:Config = {
     staNameSubFont: 'microsoft YaHei',
     staNameSubRowHeight: 20,
     staNameSubColor: '#888888',
-    staNameRemoveCarpet:false,
+    staNameRemoveCarpet:false,//所有站名白边
 
     gridMainLineColor: '#bbbbbb',
     gridSubLineColor: '#cccccc',
@@ -60,7 +60,7 @@ export const configDefault:Config = {
     colorPresetArea: '#cccccc',
     colorPresetWater: '#c3e5eb',
     colorPresetGreenland: '#ceeda4',
-    colorPresetIsland: '#ffffff',
+    colorPresetIsland: '#ffffff',//现在应该跟随背景颜色
 
     textTagFont: 'microsoft YaHei',
     textTagFontSizeBase: 30,
@@ -74,7 +74,7 @@ export const configDefault:Config = {
     textTagForLine:{},
     textTagForLineDropCap:true,
     textTagForTerrain:{},
-    textTagRemoveCarpet:false,
+    textTagRemoveCarpet:false,//所有文本标签白边
 
     configVersion:0
 }
