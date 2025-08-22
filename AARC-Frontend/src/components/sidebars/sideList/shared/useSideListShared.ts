@@ -175,15 +175,8 @@ export function useSideListShared(lineType:LineType){
         if(!lineId)
             return
         let line = saveStore.getLineById(lineId)
-        if(line?.parent){
-            line = saveStore.getLineById(line.parent)
-            lineId = line?.id ?? 0
-        }
         if(!line)
             return
-        if(line.group){
-            showingLineGroup.value = line.group
-        }
         editInfoOfLine(line)
     }
 

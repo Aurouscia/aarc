@@ -47,7 +47,7 @@ onUnmounted(()=>{
 </script>
 
 <template>
-    <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList" :body-no-position="true"
+    <SideBar ref="sidebar" :shrink-way="'v-if'" class="arrangeableList" :body-no-position="true"
         @extend="registerLinesArrange();lineGroupCheck();enableContextMenu()"
         @fold="disposeLinesArrange();disableContextMenu()" @click="clickContainer">
         <div class="filter">
@@ -89,7 +89,7 @@ onUnmounted(()=>{
         @abort="delLineAbort" @exe="delLineExe"></LineDelPrompt>
     <LineOptions ref="lineOptions" v-if="editingInfoLine" :line="editingInfoLine"
         :line-type-called="'线路'" :line-width-range="{min:0.5, max:2, step:0.25}"
-        @color-updated="reloadColorPickers" ></LineOptions>
+        @color-updated="reloadColorPickers"></LineOptions>
     <Lines v-if="!isChildrenList" ref="childrenLines" :is-children-list="true"></Lines>
 </template>
 

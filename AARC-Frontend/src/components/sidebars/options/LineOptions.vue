@@ -107,6 +107,7 @@ function assignParent(){
 const haveChildren = computed(()=>{
     return saveStore.save?.lines.some(x=>x.parent && x.parent == props.line.id) || false
 })
+const haveParent = computed(()=>!!props.line.parent)
 
 const picker0 = ref<InstanceType<typeof ColorPickerForLine>>()
 const picker1 = ref<InstanceType<typeof ColorPickerForTerrain>>()
@@ -156,19 +157,22 @@ onMounted(()=>{
 <template>
 <SideBar ref="sidebar" @extend="init" @click="closePickers">
 <div class="lineConfig">
-    <table v-if="!line.parent" class="fullWidth"><tbody>
+    <table class="fullWidth"><tbody>
     <tr>
         <td colspan="2" class="nameAndColorTd">
             <div>
                 <input v-model.lazy="line.name"/>
                 <input v-model.lazy="line.nameSub"/>
-                <ColorPickerForLine ref="picker0" v-if="line.type===LineType.common" :line="line"
-                    :entry-styles="pickerEntryStyles" @color-updated="emit('colorUpdated')"></ColorPickerForLine> 
-                <ColorPickerForTerrain ref="picker1" v-if="line.type===LineType.terrain" :line="line"
-                    :entry-styles="pickerEntryStyles" @color-updated="emit('colorUpdated')"></ColorPickerForTerrain> 
+                <template v-if="!haveParent">
+                    <ColorPickerForLine ref="picker0" v-if="line.type===LineType.common" :line="line"
+                        :entry-styles="pickerEntryStyles" @color-updated="emit('colorUpdated')"></ColorPickerForLine> 
+                    <ColorPickerForTerrain ref="picker1" v-if="line.type===LineType.terrain" :line="line"
+                        :entry-styles="pickerEntryStyles" @color-updated="emit('colorUpdated')"></ColorPickerForTerrain>
+                </template>
             </div>
         </td>
     </tr>
+    <template v-if="!haveParent">
     <tr>
         <td>分组</td>
         <td>
@@ -255,7 +259,7 @@ onMounted(()=>{
         </td>
     </tr>
     <tr>
-        <td>层级</td>
+    <td>层级</td>
         <td class="viewableRange">
             <input type="range" v-model="lineZIndexBinded"
                 :min="-9"
@@ -321,12 +325,13 @@ onMounted(()=>{
             </div>
         </td>
     </tr>
+    </template>
     </tbody></table>
-    <table v-else class="fullWidth"><tbody>
+    <table v-if="haveParent" class="fullWidth"><tbody>
         <tr>
             <td>标签<br/>创建</td>
             <td>
-                <button @click="envStore.createTextTag(line.id)">
+                <button @click="envStore.createTextTag(line.id)" class="minor">
                     点击创建
                 </button>
             </td>
