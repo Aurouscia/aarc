@@ -14,11 +14,14 @@ defineProps<{
 defineExpose({
     close:()=>picker.value?.closePanel()
 })
+const emit = defineEmits<{
+    (e:'colorUpdated'):void
+}>()
 </script>
 
 <template>
     <AuColorPicker :initial="line.color"
-        @done="c=>{line.color=c;envStore.lineInfoChanged(line)}"
+        @done="c=>{line.color=c;emit('colorUpdated');envStore.lineInfoChanged(line)}"
         ref="picker" :panel-base-z-index="zIndex"
         :show-package-name="true"
         :entry-respond-delay="1"

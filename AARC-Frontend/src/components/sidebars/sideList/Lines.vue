@@ -23,7 +23,8 @@ const {
     showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
     showingBtns, showingChildrenOfInfo,
     showChildrenOf, leaveParent, childrenLines,
-    showListSidebar, hideListSidebar
+    showListSidebar, hideListSidebar,
+    renderColorPickers, reloadColorPickers
 } = useSideListShared(LineType.common)
 
 const pickers = ref<InstanceType<typeof ColorPickerForLine>[]>([])
@@ -66,12 +67,14 @@ onUnmounted(()=>{
         </div>
         <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l,idx in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
-                <div v-if="!isChildrenList" class="colorEdit">
-                    <ColorPickerForLine ref="pickers" :line="l" :z-index="idx"></ColorPickerForLine>
-                </div>
-                <div v-else class="sqrBtn" :style="{backgroundColor: l.color, cursor:'default'}"
-                    @click="pop?.show('支线颜色跟随主线，不可单独调整', 'info')">
-                </div>
+                <template v-if="renderColorPickers">
+                    <div v-if="!isChildrenList" class="colorEdit">
+                        <ColorPickerForLine ref="pickers" :line="l" :z-index="idx"></ColorPickerForLine>
+                    </div>
+                    <div v-else class="sqrBtn" :style="{backgroundColor: l.color, cursor:'default'}"
+                        @click="pop?.show('支线颜色跟随主线，不可单独调整', 'info')">
+                    </div>
+                </template>
                 <LineItemBtns :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
                     :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf" 
                     :is-in-children-list="isChildrenList" :leave-parent="leaveParent"
@@ -85,7 +88,8 @@ onUnmounted(()=>{
     <LineDelPrompt :line="wantDelLine" :line-called="'线路'" :pt-called="'车站'" :with-sta-default="false"
         @abort="delLineAbort" @exe="delLineExe"></LineDelPrompt>
     <LineOptions ref="lineOptions" v-if="editingInfoLine" :line="editingInfoLine"
-        :line-type-called="'线路'" :line-width-range="{min:0.5, max:2, step:0.25}"></LineOptions>
+        :line-type-called="'线路'" :line-width-range="{min:0.5, max:2, step:0.25}"
+        @color-updated="reloadColorPickers" ></LineOptions>
     <Lines v-if="!isChildrenList" ref="childrenLines" :is-children-list="true"></Lines>
 </template>
 

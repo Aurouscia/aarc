@@ -132,6 +132,9 @@ defineExpose({
     open: ()=>{sidebar.value?.extend()}, 
     fold: ()=>{sidebar.value?.fold()}
 })
+const emit = defineEmits<{
+    (e:'colorUpdated'):void
+}>()
 
 function init(){
     lineWidthBinded.value = props.line.width || 1
@@ -160,9 +163,9 @@ onMounted(()=>{
                 <input v-model.lazy="line.name"/>
                 <input v-model.lazy="line.nameSub"/>
                 <ColorPickerForLine ref="picker0" v-if="line.type===LineType.common" :line="line"
-                    :entry-styles="pickerEntryStyles"></ColorPickerForLine> 
+                    :entry-styles="pickerEntryStyles" @color-updated="emit('colorUpdated')"></ColorPickerForLine> 
                 <ColorPickerForTerrain ref="picker1" v-if="line.type===LineType.terrain" :line="line"
-                    :entry-styles="pickerEntryStyles"></ColorPickerForTerrain> 
+                    :entry-styles="pickerEntryStyles" @color-updated="emit('colorUpdated')"></ColorPickerForTerrain> 
             </div>
         </td>
     </tr>

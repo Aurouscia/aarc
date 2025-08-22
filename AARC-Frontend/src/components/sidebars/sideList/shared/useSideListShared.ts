@@ -4,7 +4,7 @@ import { useEnvStore } from "@/models/stores/envStore"
 import { useSaveStore } from "@/models/stores/saveStore"
 import { useLinesArrange } from "@/utils/eventUtils/linesArrange"
 import SideBar from "@/components/common/SideBar.vue"
-import { computed, ref } from "vue"
+import { computed, nextTick, ref } from "vue"
 import LineOptions from "../../options/LineOptions.vue"
 import Lines from "../Lines.vue"
 import { useUniqueComponentsStore } from "@/app/globalStores/uniqueComponents"
@@ -187,6 +187,14 @@ export function useSideListShared(lineType:LineType){
         editInfoOfLine(line)
     }
 
+    const renderColorPickers = ref(true)
+    function reloadColorPickers(){
+        renderColorPickers.value = false
+        nextTick(()=>{
+            renderColorPickers.value = true
+        })
+    }
+
     return {
         sidebar, lineOptions, lines, envStore, saveStore,
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
@@ -196,6 +204,7 @@ export function useSideListShared(lineType:LineType){
         showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
         showingBtns, showingChildrenOfInfo,
         showChildrenOf, leaveParent, childrenLines,
-        showListSidebar, hideListSidebar
+        showListSidebar, hideListSidebar,
+        renderColorPickers, reloadColorPickers
     }
 }

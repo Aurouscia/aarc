@@ -12,14 +12,17 @@ const { getPresetNameByEnum, getPresetEnumByName, presets } = useColorPresetName
 
 function colorPreChanged(presetName:string|undefined){
     props.line.colorPre = getPresetEnumByName(presetName)
+    emit('colorUpdated')
     window.setTimeout(()=>{
         envStore.lineInfoChanged(props.line)
     },1)
 }
 function colorPickerDone(c:string){
     props.line.color = c
-    if(!props.line.colorPre)
+    if(!props.line.colorPre){
         envStore.lineInfoChanged(props.line)
+        emit('colorUpdated')
+    }
 }
 
 const props = defineProps<{
@@ -30,6 +33,9 @@ const props = defineProps<{
 defineExpose({
     close:()=>picker.value?.closePanel()
 })
+const emit = defineEmits<{
+    (e:'colorUpdated'):void
+}>()
 </script>
 
 <template>
