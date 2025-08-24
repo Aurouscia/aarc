@@ -6,7 +6,7 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { storeToRefs } from 'pinia';
 import { computed, onBeforeMount, onUnmounted, ref, watch } from 'vue';
-import { devSave } from '@/dev/devSave';
+import { devSave } from '@/data/dev/devSave';
 import { useApiStore } from '@/app/com/apiStore';
 import { normalizeSave } from '@/models/save/saveNormalize';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
