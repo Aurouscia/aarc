@@ -12,7 +12,8 @@
     "build": "tsx build.ts",
     "build-here": "tsx build.ts --here",
     "toggleEnvLocal": "tsx env/toggleLocalEnvFile.ts",
-    "commitSum": "tsx src/utils/gitCommitSum/commitSum.ts"
+    "commitSum": "tsx src/utils/gitCommitSum/commitSum.ts",
+    "paletteGen": "tsx src/data/palette/paletteGen.ts"
   },
   "dependencies": {
     "@aurouscia/au-color-picker": "^0.5.1",
