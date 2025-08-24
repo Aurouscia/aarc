@@ -149,13 +149,20 @@ function init(){
         props.line.group = undefined
 }
 
+function foldHander(){
+    if(envStore.activeLine){
+        envStore.cancelActive()
+        envStore.closeOps()
+    }
+}
+
 onMounted(()=>{
     init()
 })
 </script>
 
 <template>
-<SideBar ref="sidebar" @extend="init" @click="closePickers">
+<SideBar ref="sidebar" @extend="init" @click="closePickers" @fold="foldHander">
 <div class="lineConfig">
     <table class="fullWidth"><tbody>
     <tr>

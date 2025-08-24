@@ -38,9 +38,8 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-08-18更新'">
-        1. 站名拼音转换：修复死循环bug、添加“整体首字母大写”模式<br/>
-        2. 可从某点拆分线路（在点的设置侧栏中）
+    <Notice :type="'info'" :title="'2025-08-22更新'">
+        1. 可点击画布上的线路（通过悬浮菜单或直接右键）打开其设置
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
         1. 标签/站名的旋转和压缩<br/>
