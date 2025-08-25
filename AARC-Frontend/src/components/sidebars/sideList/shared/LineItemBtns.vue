@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { Line } from '@/models/save';
+import { Line ,LineType} from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { computed } from 'vue';
 import branchIcon from '@/assets/ui/editor/branch.svg';
@@ -15,6 +15,7 @@ const props = defineProps<{
     editInfoOfLine: (l: Line) => void,
     showChildrenOf: (l: Line) => void,
     leaveParent: (l: Line) => void,
+    editColorByPalette:(l:Line)=>void,
     arrangingId: number,
     l: Line,
     lineTypeCalled: string,
@@ -33,7 +34,10 @@ const mode = computed<'A'|'B'>(()=>{
         <input v-model="l.name" :placeholder="`输入${lineTypeCalled}名`" @blur="envStore.lineInfoChanged(l)" />
         <input v-model="l.nameSub" :placeholder="`输入${lineTypeCalled}副名`" @blur="envStore.lineInfoChanged(l)" />
     </div>
-    <div class="infoEdit">
+    <div v-if="mode==='B' && !isInChildrenList&&l.type==LineType.common">
+        <div class="sqrBtn" @click="editColorByPalette(l)">🎨</div>
+    </div>
+    <div v-else class="infoEdit">
         <div class="sqrBtn" @click="editInfoOfLine(l)">...</div>
     </div>
     <div v-if="mode==='A' && !isInChildrenList" class="sqrBtn" @click="showChildrenOf(l)">

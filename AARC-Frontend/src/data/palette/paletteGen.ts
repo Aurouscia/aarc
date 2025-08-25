@@ -10,6 +10,7 @@ const resPath = join(__dirname, 'palette.ts')
 res.push('//=======================================================')
 res.push('//本文件为自动生成，请勿手动编辑，操作方法见同目录的README.md')
 res.push('//=======================================================')
+res.push('import {ref} from \'vue\';')
 res.push('')
 writeForSubDir('real')
 writeForSubDir('fic')
@@ -46,8 +47,9 @@ function writeForSubDir(subDirNamePure:string){
         res.push(`import ${city.importName} from './${subDirNamePure}/${city.fileName}'`)
     }
     res.push(`export const ${subDirNamePure} = [`)
-    for(const c of citiesHere)
-        res.push(`    {name:'${c.displayName}', pri:${c.pri}, data:${c.importName}},`)
+    for(const c of citiesHere){
+        res.push(`    {name:'${c.displayName}', pri:${c.pri}, data:${c.importName},open:ref(false)},`)
+        }
     res.push(']')
     res.push('')
 }

@@ -10,6 +10,7 @@ import Switch from '@/components/common/Switch.vue';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
+import ColorPalette from '../ColorPalette.vue';
 
 defineProps<{isChildrenList?:boolean}>()
 const { pop } = useUniqueComponentsStore()
@@ -24,7 +25,7 @@ const {
     showingBtns, showingChildrenOfInfo,
     showChildrenOf, leaveParent, childrenLines,
     showListSidebar, hideListSidebar,
-    renderColorPickers, reloadColorPickers
+    renderColorPickers, reloadColorPickers,editColorByPalette,editingColorByPalette,ColorPalettes,
 } = useSideListShared(LineType.common)
 
 const pickers = ref<InstanceType<typeof ColorPickerForLine>[]>([])
@@ -77,7 +78,7 @@ onUnmounted(()=>{
                 </template>
                 <LineItemBtns :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
                     :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf" 
-                    :is-in-children-list="isChildrenList" :leave-parent="leaveParent"
+                    :is-in-children-list="isChildrenList" :leave-parent="leaveParent" :edit-color-by-palette="editColorByPalette"
                     :showing-btns="showingBtns" :arranging-id="arrangingId" :l="l" :line-type-called="'线路'"></LineItemBtns>
             </div>
             <div class="newLine" @click="createLine">
@@ -90,6 +91,7 @@ onUnmounted(()=>{
     <LineOptions ref="lineOptions" v-if="editingInfoLine" :line="editingInfoLine"
         :line-type-called="'线路'" :line-width-range="{min:0.5, max:2, step:0.25}"
         @color-updated="reloadColorPickers"></LineOptions>
+    <ColorPalette ref="ColorPalettes" v-if="editingColorByPalette" :editing-line="editingColorByPalette"></ColorPalette>
     <Lines v-if="!isChildrenList" ref="childrenLines" :is-children-list="true"></Lines>
 </template>
 

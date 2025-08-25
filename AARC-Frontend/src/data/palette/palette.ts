@@ -1,15 +1,20 @@
 //=======================================================
 //本文件为自动生成，请勿手动编辑，操作方法见同目录的README.md
 //=======================================================
+import {ref} from 'vue';
 
-import real_998 from './real/998-示例城市-示例公司.ts'
-import real_999 from './real/999-示例城市.ts'
+import real_0 from './real/000-北京.ts'
+import real_1 from './real/001-上海.ts'
+import real_2 from './real/002-广州.ts'
+import real_4 from './real/004-武汉.ts'
 export const real = [
-    {name:'示例城市-示例公司', pri:998, data:real_998},
-    {name:'示例城市', pri:999, data:real_999},
+    {name:'北京', pri:0, data:real_0,open:ref(false)},
+    {name:'上海', pri:1, data:real_1,open:ref(false)},
+    {name:'广州', pri:2, data:real_2,open:ref(false)},
+    {name:'武汉', pri:4, data:real_4,open:ref(false)},
 ]
 
 import fic_999 from './fic/999-示例作品.ts'
 export const fic = [
-    {name:'示例作品', pri:999, data:fic_999},
+    {name:'示例作品', pri:999, data:fic_999,open:ref(false)},
 ]
