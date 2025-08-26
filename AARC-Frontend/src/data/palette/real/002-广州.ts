@@ -1,5 +1,5 @@
 export default `
-广州/guangzhou/gz/canton/佛山/foshan/fs/广佛/gf/穗/sui
+广州地铁/gzdt/guangzhouditie/canton/佛山/foshan/fs/广佛/gf/穗/sui
 1:#EDC93D
 2:#00679E
 3:#E89E47
@@ -48,7 +48,15 @@ apm线:#43B6CF
 佛山1(广佛线):#BBD80A
 佛山2:#F01A34
 佛山3:#0066FE
+*佛山4:#923A7F
+*佛山6:#FFB81D
+*佛山9:#A25EB5
+*佛山11:#2A3976
+*佛山13:#32B7EA
+南海有轨1路:#5EB3E4
+高明有轨1路:#4CA585
 海珠有轨1路:#6CB23D
 黄埔有轨1路:#AC2C26
 黄埔有轨2路:#F25601
+广州地铁:#B3253B
 `

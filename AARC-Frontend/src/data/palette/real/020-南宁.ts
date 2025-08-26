@@ -1,5 +1,5 @@
 export default`
-南宁/nn/nanning
+南宁地铁/nndt/nanningditie
 1:#2D9341
 2:#E84228
 3:#551F7E
@@ -12,4 +12,6 @@ export default`
 蓝光紫*:#926296
 深海蓝*:#1A2A50
 大地黄*:#AC8646
+南宁地铁:#196ABE
+南宁地铁:#7ED3F5
 `

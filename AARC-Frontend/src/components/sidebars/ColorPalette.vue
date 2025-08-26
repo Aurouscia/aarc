@@ -133,10 +133,10 @@ function setColor(color: string) {
             <div class="yflow">
                 <div class="lineColorArea">
                     <div
-                        v-for="city in real.filter(ct => (!searchFilter) || getCityName(ct.data).includes(searchFilter))">
+                        v-for="city in real.filter(ct => (!searchFilter) || getCityName(ct.data).includes(searchFilter.toLocaleLowerCase()))">
                         <h3 @click="openCity(city.pri)" class="city">
-                            <span v-if="city.open.value" class="opened">{{ city.name }}</span>
-                            <span v-else class="closed">{{ city.name }}</span>
+                            <span v-if="city.open.value" class="opened"><span v-if="city.pri>499">*</span>{{ city.name }}</span>
+                            <span v-else class="closed"><span v-if="city.pri>499">*</span>{{ city.name }}</span>
                         </h3>
                         <div v-if="city.open.value">
                             <span v-for="line in parseCity(city.data)">

@@ -1,0 +1,22 @@
+export default`
+花新竹歌山地铁/huaxinzhugeshanditie/hxzgsdt/xueshen234
+环线:#1897EB
+1:#FFCA00
+2:#21A165
+3:#E22713
+4:#E282BD
+5:#36CDD3
+6:#9D4D20
+7:#73C44D
+8:#E95F19
+9:#827805
+10:#622C51
+11:#236DB7
+S1:#000000
+L1:#5E2CB3
+L2:#5A8891
+L3:#2F3176
+L4:#C74E7C
+L5:#265335
+无暇山有轨:#EEA914
+`

@@ -1,5 +1,5 @@
 export default `
-武汉/wh/汉口/汉阳/武昌/wuhan/汉
+武汉地铁/whdt/汉口/汉阳/武昌/wuhanditie/汉
 1:#0067A1
 2:#EC9CBB
 3:#D3B466
@@ -24,4 +24,5 @@ export default `
 *32:#B1AEC1
 *34(新港线):#F29742
 空轨:#05AFF1
+*武汉地铁:#163474
 `

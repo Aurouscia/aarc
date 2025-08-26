@@ -1,5 +1,5 @@
 export default `
-上海/shanghai/sh/沪/hu/dfmz/dongfangmingzhu/mxbc/mixuebingcheng
+上海地铁/上海轨道交通/申通/shdt/shgdjt/shanghaiguidaojiaotong/shanghaiditie/shentong/st/沪/hu/dfmz/dongfangmingzhu/mxbc/mixuebingcheng
 1:#E3002B
 2:#82BF25
 3:#FCD600
@@ -45,4 +45,7 @@ export default `
 *松江有轨4路:#FF00FF
 *松江有轨5路:#00FD00
 *松江有轨6路:#6E00DD
+申通:#D41007
+久事公交:#ef0119
+浦东公交:#0069fa
 `

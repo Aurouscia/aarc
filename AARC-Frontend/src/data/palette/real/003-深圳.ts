@@ -1,4 +1,5 @@
 export default`
+深圳地铁/shenzhenditie/szdt/小渔村/xyc/xiaoyucun/绿龟/lvgui/lugui/lg
 1(罗宝线):#00B140
 2(蛇口线):#B94700
 3(龙岗线):#00A9E0
@@ -35,4 +36,6 @@ export default`
 深大城际:#7DA1C4
 *龙华有轨电车:#B8B8B8
 *坪山云巴:#1974D2
+深圳地铁:#1F9A45
+港铁深圳:#A91A41
 `

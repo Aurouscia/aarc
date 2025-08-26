@@ -1,5 +1,5 @@
 export default `
-北京/beijing/bj/auv/京/jing/北平/beiping/幽州/顺天/youzhou/shuntian
+北京地铁/bjdt/beijing/bj/auv/京/jing/北平/beiping/幽州/顺天/youzhou/shuntian
 1:#C23A30
 2:#006098
 3:#D90627
@@ -31,6 +31,13 @@ export default `
 34(首都机场线):#A29BBB
 35(大兴机场线):#004A9F
 亦庄T1线:#E5061B
-*s6(新城联络线):#197558
-*s7(东北环线):#2A83E4
+*S6(新城联络线):#197558
+*S7(东北环线):#2A83E4
+北京地铁:#004DA5
+京港地铁:#B22E44
+京城地铁:#030F89
+运管:#01599A
+运管:#0B8CD0
+公交:#747474
+公交:#CF352F
 `
