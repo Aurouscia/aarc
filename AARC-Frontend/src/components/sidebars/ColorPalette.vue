@@ -101,6 +101,9 @@ function setColor(color: string) {
             <h2 @click="closeAll()">
                 颜色库
             </h2>
+            <div class="smallNote">
+                点一下此标题可收起所有城市
+            </div>
             <div class="switch1">
                 <Switch :left-text="'标准'" :right-text="'严谨'" :initial="'left'" @left="viewUnofficialColors = true"
                     @right="viewUnofficialColors = false"></Switch>
@@ -124,6 +127,9 @@ function setColor(color: string) {
                                 <span>
                                     🔍<input v-model="searchFilter">
                                 </span>
+                                <div class="smallNote">
+                                    支持完整和不完整以及仅首字母的拼音搜索
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -135,8 +141,9 @@ function setColor(color: string) {
                     <div
                         v-for="city in real.filter(ct => (!searchFilter) || getCityName(ct.data).includes(searchFilter.toLocaleLowerCase()))">
                         <h3 @click="openCity(city.pri)" class="city">
-                            <span v-if="city.open.value" class="opened"><span v-if="city.pri>499">*</span>{{ city.name }}</span>
-                            <span v-else class="closed"><span v-if="city.pri>499">*</span>{{ city.name }}</span>
+                            <span v-if="city.open.value" class="opened"><span v-if="city.pri > 499">*</span>{{ city.name
+                                }}</span>
+                            <span v-else class="closed"><span v-if="city.pri > 499">*</span>{{ city.name }}</span>
                         </h3>
                         <div v-if="city.open.value">
                             <span v-for="line in parseCity(city.data)">
@@ -248,6 +255,4 @@ h3 {
 .noScroll {
     overflow-y: hidden;
 }
-
-.city {}
 </style>
