@@ -160,7 +160,10 @@ watch(props, async()=>{
     window.location.reload()
 })
 const saveShortcutListener = new ShortcutListener(saveData, 's', true)
-const deleteShortcutListener = new ShortcutListener(()=>envStore.delActivePt(true, true), 'Delete', false)
+const deleteShortcutListener = new ShortcutListener(()=>{
+    envStore.delActivePt(true, true)
+    envStore.delActiveTextTag(true)
+}, 'Delete', false)
 const cachePreventerInputId = 'cachePreventerInput'
 const { cachePreventStart, cachePreventStop } = useCachePreventer(cachePreventerInputId)
 const showHiddenLongWarn = ref(false)

@@ -38,8 +38,8 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-08-22更新'">
-        1. 可点击画布上的线路（通过悬浮菜单或直接右键）打开其设置
+    <Notice :type="'info'" :title="'2025-08-26更新'">
+        1. 可使用Delete键删除选中的车站/站名/标签
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
         1. 标签/站名的旋转和压缩<br/>

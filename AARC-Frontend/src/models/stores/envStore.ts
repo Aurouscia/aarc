@@ -815,6 +815,16 @@ export const useEnvStore = defineStore('env', ()=>{
         movedTextTag.value = true
         activeTextTag.value = newTextTag
     }
+    function delActiveTextTag(rerenderAfterDone?:boolean){
+        if(activeTextTag.value){
+            textTagEditStore.endEditing()
+            saveStore.removeTextTag(activeTextTag.value.id)
+            activeTextTag.value = undefined
+            if(rerenderAfterDone){
+                rerender.value()
+            }
+        }
+    }
 
     function createPlainPt(){
         const vco = getViewCenterOffset()
@@ -974,7 +984,7 @@ export const useEnvStore = defineStore('env', ()=>{
         cvsWidth, cvsHeight, getDisplayRatio,
         rerender, rescaled, getActivePtOpsAvoidance,
         delActivePt, delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
-        createTextTag, duplicateTextTag, createPlainPt,
+        createTextTag, duplicateTextTag, delActiveTextTag, createPlainPt,
         startCreatingPtLink, abortCreatingPtLink,
         endEveryEditing, cancelActive, splitLineByPt, mergeLinesByPt,
         removeRepeatPtOnLines,
