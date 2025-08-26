@@ -3,6 +3,7 @@ import Cvs from '@/components/Cvs.vue';
 import Menu from '@/components/Menu.vue';
 import UnsavedLeavingWarning from '@/components/common/UnsavedLeavingWarning.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
+import { useEnvStore } from '@/models/stores/envStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { storeToRefs } from 'pinia';
 import { computed, onBeforeMount, onUnmounted, ref, watch } from 'vue';
@@ -28,6 +29,7 @@ import { HttpUserInfo } from '@/app/com/apiGenerated';
 const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
 const saveStore = useSaveStore()
+const envStore = useEnvStore()
 const configStore = useConfigStore()
 const resetterStore = useResetterStore()
 const iconStore = useIconStore()
@@ -158,6 +160,7 @@ watch(props, async()=>{
     window.location.reload()
 })
 const saveShortcutListener = new ShortcutListener(saveData, 's', true)
+const deleteShortcutListener = new ShortcutListener(()=>envStore.delActivePt(true), 'Delete', false)
 const cachePreventerInputId = 'cachePreventerInput'
 const { cachePreventStart, cachePreventStop } = useCachePreventer(cachePreventerInputId)
 const showHiddenLongWarn = ref(false)
@@ -173,6 +176,7 @@ onBeforeMount(async()=>{
     topbarShow.value = false
     await load()
     saveShortcutListener.startListen()
+    deleteShortcutListener.startListen()
     cachePreventStart()
     hiddenLongWatcher.startWatching()
 })
@@ -180,6 +184,7 @@ onUnmounted(()=>{
     mainCvsDispatcher.afterMainCvsRendered = undefined
     topbarShow.value = true
     saveShortcutListener.dispose()
+    deleteShortcutListener.dispose()
     cachePreventStop()
     hiddenLongWatcher.stopWatching()
 })

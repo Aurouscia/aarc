@@ -446,7 +446,7 @@ export const useEnvStore = defineStore('env', ()=>{
             }
             else if(activePt.value){
                 if(activePtType.value == 'body'){
-                    delActivePt_withoutRerender()
+                    delActivePt()
                 }else if(activePtType.value == 'name'){
                     activePt.value.name = undefined
                     activePt.value.nameS = undefined
@@ -510,7 +510,7 @@ export const useEnvStore = defineStore('env', ()=>{
             }
         })
         const rmPtCb = ()=>{
-            delActivePt_withoutRerender();
+            delActivePt();
             rerender.value(relatedLineIds, []);
         }
         const swDirCb = ()=>{
@@ -632,10 +632,13 @@ export const useEnvStore = defineStore('env', ()=>{
         opsStore.btns = [btns, btns1]
     }
 
-    function delActivePt_withoutRerender(){
+    function delActivePt(rerenderAfterDone?:boolean){
+        console.log(activePt.value)
         if(activePt.value){
             saveStore.removePt(activePt.value.id);
             setStaNameRect(activePt.value.id, undefined);
+        } else {
+            return
         }
         activePt.value = undefined
         activeLine.value = undefined
@@ -643,6 +646,9 @@ export const useEnvStore = defineStore('env', ()=>{
         nameEditStore.endEditing()
         setOpsPos(false)
         pointlessLineScan()
+        if(rerenderAfterDone){
+            rerender.value()
+        }
     }
 
     function delLine(lineId:number, suppressRender:boolean = false, delWithSta:boolean = false){
@@ -963,7 +969,7 @@ export const useEnvStore = defineStore('env', ()=>{
         cursorPos, movingPoint, movedPoint, movingExtendedPointOriginated, movingTextTag,
         cvsWidth, cvsHeight, getDisplayRatio,
         rerender, rescaled, getActivePtOpsAvoidance,
-        delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
+        delActivePt, delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
         createTextTag, duplicateTextTag, createPlainPt,
         startCreatingPtLink, abortCreatingPtLink,
         endEveryEditing, cancelActive, splitLineByPt, mergeLinesByPt,
