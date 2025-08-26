@@ -632,10 +632,16 @@ export const useEnvStore = defineStore('env', ()=>{
         opsStore.btns = [btns, btns1]
     }
 
-    function delActivePt(rerenderAfterDone?:boolean){
-        console.log(activePt.value)
+    function delActivePt(rerenderAfterDone?:boolean, onlyDelNameIfSelectedName?:boolean){
         if(activePt.value){
-            saveStore.removePt(activePt.value.id);
+            nameEditStore.endEditing()
+            setOpsPos(false)
+            if(onlyDelNameIfSelectedName && activePtType.value === 'name'){
+                activePt.value.name = undefined
+                activePt.value.nameS = undefined
+            }else{
+                saveStore.removePt(activePt.value.id);
+            }
             setStaNameRect(activePt.value.id, undefined);
         } else {
             return
@@ -643,8 +649,6 @@ export const useEnvStore = defineStore('env', ()=>{
         activePt.value = undefined
         activeLine.value = undefined
         cursorPos.value = undefined
-        nameEditStore.endEditing()
-        setOpsPos(false)
         pointlessLineScan()
         if(rerenderAfterDone){
             rerender.value()
