@@ -1,5 +1,5 @@
 export default`
-中海新中海城/nmoc/weiyuanjun/威远郡/zhonghaixinzhonghaicheng/zhxzh/new midoceania city
+中海新中海城/nmoc/weiyuanjun/威远郡/zhonghaixinzhonghaicheng/zhxzh/new midoceania city/滨蜀/binshu2233
 1:#E40000
 2:#000FFF
 3:#FFAF00

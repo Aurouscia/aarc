@@ -1,5 +1,5 @@
 export default`
-中海滨蜀地铁/zhonghaibinshuditie/zhbsdt/bsrt/mcdt
+中海滨蜀地铁/zhonghaibinshuditie/zhbsdt/bsrt/mcdt/滨蜀/binshu2233
 1:#DE0000
 2:#FFAE00
 3:#0099FF

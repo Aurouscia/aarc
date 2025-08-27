@@ -72,10 +72,11 @@ import real_500 from './real/500-新中海城.ts'
 import real_501 from './real/501-波斯兰康城.ts'
 import real_503 from './real/503-花新竹歌山.ts'
 import real_504 from './real/504-花新星月.ts'
-import real_510 from './real/510-云海.ts'
 import real_511 from './real/511-新靖春泉.ts'
 import real_512 from './real/512-新靖麦都.ts'
 import real_520 from './real/520-中海滨蜀.ts'
+import real_521 from './real/521-中海格州.ts'
+import real_600 from './real/600-云海.ts'
 export const real = [
     {name:'北京', pri:0, data:real_0,open:ref(false)},
     {name:'上海', pri:1, data:real_1,open:ref(false)},
@@ -146,10 +147,11 @@ export const real = [
     {name:'波斯兰康城', pri:501, data:real_501,open:ref(false)},
     {name:'花新竹歌山', pri:503, data:real_503,open:ref(false)},
     {name:'花新星月', pri:504, data:real_504,open:ref(false)},
-    {name:'云海', pri:510, data:real_510,open:ref(false)},
     {name:'新靖春泉', pri:511, data:real_511,open:ref(false)},
     {name:'新靖麦都', pri:512, data:real_512,open:ref(false)},
     {name:'中海滨蜀', pri:520, data:real_520,open:ref(false)},
+    {name:'中海格州', pri:521, data:real_521,open:ref(false)},
+    {name:'云海', pri:600, data:real_600,open:ref(false)},
 ]
 
 export const fic = [
