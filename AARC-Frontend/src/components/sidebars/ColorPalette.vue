@@ -92,13 +92,6 @@ function setColor(color: string) {
     envStore.rerender([], [])
     picker0.value?.enforceTo(color)
 }
-function navigateTo(url: string, openInNewTab: boolean = false): void {
-  if (openInNewTab) {
-    window.open(url, '_blank');
-  } else {
-    window.location.href = url;
-  }
-}
 </script>
 
 <template>
@@ -110,7 +103,7 @@ function navigateTo(url: string, openInNewTab: boolean = false): void {
             <div class="smallNote">
                 点击标题可收起所有城市
             </div>
-            <div class="smallNote" @click="navigateTo('http://wiki.jowei19.com/#/w/yan-se-ku-geng-xin-ri-zhi',true)" style="color:darkblue">
+            <div class="smallNote" target="_blank" href="http://wiki.jowei19.com/#/w/yan-se-ku-geng-xin-ri-zhi" style="color:darkblue">
                 更新日志
             </div>
             <div class="switch1">
@@ -175,10 +168,10 @@ function navigateTo(url: string, openInNewTab: boolean = false): void {
     </SideBar>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss">
 @use './configs/shared/configSection.scss';
 </style>
-<style>
+<style lang="scss">
 h3 {
     text-align: center;
 }
