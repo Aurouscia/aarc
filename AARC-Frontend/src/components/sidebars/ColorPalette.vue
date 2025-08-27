@@ -40,9 +40,12 @@ const searchFilter = ref('')
 const regexp = /\(([^{}]+)\)/g
 //处理real
 function openCity(cityid: number) {
-    let city = real.find(x => x.pri == cityid)
-    if (!city) { return }
-    city.open.value = !city.open.value
+    if(openedCities.value.includes(cityid)){
+        openedCities.value=openedCities.value.filter(x=>x!=cityid)
+    }
+    else{
+        openedCities.value.push(cityid)
+    }
 }
 //不能一次渲染所有线路 否则以后2000个城市，炸了！
 function removeParenthesesContent(str: string) {
@@ -74,7 +77,7 @@ function parseCity(data: string) {
     return lines
 }
 function closeAll() {
-    real.forEach(x => x.open.value = false)
+    openedCities.value=[]
 }
 let viewUnofficialColors = ref(true)
 let viewSubnames = ref(false)
@@ -92,6 +95,7 @@ function setColor(color: string) {
     envStore.rerender([], [])
     picker0.value?.enforceTo(color)
 }
+const openedCities= ref<number[]>([])
 </script>
 
 <template>
@@ -143,11 +147,11 @@ function setColor(color: string) {
                     <div
                         v-for="city in real.filter(ct => (!searchFilter) || getCityName(ct.data).includes(searchFilter.toLocaleLowerCase()))">
                         <h3 @click="openCity(city.pri)" class="city">
-                            <span v-if="city.open.value" class="opened"><span v-if="city.pri > 499">*</span>{{ city.name
+                            <span v-if="openedCities.includes(city.pri)" class="opened"><span v-if="city.pri > 499">*</span>{{ city.name
                                 }}</span>
                             <span v-else class="closed"><span v-if="city.pri > 499">*</span>{{ city.name }}</span>
                         </h3>
-                        <div v-if="city.open.value">
+                        <div v-if="openedCities.includes(city.pri)">
                             <span v-for="line in parseCity(city.data)">
                                 <button v-if="viewUnofficialColors || !line.isUnofficial"
                                     :style="{ backgroundColor: line.color, color: colorProcStore.colorProcInvBinary.convert(line.color) }"
