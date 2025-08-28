@@ -118,11 +118,7 @@ const openedCities= ref<number[]>([])
                 <Switch :left-text="'主名'" :right-text="'副名'" :initial="'left'" @left="viewSubnames = false"
                     @right="viewSubnames = true"></Switch>
             </div>
-            <table>
-                <tbody>
-                    <tr>
-                        <td colspan="2" class="nameAndColorTd">
-                            <div>
+                            <div class="nameAndColorTd">
                                 <template v-if="!haveParent">
                                     <AuColorPicker :initial="props.editingLine.color"
                                         @done="c => { props.editingLine.color = c; emit('colorUpdated'); envStore.lineInfoChanged(props.editingLine) }"
@@ -137,10 +133,6 @@ const openedCities= ref<number[]>([])
                                     支持完整和不完整以及仅首字母的拼音搜索
                                 </div>
                             </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
 
             <div class="yflow">
                 <div class="lineColorArea">
@@ -207,8 +199,6 @@ h3 {
 
 .nameAndColorTd {
     background-color: white;
-
-    &>div {
         padding: 10px;
         display: flex;
         flex-direction: column;
@@ -230,7 +220,6 @@ h3 {
         input:first-child {
             font-size: 18px;
         }
-    }
 }
 
 .opened {
