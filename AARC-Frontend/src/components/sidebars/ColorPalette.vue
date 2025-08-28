@@ -21,14 +21,6 @@ const picker0 = ref<InstanceType<typeof AuColorPicker>>()
 function closePickers() {
     picker0.value?.closePanel()
 }
-defineExpose({
-    open: () => { sidebar.value?.extend() },
-    fold: () => { sidebar.value?.fold() }
-})
-
-const emit = defineEmits<{
-    (e: 'colorUpdated'): void
-}>()
 
 interface CityLine {
     name: string;
@@ -37,8 +29,12 @@ interface CityLine {
     color: string;
 }
 const searchFilter = ref('')
-const regexp = /\(([^{}]+)\)/g
-//处理real
+const filtered = computed(()=>{
+    const filterStrLower = searchFilter.value.toLocaleLowerCase()
+    return real.filter(ct => (!searchFilter) || getCityName(ct.data).includes(filterStrLower))
+})
+
+const openedCities = ref<number[]>([])
 function openCity(cityid: number) {
     if(openedCities.value.includes(cityid)){
         openedCities.value=openedCities.value.filter(x=>x!=cityid)
@@ -47,7 +43,11 @@ function openCity(cityid: number) {
         openedCities.value.push(cityid)
     }
 }
-//不能一次渲染所有线路 否则以后2000个城市，炸了！
+function closeAll() {
+    openedCities.value = []
+}
+
+const regexp = /\(([^{}]+)\)/g
 function removeParenthesesContent(str: string) {
     return str.replace(regexp, '').trim();
 }
@@ -76,9 +76,6 @@ function parseCity(data: string) {
     })
     return lines
 }
-function closeAll() {
-    openedCities.value=[]
-}
 let viewUnofficialColors = ref(true)
 let viewSubnames = ref(false)
 const pickerEntryStyles: CSSProperties = {
@@ -95,170 +92,110 @@ function setColor(color: string) {
     envStore.rerender([], [])
     picker0.value?.enforceTo(color)
 }
-const openedCities= ref<number[]>([])
+
+defineExpose({
+    open: () => { sidebar.value?.extend() },
+    fold: () => { sidebar.value?.fold() }
+})
+
+const emit = defineEmits<{
+    (e: 'colorUpdated'): void
+}>()
 </script>
 
 <template>
-    <SideBar ref="sidebar" @click="closePickers">
-        <div class="noScroll">
-            <h2 @click="closeAll()">
-                颜色库
-            </h2>
-            <div class="smallNote">
-                点击标题可收起所有城市
+<SideBar ref="sidebar" @click="closePickers" @fold="closeAll()">
+    <div class="palette">
+        <div class="topArea">
+            <div class="paletteTitle">
+                <b>颜色库</b>
+                <div class="switches">
+                    <Switch :left-text="'标准'" :right-text="'严谨'" :initial="'left'" @left="viewUnofficialColors = true"
+                        @right="viewUnofficialColors = false"></Switch>
+                    <Switch :left-text="'主名'" :right-text="'副名'" :initial="'left'" @left="viewSubnames = false"
+                        @right="viewSubnames = true"></Switch>
+                </div>
             </div>
-            <div class="smallNote" target="_blank" href="http://wiki.jowei19.com/#/w/yan-se-ku-geng-xin-ri-zhi" style="color:darkblue">
-                更新日志
-            </div>
-            <div class="switch1">
-                <Switch :left-text="'标准'" :right-text="'严谨'" :initial="'left'" @left="viewUnofficialColors = true"
-                    @right="viewUnofficialColors = false"></Switch>
-            </div>
-            <div class="switch2">
-                <Switch :left-text="'主名'" :right-text="'副名'" :initial="'left'" @left="viewSubnames = false"
-                    @right="viewSubnames = true"></Switch>
-            </div>
-            <table>
-                <tbody>
-                    <tr>
-                        <td colspan="2" class="nameAndColorTd">
-                            <div>
-                                <template v-if="!haveParent">
-                                    <AuColorPicker :initial="props.editingLine.color"
-                                        @done="c => { props.editingLine.color = c; emit('colorUpdated'); envStore.lineInfoChanged(props.editingLine) }"
-                                        ref="picker0" :panel-base-z-index="10000" :show-package-name="false"
-                                        :entry-respond-delay="1" :panel-click-stop-propagation="true"
-                                        :entry-styles="pickerEntryStyles"></AuColorPicker>
-                                </template>
-                                <span>
-                                    🔍<input v-model="searchFilter">
-                                </span>
-                                <div class="smallNote">
-                                    支持完整和不完整以及仅首字母的拼音搜索
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <template v-if="!haveParent">
+                <AuColorPicker :initial="props.editingLine.color"
+                    @done="c => { props.editingLine.color = c; emit('colorUpdated'); envStore.lineInfoChanged(props.editingLine) }"
+                    ref="picker0" :panel-base-z-index="10000" :show-package-name="false" :entry-respond-delay="1"
+                    :panel-click-stop-propagation="true" :entry-styles="pickerEntryStyles"></AuColorPicker>
+            </template>
+            <input v-model="searchFilter" placeholder="搜索颜色集">
+        </div>
 
-            <div class="yflow">
-                <div class="lineColorArea">
-                    <div
-                        v-for="city in real.filter(ct => (!searchFilter) || getCityName(ct.data).includes(searchFilter.toLocaleLowerCase()))">
-                        <h3 @click="openCity(city.pri)" class="city">
-                            <span v-if="openedCities.includes(city.pri)" class="opened"><span v-if="city.pri > 499">*</span>{{ city.name
-                                }}</span>
-                            <span v-else class="closed"><span v-if="city.pri > 499">*</span>{{ city.name }}</span>
-                        </h3>
-                        <div v-if="openedCities.includes(city.pri)">
-                            <span v-for="line in parseCity(city.data)">
-                                <button v-if="viewUnofficialColors || !line.isUnofficial"
-                                    :style="{ backgroundColor: line.color, color: colorProcStore.colorProcInvBinary.convert(line.color) }"
-                                    class="colorSelect" @click="setColor(line.color)">
-                                    <span v-if="viewSubnames && line.subname != ''">
-                                        {{ line.subname }}
-                                    </span>
-                                    <span v-else>
-                                        {{ line.name }}
-                                    </span>
-                                </button>
+        <div class="bodyArea">
+            <div v-for="city in filtered">
+                <h3 @click="openCity(city.pri)" class="city">
+                    <span v-if="openedCities.includes(city.pri)" class="opened"><span v-if="city.pri > 499">*</span>{{
+                        city.name
+                        }}</span>
+                    <span v-else class="closed"><span v-if="city.pri > 499">*</span>{{ city.name }}</span>
+                </h3>
+                <div v-if="openedCities.includes(city.pri)">
+                    <span v-for="line in parseCity(city.data)">
+                        <button v-if="viewUnofficialColors || !line.isUnofficial"
+                            :style="{ backgroundColor: line.color, color: colorProcStore.colorProcInvBinary.convert(line.color) }"
+                            class="colorItem" @click="setColor(line.color)">
+                            <span v-if="viewSubnames && line.subname != ''">
+                                {{ line.subname }}
                             </span>
-                        </div>
-                    </div>
+                            <span v-else>
+                                {{ line.name }}
+                            </span>
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
-    </SideBar>
+    </div>
+</SideBar>
 </template>
 
-<style lang="scss">
-@use './configs/shared/configSection.scss';
-</style>
-<style lang="scss">
-h3 {
-    text-align: center;
-}
-
-.colorSelect {
-    font-size: small;
-    padding: 2px;
-}
-
-.yflow {
-    overflow-y: auto;
-    user-select: none;
-    width: 280px;
-    left: 0px;
-
-}
-
-.lineColorArea {
-    width: 270px;
-    left: 0px;
-    height: 60%;
-    bottom: 0px;
-}
-
-.editingLine {
-    width: '240px';
-    height: '26px'
-}
-
-.nameAndColorTd {
-    background-color: white;
-
-    &>div {
-        padding: 10px;
+<style scoped lang="scss">
+.palette{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    .topArea{
+        flex-grow: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 5px;
-
-        span {
-            width: 240px;
+        gap: 10px;
+        .paletteTitle{
+            align-self: stretch;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            b{
+                font-size: 18px;
+                color: #666;
+            }
+            .switches{
+                display: flex;
+                gap: 5px;
+            }
         }
-
-        input {
-            background-color: #eee;
+    }
+    .bodyArea {
+        flex-grow: 1;
+        overflow-y: scroll;
+        h3 {
             text-align: center;
-            margin: 0px;
-            font-size: 14px;
-            border: none;
+            cursor: pointer;
         }
-
-        input:first-child {
-            font-size: 18px;
+        .colorItem {
+            font-size: small;
+            padding: 2px;
         }
     }
 }
-
 .opened {
     color: #222;
 }
-
 .closed {
     color: #777;
-}
-
-.switch1 {
-    position: absolute;
-    right: 25px;
-    top: 25px;
-}
-
-.switch2 {
-    position: absolute;
-    right: 90px;
-    top: 25px;
-}
-
-.switchTd {
-    background-color: rgba(255, 255, 255, 0);
-
-}
-
-.noScroll {
-    overflow-y: hidden;
 }
 </style>
