@@ -18,7 +18,7 @@
   "dependencies": {
     "@aurouscia/au-color-picker": "^0.5.1",
     "@aurouscia/au-undo-redo": "^0.3.0",
-    "@aurouscia/keyboard-shortcut": "^0.1.0",
+    "@aurouscia/keyboard-shortcut": "^1.0.0",
     "@aurouscia/vite-app-version": "^0.2.0",
     "axios": "^1.11.0",
     "bowser": "^2.12.0",

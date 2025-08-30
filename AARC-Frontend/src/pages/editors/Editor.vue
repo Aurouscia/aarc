@@ -159,10 +159,19 @@ const cvsComponent = ref<InstanceType<typeof Cvs>>()
 watch(props, async()=>{
     window.location.reload()
 })
-const saveShortcutListener = new ShortcutListener(saveData, 's', true)
+const saveShortcutListener = new ShortcutListener(()=>{ saveData() }, 's', true)
 const deleteShortcutListener = new ShortcutListener(()=>{
-    envStore.delActivePt(true, true)
-    envStore.delActiveTextTag(true)
+    const ael = document.activeElement
+    const focusingText = ael instanceof HTMLInputElement || ael instanceof HTMLTextAreaElement
+    if(focusingText){
+        // 如果正在输入文字：不prevent浏览器默认行为（delete键确实有用）且不进行删除操作
+        return { dontPrevent: true }
+    }
+    else{
+        // 不是正在输入文字：进行删除操作
+        envStore.delActivePt(true, true)
+        envStore.delActiveTextTag(true)
+    }
 }, 'Delete', false)
 const cachePreventerInputId = 'cachePreventerInput'
 const { cachePreventStart, cachePreventStop } = useCachePreventer(cachePreventerInputId)

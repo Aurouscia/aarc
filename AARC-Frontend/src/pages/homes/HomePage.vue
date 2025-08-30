@@ -38,8 +38,10 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-08-26更新'">
-        1. 可使用Delete键删除选中的车站/站名/标签
+    <Notice :type="'info'" :title="'2025-08-31更新'">
+        1. 修复“同线路层级其他线路”在使用输入框后显示异常的问题<br/>
+        2. 修复画布尺寸调整处在使用输入框后计算异常的问题<br/>
+        3. 修复Delete键在输入站名/标签文字时异常触发的问题（应该是删除光标后的字符）
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
         1. 标签/站名的旋转和压缩<br/>
