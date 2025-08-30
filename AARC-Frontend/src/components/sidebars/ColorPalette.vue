@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { real } from '@/data/palette/palette'
+import colorSets from '@/data/palette/colorSets'
 import { ref, CSSProperties, computed } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { Line } from '@/models/save';
@@ -10,6 +10,7 @@ import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 
 const envStore = useEnvStore()
 const colorProcStore = useColorProcStore()
+const cs = colorSets
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 
@@ -31,7 +32,7 @@ interface CityLine {
 const searchFilter = ref('')
 const filtered = computed(()=>{
     const filterStrLower = searchFilter.value.toLocaleLowerCase()
-    return real.filter(ct => (!searchFilter) || getCityName(ct.data).includes(filterStrLower))
+    return cs.filter(c => (!searchFilter) || getCityName(c.data).includes(filterStrLower))
 })
 
 const openedCities = ref<number[]>([])
@@ -124,7 +125,6 @@ const emit = defineEmits<{
             </template>
             <input v-model="searchFilter" placeholder="搜索颜色集">
         </div>
-
         <div class="bodyArea">
             <div v-for="city in filtered">
                 <h3 @click="openCity(city.pri)" class="city">
