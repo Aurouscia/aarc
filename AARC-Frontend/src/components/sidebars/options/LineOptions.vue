@@ -268,12 +268,12 @@ onMounted(()=>{
     <tr>
     <td>层级</td>
         <td class="viewableRange">
-            <input type="range" v-model="lineZIndexBinded"
+            <input type="range" v-model.number="lineZIndexBinded"
                 :min="-9"
                 :max="9"
                 :step="1"
                 @change="lineZIndexChanged"/>
-                <input type="number" v-model="lineZIndexBinded" @blur="lineZIndexChanged"/>
+            <input type="number" v-model.number.lazy="lineZIndexBinded" @blur="lineZIndexChanged"/>
             <div v-if="lineZIndexBinded==0" class="smallNote">
                 控制线路的显示顺序<br/>高层级会盖住低层级
             </div>
