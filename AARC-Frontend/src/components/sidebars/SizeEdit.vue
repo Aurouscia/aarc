@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, CSSProperties, nextTick, ref } from 'vue';
+import { computed, CSSProperties, nextTick, ref, watch } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { storeToRefs } from 'pinia';
@@ -58,7 +58,8 @@ function changeTextOf(idx:number):string{
         return `+${val}`
     return val.toString()
 }
-function changeIncre(idx:number, way:boolean){
+function changeIncre(idx:0|1|2|3, way:boolean){
+    ensurePendingChangesAllNumber()
     let inc = changeIncrement.value
     if(!way)
         inc = -inc
@@ -68,6 +69,19 @@ function changeIncre(idx:number, way:boolean){
         pendingChanges.value[oppositeIdx] -= inc
     }
 }
+function ensurePendingChangesAllNumber(){
+    for(let i = 0; i < 4; i++){
+        let num = pendingChanges.value[i]
+        if(typeof num !== 'number')
+            num = parseFloat(num)
+        if(isNaN(num))
+            num = 0
+        pendingChanges.value[i] = num
+    }
+}
+watch(pendingChanges, ()=>{
+    ensurePendingChangesAllNumber()
+}, {deep:true})
 
 const availableIncrements = [1, 10, 100, 400, 1000]
 function changeIncrementIncre(way:boolean){
@@ -129,7 +143,7 @@ defineExpose({
 <SideBar ref="sidebar" :shrink-way="'v-show'">
     <div class="sizeEdit">
         <div class="yControl" v-if="manualMode">
-            <input v-model.number="pendingChanges[0]" type="number" step="100"/>
+            <input v-model.number.lazy="pendingChanges[0]" type="number" step="100"/>
         </div>
         <div class="yControl" v-else>
             <div class="btnPair">
@@ -139,7 +153,7 @@ defineExpose({
             <div :style="changeStyleOf(0)">{{ changeTextOf(0) }}</div>
         </div>
         <div class="xControl" v-if="manualMode">
-            <input v-model.number="pendingChanges[3]" type="number" step="100"/>
+            <input v-model.number.lazy="pendingChanges[3]" type="number" step="100"/>
         </div>
         <div class="xControl" v-else>
             <div class="btnPair">
@@ -157,7 +171,7 @@ defineExpose({
             </div>
         </div>
         <div class="xControl" v-if="manualMode">
-            <input v-model.number="pendingChanges[1]" type="number" step="100"/>
+            <input v-model.number.lazy="pendingChanges[1]" type="number" step="100"/>
         </div>
         <div class="xControl" v-else>
             <div class="btnPair">
@@ -167,7 +181,7 @@ defineExpose({
             <div :style="changeStyleOf(1)">{{ changeTextOf(1) }}</div>
         </div>
         <div class="yControl" v-if="manualMode">
-            <input v-model.number="pendingChanges[2]" type="number" step="100"/>
+            <input v-model.number.lazy="pendingChanges[2]" type="number" step="100"/>
         </div>
         <div class="yControl" v-else>
             <div class="btnPair">
