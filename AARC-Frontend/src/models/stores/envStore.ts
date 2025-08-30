@@ -754,6 +754,7 @@ export const useEnvStore = defineStore('env', ()=>{
     function lineInfoChanged(line:Line, staSizeChanged?:boolean){
         const children = ensureChildrenOptionsSame(line.id)
         if(staSizeChanged){
+            console.log('有关设置变动：需检查沿线的车站团是否应该调整')
             const recalClusterFor = [line, ...children]
             for(const line of recalClusterFor){
                 for(const ptId of line.pts){

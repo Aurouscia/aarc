@@ -20,13 +20,6 @@ const props = defineProps<{
         step:number
     }
 }>()
-const lineWidthBinded = ref(1)
-function lineWidthChanged(){
-    const changed = (props.line.width || 1) !== (lineWidthBinded.value || 1)
-    props.line.width = lineWidthBinded.value
-    envStore.lineInfoChanged(props.line, changed)
-}
-const lineStyleBinded = ref<number>() //0为默认值（无样式）
 const selectableLineStyles = computed<LineStyle[]>(()=>{
     return save.value?.lineStyles?.map(x=>{
         const copy = {...x}
@@ -36,25 +29,6 @@ const selectableLineStyles = computed<LineStyle[]>(()=>{
         return copy
     }) || []
 })
-function lineStyleChanged(){
-    props.line.style = lineStyleBinded.value
-    envStore.lineInfoChanged(props.line)
-}
-const lineStaNameSizeBinded = ref(1)
-function lineStaNameSizeChanged(){
-    props.line.ptNameSize = lineStaNameSizeBinded.value
-    envStore.lineInfoChanged(props.line)
-}
-const lineStaSizeBinded = ref(1)
-function lineStaSizeChanged(){
-    props.line.ptSize = lineStaSizeBinded.value
-    envStore.lineInfoChanged(props.line, true)
-}
-const lineZIndexBinded = ref(0)
-function lineZIndexChanged(){
-    props.line.zIndex = lineZIndexBinded.value
-    envStore.lineInfoChanged(props.line)
-}
 
 function isInSameFamily(line:Line){
     const p = props.line
@@ -67,14 +41,14 @@ function isInSameFamily(line:Line){
     return false
 }
 const lineZIndexSameLines = computed<{n:string,c:string}[]>(()=>{
-    if(lineZIndexBinded.value===0)
+    if(!props.line.zIndex)
         return []
     const sameLines = saveStore.save?.lines.filter(x=>{
         if(x.parent)
             return false
         if(isInSameFamily(x))
             return false
-        if(x.zIndex!==lineZIndexBinded.value)
+        if(x.zIndex!==props.line.zIndex)
             return false
         return true
     })
@@ -119,14 +93,17 @@ const pickerEntryStyles:CSSProperties = {
     width: '240px', height: '26px'
 }
 
-watch(()=>{
-    return {
-        name: props.line.name,
-        nameSub: props.line.nameSub
-    }
-}, ()=>{
-    envStore.lineInfoChanged(props.line)
-})
+//防抖机制（停止操作一段时间后触发重绘，且按需重新计算车站团）
+let reportExecTimer = 0
+let reportExecSizeChanged = false
+function reportInfoChanged(staSizeChanged?:boolean){
+    window.clearTimeout(reportExecTimer)
+    reportExecSizeChanged = reportExecSizeChanged || !!staSizeChanged
+    reportExecTimer = window.setTimeout(()=>{
+        envStore.lineInfoChanged(props.line, reportExecSizeChanged)
+        reportExecSizeChanged = false
+    }, 500)
+}
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 defineExpose({
@@ -138,15 +115,21 @@ const emit = defineEmits<{
 }>()
 
 function init(){
-    lineWidthBinded.value = props.line.width || 1
-    lineStyleBinded.value = props.line.style || 0
-    lineStaNameSizeBinded.value = props.line.ptNameSize || 0
-    lineStaSizeBinded.value = props.line.ptSize || 0
-    lineZIndexBinded.value = props.line.zIndex || 0
+    ensureLineNumOptionsNum()
     const gId = props.line.group
     const group = myUsableLineGroups.value.find(x=>x.id===gId)
     if(!group)
         props.line.group = undefined
+}
+watch(props.line, ()=>{
+    ensureLineNumOptionsNum()
+})
+function ensureLineNumOptionsNum(){
+    props.line.width ||= 1
+    props.line.style ||= 0
+    props.line.ptNameSize ||= 0
+    props.line.ptSize ||= 0
+    props.line.zIndex ||= 0
 }
 
 function foldHander(){
@@ -168,8 +151,8 @@ onMounted(()=>{
     <tr>
         <td colspan="2" class="nameAndColorTd">
             <div>
-                <input v-model.lazy="line.name"/>
-                <input v-model.lazy="line.nameSub"/>
+                <input v-model.lazy.trim="line.name" @blur="reportInfoChanged(false)"/>
+                <input v-model.lazy.trim="line.nameSub" @blur="reportInfoChanged(false)"/>
                 <template v-if="!haveParent">
                     <ColorPickerForLine ref="picker0" v-if="line.type===LineType.common" :line="line"
                         :entry-styles="pickerEntryStyles" @color-updated="emit('colorUpdated')"></ColorPickerForLine> 
@@ -197,20 +180,21 @@ onMounted(()=>{
     <tr>
         <td>线宽</td>
         <td class="viewableRange">
-            <input type="range" v-model="lineWidthBinded"
+            <input type="range" v-model.number="props.line.width"
                 :min="lineWidthRange.min"
                 :max="lineWidthRange.max"
-                :step="lineWidthRange.step" value="1"
-                @change="lineWidthChanged"/>
+                :step="lineWidthRange.step"
+                @change="reportInfoChanged(true)"
+                />
             <input v-if="line.type===LineType.terrain" type="number"
-                v-model="lineWidthBinded" @blur="lineWidthChanged"/>
-            <div v-else>{{ lineWidthBinded || 1 }}×</div>
+                v-model.number.lazy="props.line.width" @blur="reportInfoChanged(true)"/>
+            <div v-else>{{ props.line.width }}×</div>
         </td>
     </tr>
     <tr v-if="line.type===LineType.common">
         <td>样式</td>
         <td>
-            <select v-model="lineStyleBinded" @change="lineStyleChanged">
+            <select v-model="props.line.style" @change="reportInfoChanged(true)">
                 <option :value="0">默认</option>
                 <option v-for="style in selectableLineStyles" :value="style.id">
                     {{ style.name }}
@@ -222,59 +206,65 @@ onMounted(()=>{
     <tr v-if="line.type===LineType.common">
         <td>站名</td>
         <td class="viewableRange">
-            <input type="range" v-model="lineStaNameSizeBinded"
+            <input type="range" v-model.number="props.line.ptNameSize"
                 :min="0"
                 :max="2"
                 :step="0.25"
-                @change="lineStaNameSizeChanged"/>
-            <input type="number" v-model="lineStaNameSizeBinded"
+                @change="reportInfoChanged(false)"
+                />
+            <input type="number" v-model.number.lazy="props.line.ptNameSize"
                 :min="0"
                 :max="2"
                 :step="0.05"
-                @change="lineStaNameSizeChanged"/>
+                @blur="reportInfoChanged(false)"
+                />
             <div class="smallNote">(设为0使用"设置-线宽对应<br/>车站尺寸"中的全局设置)</div>
         </td>
     </tr>
     <tr v-if="line.type===LineType.common">
         <td>车站</td>
         <td class="viewableRange">
-            <input type="range" v-model="lineStaSizeBinded"
+            <input type="range" v-model.number="props.line.ptSize"
                 :min="0"
                 :max="2"
                 :step="0.25"
-                @change="lineStaSizeChanged"/>
-            <input type="number" v-model="lineStaSizeBinded"
+                @change="reportInfoChanged(true)"
+                />
+            <input type="number" v-model.number.lazy="props.line.ptSize"
                 :min="0"
                 :max="2"
                 :step="0.05"
-                @change="lineStaSizeChanged"/>
+                @blur="reportInfoChanged(true)"
+                />
             <div class="smallNote">(设为0使用"设置-线宽对应<br/>车站尺寸"中的全局设置)</div>
         </td>
     </tr>
     <tr v-if="line.type===LineType.terrain">
         <td>填充</td>
         <td>
-            <input type="checkbox" v-model="line.isFilled" @change="envStore.lineInfoChanged(line)"/>
+            <input type="checkbox" v-model="line.isFilled" @change="reportInfoChanged(false)"/>
             <div class="smallNote">勾选本项时<br/>地形必须是环形</div>
         </td>
     </tr>
     <tr v-if="line.type===LineType.common">
         <td>去除<br/>白边</td>
         <td>
-            <input type="checkbox" v-model="line.removeCarpet" @change="envStore.lineInfoChanged(line)"/>
+            <input type="checkbox" v-model="line.removeCarpet" @change="reportInfoChanged(false)"/>
             <div class="smallNote">线路将不会有底层的白边</div>
         </td>
     </tr>
     <tr>
     <td>层级</td>
         <td class="viewableRange">
-            <input type="range" v-model.number="lineZIndexBinded"
+            <input type="range" v-model.number="props.line.zIndex"
                 :min="-9"
                 :max="9"
                 :step="1"
-                @change="lineZIndexChanged"/>
-            <input type="number" v-model.number.lazy="lineZIndexBinded" @blur="lineZIndexChanged"/>
-            <div v-if="lineZIndexBinded==0" class="smallNote">
+                @change="reportInfoChanged(false)"
+                />
+            <input type="number" v-model.number.lazy="props.line.zIndex"
+                @blur="reportInfoChanged(false)"/>
+            <div v-if="!props.line.zIndex" class="smallNote">
                 控制线路的显示顺序<br/>高层级会盖住低层级
             </div>
             <div v-else-if="lineZIndexSameLines.length>0" class="smallNote sameZIndexLines">
@@ -299,7 +289,7 @@ onMounted(()=>{
         <td>标签<br/>文字</td>
         <td>
             <div class="selectItem">
-                <select v-model="line.tagTextColor" @change="envStore.lineInfoChanged(line)">
+                <select v-model="line.tagTextColor" @change="reportInfoChanged(false)">
                     <option :value="undefined">自动</option>
                     <option :value="'black'">黑色</option>
                     <option :value="'white'">白色</option>
@@ -324,7 +314,7 @@ onMounted(()=>{
     <tr>
         <td>伪线</td>
         <td>
-            <input v-model="line.isFake" type="checkbox" @change="envStore.lineInfoChanged(line)"/>
+            <input v-model="line.isFake" type="checkbox" @change="reportInfoChanged(false)"/>
             <div class="smallNote">
                 如果线路是类似"图例"的作用<br/>
                 请勾选，将不会出现在略缩图中<br/>
