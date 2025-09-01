@@ -2,7 +2,7 @@
 import SideBar from '../../common/SideBar.vue';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useSideListShared } from './shared/useSideListShared';
-import { LineType } from '@/models/save';
+import { Line, LineType } from '@/models/save';
 import LineOptions from '../options/LineOptions.vue';
 import LineDelPrompt from './shared/LineDelPrompt.vue';
 import LineItemBtns from './shared/LineItemBtns.vue';
@@ -25,8 +25,17 @@ const {
     showingBtns, showingChildrenOfInfo,
     showChildrenOf, leaveParent, childrenLines,
     showListSidebar, hideListSidebar,
-    renderColorPickers, reloadColorPickers,editColorByPalette,editingColorByPalette,ColorPalettes,
+    renderColorPickers, reloadColorPickers
 } = useSideListShared(LineType.common)
+
+const colorPalette = ref<InstanceType<typeof ColorPalette>>()
+const editingColorByPaletteLine = ref<Line>()
+function editColorByPalette(line:Line){
+    editingColorByPaletteLine.value = line
+    window.setTimeout(()=>{
+        colorPalette.value?.open()
+    }, 1)
+}
 
 const pickers = ref<InstanceType<typeof ColorPickerForLine>[]>([])
 function clickContainer(){
@@ -91,7 +100,9 @@ onUnmounted(()=>{
     <LineOptions ref="lineOptions" v-if="editingInfoLine" :line="editingInfoLine"
         :line-type-called="'线路'" :line-width-range="{min:0.5, max:2, step:0.25}"
         @color-updated="reloadColorPickers"></LineOptions>
-    <ColorPalette ref="ColorPalettes" v-if="editingColorByPalette" :editing-line="editingColorByPalette"></ColorPalette>
+    <ColorPalette ref="colorPalette" v-if="editingColorByPaletteLine"
+        :editing-line="editingColorByPaletteLine"
+        @color-updated="reloadColorPickers"></ColorPalette>
     <Lines v-if="!isChildrenList" ref="childrenLines" :is-children-list="true"></Lines>
 </template>
 

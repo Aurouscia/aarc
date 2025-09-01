@@ -10,7 +10,6 @@ import Lines from "../Lines.vue"
 import { useUniqueComponentsStore } from "@/app/globalStores/uniqueComponents"
 import { useOptionsOpenerStore } from "@/models/stores/utils/optionsOpenerStore"
 import { storeToRefs } from "pinia"
-import ColorPalette from "../../ColorPalette.vue"
 
 export function useSideListShared(lineType:LineType){
     const saveStore = useSaveStore()
@@ -81,16 +80,6 @@ export function useSideListShared(lineType:LineType){
         },1)
     }
     
-    const ColorPalettes = ref<InstanceType<typeof ColorPalette>>()
-
-    const editingColorByPalette = ref<Line>()
-    function editColorByPalette(line:Line){
-        editingColorByPalette.value = line
-        window.setTimeout(()=>{
-            ColorPalettes.value?.open()
-        },1)
-    }
-
     const wantDelLine = ref<Line>()
     function delLineStart(l:Line){
         if(saveStore.getLinesByParent(l.id)?.length){
@@ -208,7 +197,7 @@ export function useSideListShared(lineType:LineType){
         showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
         showingBtns, showingChildrenOfInfo,
         showChildrenOf, leaveParent, childrenLines,
-        showListSidebar, hideListSidebar,editColorByPalette,editingColorByPalette,ColorPalettes,
+        showListSidebar, hideListSidebar,
         renderColorPickers, reloadColorPickers
     }
 }

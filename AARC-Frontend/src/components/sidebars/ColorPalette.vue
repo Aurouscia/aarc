@@ -4,9 +4,9 @@ import { ref, CSSProperties, computed } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { Line } from '@/models/save';
 import Switch from '@/components/common/Switch.vue';
-import { AuColorPicker } from '@aurouscia/au-color-picker';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
+import ColorPickerForLine from './shared/ColorPickerForLine.vue';
 
 const envStore = useEnvStore()
 const colorProcStore = useColorProcStore()
@@ -17,11 +17,6 @@ const sidebar = ref<InstanceType<typeof SideBar>>()
 const props = defineProps<{
     editingLine: Line
 }>()
-const haveParent = computed(() => !!props.editingLine.parent)
-const picker0 = ref<InstanceType<typeof AuColorPicker>>()
-function closePickers() {
-    picker0.value?.closePanel()
-}
 
 interface CityLine {
     name: string;
@@ -79,19 +74,24 @@ function parseCity(data: string) {
 }
 let viewUnofficialColors = ref(true)
 let viewSubnames = ref(false)
-const pickerEntryStyles: CSSProperties = {
-    width: '240px', height: '14px'
-}
 function getCityName(data: string) {
     let res = data.match(/\n([^\n]*)\n/)
     if (!res) { return '' }
     return res[0]
 }
 
-function setColor(color: string) {
+const picker = ref<InstanceType<typeof ColorPickerForLine>>()
+function closePickers() {
+    picker.value?.close()
+}
+const pickerEntryStyles: CSSProperties = {
+    width: '200px', height: '26px'
+}
+function chooseColor(color: string) {
     props.editingLine.color = color
-    envStore.rerender([], [])
-    picker0.value?.enforceTo(color)
+    envStore.rerender()
+    picker.value?.enforceTo(color)
+    emit('colorUpdated')
 }
 
 defineExpose({
@@ -117,12 +117,11 @@ const emit = defineEmits<{
                         @right="viewSubnames = true"></Switch>
                 </div>
             </div>
-            <template v-if="!haveParent">
-                <AuColorPicker :initial="props.editingLine.color"
-                    @done="c => { props.editingLine.color = c; emit('colorUpdated'); envStore.lineInfoChanged(props.editingLine) }"
-                    ref="picker0" :panel-base-z-index="10000" :show-package-name="false" :entry-respond-delay="1"
-                    :panel-click-stop-propagation="true" :entry-styles="pickerEntryStyles"></AuColorPicker>
-            </template>
+            <div class="lineName" :style="{color: editingLine.color}">
+                {{ editingLine.name ?? '未命名线路' }}
+            </div>
+            <ColorPickerForLine ref="picker" :line="editingLine"
+                :entry-styles="pickerEntryStyles" @color-updated="emit('colorUpdated')"></ColorPickerForLine> 
             <input v-model="searchFilter" placeholder="搜索颜色集">
         </div>
         <div class="bodyArea">
@@ -137,7 +136,7 @@ const emit = defineEmits<{
                     <span v-for="line in parseCity(city.data)">
                         <button v-if="viewUnofficialColors || !line.isUnofficial"
                             :style="{ backgroundColor: line.color, color: colorProcStore.colorProcInvBinary.convert(line.color) }"
-                            class="colorItem" @click="setColor(line.color)">
+                            class="colorItem" @click="chooseColor(line.color)">
                             <span v-if="viewSubnames && line.subname != ''">
                                 {{ line.subname }}
                             </span>
@@ -163,12 +162,19 @@ const emit = defineEmits<{
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
+        margin-top: 40px;
         .paletteTitle{
-            align-self: stretch;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            right: 0px;
+            height: 40px;
+            padding: 0px 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0px 0px 5px 0px black;
             b{
                 font-size: 18px;
                 color: #666;
@@ -177,6 +183,13 @@ const emit = defineEmits<{
                 display: flex;
                 gap: 5px;
             }
+        }
+        .lineName{
+            font-weight: bold;
+            font-size: 18px;
+        }
+        input{
+            margin: 0px;
         }
     }
     .bodyArea {
