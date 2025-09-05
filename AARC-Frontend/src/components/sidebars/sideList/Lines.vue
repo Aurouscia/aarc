@@ -11,6 +11,7 @@ import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
 import ColorPalette from '../ColorPalette.vue';
+import boxIcon from '@/assets/ui/box.svg'
 
 defineProps<{isChildrenList?:boolean}>()
 const { pop } = useUniqueComponentsStore()
@@ -79,15 +80,19 @@ onUnmounted(()=>{
             <div v-for="l,idx in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
                 <template v-if="renderColorPickers">
                     <div v-if="!isChildrenList" class="colorEdit">
-                        <ColorPickerForLine ref="pickers" :line="l" :z-index="idx"></ColorPickerForLine>
+                        <div v-if="showingBtns==='arrange'" class="sqrBtn paletteEntry" :style="{backgroundColor: l.color}"
+                            @click="editColorByPalette(l)">
+                            <img :src="boxIcon"/>
+                        </div>
+                        <ColorPickerForLine v-else ref="pickers" :line="l" :z-index="idx"></ColorPickerForLine>
                     </div>
                     <div v-else class="sqrBtn" :style="{backgroundColor: l.color, cursor:'default'}"
                         @click="pop?.show('支线颜色跟随主线，不可单独调整', 'info')">
                     </div>
                 </template>
                 <LineItemBtns :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
-                    :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf" 
-                    :is-in-children-list="isChildrenList" :leave-parent="leaveParent" :edit-color-by-palette="editColorByPalette"
+                    :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf"
+                    :is-in-children-list="isChildrenList" :leave-parent="leaveParent"
                     :showing-btns="showingBtns" :arranging-id="arrangingId" :l="l" :line-type-called="'线路'"></LineItemBtns>
             </div>
             <div class="newLine" @click="createLine">
@@ -108,6 +113,16 @@ onUnmounted(()=>{
 
 <style scoped lang="scss">
 @use './shared/arrangableList.scss';
+
+.paletteEntry{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    img{
+        width: 70%;
+        height: 70%;
+    }
+}
 
 .childrenListTitle{
     font-weight: bold;
