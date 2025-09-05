@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import colorSets from '@/data/palette/colorSets'
-import { ref, CSSProperties, computed } from 'vue';
+import { ref, CSSProperties, computed, watch, nextTick } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { Line } from '@/models/save';
 import Switch from '@/components/common/Switch.vue';
@@ -10,77 +9,109 @@ import ColorPickerForLine from './shared/ColorPickerForLine.vue';
 
 const envStore = useEnvStore()
 const colorProcStore = useColorProcStore()
-const cs = colorSets
-
 const sidebar = ref<InstanceType<typeof SideBar>>()
-
 const props = defineProps<{
     editingLine: Line
 }>()
 
-interface CityLine {
-    name: string;
-    subname: string;
-    isUnofficial: boolean;
-    color: string;
+const colorSetsProm = import('@/data/palette/colorSets')
+type ColorSet = (Awaited<typeof colorSetsProm>)['default'][number]
+interface ColorSetItem {
+    name: string
+    subname?: string
+    isUnofficial: boolean
+    color: string
+    colorInv: string
 }
-const searchFilter = ref('')
-const filtered = computed(()=>{
-    const filterStrLower = searchFilter.value.toLocaleLowerCase()
-    return cs.filter(c => (!searchFilter) || getCityName(c.data).includes(filterStrLower))
-})
-
-const openedCities = ref<number[]>([])
-function openCity(cityid: number) {
-    if(openedCities.value.includes(cityid)){
-        openedCities.value=openedCities.value.filter(x=>x!=cityid)
-    }
-    else{
-        openedCities.value.push(cityid)
-    }
-}
-function closeAll() {
-    openedCities.value = []
+type ColorSetExtended = ColorSet & {
+    showing?:boolean, 
+    items?: ColorSetItem[],
+    keywords?: string,
+    isFictional?: boolean
 }
 
-const regexp = /\(([^{}]+)\)/g
-function removeParenthesesContent(str: string) {
-    return str.replace(regexp, '').trim();
-}
-function getParenthesesContent(str: string) {
-    let matched = str.match(regexp)
-    if (!matched) {
-        return ''
-    }
-    return matched[0].replace('(', '').replace(')', '')
-}
-function parseCity(data: string) {
-    let lines: CityLine[] = []
-    let splitted = data.split('\n').filter(x => x != '').slice(1)
-    splitted.forEach(l => {
-        let lSplitted = l.split(':')
-        let name = lSplitted[0]
-        let color = lSplitted[1]
-        if (color) {
-            lines.push({
-                name: removeParenthesesContent(name.replace('*', '')),
-                subname: getParenthesesContent(name.replace('*', '')),
-                isUnofficial: name.includes('*'),
-                color: color
-            })
+const cs = ref<ColorSetExtended[]>()
+colorSetsProm.then(x => {
+    //模块加载完成：赋值给cs
+    cs.value = x.default
+    //初始化“搜索关键词”和“是否架空”，其中“搜索关键词”特别注意性能
+    const EMPTY = new Set([' ', '\t', '\n']);
+    cs.value.forEach(s=>{
+        s.isFictional = s.pri >= 500 //pri大于500的是架空颜色集
+        if (s.data) {
+            const len = s.data.length;
+            let i = 0;
+            // ② 快速跳过空白
+            while (i < len && EMPTY.has(s.data[i])) 
+                ++i;
+            if (i < len) {                              // 找到了非空白
+                let nl = s.data.indexOf('\n', i);           // 第一个换行
+                if (nl === -1) 
+                    nl = len;                               // 可能没换行
+                s.keywords = s.data.slice(i, nl).trim();    // slice出这一段
+            }
+            else 
+                s.keywords = '#';                       // 全是空白
         }
     })
-    return lines
-}
-let viewUnofficialColors = ref(true)
-let viewSubnames = ref(false)
-function getCityName(data: string) {
-    let res = data.match(/\n([^\n]*)\n/)
-    if (!res) { return '' }
-    return res[0]
+})
+
+const searchFilter = ref('')
+const csFiltered = computed<ColorSetExtended[]>(()=>{
+    const filterStrLower = searchFilter.value.toLocaleLowerCase()
+    if(!filterStrLower || !cs.value)
+        return cs.value ?? []
+    return cs.value.filter(c => c.keywords?.includes(filterStrLower)) ?? []
+})
+
+function toggleSetShowing(colorSet:ColorSetExtended){
+    if(colorSet.showing){
+        colorSet.showing = false
+    }else{
+        colorSet.showing = true
+        if(!colorSet.items){
+            colorSet.items = parseColorSetData(colorSet.data)
+        }
+    }
 }
 
+const parenthesisAndContent = /\([^)]*\)/
+const parenthesisContent = /(?<=\()[^)]*(?=\))/
+function parseColorSetData(data: string){
+    let res: ColorSetItem[] = []
+    //去除(首尾)可能存在的空行
+    let rows = data.split('\n').filter(x=>!!x) 
+    //第一行是搜索词，所以从第二行开始收集颜色
+    for(let i = 1; i<rows.length; i++){
+        const row = rows.at(i)?.trim()
+        if(!row)
+            continue
+        let [name, color] = row.split(':')
+        if (name && color) {
+            let isUnofficial = false
+            if(name.includes('*')){
+                isUnofficial = true
+                name = name.replace('*', '')
+            }
+            const nameMain = name.replace(parenthesisAndContent, '')
+            const nameSub = name.match(parenthesisContent)?.at(0)
+            const colorInv = colorProcStore.colorProcInvBinary.convertNoCache(color)
+            res.push({
+                name: nameMain,
+                subname: nameSub,
+                isUnofficial,
+                color,
+                colorInv
+            })
+        }
+    }
+    return res
+}
+const viewUnofficialColors = ref(true)
+const viewSubnames = ref(false)
+
 const picker = ref<InstanceType<typeof ColorPickerForLine>>()
+const showPicker = ref(true)
 function closePickers() {
     picker.value?.close()
 }
@@ -93,25 +124,31 @@ function chooseColor(color: string) {
     picker.value?.enforceTo(color)
     emit('colorUpdated')
 }
+watch(()=>props.editingLine.id, ()=>{
+    //刷新一次颜色选择器（强制重新生成）
+    showPicker.value = false
+    nextTick(()=>{
+        showPicker.value = true
+    })
+})
 
 defineExpose({
     open: () => { sidebar.value?.extend() },
     fold: () => { sidebar.value?.fold() }
 })
-
 const emit = defineEmits<{
     (e: 'colorUpdated'): void
 }>()
 </script>
 
 <template>
-<SideBar ref="sidebar" @click="closePickers" @fold="closeAll()">
+<SideBar ref="sidebar" @click="closePickers" :shrink-way="'v-show'">
     <div class="palette">
         <div class="topArea">
             <div class="paletteTitle">
                 <b>颜色库</b>
                 <div class="switches">
-                    <Switch :left-text="'标准'" :right-text="'严谨'" :initial="'left'" @left="viewUnofficialColors = true"
+                    <Switch :left-text="'宽松'" :right-text="'严格'" :initial="'left'" @left="viewUnofficialColors = true"
                         @right="viewUnofficialColors = false"></Switch>
                     <Switch :left-text="'主名'" :right-text="'副名'" :initial="'left'" @left="viewSubnames = false"
                         @right="viewSubnames = true"></Switch>
@@ -120,32 +157,32 @@ const emit = defineEmits<{
             <div class="lineName" :style="{color: editingLine.color}">
                 {{ editingLine.name ?? '未命名线路' }}
             </div>
-            <ColorPickerForLine ref="picker" :line="editingLine"
+            <ColorPickerForLine v-if="showPicker" ref="picker" :line="editingLine"
                 :entry-styles="pickerEntryStyles" @color-updated="emit('colorUpdated')"></ColorPickerForLine> 
             <input v-model="searchFilter" placeholder="搜索颜色集">
         </div>
         <div class="bodyArea">
-            <div v-for="city in filtered">
-                <h3 @click="openCity(city.pri)" class="city">
-                    <span v-if="openedCities.includes(city.pri)" class="opened"><span v-if="city.pri > 499">*</span>{{
-                        city.name
-                        }}</span>
-                    <span v-else class="closed"><span v-if="city.pri > 499">*</span>{{ city.name }}</span>
+            <div v-for="cs in csFiltered" class="colorSet">
+                <h3 @click="toggleSetShowing(cs)" :class="{showing: cs.showing}">
+                    {{ cs.isFictional ? '*':'' }}{{ cs.name }}
                 </h3>
-                <div v-if="openedCities.includes(city.pri)">
-                    <span v-for="line in parseCity(city.data)">
-                        <button v-if="viewUnofficialColors || !line.isUnofficial"
-                            :style="{ backgroundColor: line.color, color: colorProcStore.colorProcInvBinary.convert(line.color) }"
-                            class="colorItem" @click="chooseColor(line.color)">
-                            <span v-if="viewSubnames && line.subname != ''">
-                                {{ line.subname }}
-                            </span>
-                            <span v-else>
-                                {{ line.name }}
-                            </span>
+                <div v-if="cs.showing" class="colorItems">
+                    <template v-for="item in cs.items">
+                        <button v-if="viewUnofficialColors || !item.isUnofficial"
+                            :style="{ backgroundColor: item.color, color: item.colorInv }"
+                            class="colorItem" @click="chooseColor(item.color)">
+                            {{ viewSubnames && item.subname ? item.subname : item.name }} 
                         </button>
-                    </span>
+                    </template>
                 </div>
+            </div>
+            <div class="tail">
+                <button v-if="searchFilter" class="lite" @click="searchFilter=''">
+                    清空搜索
+                </button>
+                <a v-else href="http://wiki.jowei19.com/#/w/yan-se-ku-geng-xin-ri-zhi" target="_blank">
+                    更新日志
+                </a>
             </div>
         </div>
     </div>
@@ -196,19 +233,41 @@ const emit = defineEmits<{
         flex-grow: 1;
         overflow-y: scroll;
         h3 {
+            padding: 4px 0px;
+            font-weight: 400;
             text-align: center;
             cursor: pointer;
+            color: #666;
+            user-select: none;
+            &:hover{
+                background-color: #eee;
+            }
+        }
+        h3.showing {
+            font-weight: bold;
+            color: #222;
+        }
+        .colorItems{
+            padding-bottom: 6px;
         }
         .colorItem {
-            font-size: small;
-            padding: 2px;
+            font-size: 16px;
+            height: 24px;
+            line-height: 24px;
+            padding: 0px 4px;
+            margin: 3px;
+            min-width: 22px;
+            transition: 0.3s;
+            &:hover{
+                box-shadow: 0px 0px 6px 0px #999;
+            }
+        }
+        .tail{
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
     }
-}
-.opened {
-    color: #222;
-}
-.closed {
-    color: #777;
 }
 </style>

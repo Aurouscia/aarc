@@ -13,5 +13,10 @@ export abstract class ColorProcBase{
         this.cache[inputColor] = res
         return res
     }
+    convertNoCache(inputColor:string|undefined){
+        if(!inputColor)
+            return '#000000'
+        return this.convertColor(inputColor)
+    }
     protected abstract convertColor(inputColor:string):string
 }
