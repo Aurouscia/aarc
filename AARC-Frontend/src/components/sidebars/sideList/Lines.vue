@@ -58,7 +58,7 @@ onUnmounted(()=>{
 </script>
 
 <template>
-    <SideBar ref="sidebar" :shrink-way="'v-if'" class="arrangeableList" :body-no-position="true"
+    <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList" :body-no-position="true"
         @extend="registerLinesArrange();lineGroupCheck();enableContextMenu()"
         @fold="disposeLinesArrange();disableContextMenu()" @click="clickContainer">
         <div class="filter">
@@ -73,6 +73,7 @@ onUnmounted(()=>{
                     {{ showingChildrenOfInfo.name }}
                 </div>
             </div>
+            <!--注：shrink-way填v-if会导致二次打开后Switch状态异常-->
             <Switch :left-text="'设置'" :right-text="'调序'" :initial="'left'"
                 @left="showingBtns='children'" @right="showingBtns='arrange'"></Switch>
         </div>
