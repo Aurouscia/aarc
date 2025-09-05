@@ -5,14 +5,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename)
 
 const res:string[] = []
-const resPath = join(__dirname, 'palette.ts')
+const resPath = join(__dirname, 'colorSets.ts')
 
 res.push('//=======================================================')
 res.push('//本文件为自动生成，请勿手动编辑，操作方法见同目录的README.md')
 res.push('//=======================================================')
 res.push('')
-writeForSubDir('real')
-writeForSubDir('fic')
+writeForSubDir('colorSetsSource')
 fs.writeFileSync(resPath, res.join('\n'))
 
 function writeForSubDir(subDirNamePure:string){
@@ -45,9 +44,10 @@ function writeForSubDir(subDirNamePure:string){
     for (const city of citiesHere){
         res.push(`import ${city.importName} from './${subDirNamePure}/${city.fileName}'`)
     }
-    res.push(`export const ${subDirNamePure} = [`)
-    for(const c of citiesHere)
+    res.push(`export default [`)
+    for(const c of citiesHere){
         res.push(`    {name:'${c.displayName}', pri:${c.pri}, data:${c.importName}},`)
+        }
     res.push(']')
     res.push('')
 }

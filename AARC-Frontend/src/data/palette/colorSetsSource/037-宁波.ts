@@ -1,0 +1,20 @@
+export default`
+宁波地铁/宁波轨道交通/ningboditie/nbdt/ningboguidaojiaotong/nbgdjt
+1:#208FBE
+2:#BD1C21
+3:#F09812
+4:#7EB244
+5:#202084
+*6:#157F4E
+*7:#7B572D
+8:#E61476
+*9:#91477B
+*10:#9B8DC4
+*11:#9BD5DF
+*12:#42BDCA
+*13:#18987D
+*N1:#A1302D
+*N2:#B27115
+*N3:#00606D
+*N4:#E72755
+`

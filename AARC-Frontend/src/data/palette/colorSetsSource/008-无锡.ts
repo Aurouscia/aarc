@@ -1,0 +1,15 @@
+export default`
+无锡地铁/wuxiditie/wxdt/Sn
+1:#E30B1F
+2:#1D9C3B
+3:#1398FD
+4:#840097
+*5:#DF8209
+*6:#EF82C1
+*7:#4C0F8C
+*8:#0D684E
+S1:#E30B1F
+*S2:#2FC8B5
+*S3:#C37BD0
+*苏锡:#FA6A70
+`

@@ -12,7 +12,8 @@ defineProps<{
     entryStyles?:CSSProperties
 }>()
 defineExpose({
-    close:()=>picker.value?.closePanel()
+    close:()=>picker.value?.closePanel(),
+    enforceTo:(hex:string)=>picker.value?.enforceTo(hex)
 })
 const emit = defineEmits<{
     (e:'colorUpdated'):void

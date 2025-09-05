@@ -1,0 +1,24 @@
+export default`
+苏州地铁/苏州轨道交通/suzhouditie/szdt/szgdjt/suzhouguidaojiaotong/姑苏
+1:#78BA25
+2:#ED3240
+3:#F88211
+4:#196EAE
+5:#E63A9A
+6:#41B6E6
+7:#A77BCA
+8:#A09200
+9:#F6BC45
+10:#CA9A8E
+11:#F1C6A6
+12:#A35B8F
+13:#F090A0
+14:#53B5A8
+17:#478C37
+*苏锡:#FA6A70
+有轨电车:#D8E4C0
+高新区有轨1路:#86B680
+高新区有轨2路:#7D0700
+高新区有轨5路:#430D66
+未开通:#DDDDDD
+`

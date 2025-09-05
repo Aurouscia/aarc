@@ -79,7 +79,7 @@ export function useSideListShared(lineType:LineType){
             lineOptions.value?.open()
         },1)
     }
-
+    
     const wantDelLine = ref<Line>()
     function delLineStart(l:Line){
         if(saveStore.getLinesByParent(l.id)?.length){

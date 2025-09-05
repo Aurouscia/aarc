@@ -33,9 +33,7 @@ const mode = computed<'A'|'B'>(()=>{
         <input v-model="l.name" :placeholder="`输入${lineTypeCalled}名`" @blur="envStore.lineInfoChanged(l)" />
         <input v-model="l.nameSub" :placeholder="`输入${lineTypeCalled}副名`" @blur="envStore.lineInfoChanged(l)" />
     </div>
-    <div class="infoEdit">
-        <div class="sqrBtn" @click="editInfoOfLine(l)">...</div>
-    </div>
+    <div class="sqrBtn" @click="editInfoOfLine(l)">...</div>
     <div v-if="mode==='A' && !isInChildrenList" class="sqrBtn" @click="showChildrenOf(l)">
         <img class="btnIcon" :src="branchIcon"/>
     </div>

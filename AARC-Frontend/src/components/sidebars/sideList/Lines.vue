@@ -2,7 +2,7 @@
 import SideBar from '../../common/SideBar.vue';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useSideListShared } from './shared/useSideListShared';
-import { LineType } from '@/models/save';
+import { Line, LineType } from '@/models/save';
 import LineOptions from '../options/LineOptions.vue';
 import LineDelPrompt from './shared/LineDelPrompt.vue';
 import LineItemBtns from './shared/LineItemBtns.vue';
@@ -10,6 +10,8 @@ import Switch from '@/components/common/Switch.vue';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
+import ColorPalette from '../ColorPalette.vue';
+import boxIcon from '@/assets/ui/box.svg'
 
 defineProps<{isChildrenList?:boolean}>()
 const { pop } = useUniqueComponentsStore()
@@ -26,6 +28,15 @@ const {
     showListSidebar, hideListSidebar,
     renderColorPickers, reloadColorPickers
 } = useSideListShared(LineType.common)
+
+const colorPalette = ref<InstanceType<typeof ColorPalette>>()
+const editingColorByPaletteLine = ref<Line>()
+function editColorByPalette(line:Line){
+    editingColorByPaletteLine.value = line
+    window.setTimeout(()=>{
+        colorPalette.value?.open()
+    }, 1)
+}
 
 const pickers = ref<InstanceType<typeof ColorPickerForLine>[]>([])
 function clickContainer(){
@@ -47,7 +58,7 @@ onUnmounted(()=>{
 </script>
 
 <template>
-    <SideBar ref="sidebar" :shrink-way="'v-if'" class="arrangeableList" :body-no-position="true"
+    <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList" :body-no-position="true"
         @extend="registerLinesArrange();lineGroupCheck();enableContextMenu()"
         @fold="disposeLinesArrange();disableContextMenu()" @click="clickContainer">
         <div class="filter">
@@ -62,6 +73,7 @@ onUnmounted(()=>{
                     {{ showingChildrenOfInfo.name }}
                 </div>
             </div>
+            <!--注：shrink-way填v-if会导致二次打开后Switch状态异常-->
             <Switch :left-text="'设置'" :right-text="'调序'" :initial="'left'"
                 @left="showingBtns='children'" @right="showingBtns='arrange'"></Switch>
         </div>
@@ -69,14 +81,18 @@ onUnmounted(()=>{
             <div v-for="l,idx in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
                 <template v-if="renderColorPickers">
                     <div v-if="!isChildrenList" class="colorEdit">
-                        <ColorPickerForLine ref="pickers" :line="l" :z-index="idx"></ColorPickerForLine>
+                        <div v-if="showingBtns==='arrange'" class="sqrBtn paletteEntry" :style="{backgroundColor: l.color}"
+                            @click="editColorByPalette(l)">
+                            <img :src="boxIcon"/>
+                        </div>
+                        <ColorPickerForLine v-else ref="pickers" :line="l" :z-index="idx"></ColorPickerForLine>
                     </div>
                     <div v-else class="sqrBtn" :style="{backgroundColor: l.color, cursor:'default'}"
                         @click="pop?.show('支线颜色跟随主线，不可单独调整', 'info')">
                     </div>
                 </template>
                 <LineItemBtns :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
-                    :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf" 
+                    :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf"
                     :is-in-children-list="isChildrenList" :leave-parent="leaveParent"
                     :showing-btns="showingBtns" :arranging-id="arrangingId" :l="l" :line-type-called="'线路'"></LineItemBtns>
             </div>
@@ -90,11 +106,24 @@ onUnmounted(()=>{
     <LineOptions ref="lineOptions" v-if="editingInfoLine" :line="editingInfoLine"
         :line-type-called="'线路'" :line-width-range="{min:0.5, max:2, step:0.25}"
         @color-updated="reloadColorPickers"></LineOptions>
+    <ColorPalette ref="colorPalette" v-if="editingColorByPaletteLine"
+        :editing-line="editingColorByPaletteLine"
+        @color-updated="reloadColorPickers"></ColorPalette>
     <Lines v-if="!isChildrenList" ref="childrenLines" :is-children-list="true"></Lines>
 </template>
 
 <style scoped lang="scss">
 @use './shared/arrangableList.scss';
+
+.paletteEntry{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    img{
+        width: 70%;
+        height: 70%;
+    }
+}
 
 .childrenListTitle{
     font-weight: bold;

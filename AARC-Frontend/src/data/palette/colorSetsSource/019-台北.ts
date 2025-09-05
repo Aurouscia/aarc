@@ -1,0 +1,21 @@
+export default`
+台北捷运/台北地铁/taibeijieyun/taipeijieyun/taibeiditie/taipeiditie/tbdt/tpdt/tbjy/tpjy
+BR(文湖线):#C48D30
+R(淡水信义线):#E4002D
+R(新北投支线):#FD98AA
+G(松山新店线):#008658
+G(小碧潭支线):#D1DD06
+O(中和新芦线):#F8B61B
+BL(板南线):#0070BC
+LG(万大线):#A4DC85
+V(淡海轻轨):#F97D79
+A(机场线):#A348D8
+G(绿线):#82BC10
+K(安坑轻轨):#C7B499
+LB(三莺线):#7EC8F2
+民生汐止线:#25AAE1
+社子线:#E40078
+猫空缆车:#77BC1F
+铁路:#020281
+高铁:#DB5426
+`

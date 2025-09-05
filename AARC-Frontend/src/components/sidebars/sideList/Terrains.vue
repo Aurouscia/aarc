@@ -38,7 +38,7 @@ onUnmounted(()=>{
 </script>
 
 <template>
-    <SideBar ref="sidebar" :shrink-way="'v-if'" class="arrangeableList" :body-no-position="true"
+    <SideBar ref="sidebar" :shrink-way="'v-show'" class="arrangeableList" :body-no-position="true"
     @extend="registerLinesArrange();lineGroupCheck();enableContextMenu()"
     @fold="disposeLinesArrange();disableContextMenu()" @click="clickContainer">
         <div class="filter">
