@@ -31,4 +31,3 @@ npm run dev
 npm run commitSum
 ```
 运行上述命令，将会使用相关node脚本（根据git仓库内的提交记录）更新“关于”页面中展示的代码贡献者名单。  
-设备中必须有powershell，才能运行本功能。

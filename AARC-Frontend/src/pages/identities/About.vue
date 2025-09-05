@@ -58,7 +58,8 @@ import contribution from '@/utils/gitCommitSum/commitSumRes';
                 <a href="https://vuejs.org" target="_blank">Vue.js</a>、
                 <a href="https://vite.dev" target="_blank">Vite</a>、
                 <a href="https://www.typescriptlang.org" target="_blank">TypeScript</a>、
-                <a href="https://sass-lang.com/" target="_blank">Sass</a>
+                <a href="https://sass-lang.com/" target="_blank">Sass</a>、
+                <a href="https://www.nuget.org/packages/EzPinyin" target="_blank">EzPinyin</a>
             </div>
             <div>域名和服务器提供者：Au的父亲(武汉被看见科技有限公司)</div>
             <div>首批活跃用户：滨蜀、四氨合铜离子、Xueshen234、南京精灵的灵芝、哦、NonstopExpress、Hikorta等</div>

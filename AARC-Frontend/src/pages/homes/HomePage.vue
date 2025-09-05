@@ -38,10 +38,9 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-08-31更新'">
-        1. 修复“同线路层级其他线路”在使用输入框后显示异常的问题<br/>
-        2. 修复画布尺寸调整处在使用输入框后计算异常的问题<br/>
-        3. 修复Delete键在输入站名/标签文字时异常触发的问题（应该是删除光标后的字符）
+    <Notice :type="'info'" :title="'2025-09-06更新'">
+        1. 添加“颜色库”功能（收录大量现实地铁线路色）将线路列表右上角的开关切换为“调序”即可使用<br/>
+        2. 修复二次开启线路列表时，上述开关状态异常的问题
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
         1. 标签/站名的旋转和压缩<br/>

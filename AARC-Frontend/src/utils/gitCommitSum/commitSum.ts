@@ -39,7 +39,7 @@ try{
         updatedAt
     }
     console.log(resObj)
-    const res = `export default ${JSON.stringify(resObj, undefined, 4)}`
+    const res = `//本文件为自动生成，请勿手动编辑\nexport default ${JSON.stringify(resObj, undefined, 4)}`
     fs.writeFileSync(resPath, res)
 }
 catch(ex){
