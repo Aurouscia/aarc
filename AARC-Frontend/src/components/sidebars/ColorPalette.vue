@@ -6,6 +6,10 @@ import Switch from '@/components/common/Switch.vue';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import ColorPickerForLine from './shared/ColorPickerForLine.vue';
+import { usePaletteLocalConfigStore } from '@/app/localConfig/paletteConfig';
+import { storeToRefs } from 'pinia';
+import { removeAllByPred } from '@/utils/lang/indicesInArray';
+import { keepOrderSort } from '@/utils/lang/keepOrderSort';
 
 const envStore = useEnvStore()
 const colorProcStore = useColorProcStore()
@@ -54,6 +58,7 @@ colorSetsProm.then(x => {
                 s.keywords = '#';                       // 全是空白
         }
     })
+    ensureSetsOrdered()
 })
 
 const searchFilter = ref('')
@@ -107,8 +112,35 @@ function parseColorSetData(data: string){
     }
     return res
 }
-const viewUnofficialColors = ref(true)
-const viewSubnames = ref(false)
+
+const { 
+    strictMode, subnameMode, favoriteNames 
+} = storeToRefs(usePaletteLocalConfigStore())
+const fav = computed<Set<string>>(()=>new Set(favoriteNames.value)) 
+function isFavorite(cs:ColorSet|string){
+    const name = typeof cs =='string' ? cs : cs.name.trim()
+    return fav.value.has(name)
+}
+function toggleFavorite(cs:ColorSetExtended){
+    const name = cs.name.trim()
+    if(isFavorite(name)){
+        removeAllByPred<string>(favoriteNames.value, x => x == name)
+        cs.showing = false
+    }
+    else
+        favoriteNames.value.push(name)
+    ensureSetsOrdered()
+}
+function ensureSetsOrdered(){
+    if(!cs.value) return
+    keepOrderSort(cs.value, (a, b)=>{
+        let aNum = isFavorite(a) ? 1 : 0
+        let bNum = isFavorite(b) ? 1 : 0
+        if(aNum != bNum)
+            return bNum - aNum  //先按“是否顶置”排序
+        return a.pri - b.pri    //再按pri排序
+    })
+}
 
 const picker = ref<InstanceType<typeof ColorPickerForLine>>()
 const showPicker = ref(true)
@@ -148,10 +180,10 @@ const emit = defineEmits<{
             <div class="paletteTitle">
                 <b>颜色库</b>
                 <div class="switches">
-                    <Switch :left-text="'宽松'" :right-text="'严格'" :initial="'left'" @left="viewUnofficialColors = true"
-                        @right="viewUnofficialColors = false"></Switch>
-                    <Switch :left-text="'主名'" :right-text="'副名'" :initial="'left'" @left="viewSubnames = false"
-                        @right="viewSubnames = true"></Switch>
+                    <Switch :left-text="'宽松'" :right-text="'严格'" :initial="strictMode?'right':'left'" 
+                        @left="strictMode = false" @right="strictMode = true"></Switch>
+                    <Switch :left-text="'主名'" :right-text="'副名'" :initial="subnameMode?'right':'left'"
+                        @left="subnameMode = false" @right="subnameMode = true"></Switch>
                 </div>
             </div>
             <div class="lineName" :style="{color: editingLine.color}">
@@ -162,16 +194,19 @@ const emit = defineEmits<{
             <input v-model="searchFilter" placeholder="搜索颜色集">
         </div>
         <div class="bodyArea">
-            <div v-for="cs in csFiltered" class="colorSet">
+            <div v-for="cs in csFiltered" class="colorSet" :key="cs.name">
                 <h3 @click="toggleSetShowing(cs)" :class="{showing: cs.showing}">
                     {{ cs.isFictional ? '*':'' }}{{ cs.name }}
+                    <button v-if="cs.showing || isFavorite(cs)" @click.stop="toggleFavorite(cs)" class="lite">
+                        {{ isFavorite(cs) ? '已顶置':'顶置' }}
+                    </button>
                 </h3>
                 <div v-if="cs.showing" class="colorItems">
-                    <template v-for="item in cs.items">
-                        <button v-if="viewUnofficialColors || !item.isUnofficial"
+                    <template v-for="item in cs.items" :key="item.name">
+                        <button v-if="!strictMode || !item.isUnofficial"
                             :style="{ backgroundColor: item.color, color: item.colorInv }"
                             class="colorItem" @click="chooseColor(item.color)">
-                            {{ viewSubnames && item.subname ? item.subname : item.name }} 
+                            {{ subnameMode && item.subname ? item.subname : item.name }} 
                         </button>
                     </template>
                 </div>
@@ -201,6 +236,7 @@ const emit = defineEmits<{
         align-items: center;
         gap: 8px;
         margin-top: 40px;
+        padding-bottom: 6px;
         .paletteTitle{
             position: absolute;
             top: 0px;
@@ -224,6 +260,7 @@ const emit = defineEmits<{
         .lineName{
             font-weight: bold;
             font-size: 18px;
+            user-select: none;
         }
         input{
             margin: 0px;
@@ -233,6 +270,7 @@ const emit = defineEmits<{
         flex-grow: 1;
         overflow-y: scroll;
         h3 {
+            position: relative;
             padding: 4px 0px;
             font-weight: 400;
             text-align: center;
@@ -241,6 +279,12 @@ const emit = defineEmits<{
             user-select: none;
             &:hover{
                 background-color: #eee;
+            }
+            button{
+                font-size: 14px;
+                position: absolute;
+                right: 2px;
+                bottom: 5px;
             }
         }
         h3.showing {
