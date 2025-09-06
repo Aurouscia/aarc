@@ -56,9 +56,15 @@ import colorSetsSource_98 from './colorSetsSource/098-柳州.ts'
 import colorSetsSource_99 from './colorSetsSource/099-包头.ts'
 import colorSetsSource_100 from './colorSetsSource/100-日本东京.ts'
 import colorSetsSource_101 from './colorSetsSource/101-日本大阪.ts'
+import colorSetsSource_102 from './colorSetsSource/102-日本札幌.ts'
+import colorSetsSource_150 from './colorSetsSource/150-泰国曼谷.ts'
+import colorSetsSource_151 from './colorSetsSource/151-新加坡.ts'
 import colorSetsSource_200 from './colorSetsSource/200-英国伦敦.ts'
-import colorSetsSource_201 from './colorSetsSource/201-法国巴黎.ts'
-import colorSetsSource_202 from './colorSetsSource/202-俄罗斯莫斯科.ts'
+import colorSetsSource_201 from './colorSetsSource/201-英国爱丁堡.ts'
+import colorSetsSource_210 from './colorSetsSource/210-法国巴黎.ts'
+import colorSetsSource_222 from './colorSetsSource/222-德国慕尼黑.ts'
+import colorSetsSource_230 from './colorSetsSource/230-俄罗斯莫斯科.ts'
+import colorSetsSource_300 from './colorSetsSource/300-开罗.ts'
 import colorSetsSource_400 from './colorSetsSource/400-中国传统颜色.ts'
 import colorSetsSource_401 from './colorSetsSource/401-日本传统颜色.ts'
 import colorSetsSource_402 from './colorSetsSource/402-地铁logo.ts'
@@ -75,7 +81,9 @@ import colorSetsSource_511 from './colorSetsSource/511-新靖春泉.ts'
 import colorSetsSource_512 from './colorSetsSource/512-新靖麦都.ts'
 import colorSetsSource_520 from './colorSetsSource/520-中海滨蜀.ts'
 import colorSetsSource_521 from './colorSetsSource/521-中海格州.ts'
+import colorSetsSource_522 from './colorSetsSource/522-中海咏胜.ts'
 import colorSetsSource_600 from './colorSetsSource/600-云海.ts'
+import colorSetsSource_601 from './colorSetsSource/601-云港.ts'
 export default [
     {name:'北京', pri:0, data:colorSetsSource_0},
     {name:'上海', pri:1, data:colorSetsSource_1},
@@ -131,9 +139,15 @@ export default [
     {name:'包头', pri:99, data:colorSetsSource_99},
     {name:'日本东京', pri:100, data:colorSetsSource_100},
     {name:'日本大阪', pri:101, data:colorSetsSource_101},
+    {name:'日本札幌', pri:102, data:colorSetsSource_102},
+    {name:'泰国曼谷', pri:150, data:colorSetsSource_150},
+    {name:'新加坡', pri:151, data:colorSetsSource_151},
     {name:'英国伦敦', pri:200, data:colorSetsSource_200},
-    {name:'法国巴黎', pri:201, data:colorSetsSource_201},
-    {name:'俄罗斯莫斯科', pri:202, data:colorSetsSource_202},
+    {name:'英国爱丁堡', pri:201, data:colorSetsSource_201},
+    {name:'法国巴黎', pri:210, data:colorSetsSource_210},
+    {name:'德国慕尼黑', pri:222, data:colorSetsSource_222},
+    {name:'俄罗斯莫斯科', pri:230, data:colorSetsSource_230},
+    {name:'开罗', pri:300, data:colorSetsSource_300},
     {name:'中国传统颜色', pri:400, data:colorSetsSource_400},
     {name:'日本传统颜色', pri:401, data:colorSetsSource_401},
     {name:'地铁logo', pri:402, data:colorSetsSource_402},
@@ -150,5 +164,7 @@ export default [
     {name:'新靖麦都', pri:512, data:colorSetsSource_512},
     {name:'中海滨蜀', pri:520, data:colorSetsSource_520},
     {name:'中海格州', pri:521, data:colorSetsSource_521},
+    {name:'中海咏胜', pri:522, data:colorSetsSource_522},
     {name:'云海', pri:600, data:colorSetsSource_600},
+    {name:'云港', pri:601, data:colorSetsSource_601},
 ]
