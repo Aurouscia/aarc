@@ -152,6 +152,7 @@ const pickerEntryStyles: CSSProperties = {
 }
 function chooseColor(color: string) {
     props.editingLine.color = color
+    envStore.lineInfoChanged(props.editingLine)
     envStore.rerender()
     picker.value?.enforceTo(color)
     emit('colorUpdated')
