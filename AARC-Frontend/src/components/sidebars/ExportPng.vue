@@ -12,7 +12,6 @@ import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
-import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import Notice from '../common/Notice.vue';
 import ExportWatermarkConfig from './configs/ExportWatermarkConfig.vue';
 import ConfigSection from './configs/shared/ConfigSection.vue';
@@ -27,6 +26,7 @@ const route = useRoute()
 const { pop } = useUniqueComponentsStore()
 const exported = ref<boolean>(false)
 const exporting = ref<boolean>(false)
+const exportFailed = ref<boolean>(false)
 
 const exportLocalConfig = useExportLocalConfigStore()
 const { fileNameStyle, pixelRestrict, ads } = storeToRefs(exportLocalConfig)
@@ -35,6 +35,7 @@ async function downloadMainCvsAsPng() {
         return
     exported.value = false
     exporting.value = true
+    exportFailed.value = false
 
     const fileName = await getExportPngFileName()
     if(fileName){
@@ -52,7 +53,16 @@ async function downloadMainCvsAsPng() {
         }
         mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
 
-        const pngDataUrl = await cvsToDataUrl(cvs)
+        let pngDataUrl
+        try{
+            pngDataUrl = await cvsToDataUrl(cvs)
+        }
+        catch{
+            pop?.show('导出失败\n请查看指引', 'failed')
+            exporting.value = false
+            exportFailed.value = true
+            return
+        }
         if(!pngDataUrl){
             return
         }
@@ -164,8 +174,6 @@ watch(ads, ()=>{
     }
 })
 
-const { isWebkit } = useBrowserInfoStore()
-
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
     fold: ()=>{sidebar.value?.fold()}
@@ -177,7 +185,8 @@ onMounted(()=>{
 </script>
 
 <template>
-<SideBar ref="sidebar" @extend="enableContextMenu()" @fold="disableContextMenu();exported=false">
+<SideBar ref="sidebar" @extend="enableContextMenu()"
+    @fold="disableContextMenu();exported=false;exportFailed=false">
 <h1>导出作品</h1>
 <div class="exportOps">
     <div class="configItem">
@@ -209,26 +218,30 @@ onMounted(()=>{
     <Notice v-show="exporting" :title="'请等待'" :type="'info'">
         正在导出，可能需要几秒
     </Notice>
-    <div v-show="exported" class="note">
-        若导出失败，可能由于系统/浏览器限制，<br/>
-        导致只能导出更模糊的图片<br/>
-        请尝试设置<b>“像素上限”</b>为{{ isWebkit ? '4000': '19000' }}，若仍然失败则逐步调低直至导出成功<br/>
-        若需要清晰的图片请换用其他设备/浏览器
+    <div v-show="exporting || exported || exportFailed" class="note" :style="{color: exportFailed?'red':undefined}">
+        若导出失败或长时间无响应<br/>请查看本页下方“浏览器限制”部分
     </div>
     <div class="exportConfigs">
         <ExportWatermarkConfig></ExportWatermarkConfig>
         <ConfigSection :title="'已知的浏览器限制'">
-            <table class="fullWidth"><tbody>
+            <table class="fullWidth browserLimit"><tbody>
+                <tr>
+                    <td colspan="2">
+                        若导出失败，可能由于系统/浏览器限制了画布像素上限，
+                        请尝试设置<b>“像素上限”</b>为你的浏览器对应值，若仍然失败则逐步调低直至导出成功。
+                        需要清晰的图片，请换用其他设备/浏览器。
+                    </td>
+                </tr>
                 <tr>
                     <th>浏览器</th>
                     <th>导出像素上限</th>
                 </tr>
                 <tr>
-                    <td>Chrome/Edge</td>
-                    <td>19000</td>
+                    <td>Chrome/Edge/<br/>常见自带浏览器</td>
+                    <td>16000</td>
                 </tr>
                 <tr>
-                    <td>苹果系统上<br/>任意浏览器</td>
+                    <td>iOS系统上<br/>任意浏览器</td>
                     <td>4000</td>
                 </tr>
                 <tr>
@@ -238,6 +251,11 @@ onMounted(()=>{
                 <tr>
                     <td colspan="2" class="smallNote">欢迎向我们反馈更多</td>
                 </tr>
+                <tr><th colspan="2">建议</th></tr>
+                <tr><td colspan="2">
+                    请尽可能使用推荐的站距（线路延长手柄的长度）控制合适的站点密度，让线路图变得实用、美观、易于分享<br/>
+                    作为参考：一张上海的线路图一般仅需要4000x3200的画布
+                </td></tr>
             </tbody></table>
         </ConfigSection>
     </div>
@@ -270,8 +288,7 @@ onMounted(()=>{
     align-items: stretch;
 }
 .note{
-    margin-top: 30px;
-    margin-bottom: 10px;
+    margin: 8px 0px;
     font-size: 14px;
     color: #999;
     text-align: center;
@@ -279,5 +296,8 @@ onMounted(()=>{
         color: cornflowerblue;
         text-decoration: underline;
     }
+}
+.browserLimit{
+    font-size: 14px;
 }
 </style>
