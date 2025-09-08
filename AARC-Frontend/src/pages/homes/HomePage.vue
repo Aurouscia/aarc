@@ -38,9 +38,9 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-09-06更新'">
-        1. 添加“颜色库”功能（收录大量现实地铁线路色）将线路列表右上角的开关切换为“调序”即可使用<br/>
-        2. 修复二次开启线路列表时，上述开关状态异常的问题
+    <Notice :type="'info'" :title="'2025-09-08更新'">
+        1. 添加车站连线模式“车站团”，可用于有理数坐标点之间的强制指定换乘<br/>
+        2. 优化浏览器导出像素上限和导出失败时的提示
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
         1. 标签/站名的旋转和压缩<br/>

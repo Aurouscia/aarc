@@ -91,7 +91,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         renderAllLinks(ctx, 'carpet')
         renderClusters(ctx, clusterData, 'body', creatingLink)
         renderAllLinks(ctx, 'body')
-        renderClusters(ctx, clusterData, 'core', creatingLink)
+        renderClusters(ctx, clusterData, 'core', creatingLink, !forExport)
         renderAllLinks(ctx, 'core')
         tic('集群')
         renderAllPtName(ctx, movedStaNames, forExport)

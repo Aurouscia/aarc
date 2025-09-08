@@ -13,6 +13,7 @@ interface ClusterPoly{
     coords:Coord[]
     maxStaSize:number
     ill:boolean
+    isFromLink?:boolean
 }
 export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
     const staClusterStore = useStaClusterStore()
@@ -34,12 +35,26 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
             clusters = [...clusters, [pt]]
         }
         const polys = clustersToPolys(clusters)
+        const polysByLink = clustersToPolys(pointLinkStore.getClusterLinksPts(), 'asIs')
+        polysByLink.forEach(p=>p.isFromLink=true)
+        polys.push(...polysByLink)
         return polys
     }
 
-    function renderClusters(ctx:CvsContext, data:ClusterPoly[], renderLayer:'carpet'|'body'|'core', transparentMode?:boolean){
-        const forEachPoly = (getLineWidth:(size:number)=>number, color:string, mustFill?:'mustFill')=>{
+    function renderClusters(ctx:CvsContext, data:ClusterPoly[], 
+        renderLayer:'carpet'|'body'|'core', transparentMode?:boolean, linkMark?:boolean
+    ){
+        const forEachPoly = (
+            getLineWidth:(size:number)=>number,
+            color:string,
+            mustFill?:'mustFill'|false,
+            filter?:(p:ClusterPoly)=>boolean
+        )=>{
             for(const p of data){
+                if(filter){
+                    if(!filter(p))
+                        continue
+                }
                 const w = getLineWidth(p.maxStaSize)
                 if(!p.ill){
                     ctx.beginPath();
@@ -100,34 +115,43 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
                 return ((cs.config.ptStaSize * 2) - cs.config.ptStaLineWidth) * size
             }, cs.config.ptStaFillColor, 'mustFill')
         }
+        if(linkMark){
+            forEachPoly((size)=>{
+                return cs.config.ptStaLineWidth * size / 3
+            }, '#ccc', false, p=>p.isFromLink??false)
+        }
     }
 
-    function clustersToPolys(clusters:ControlPoint[][]):ClusterPoly[]{
+    function clustersToPolys(clusters:ControlPoint[][], asIs?:'asIs'):ClusterPoly[]{
         const polys:ClusterPoly[] = []
         clusters.forEach(c=>{
             const sizes = c.map(x=>saveStore.getLinesDecidedPtSize(x.id))
             if(sizes.length==0)
                 return
-            const maxStaSize = Math.max(...sizes)
-            const vertCount = c.filter(x=>x.dir===ControlPointDir.vertical).length
-            const incCount = c.filter(x=>x.dir===ControlPointDir.incline).length
-
             let poly:Coord[] = []
-            if(incCount===0){
-                const polyVert = clusterToPolyVert(c)
-                poly = polyVert.poly
-            }
-            else if(vertCount===0){
-                const polyInc = clusterToPolyInc(c)
-                poly = polyInc.poly
+            const maxStaSize = Math.max(...sizes)
+            if(asIs){
+                poly = c.map(x=>x.pos)
             }
             else{
-                const polyVert = clusterToPolyVert(c)
-                const polyInc = clusterToPolyInc(c)
-                if(polyInc.area < polyVert.area){
-                    poly = polyInc.poly
-                }else{
+                const vertCount = c.filter(x=>x.dir===ControlPointDir.vertical).length
+                const incCount = c.filter(x=>x.dir===ControlPointDir.incline).length
+                if(incCount===0){
+                    const polyVert = clusterToPolyVert(c)
                     poly = polyVert.poly
+                }
+                else if(vertCount===0){
+                    const polyInc = clusterToPolyInc(c)
+                    poly = polyInc.poly
+                }
+                else{
+                    const polyVert = clusterToPolyVert(c)
+                    const polyInc = clusterToPolyInc(c)
+                    if(polyInc.area < polyVert.area){
+                        poly = polyInc.poly
+                    }else{
+                        poly = polyVert.poly
+                    }
                 }
             }
             polys.push({

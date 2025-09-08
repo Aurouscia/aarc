@@ -39,7 +39,8 @@ export enum ControlPointLinkType{
     fat = 0,
     thin = 1,
     dot = 2, 
-    dotCover = 3
+    dotCover = 3,
+    cluster = 4
 }
 export interface ControlPointLink{
     pts:number[]

@@ -29,11 +29,15 @@ defineExpose({
         <button @click="envStore.createTextTag();fd()">创建文本标签</button>
     </div>
     <div class="toolItem">
+        <div v-if="creatingLinkType===ControlPointLinkType.cluster" class="smallNote">
+            选择“车站团”模式时，连线中央会有标记用细线，其仅在编辑器可见，导出时会隐藏
+        </div>
         <select v-model="creatingLinkType">
             <option :value="ControlPointLinkType.fat">粗线</option>
             <option :value="ControlPointLinkType.thin">细线</option>
             <option :value="ControlPointLinkType.dot">虚线(原色)</option>
             <option :value="ControlPointLinkType.dotCover">虚线(覆盖)</option>
+            <option :value="ControlPointLinkType.cluster">车站团</option>
         </select>
         <button @click="envStore.startCreatingPtLink();fd()">创建车站间连线</button>
     </div>

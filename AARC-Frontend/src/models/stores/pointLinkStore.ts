@@ -1,7 +1,7 @@
 import { defineStore } from "pinia"
 import { useSaveStore } from "./saveStore"
 import { computed, ref } from "vue"
-import { ControlPointLinkType } from "../save"
+import { ControlPoint, ControlPointLinkType } from "../save"
 
 export const usePointLinkStore = defineStore('pointLinkStore',()=>{
     const linkLength = 2
@@ -55,6 +55,23 @@ export const usePointLinkStore = defineStore('pointLinkStore',()=>{
         }
         return pts
     }
+    function getClusterLinksPts():ControlPoint[][]{
+        const links = saveStore.save?.pointLinks?.filter(x=>x.type === ControlPointLinkType.cluster) ?? []
+        const res:ControlPoint[][] = []
+        for(const link of links){
+            const pts = []
+            for(const ptId of link.pts){
+                const pt = saveStore.getPtById(ptId)
+                if(pt){
+                    pts.push(pt)
+                }
+            }
+            if(pts.length>1){
+                res.push(pts)
+            }
+        }
+        return res;
+    }
 
     return{
         creatingLink,
@@ -65,6 +82,7 @@ export const usePointLinkStore = defineStore('pointLinkStore',()=>{
         abortCreatingPtLink,
         ptLinkClick,
         clearItems: abortCreatingPtLink,
-        getLinkLinkedPts
+        getLinkLinkedPts,
+        getClusterLinksPts
     }
 })
