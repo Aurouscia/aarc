@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import ConfigSection from './shared/ConfigSection.vue';
+import { guideInfo } from '@/app/guideInfo';
+
+const showGuideInfos = guideInfo.findHelp || guideInfo.extra
 </script>
 
 <template>
@@ -116,10 +119,11 @@ import ConfigSection from './shared/ConfigSection.vue';
             <p>反之，如果你等待约0.1~0.25秒（可以注意到画布被重新填满屏幕/变清晰）后，再次进行操作，即可避免与重新渲染事件“撞上”。</p>
         </div>
     </div>
-    <div>
-        <h3>有任何用着不爽的地方</h3>
+    <div v-if="showGuideInfos">
+        <h3>更多问题：可问其他用户</h3>
         <div>
-            <p>请加首页的qq群联系群主反映</p>
+            <p>{{ guideInfo.findHelp }}</p>
+            <p>{{ guideInfo.extra }}</p>
         </div>
     </div>
 </div>

@@ -130,8 +130,10 @@ async function commitReplaceJson(){
     const staCount = jsonSaveStaCount.value || 0
     const lineCount = jsonSaveLineCount.value || 0
     const resp = await api.save.updateData(id, data, staCount, lineCount)
-    if(resp)
+    if(resp){
+        pop?.show('替换成功\n下次保存更新略缩图', 'success')
         resetDangerZone()
+    }
 }
 function resetReplaceJson(){
     jsonSaveLineCount.value = undefined
@@ -251,7 +253,7 @@ onMounted(async()=>{
             <input type="file" ref="jsonFileInput" accept=".json" @change="selectReplaceJson"/>
             <div v-show="jsonContent" class="replaceJsonInfo">
                 [{{ jsonSaveLineCount }}线 {{ jsonSaveStaCount }}站]
-                <div>存档数据将被覆盖，注意核对名称</div>
+                <div>存档数据将被覆盖<br/>注意核对名称</div>
             </div>
             <button v-show="jsonContent" class="danger" @click="commitReplaceJson">替换数据</button>
         </div>
