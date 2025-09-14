@@ -1,45 +1,47 @@
-h2{
-    display: flex;
-    align-items: center;
-    color: #999;
-    font-size: 20px;
-    gap: 10px;
-    margin: 5px;
-    border-top: 1px solid #ccc;
-    padding-top: 5px;
-    cursor: pointer;
-    user-select: none;
-    .special{
-        color: rgb(111, 180, 111);
-    }
-    &.sectorShown{
-        font-weight: bold;
-        color: black;
+.configSection{
+    h2{
+        display: flex;
+        align-items: center;
+        color: #999;
+        font-size: 20px;
+        gap: 10px;
+        margin: 5px;
+        border-top: 1px solid #ccc;
+        padding-top: 5px;
+        cursor: pointer;
+        user-select: none;
         .special{
-            color: green;
+            color: rgb(111, 180, 111);
+        }
+        &.sectorShown{
+            font-weight: bold;
+            color: black;
+            .special{
+                color: green;
+            }
+        }
+        .shownStatusIcon{
+            width: 20px;
+            height: 20px;
+            font-size: 16px;
+            line-height: 20px;
+            font-weight: bold;
+            text-align: center;
+            border: 1px solid #999;
+            border-radius: 5px;
         }
     }
-    .shownStatusIcon{
-        width: 20px;
-        height: 20px;
-        font-size: 16px;
-        line-height: 20px;
-        font-weight: bold;
-        text-align: center;
-        border: 1px solid #999;
-        border-radius: 5px;
+    .explain{
+        font-size: 14px;
+        color: #666;
+        p{
+            margin-bottom: 0.5em;
+        }
     }
-}
-.explain{
-    font-size: 14px;
-    color: #666;
-    p{
-        margin-bottom: 0.5em;
+    td{
+        min-width: 40px;
     }
-}
-td{
-    min-width: 40px;
-}
-input[type=number]{
-    width: 100px;
+    input[type=number]{
+        width: 100px;
+    }
 }

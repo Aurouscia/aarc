@@ -133,7 +133,7 @@ defineExpose({
 
 <template>
 <SideBar ref="sidebar">
-    <div v-if="editing">
+    <div v-if="editing" class="options">
         <h2>点坐标</h2>
         <div class="optionSection">
             <table class="fullWidth"><tbody>
@@ -261,8 +261,6 @@ defineExpose({
 </template>
 
 <style scoped lang="scss">
-@use './shared/options.scss';
-
 .lineMergeSelect{
     max-width: 180px;
 }

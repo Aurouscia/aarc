@@ -171,7 +171,7 @@ onMounted(async()=>{
     </div>
 </h1>
 <div style="overflow-x: auto;">
-<table v-if="saveList" class="fullWidth index"><tbody>
+<table v-if="saveList" class="fullWidth index saveList"><tbody>
     <tr>
         <th style="width: 100px;min-width: 100px">点击进入</th>
         <th style="min-width: 200px;">
@@ -268,9 +268,6 @@ onMounted(async()=>{
 </template>
 
 <style scoped lang="scss">
-@use '@/styles/itemIntro.scss';
-@use '@/styles/saveList.scss';
-
 .ownerNameInH1{
     letter-spacing: normal;
     margin-right: 0.1em;

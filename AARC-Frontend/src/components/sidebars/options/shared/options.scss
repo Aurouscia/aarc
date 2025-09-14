@@ -1,33 +1,35 @@
-.optionSection{
-    border-bottom: 1px solid #aaa;
-    padding: 10px 0px 10px 0px;
-    margin-bottom: 10px;
-}
-td.colorPickerTd{
-    display: flex;
-    justify-content: center;
-    padding: 10px;
-}
-.viewableRange{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    input[type=range]{
-        margin: 0px;
+.options{
+    .optionSection{
+        border-bottom: 1px solid #aaa;
+        padding: 10px 0px 10px 0px;
+        margin-bottom: 10px;
     }
-    input[type=number]{
-        padding: 1px;
-        margin: 0px;
-        width: 70px;
+    td.colorPickerTd{
+        display: flex;
+        justify-content: center;
+        padding: 10px;
     }
-}
-.coord{
-    input{
-        width: 130px;
+    .viewableRange{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        input[type=range]{
+            margin: 0px;
+        }
+        input[type=number]{
+            padding: 1px;
+            margin: 0px;
+            width: 70px;
+        }
     }
-}
-h2{
-    text-align: center;
-    font-size: 18px;
+    .coord{
+        input{
+            width: 130px;
+        }
+    }
+    h2{
+        text-align: center;
+        font-size: 18px;
+    }
 }

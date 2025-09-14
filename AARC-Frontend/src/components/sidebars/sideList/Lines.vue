@@ -113,8 +113,6 @@ onUnmounted(()=>{
 </template>
 
 <style scoped lang="scss">
-@use './shared/arrangableList.scss';
-
 .paletteEntry{
     display: flex;
     justify-content: center;

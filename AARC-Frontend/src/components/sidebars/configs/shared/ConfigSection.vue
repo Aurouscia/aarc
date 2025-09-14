@@ -11,13 +11,11 @@ const show = ref(props.defaultShow??false);
 </script>
 
 <template>
-<h2 v-if="!noTitle" :class="{sectorShown:show}" @click="show = !show">
-    <div class="shownStatusIcon">{{ show ? '×':'+' }}</div>
-    <div :class="{special}">{{ title }}</div>
-</h2>
-<slot v-if="show"></slot>
+<div class="configSection">
+    <h2 v-if="!noTitle" :class="{sectorShown:show}" @click="show = !show">
+        <div class="shownStatusIcon">{{ show ? '×':'+' }}</div>
+        <div :class="{special}">{{ title }}</div>
+    </h2>
+    <slot v-if="show"></slot>
+</div>
 </template>
-
-<style lang="scss" scoped>
-@use './configSection.scss';
-</style>

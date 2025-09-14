@@ -38,8 +38,6 @@ onMounted(()=>{
 </template>
 
 <style lang="scss" scoped>
-@use './shared/configSection.scss';
-
 .staNameFob{
     width: 100px;
     text-align: center;

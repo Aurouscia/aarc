@@ -171,7 +171,3 @@ onMounted(()=>{
     </tbody></table>
 </ConfigSection>
 </template>
-
-<style lang="scss" scoped>
-@use './shared/configSection.scss'
-</style>

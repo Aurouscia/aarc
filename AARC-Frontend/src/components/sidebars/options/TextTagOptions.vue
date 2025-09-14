@@ -70,7 +70,7 @@ defineExpose({
 
 <template>
 <SideBar ref="sidebar" @click="picker1?.closePanel();picker2?.closePanel()">
-    <div v-if="editing">
+    <div v-if="editing" class="options">
         <h2>标签设置</h2>
         <div class="optionSection">
             <table class="fullWidth"><tbody>
@@ -236,8 +236,6 @@ defineExpose({
 </template>
 
 <style scoped lang="scss">
-@use './shared/options.scss';
-
 .iconSelect{
     min-width: 100px;
     max-width: 170px;

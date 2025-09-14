@@ -187,8 +187,6 @@ onMounted(async()=>{
 </template>
 
 <style scoped lang="scss">
-@use '@/styles/itemIntro.scss';
-
 .lastActive{
     font-size: 14px;
 }

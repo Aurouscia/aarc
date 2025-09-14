@@ -70,7 +70,3 @@ onUnmounted(()=>{
         :line-type-called="'地形'" :line-width-range="{min:0.5, max:12, step:0.5}"
         @color-updated="reloadColorPickers"></LineOptions>
 </template>
-
-<style scoped lang="scss">
-@use './shared/arrangableList.scss';
-</style>

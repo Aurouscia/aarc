@@ -113,6 +113,7 @@ defineExpose({
 
 <LineGroupConfig></LineGroupConfig>
 
+<div class="configSection">
 <h2 :class="{sectorShown:showLineWidthMapped}" @click="showLineWidthMapped = !showLineWidthMapped">
     <div class="shownStatusIcon">{{ showLineWidthMapped ? '×':'+' }}</div>
     <div>线宽对应车站尺寸</div>
@@ -148,6 +149,7 @@ defineExpose({
         </td>
     </tr>
 </tbody></table>
+</div>
 
 <TextTagConfig></TextTagConfig>
 
@@ -157,6 +159,7 @@ defineExpose({
 
 <PinyinConvertConfig></PinyinConvertConfig>
 
+<div class="configSection">
 <h2 :class="{sectorShown:showBgRefImage}" @click="showBgRefImage =!showBgRefImage">
     <div class="shownStatusIcon">{{ showBgRefImage? '×':'+' }}</div>
     <div>背景参考图</div>
@@ -222,9 +225,11 @@ defineExpose({
     </tr>
 </tbody>
 </table>
+</div>
 
 <FaqAsConfig></FaqAsConfig>
 
+<div class="configSection">
 <h2 :class="{sectorShown:showOthers}" @click="showOthers = !showOthers">
     <div class="shownStatusIcon">{{ showOthers ? '×':'+' }}</div>
     <div>杂项</div>
@@ -301,12 +306,12 @@ defineExpose({
         </td>
     </tr>
 </tbody></table>
+</div>
+
 </SideBar>
 </template>
 
 <style scoped lang="scss">
-@use './configs/shared/configSection.scss';
-
 .lineWidthMapped{
     input{
         width: 80px;

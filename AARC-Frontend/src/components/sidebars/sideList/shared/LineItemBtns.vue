@@ -51,8 +51,6 @@ const mode = computed<'A'|'B'>(()=>{
 </template>
 
 <style scoped lang="scss">
-@use './arrangableList.scss';
-
 .btnIcon{
     margin: 5px;
     border-radius: 5px;

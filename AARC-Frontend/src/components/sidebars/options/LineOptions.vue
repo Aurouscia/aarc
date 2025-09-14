@@ -146,7 +146,7 @@ onMounted(()=>{
 
 <template>
 <SideBar ref="sidebar" @extend="init" @click="closePickers" @fold="foldHander">
-<div class="lineConfig">
+<div class="options">
     <table class="fullWidth"><tbody>
     <tr>
         <td colspan="2" class="nameAndColorTd">
@@ -345,8 +345,6 @@ onMounted(()=>{
 </template>
 
 <style scoped lang="scss">
-@use './shared/options.scss';
-
 .nameAndColorTd{
     background-color: white;
     &>div{
