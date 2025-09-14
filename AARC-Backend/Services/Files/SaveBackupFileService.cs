@@ -14,6 +14,8 @@
             var cvsDir = new DirectoryInfo(cvsDirPath);
             if (!cvsDir.Exists)
                 cvsDir.Create();
+            else
+                CleanUp(cvsDir);
             DateTime latestSave = DateTime.MinValue;
             foreach(var f in cvsDir.GetFiles())
             {
@@ -31,8 +33,9 @@
             distWriter.Flush();
             distWriter.Close();
         }
-        public void CleanUp(DirectoryInfo cvsDir)
+        public int CleanUp(DirectoryInfo cvsDir)
         {
+            int deleteCount = 0;
             if (cvsDir.Exists)
             {
                 var files = cvsDir
@@ -41,12 +44,13 @@
                     .ToList();
                 if(files.Count > backupFileMaxCountPerId)
                 {
-                    var exceeded = files.Count - backupFileMaxCountPerId;
-                    var needToDelete = files.Take(exceeded);
+                    deleteCount = files.Count - backupFileMaxCountPerId;
+                    var needToDelete = files.Take(deleteCount);
                     foreach (var f in needToDelete)
                         f.Delete();
                 }
             }
+            return deleteCount;
         }
     }
 }
