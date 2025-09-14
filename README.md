@@ -34,7 +34,8 @@ issue请在gitee提出，github那边一般不看
 3. [git客户端](https://git-scm.com/downloads) 用来下载代码和提交更新
 4. [visual studio code](https://code.visualstudio.com/download)（和第一条是两个东西）用来编辑前端代码
 5. 一台windows系统的服务器（照理说linux的也行，请自行研究.net网站部署方法）  
-TODO：dockerfile
+
+*TODO：dockerfile，谁需要linux部署可联系作者*
 
 ### 步骤
 1. 下载代码文件  
@@ -44,13 +45,27 @@ TODO：dockerfile
 3. 双击项目根目录的sln文件，进入vs
 4. 顶部栏-工具-Nuget包管理器-包管理器控制台，在控制台中输入`update-database`
     - 该操作将在本地的`/Data`目录中生成/更新数据库架构
-5. 点击顶部绿色启动按钮启动调试，检查是否正常
-6. 停止调试，点击顶部栏`生成-发布`即可选择位置导出
-7. windows服务器上安装`.net9.0 hosting bundle`
-8. 把导出的程序移动到服务器上(建议使用webDeploy，也可以直接用远程桌面的复制粘贴)，并给予Users用户组该文件夹的控制权限，用IIS新建网站并指向该文件夹
+5. 修改配置（vs文件资源管理器中找到`appsettings.json`）
+    - 如果需要保存配置到git，直接修改（注意其中“必须修改”的部分）
+    - 如果不想保存配置到git，可选择新建：
+        - `appsettings.Development.json`（git忽略、仅本地调试）
+        - `appsettings.Production.json`（git忽略、仅生产环境）
+        - `appsettingsLocal.json`（git忽略）
+        上述四个文件格式完全一样
+6. 点击顶部绿色启动按钮启动调试，检查是否正常
+7. 停止调试，点击顶部栏`生成-发布`即可选择位置导出
+8. windows服务器上安装`.net9.0 hosting bundle`（dotnet官网可以下载到）
+9. 把导出的程序移动到服务器上(建议使用webDeploy，也可以直接用远程桌面的复制粘贴)，并给予Users用户组该文件夹的控制权限，用IIS新建网站并指向该文件夹
     - 第一次移动后需要手动放入`/Data`中的数据库(.db文件)
     - 后续注意不要把数据库覆盖了，定期保存备份
-9. 尝试启动并进入网站
+10. 尝试启动并进入网站
+
+## 初始化
+1. 记住在`appsettings.json`（或其变体）中填写的`MasterKey`
+2. 在地址栏中输入`<域名>/#/sudo`，进入管理页面
+3. 点击“初始化管理员账号”
+4. 输入管理员账号名称和`MasterKey`，即可初始化账号
+5. 复制或记住生成的密码后，才能关闭页面
 
 *TODO：部署后更新数据库架构的方法*
 

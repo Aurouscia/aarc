@@ -9,6 +9,7 @@ using Serilog;
 try
 { 
     var builder = WebApplication.CreateBuilder(args);
+    builder.Configuration.AddJsonFile("appsettingsLocal.json", optional: true);
     var c = builder.Configuration;
     var e = builder.Environment;
 
