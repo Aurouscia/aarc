@@ -1,5 +1,6 @@
 ﻿using AARC.Services.App.ActionFilters;
 using AARC.Services.App.Authentication;
+using AARC.Services.App.Config;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Services.App.Logging;
 using AARC.Services.App.Mapping;
@@ -46,6 +47,7 @@ namespace AARC.Services.App
             services.AddScoped<HttpUserIdProvider>();
             services.AddScoped<HttpUserInfoService>();
             services.AddSingleton<PwdRecorder>();
+            services.AddSingleton<MasterKeyChecker>();
 
             services.AddNSwagDocument();
             services.AddSingleton<NSwagTsGenService>();

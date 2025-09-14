@@ -15,7 +15,7 @@
             if (!cvsDir.Exists)
                 cvsDir.Create();
             else
-                CleanUp(cvsDir);
+                Cleanup(cvsDir);
             DateTime latestSave = DateTime.MinValue;
             foreach(var f in cvsDir.GetFiles())
             {
@@ -33,7 +33,7 @@
             distWriter.Flush();
             distWriter.Close();
         }
-        public int CleanUp(DirectoryInfo cvsDir)
+        public int Cleanup(DirectoryInfo cvsDir)
         {
             int deleteCount = 0;
             if (cvsDir.Exists)
@@ -49,6 +49,18 @@
                     foreach (var f in needToDelete)
                         f.Delete();
                 }
+            }
+            return deleteCount;
+        }
+        public int CleanupForAll()
+        {
+            int deleteCount = 0;
+            var baseDir = new DirectoryInfo(backupFileBaseDir);
+            if (!baseDir.Exists)
+                return deleteCount;
+            foreach(var d in baseDir.EnumerateDirectories())
+            {
+                deleteCount += Cleanup(d);
             }
             return deleteCount;
         }

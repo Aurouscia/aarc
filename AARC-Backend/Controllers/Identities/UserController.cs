@@ -11,8 +11,7 @@ namespace AARC.Controllers.Identities
     [Route(ApiConsts.routePattern)]
     public class UserController(
         UserRepo userRepo,
-        PwdRecorder pwdRecorder,
-        IConfiguration config
+        PwdRecorder pwdRecorder
         ) : Controller
     {
         [AllowAnonymous]
@@ -64,23 +63,6 @@ namespace AARC.Controllers.Identities
             var res = userRepo.GetUserInfo(id) 
                 ?? throw new RqEx("找不到指定用户");
             return res;
-        }
-
-        [AllowAnonymous]
-        [HttpPost]
-        public string InitAdmin(
-            [FromForm] string? userName,
-            [FromForm] string? masterKey)
-        {
-            var mKey = config["MasterKey"] ?? Path.GetRandomFileName();
-            if (mKey != masterKey)
-                return "MasterKey错误";
-            var initialPwd = "987333";
-            var success = userRepo.CreateUser(userName, initialPwd, out var errmsg, true);
-            if (success)
-                return $"创建成功，密码为{initialPwd}，立即登录并更改";
-            else
-                return errmsg ?? "未知错误";
         }
     }
 }

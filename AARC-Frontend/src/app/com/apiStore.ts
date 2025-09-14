@@ -143,6 +143,7 @@ export const useApiStore = defineStore('api', () => {
     }
 
     const w = wrapClientWithHandling
+    const sudo = w(new api.SudoClient(baseUrl, instance))
     const auth = w(new api.AuthClient(baseUrl, instance))
     const user = w(new api.UserClient(baseUrl, instance))
     const save = w(new api.SaveClient(baseUrl, instance))
@@ -152,6 +153,7 @@ export const useApiStore = defineStore('api', () => {
         abortAll,
         setJwtToken,
         clearJwtToken,
+        sudo,
         auth,
         user,
         save,
