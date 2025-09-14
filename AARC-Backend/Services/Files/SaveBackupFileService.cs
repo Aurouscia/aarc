@@ -1,4 +1,6 @@
-﻿namespace AARC.Services.Files
+﻿using System.IO.Compression;
+
+namespace AARC.Services.Files
 {
     public class SaveBackupFileService
     {
@@ -24,11 +26,15 @@
             }
             if (latestSave.AddMinutes(backupFileCreateThrsMins) > DateTime.Now)
                 return;
-            var fileName = DateTime.Now.ToString("yyyy-MMdd-HHmm");
-            fileName = Path.ChangeExtension(fileName, "json");
-            var filePath = Path.Combine(cvsDirPath, fileName);
-            using var dist = File.Open(filePath, FileMode.Create, FileAccess.Write);
-            using var distWriter = new StreamWriter(dist);
+            string fileNameBase = DateTime.Now.ToString("yyyy-MMdd-HHmm");
+            string fileNameJson = Path.ChangeExtension(fileNameBase, "json");
+            string fileNameZip = Path.ChangeExtension(fileNameBase, "zip");
+            string filePathZip = Path.Combine(cvsDirPath, fileNameZip);
+            using var dist = File.Open(filePathZip, FileMode.Create, FileAccess.Write);
+            using ZipArchive zip = new(dist, ZipArchiveMode.Create);
+            var zipEntry = zip.CreateEntry(fileNameJson);
+            using var zipEntryStream = zipEntry.Open();
+            using var distWriter = new StreamWriter(zipEntryStream);
             distWriter.Write(data);
             distWriter.Flush();
             distWriter.Close();
