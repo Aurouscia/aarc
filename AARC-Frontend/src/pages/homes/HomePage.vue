@@ -39,9 +39,8 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-09-08更新'">
-        1. 添加车站连线模式“车站团”，可用于有理数坐标点之间的强制指定换乘<br/>
-        2. 优化浏览器导出像素上限和导出失败时的提示
+    <Notice :type="'info'" :title="'2025-09-21更新'">
+        1. 文本标签：不透明度设置（可设为半透明）
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
         1. 标签/站名的旋转和压缩<br/>

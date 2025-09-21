@@ -27,6 +27,8 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         })
     }
     function renderOneTextTag(ctx:CvsContext, t:TextTag, strokeRect?:boolean){
+        const opacityOriginal = ctx.globalAlpha || 1
+        ctx.globalAlpha = t.opacity || 1
         if(t?.forId){
             const line = saveStore.getLineById(t.forId)
             if(line){
@@ -39,6 +41,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         }else{
             renderPlain(ctx, t, strokeRect)
         }
+        ctx.globalAlpha = opacityOriginal
     }
     function renderForCommonLine(ctx:CvsContext, t:TextTag, lineInfo:Line, strokeRect?:boolean){
         const commonLineBuiltinRatio = 1.2
@@ -117,7 +120,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         const drawLineNameRes = drawTextForLineName(ctx, t.pos, anchor, textAlign, optMain, optSub, {
             width: cs.config.textTagFontSizeBase * mainRatio/4,
             color: terrainColor,
-            opacity: 1
+            opacity: t.opacity || 1
         }, 'both')
         if(drawLineNameRes?.rect){
             const rect = drawLineNameRes.rect
@@ -253,7 +256,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         let textCarpetOpts:false|DrawTextStrokeOption|undefined={
             width: cs.config.textTagFontSizeBase * mainRatio/4,
             color: cs.config.bgColor,
-            opacity: 1
+            opacity: t.opacity || 1
         }
         if (t.removeCarpet)
             textCarpetOpts=false
@@ -355,6 +358,8 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         return [ x, y ]
     }
     function drawRectAndAnchor(ctx:CvsContext, anchorPos:Coord, rectFull?:RectCoord){
+        const opacityOriginal = ctx.globalAlpha || 1
+        ctx.globalAlpha = 1
         if(rectFull)
             drawRect(ctx, rectFull, 'black', 1.5)
         drawCross(ctx, {
@@ -369,6 +374,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
                 color: 'black'
             }]
         })
+        ctx.globalAlpha = opacityOriginal
     }
     function enlargeRectByIcon(rect:RectCoord, iconW:number, iconH:number, gap:number, pos:SgnNumber){
         if(pos == 0){

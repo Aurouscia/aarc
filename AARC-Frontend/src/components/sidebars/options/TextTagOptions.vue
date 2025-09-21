@@ -26,6 +26,8 @@ function startEditing(tag: TextTag) {
         tag.textOp = { size:0, color: cs.config.textTagFontColorHex }
     if(!tag.textSOp)
         tag.textSOp = { size:0, color: cs.config.textTagSubFontColorHex }
+    if(!tag.opacity)
+        tag.opacity = 1
     picker1.value?.enforceTo(tag.textOp?.color || '#000000')
     picker2.value?.enforceTo(tag.textSOp?.color || '#000000')
     iconStore.enforcePrefixSelectedTo(tag.icon??0)
@@ -163,6 +165,16 @@ defineExpose({
                         </select>
                         <div class="smallNote">若字母数字+"线"结尾</div>
                         <div class="smallNote">将会无视文字对齐</div>
+                    </td>
+                </tr>
+                <tr v-if="!editing.forId">
+                    <td>不透<br/>明度</td>
+                    <td>
+                        <div class="viewableRange">
+                            <input type="range" v-model.number="editing.opacity" :min="0.05" :max="1" :step="0.05" @change="emit('changed')"/>
+                            <input type="number" v-model.number="editing.opacity" :min="0.05" :max="1" :step="0.05" @change="emit('changed')"/>
+                            <div class="smallNote">配合“去除白边”使用</div>
+                        </div>
                     </td>
                 </tr>
                 <tr v-if="!editing.forId">

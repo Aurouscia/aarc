@@ -120,6 +120,7 @@ export interface TextTag{
     anchorY?:SgnNumber
     dropCap?:boolean
     icon?:number
+    opacity?:number
     removeCarpet?:boolean
     //rot?:FormalRotation
 }

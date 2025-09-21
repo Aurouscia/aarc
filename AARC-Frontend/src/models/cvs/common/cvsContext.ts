@@ -110,6 +110,9 @@ export class CvsContext{
         this.enumerate(b=>b.ctx2d.fillStyle = value)}
     set globalAlpha(value:number){
         this.enumerate(b=>b.ctx2d.globalAlpha = value)}
+    get globalAlpha(){
+        return this.blocks.at(0)?.ctx2d.globalAlpha ?? 1
+    }
     set textBaseline(value:CanvasTextBaseline){
         this.enumerate(b=>b.ctx2d.textBaseline = value)}
     set textAlign(value:CanvasTextAlign){

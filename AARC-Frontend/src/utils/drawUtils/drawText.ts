@@ -85,6 +85,7 @@ export function drawText(
     const needMeasure = task === 'measure' || task === 'both'
 
     if(stroke && needDraw){
+        const opacityOriginal = ctx.globalAlpha || 1
         ctx.strokeStyle = stroke.color
         ctx.globalAlpha = stroke.opacity
         ctx.lineWidth = stroke.width
@@ -95,7 +96,7 @@ export function drawText(
         enumerateSubLines((text, ty)=>{
             ctx.strokeText(text, useX, ty)
         })
-        ctx.globalAlpha = 1
+        ctx.globalAlpha = opacityOriginal
     }
 
     ctx.fillStyle = main.color
