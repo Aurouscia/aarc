@@ -4,6 +4,7 @@ import { localConfigKeyPrefix } from "./common/keyPrefix";
 
 export const useEditorLocalConfigStore = defineStore('editorLocalConfig',()=>{
     const staNameFob = ref<number|string>()
+    const tabForPinyinConvert = ref<boolean>(false)
 
     //旧版兼容性
     function backCompat(){
@@ -17,6 +18,7 @@ export const useEditorLocalConfigStore = defineStore('editorLocalConfig',()=>{
 
     return {
         staNameFob,
+        tabForPinyinConvert,
         backCompat
     }
 },

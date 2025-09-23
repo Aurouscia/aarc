@@ -39,8 +39,8 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-09-21更新'">
-        1. 文本标签：不透明度设置（可设为半透明）
+    <Notice :type="'info'" :title="'2025-09-23更新'">
+        1. 设置-站名拼音转换-tab键（pc端可快速转换，无需鼠标点击）（默认关闭，需手动启用）
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
         1. 标签/站名的旋转和压缩<br/>

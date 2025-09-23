@@ -42,7 +42,8 @@ const {
     mainMaxRow: 10,
     subMaxRow: 10,
     apply: textTagEditStore.applyText,
-    endEditing: textTagEditStore.endEditing
+    endEditing: textTagEditStore.endEditing,
+    pinyinConvert: convertPinyin
 })
 function focusHandler(){
     enableContextMenu(10)

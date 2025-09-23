@@ -1,3 +1,4 @@
+import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig"
 import { computed, ref, Ref } from "vue"
 
 export function useTwinTextarea(options:{
@@ -6,9 +7,11 @@ export function useTwinTextarea(options:{
         mainMaxRow:number,
         subMaxRow:number,
         apply:()=>void,
-        endEditing:()=>void
+        endEditing:()=>void,
+        pinyinConvert:()=>Promise<void>
     }){
     const { main, sub, mainMaxRow, subMaxRow } = options
+    const editorLocalConfig = useEditorLocalConfigStore()
     const mainRows = computed<number>(()=>{
         return countChar(main.value, '\n')
     })
@@ -62,6 +65,13 @@ export function useTwinTextarea(options:{
             const activeEle = document.activeElement
             if(mainInput.value === activeEle){
                 subInput.value?.focus()
+                if(editorLocalConfig.tabForPinyinConvert){
+                    if(!sub.value?.trim() && main.value?.trim()){
+                        options.pinyinConvert().then(()=>{
+                            options.apply()
+                        })
+                    }
+                }
             }else if(subInput.value === activeEle){
                 mainInput.value?.focus()
             }

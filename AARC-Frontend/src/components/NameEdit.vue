@@ -11,6 +11,7 @@ import { usePinyinConvert } from './composables/usePinyinConvert';
 
 const nameEditStore = useNameEditStore()
 const { nameMain, nameSub, editing, edited, nameEditorDiv, controlPointOptionsPanel } = storeToRefs(nameEditStore)
+const { convertPinyin, pinyinOverriding } = usePinyinConvert(nameMain, nameSub, ()=>nameEditStore.applyName())
 const { 
     mainInput: nameMainInput,
     subInput: nameSubInput,
@@ -24,10 +25,10 @@ const {
     mainMaxRow: 10,
     subMaxRow: 10,
     apply: nameEditStore.applyName,
-    endEditing: nameEditStore.endEditing
+    endEditing: nameEditStore.endEditing,
+    pinyinConvert: convertPinyin
 })
 
-const { convertPinyin, pinyinOverriding } = usePinyinConvert(nameMain, nameSub, ()=>nameEditStore.applyName())
 async function convertPinyinCall(){
     await convertPinyin()
 }
