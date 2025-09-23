@@ -8,6 +8,7 @@ import settingsImg from '@/assets/ui/settings.svg'
 import pinyinConvertImg from '@/assets/ui/pinyinConvert.svg'
 import ControlPointOptions from './sidebars/options/ControlPointOptions.vue';
 import { usePinyinConvert } from './composables/usePinyinConvert';
+import { onMounted, onUnmounted } from 'vue';
 
 const nameEditStore = useNameEditStore()
 const { nameMain, nameSub, editing, edited, nameEditorDiv, controlPointOptionsPanel } = storeToRefs(nameEditStore)
@@ -20,6 +21,7 @@ const {
     keyHandler,
     inputHandler,
 } = useTwinTextarea({
+    isEditing: editing,
     main: nameMain,
     sub: nameSub,
     mainMaxRow: 10,
@@ -39,15 +41,22 @@ function focusHandler(){
 function blurHandler(){
     disableContextMenu()
 }
+
+onMounted(()=>{
+    window.addEventListener('keydown', keyHandler)
+})
+onUnmounted(()=>{
+    window.removeEventListener('keydown', keyHandler)
+})
 </script>
 
 <template>
     <div class="nameEditor bangPanel" :class="{retracted:!editing}" ref="nameEditorDiv">
         <textarea v-model="nameMain" ref="nameMainInput" :rows="nameMainRows" @input="inputHandler('main')"
-            @focus="nameEditStore.nameInputFocusHandler();focusHandler()" @blur="blurHandler()" @keydown="keyHandler"
+            @focus="nameEditStore.nameInputFocusHandler();focusHandler()" @blur="blurHandler()"
             spellcheck="false" placeholder="请输入站名"></textarea>
         <textarea v-model="nameSub" ref="nameSubInput" :rows="nameSubRows" @input="inputHandler('sub')"
-            @focus="nameEditStore.nameInputFocusHandler();focusHandler()" @blur="blurHandler()" @keydown="keyHandler" class="secondary"
+            @focus="nameEditStore.nameInputFocusHandler();focusHandler()" @blur="blurHandler()" class="secondary"
             spellcheck="false" placeholder="请输入外语站名/副站名"></textarea>
         <div @click="convertPinyinCall" class="pinyinConvertBtn sqrBtn withShadow" :class="{pinyinOverriding}">
             <img v-if="!pinyinOverriding" :src="pinyinConvertImg"/>

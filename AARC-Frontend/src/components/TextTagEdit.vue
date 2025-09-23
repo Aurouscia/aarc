@@ -3,7 +3,7 @@ import { useTextTagEditStore } from '@/models/stores/textTagEditStore';
 import { storeToRefs } from 'pinia';
 import { useTwinTextarea } from './composables/useTwinTextarea';
 import TextTagOptions from './sidebars/options/TextTagOptions.vue';
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { useEnvStore } from '@/models/stores/envStore';
 import foldImg from '@/assets/ui/fold.svg'
 import settingsImg from '@/assets/ui/settings.svg'
@@ -37,6 +37,7 @@ const {
     keyHandler,
     inputHandler
 } = useTwinTextarea({
+    isEditing: editing,
     main: textMain,
     sub: textSub,
     mainMaxRow: 10,
@@ -51,15 +52,23 @@ function focusHandler(){
 function blurHandler(){
     disableContextMenu()
 }
+
+onMounted(()=>{
+    window.addEventListener('keydown', keyHandler)
+})
+onUnmounted(()=>{
+    console.log('unmounted')
+    window.removeEventListener('keydown', keyHandler)
+})
 </script>
 
 <template>
     <div class="textTagEditor bangPanel" :class="{retracted:!editing}" ref="textEditorDiv">
         <div>
             <textarea v-model="textMain" ref="mainInput" :rows="mainRows" @input="inputHandler('main')" :placeholder="inputPlaceholder"
-                @keydown="keyHandler" @focus="focusHandler()" @blur="blurHandler()" spellcheck="false"></textarea>
+                @focus="focusHandler()" @blur="blurHandler()" spellcheck="false"></textarea>
             <textarea v-model="textSub" ref="subInput" :rows="subRows" @input="inputHandler('sub')" :placeholder="inputPlaceholder"
-                @keydown="keyHandler" @focus="focusHandler()" @blur="blurHandler()" class="secondary" spellcheck="false"></textarea>
+                @focus="focusHandler()" @blur="blurHandler()" class="secondary" spellcheck="false"></textarea>
         </div>
         <div @click="envStore.duplicateTextTag();textTagEditStore.endEditing()" class="duplicateBtn sqrBtn withShadow">
             <div class="dupA"></div><div class="dupB"></div>

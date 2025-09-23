@@ -2,6 +2,7 @@ import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig"
 import { computed, ref, Ref } from "vue"
 
 export function useTwinTextarea(options:{
+        isEditing:Ref<boolean>,
         main:Ref<string|undefined>,
         sub:Ref<string|undefined>,
         mainMaxRow:number,
@@ -61,7 +62,9 @@ export function useTwinTextarea(options:{
     }
     function keyHandler(e:KeyboardEvent){
         if(e.key==='Tab'){
-            e.preventDefault()
+            e.preventDefault() //必须prevent
+            if(!options.isEditing.value)
+                return //如果没在编辑，则不关我的事
             const activeEle = document.activeElement
             if(mainInput.value === activeEle){
                 subInput.value?.focus()
@@ -72,8 +75,10 @@ export function useTwinTextarea(options:{
                         })
                     }
                 }
-            }else if(subInput.value === activeEle){
+                subInput.value?.setSelectionRange(-1, -1) //确保光标在末尾
+            } else {
                 mainInput.value?.focus()
+                mainInput.value?.setSelectionRange(-1, -1) //确保光标在末尾
             }
         }else if(e.key==="Escape"){
             e.preventDefault()
