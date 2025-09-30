@@ -27,11 +27,16 @@ namespace AARC.Services.App.HttpAuthInfo
             }
             return 0;
         }
+
+        /// <summary>
+        /// 获取用户Id，未获取到则抛出RqEx
+        /// </summary>
+        /// <returns>用户Id</returns>
         public int RequireUserId()
         {
             var uid = UserIdLazy.Value;
             if (uid <= 0)
-                throw new InvalidOperationException("请登录后重试");
+                throw new RqEx("请登录后重试");
             return uid;
         }
     }

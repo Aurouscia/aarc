@@ -1,3 +1,4 @@
+global using RqEx = AARC.Utils.Exceptions.RequestInvalidException;
 using AARC.Models.Db.Context;
 using AARC.Repos;
 using AARC.Services.App;

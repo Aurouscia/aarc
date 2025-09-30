@@ -2,7 +2,6 @@
 using AARC.Services.App.PwdRecord;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RqEx = AARC.Utils.Exceptions.RequestInvalidException;
 
 namespace AARC.Controllers.Identities
 {

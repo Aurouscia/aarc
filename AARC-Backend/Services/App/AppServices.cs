@@ -46,6 +46,8 @@ namespace AARC.Services.App
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<HttpUserIdProvider>();
             services.AddScoped<HttpUserInfoService>();
+            services.AddScoped<UserCheckFilter>();
+
             services.AddSingleton<PwdRecorder>();
             services.AddSingleton<MasterKeyChecker>();
 

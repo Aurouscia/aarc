@@ -1,6 +1,6 @@
 ﻿using AARC.Models.Db.Context;
 using AARC.Models.DbModels.Identities;
-using AARC.Repos.Identities;
+using AARC.Repos;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace AARC.Services.App.HttpAuthInfo
@@ -20,6 +20,13 @@ namespace AARC.Services.App.HttpAuthInfo
             _userIdProvider = userId;
             _context = context;
             UserInfo = new(GetUserInfo);
+        }
+
+        public bool GetUserExist()
+        {
+            var uid = _userIdProvider.UserIdLazy.Value;
+            var uExist = _context.Users.Existing().Any(x => x.Id == uid);
+            return uExist;
         }
 
         private HttpUserInfo GetUserInfo()

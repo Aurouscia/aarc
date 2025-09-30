@@ -1,10 +1,11 @@
-﻿using AARC.Repos.Identities;
+﻿using AARC.Models.DbModels.Identities;
+using AARC.Repos.Identities;
 using AARC.Repos.Saves;
+using AARC.Services.App.ActionFilters;
 using AARC.Services.Files;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IO.Compression;
-using RqEx = AARC.Utils.Exceptions.RequestInvalidException;
 
 namespace AARC.Controllers.Saves
 {
@@ -48,6 +49,7 @@ namespace AARC.Controllers.Saves
             return list;
         }
         [HttpPost]
+        [UserCheck]
         public bool Add([FromBody]SaveDto saveDto)
         {
             var success = saveRepo.Create(saveDto, out var errmsg);
@@ -57,6 +59,7 @@ namespace AARC.Controllers.Saves
             throw new RqEx(errmsg);
         }
         [HttpPost]
+        [UserCheck]
         public bool UpdateInfo([FromBody]SaveDto saveDto)
         {
             var success = saveRepo.UpdateInfo(saveDto, out var errmsg);
@@ -66,6 +69,7 @@ namespace AARC.Controllers.Saves
             throw new RqEx(errmsg);
         }
         [HttpPost]
+        [UserCheck]
         public bool UpdateData(
             int id,
             [FromForm]string data,
@@ -75,6 +79,7 @@ namespace AARC.Controllers.Saves
             return SaveDataToDbAndBackup(id, data, staCount, lineCount);
         }
         [HttpPost]
+        [UserCheck]
         public bool UpdateDataCompressed(
             int id,
             IFormFile dataCompressed,
@@ -88,6 +93,7 @@ namespace AARC.Controllers.Saves
             return SaveDataToDbAndBackup(id, data, staCount, lineCount);
         }
         [HttpPost]
+        [UserCheck]
         public bool UpdateMiniature(int id, IFormFile mini)
         {
             saveMiniatureFileService.Write(mini.OpenReadStream(), id);

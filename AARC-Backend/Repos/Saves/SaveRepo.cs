@@ -6,7 +6,6 @@ using AARC.Services.App.Mapping;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using RqEx = AARC.Utils.Exceptions.RequestInvalidException;
 
 namespace AARC.Repos.Saves
 {
