@@ -85,12 +85,17 @@ namespace AARC.Repos.Saves
             if (errmsg is { }) return false;
             errmsg = ValidateAccess(saveDto.Id);
             if (errmsg is { }) return false;
-            Existing
+            var updated = Existing
                 .Where(x => x.Id == saveDto.Id)
                 .ExecuteUpdate(spc => spc
                     .SetProperty(x => x.Name, saveDto.Name)
                     .SetProperty(x => x.Version, saveDto.Version)
                     .SetProperty(x => x.Intro, saveDto.Intro));
+            if (updated == 0)
+            {
+                errmsg = "找不到该存档";
+                return false;
+            }
             return true;
         }
         public bool UpdateData(
@@ -105,20 +110,25 @@ namespace AARC.Repos.Saves
                 .FirstOrDefault();
             if (originalLength > 1000)
             {
-                if(data.Length < originalLength / 2)
+                if(data.Length < originalLength / 4)
                 {
                     errmsg = "内容显著减少，拒绝保存";
                     return false;
                 }
             }
 
-            Existing
-            .Where(x => x.Id == id)
-            .ExecuteUpdate(spc => spc
-                .SetProperty(x => x.LastActive, DateTime.Now)
-                .SetProperty(x => x.Data, data)
-                .SetProperty(x => x.StaCount, staCount)
-                .SetProperty(x => x.LineCount, lineCount));
+            var updated = Existing
+                .Where(x => x.Id == id)
+                .ExecuteUpdate(spc => spc
+                    .SetProperty(x => x.LastActive, DateTime.Now)
+                    .SetProperty(x => x.Data, data)
+                    .SetProperty(x => x.StaCount, staCount)
+                    .SetProperty(x => x.LineCount, lineCount));
+            if (updated == 0)
+            {
+                errmsg = "找不到该存档";
+                return false;
+            }
             errmsg = null;
             return true;
         }
@@ -128,6 +138,11 @@ namespace AARC.Repos.Saves
                 .Where(x => x.Id == id)
                 .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
                 .FirstOrDefault();
+            if (res is null)
+            {
+                errmsg = "找不到该存档";
+                return null;
+            }
             errmsg = null;
             return res;
         }
@@ -135,10 +150,15 @@ namespace AARC.Repos.Saves
         {
             var res = Existing
                 .Where(x => x.Id == id)
-                .Select(x => x.Data)
+                .Select(x => new { x.Id, x.Data })
                 .FirstOrDefault();
+            if (res is null)
+            {
+                errmsg = "找不到该存档";
+                return null;
+            }
             errmsg = null;
-            return res;
+            return res.Data;
         }
         public bool Remove(int id, out string? errmsg)
         {
