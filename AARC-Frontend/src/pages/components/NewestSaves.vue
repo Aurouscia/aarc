@@ -34,10 +34,11 @@ function lastActiveFromNow(time?: string){
     //如果超过24小时，返回x天
     //如果超过1小时，显示x小时
     //如果超过1分钟，显示x分钟
-    //如果不足1分钟，显示刚刚
+    //如果不足1分钟，显示x秒
     const oneDaySecs = 24 * 60 * 60 * 1000
     const oneHourSecs = 60 * 60 * 1000
     const oneMinSecs = 60 * 1000
+    const oneSec = 1000
     if(diff >= oneDaySecs * 4)
         return '' 
     if(diff > oneDaySecs)
@@ -46,7 +47,7 @@ function lastActiveFromNow(time?: string){
         return Math.floor(diff / oneHourSecs) + '小时前'
     if(diff > oneMinSecs)
         return Math.floor(diff / oneMinSecs) + '分钟前'
-    return '刚刚'
+    return Math.floor(diff / oneSec) + '秒前'
 }
 
 onMounted(async()=>{
