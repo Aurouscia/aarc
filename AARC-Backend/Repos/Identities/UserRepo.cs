@@ -2,7 +2,6 @@
 using AARC.Models.Db.Context.Specific;
 using AARC.Models.DbModels.Identities;
 using AARC.Services.App.HttpAuthInfo;
-using AARC.Services.App.Mapping;
 using AARC.Utils;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -17,6 +16,23 @@ namespace AARC.Repos.Identities
         IMapper mapper
         ) : Repo<User>(context)
     {
+        public IQueryable<User> Viewable
+        {
+            get
+            {
+                if (httpUserInfoService.IsAdmin)
+                    return Existing;
+                var res = Existing.Where(x => x.Type > UserType.Tourist);
+                if (httpUserInfoService.IsTourist)
+                {
+                    var myId = httpUserIdProvider.UserIdLazy.Value;
+                    var me = Existing.Where(x => x.Id == myId);
+                    res = res.Union(me);
+                }
+                return res;
+            }
+        }
+
         public User? MatchUser(string username, string password)
         {
             var pwdEncrypted = UserPwdEncryption.Encrypt(password);
@@ -29,7 +45,7 @@ namespace AARC.Repos.Identities
         {
             int takeCount = 50;
             var myId = httpUserInfoService.UserInfo.Value.Id;
-            var userQ = Existing;
+            var userQ = Viewable;
             var saveQ = base.Context.Saves.Existing().Where(x => x.StaCount > 0);
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -114,7 +130,7 @@ namespace AARC.Repos.Identities
             {
                 Name = username,
                 Password = UserPwdEncryption.Encrypt(password),
-                Type = createAdmin ? UserType.Admin : UserType.Member
+                Type = createAdmin ? UserType.Admin : UserType.Tourist
             };
             base.Add(u);
             return true;
@@ -128,7 +144,7 @@ namespace AARC.Repos.Identities
                 return false;
             }
             var current = httpUserInfoService.UserInfo.Value;
-            if (current.Id != u.Id && current.Type < UserType.Admin)
+            if (current.Id != u.Id && !current.IsAdmin)
             {
                 //除管理员之外的用户只能update自己的信息
                 errmsg = "无权操作";
@@ -144,7 +160,7 @@ namespace AARC.Repos.Identities
                 return false;
             }
             bool wantChangeType = user.Type != u.Type;
-            if (wantChangeType && current.Type < UserType.Admin)
+            if (wantChangeType && !current.IsAdmin)
             {
                 //除管理员之外的用户不能编辑Type
                 errmsg = "无权操作";
@@ -164,7 +180,7 @@ namespace AARC.Repos.Identities
 
         public UserDto? GetUserInfo(int id)
         {
-            return Existing
+            return Viewable
                 .Where(x => x.Id == id)
                 .ProjectTo<UserDto>(mapper.ConfigurationProvider)
                 .FirstOrDefault();
@@ -178,7 +194,7 @@ namespace AARC.Repos.Identities
                     spc.SetProperty(u=>u.LastActive, DateTime.Now));
         }
 
-        public bool DeleteUser(int id, out string? errmsg)
+        public bool FakeRemoveUser(int id, out string? errmsg)
         {
             var user = base.Get(id);
             if (user is null)

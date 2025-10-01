@@ -24,7 +24,16 @@ namespace AARC.Controllers.Saves
         [HttpGet]
         public List<SaveDto> GetNewestSaves()
         {
-            var list = saveRepo.GetNewestSaves();
+            var list = saveRepo.GetNewestSaves(forAuditor: false);
+            EnrichSaveMini(list);
+            EnrichSaveOwner(list);
+            return list;
+        }
+        [HttpGet]
+        [UserCheck(UserType.Admin)]
+        public List<SaveDto> GetNewestSavesAudit()
+        {
+            var list = saveRepo.GetNewestSaves(forAuditor: true);
             EnrichSaveMini(list);
             EnrichSaveOwner(list);
             return list;

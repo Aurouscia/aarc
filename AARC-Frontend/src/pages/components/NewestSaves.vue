@@ -6,12 +6,19 @@ import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { SaveDto } from '@/app/com/apiGenerated';
 
+const props = defineProps<{
+    forAuditor?: boolean
+}>()
 const api = useApiStore()
 const { editorRoute } = useEditorsRoutesJump()
 const { someonesSavesRoute } = useSavesRoutesJump()
 const list = ref<SaveDto[]>([])
 async function load(){
-    const resp = await api.save.getNewestSaves()
+    let resp:SaveDto[]|undefined
+    if(props.forAuditor)
+        resp = await api.save.getNewestSavesAudit()
+    else
+        resp = await api.save.getNewestSaves()
     if(resp){
         list.value = resp
     }

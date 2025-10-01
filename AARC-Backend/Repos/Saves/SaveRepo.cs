@@ -1,5 +1,6 @@
 ﻿using AARC.Models.Db.Context;
 using AARC.Models.Db.Context.Specific;
+using AARC.Models.DbModels.Identities;
 using AARC.Models.DbModels.Saves;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Services.App.Mapping;
@@ -16,21 +17,70 @@ namespace AARC.Repos.Saves
         IMapper mapper
         ) : Repo<Save>(context)
     {
-        public List<SaveDto> GetNewestSaves()
+        private IQueryable<Save> GetOwnerTypedSaves(bool isTourist = false)
         {
-            var res = base.Existing
+            var userQ = base.Context.Users.Existing();
+            if (isTourist)
+                userQ = userQ.Where(x => x.Type == UserType.Tourist);
+            else
+                userQ = userQ.Where(x => x.Type > UserType.Tourist);
+            var filteredByUserType =
+                from u in userQ
+                join s in base.Existing
+                on u.Id equals s.OwnerUserId
+                select s;
+            return filteredByUserType;
+        }
+        private IQueryable<Save> Viewable
+        {
+            get
+            {
+                if (httpUserInfoService.IsAdmin)
+                    return Existing; //管理员：可查看所有的
+                var res = GetOwnerTypedSaves(isTourist: false);
+                if (!httpUserInfoService.IsTourist)
+                    return res; //非游客：可查看非游客的
+                int uid = httpUserIdProvider.UserIdLazy.Value;
+                if(uid > 0)
+                {
+                    var mine = Existing.Where(x => x.OwnerUserId == uid);
+                    res = res.Union(mine); //游客：可查看非游客+自己的
+                }
+                return res;
+            }
+        }
+
+        public List<SaveDto> GetNewestSaves(bool forAuditor)
+        {
+            var res = GetOwnerTypedSaves(isTourist: forAuditor)
                 .OrderByDescending(x => x.LastActive)
                 .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
-                .Take(8)
+                .Take(10)
                 .ToList();
             return res;
         }
         public List<SaveDto> GetMySaves(int uid = 0)
         {
-            if (uid == 0)
+            bool isSelf = false;
+            if (uid == 0) //如果未提供目标uid，则理解为查看自己的
+            { 
                 uid = httpUserIdProvider.UserIdLazy.Value;
-            if (uid == 0)
+                isSelf = true;
+            }
+            if (uid == 0) //如果自己的uid依然为0，则要求登录
                 throw new RqEx(null, System.Net.HttpStatusCode.Unauthorized);
+            
+            if(!httpUserInfoService.IsAdmin && !isSelf)
+            {
+                //如果请求者不是管理员也不是目标本身，则目标必须不能是游客
+                UserType ownerType = Context.Users
+                    .Where(x => x.Id == uid)
+                    .Select(x => x.Type)
+                    .FirstOrDefault();
+                if (ownerType == UserType.Tourist)
+                    throw new RqEx("无权查看");
+            }
+
             var res = base.Existing
                 .Where(x => x.OwnerUserId == uid)
                 .OrderByDescending(x => x.LastActive)
@@ -41,7 +91,8 @@ namespace AARC.Repos.Saves
         public List<SaveDto> Search(
             string search, string orderby, int pageIdx)
         {
-            var q = base.Existing;
+            var q = Viewable;
+
             //sqlite默认大小写敏感，此处强制转为不敏感的（应该不怎么影响性能）
             if (Context is AarcSqliteContext)
                 q = q.Where(x => x.Name.ToLower().Contains(search.ToLower()));
@@ -133,13 +184,13 @@ namespace AARC.Repos.Saves
         }
         public SaveDto? LoadInfo(int id, out string? errmsg)
         {
-            var res = Existing
+            var res = Viewable
                 .Where(x => x.Id == id)
                 .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
                 .FirstOrDefault();
             if (res is null)
             {
-                errmsg = "找不到该存档";
+                errmsg = "无法加载存档信息";
                 return null;
             }
             errmsg = null;
@@ -147,13 +198,13 @@ namespace AARC.Repos.Saves
         }
         public string? LoadData(int id, out string? errmsg)
         {
-            var res = Existing
+            var res = Viewable
                 .Where(x => x.Id == id)
                 .Select(x => new { x.Id, x.Data })
                 .FirstOrDefault();
             if (res is null)
             {
-                errmsg = "找不到该存档";
+                errmsg = "无法加载存档数据";
                 return null;
             }
             errmsg = null;

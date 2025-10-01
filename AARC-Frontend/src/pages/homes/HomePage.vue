@@ -7,8 +7,10 @@ import { onMounted } from 'vue';
 import { appVersionCheck } from '@/app/appVersionCheck';
 import SearchSaveEntrance from '../components/SearchSaveEntrance.vue';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
+import { useUserInfoStore } from '@/app/globalStores/userInfo';
 
 const { setEnteredFrom } = useEnteredCanvasFromStore()
+const userInfoStore = useUserInfoStore()
 
 onMounted(()=>{
     appVersionCheck()
@@ -32,16 +34,20 @@ onMounted(()=>{
     <p v-if="guideInfo.extra">{{ guideInfo.extra }}</p>
     <p>本项目正在持续完善改进中，想提出建议请qq私聊我或<a href="https://gitee.com/au114514/aarc/issues" target="_blank">点击此处</a></p>
 </div>
-<div style="margin: 20px 0px 20px 0px;">
+<div class="marginedSection">
     <NewestSaves></NewestSaves>
+    <div v-if="userInfoStore.isLoginedTourist" class="userTypeNote">当前账号为游客，作品无法公开展示</div>
 </div>
-<div style="margin: 20px 0px 20px 0px;">
+<div v-if="userInfoStore.isAdmin" class="marginedSection">
+    <div class="userTypeNote">当前账号为管理，酌情转正以下游客</div>
+    <NewestSaves :for-auditor="true"></NewestSaves>
+</div>
+<div class="marginedSection">
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-09-23更新'">
-        1. 设置-站名拼音转换-tab键（pc端可使用tab键快速转换，无需鼠标点击）（默认关闭，需手动启用）<br/>
-        2. 修复文本标签编辑器无法使用tab选中输入框的问题（提示：点击站名和文本标签后，可使用tab键选中/切换输入框，无需鼠标点击）
+    <Notice :type="'info'" :title="'2025-10-2更新'">
+        1. 新注册账号为游客，无法公开展示作品，需管理员转正变为会员后才能展示
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
         1. 标签/站名的旋转和压缩<br/>
@@ -196,6 +202,13 @@ onMounted(()=>{
         &:hover{
             color: #333;
         }
+    }
+}
+.marginedSection{
+    margin: 20px 0px;
+    .userTypeNote{
+        text-align: center;
+        color: #666;
     }
 }
 </style>

@@ -1,4 +1,6 @@
-﻿using AARC.Repos.Identities;
+﻿using AARC.Models.DbModels.Identities;
+using AARC.Repos.Identities;
+using AARC.Services.App.ActionFilters;
 using AARC.Services.App.PwdRecord;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -60,8 +62,18 @@ namespace AARC.Controllers.Identities
         public UserDto GetInfo(int id)
         {
             var res = userRepo.GetUserInfo(id) 
-                ?? throw new RqEx("找不到指定用户");
+                ?? throw new RqEx("找不到用户信息");
             return res;
+        }
+
+        [HttpDelete]
+        [UserCheck(UserType.Admin)]
+        public bool Remove(int id)
+        {
+            var success = userRepo.FakeRemoveUser(id, out var errmsg);
+            if (!success)
+                throw new RqEx(errmsg);
+            return true;
         }
     }
 }

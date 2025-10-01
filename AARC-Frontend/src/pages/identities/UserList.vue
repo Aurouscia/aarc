@@ -104,8 +104,9 @@ onMounted(async()=>{
         <th>
             简介<span class="introNote">点击展开</span>
         </th>
-        <th v-if="orderbySave" style="width: 100px;">作品数</th>
-        <th v-if="orderbyActive" style="width: 100px;">上次活跃</th>
+        <th v-if="orderbySave" style="width: 80px;">作品数</th>
+        <th v-if="orderbyActive" style="width: 80px;">上次活跃</th>
+        <th v-if="userInfo.isAdmin" style="width: 60px;">类型</th>
         <th style="width: 110px;">操作</th>
     </tr>
     <tr v-for="u in list" :key="u.id">
@@ -122,6 +123,9 @@ onMounted(async()=>{
         </td>
         <td v-if="orderbySave">{{ u.saveCount }}</td>
         <td v-if="orderbyActive" class="lastActive">{{ u.lastActive }}</td>
+        <td v-if="userInfo.isAdmin">
+            {{ userTypeReadable(u.type) }}
+        </td>
         <td>
             <RouterLink :to="someonesSavesRoute(u.id??0)">
                 <button class="lite" style="margin-right: 6px;">
@@ -134,7 +138,7 @@ onMounted(async()=>{
         </td>
     </tr>
     <tr>
-        <td colspan="4" style="color: #666; font-size: 14px;">仅显示当前排序前50的用户</td>
+        <td :colspan="userInfo.isAdmin ? 5 : 4" style="color: #666; font-size: 14px;">仅显示当前排序前50的用户</td>
     </tr>
 </tbody></table>
 </div>
@@ -170,9 +174,9 @@ onMounted(async()=>{
                 <td>类型</td>
                 <td>
                     <select v-model="editingUser.type">
+                        <option :value="UserType.Tourist">{{ userTypeReadable(UserType.Tourist) }}</option>
                         <option :value="UserType.Member">{{ userTypeReadable(UserType.Member) }}</option>
                         <option :value="UserType.Admin">{{ userTypeReadable(UserType.Admin) }}</option>
-                        <option :value="UserType.Tourist">{{ userTypeReadable(UserType.Tourist) }}</option>
                     </select>
                 </td>
             </tr>
