@@ -295,6 +295,15 @@ export const devSave:Save = {
             textOp: {size:0.7, color:'#999999'},
             textSOp: {size:0.8, color:'#999999'},
             icon:1000000
+        },
+        {
+            id: 1007,
+            pos: [1700, 350],
+            text: "此处为体验环境，无法保存",
+            textS: "如果需要正式使用，请注册账户并登录\n在“作品-我的作品”中点击新建",
+            textOp: {size:1.1, color:'#ff0000'},
+            textSOp: {size:1.1, color:'#ff0000'},
+            anchorX: -1
         }
     ],
     pointLinks:[

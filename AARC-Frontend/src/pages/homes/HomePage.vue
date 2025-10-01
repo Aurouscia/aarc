@@ -29,7 +29,6 @@ onMounted(()=>{
             <a style="color:#cc88cc" href="/#/FAQ">常见问题</a>
         </b>
     </p>
-    <p style="color: #2C71BD">正式使用，请注册账户并登录、在“作品-我的作品”中点击新建，并进入编辑</p>
     <p v-if="guideInfo.findHelp">{{ guideInfo.findHelp }}</p>
     <p v-if="guideInfo.extra">{{ guideInfo.extra }}</p>
     <p>本项目正在持续完善改进中，想提出建议请qq私聊我或<a href="https://gitee.com/au114514/aarc/issues" target="_blank">点击此处</a></p>
