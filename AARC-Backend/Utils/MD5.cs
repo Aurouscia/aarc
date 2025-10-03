@@ -9,22 +9,19 @@ namespace AARC.Utils
         {
             input ??= "";
             byte[] data = MD5.HashData(Encoding.UTF8.GetBytes(input));
-            return BytesToStr(data);
+            return Convert.ToHexStringLower(data);
         }
         public static string GetMD5(this Stream s)
         {
-            byte[] data = MD5.HashData(s);
-            return BytesToStr(data);
-        }
-
-        private static string BytesToStr(byte[] data)
-        {
-            StringBuilder sBuilder = new();
-            for (int i = 0; i < data.Length; i++)
+            using var md5 = MD5.Create();
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = s.Read(buffer, 0, buffer.Length)) > 0)
             {
-                sBuilder.Append(data[i].ToString("x2"));
+                md5.TransformBlock(buffer, 0, bytesRead, null, 0);
             }
-            return sBuilder.ToString();
+            md5.TransformFinalBlock(buffer, 0, 0);
+            return Convert.ToHexStringLower(md5.Hash ?? [0x0]);
         }
     }
 }

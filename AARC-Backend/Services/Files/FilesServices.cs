@@ -11,6 +11,7 @@ namespace AARC.Services.Files
         {
             services.AddSingleton<SaveMiniatureFileService>();
             services.AddSingleton<SaveBackupFileService>();
+            services.AddSingleton<UserFileService>();
             return services;
         }
     }
@@ -21,6 +22,7 @@ namespace AARC.Services.Files
         {
             var contentPath = env.ContentRootPath;
             app.UseSaveMiniatureFiles(contentPath);
+            app.UseUserFiles(contentPath);
             return app;
         }
     }

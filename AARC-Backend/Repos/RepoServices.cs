@@ -1,4 +1,5 @@
-﻿using AARC.Repos.Identities;
+﻿using AARC.Repos.Files;
+using AARC.Repos.Identities;
 using AARC.Repos.Saves;
 
 namespace AARC.Repos
@@ -10,6 +11,7 @@ namespace AARC.Repos
         {
             services.AddScoped<UserRepo>();
             services.AddScoped<SaveRepo>();
+            services.AddScoped<UserFileRepo>();
             return services;
         }
     }
