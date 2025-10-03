@@ -51,8 +51,9 @@ namespace AARC.Utils
                 .Select(x => new KeyValuePair<string, string>(x.Key.Trim(), x.Value.Trim()))
                 .Where(x => x.Key.Length > 0) //排除长度为0的Key，否则会死循环
                 .ToDictionary();
-            var keys = rules.Keys
-                .OrderByDescending(x => x.Length)
+            var targets = rules.Keys
+                .Select(x => new PinyinConvertTarget(x))
+                .OrderByDescending(x => x.TargetRaw.Length)
                 .ToList();
             ReadOnlySpan<char> targetSpan = text;
             int cursor = 0;
@@ -67,25 +68,41 @@ namespace AARC.Utils
             while (cursor < text.Length)
             {
                 ReadOnlySpan<char> slicedSpan = targetSpan[cursor..];
-                string? matchedKey = null;
-                foreach(var key in keys)
+                PinyinConvertTarget? matchedTarget = null;
+                foreach(var tar in targets)
                 {
-                    if (slicedSpan.StartsWith(key))
+                    // 如果是仅匹配开头的规则，必须cursor为0
+                    if (tar.AtHead && cursor != 0)
+                        continue;
+                    // 如果是仅匹配结尾的规则，必须span与目标相同
+                    if (tar.AtTail)
                     {
-                        matchedKey = key;
-                        break;
+                        if (slicedSpan.SequenceEqual(tar.TargetText))
+                        {
+                            matchedTarget = tar;
+                            break;
+                        }
+                    }
+                    // 如果不是仅匹配结尾的规则，span开头处有目标即可
+                    else
+                    {
+                        if (slicedSpan.StartsWith(tar.TargetText))
+                        {
+                            matchedTarget = tar;
+                            break;
+                        }
                     }
                 }
-                if(matchedKey is { })
+                if(matchedTarget is PinyinConvertTarget matched)
                 {
                     if (tempRaw.Length > 0)
                     {
                         flushTempRaw();
                         tempRaw.Clear();
                     }
-                    var value = rules[matchedKey];
+                    var value = rules[matched.TargetRaw];
                     res.Add(new(value, isFromRule: true, isChinese: false));
-                    cursor += matchedKey.Length;
+                    cursor += matched.TargetText.Length;
                 }
                 else
                 {
@@ -128,6 +145,28 @@ namespace AARC.Utils
             public string Value { get; } = value;
             public bool IsFromRule { get; } = isFromRule;
             public bool IsChinese { get; } = isChinese;
+        }
+        private readonly struct PinyinConvertTarget(string target)
+        {
+            public string TargetRaw { get; } = target;
+            public bool AtHead => TargetRaw.StartsWith('^');
+            public bool AtTail => TargetRaw.EndsWith('$');
+            public string TargetText { get
+                {
+                    if (!AtHead && !AtTail)
+                        return TargetRaw;
+                    int sliceFrom = 0;
+                    int sliceLength = TargetRaw.Length;
+                    if (AtHead)
+                    {
+                        sliceFrom = 1;
+                        sliceLength -= 1;
+                    }
+                    if (AtTail)
+                        sliceLength -= 1;
+                    return TargetRaw.Substring(sliceFrom, sliceLength);
+                } 
+            }
         }
     }
     public class PinyinConvertOptions

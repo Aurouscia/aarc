@@ -11,7 +11,7 @@ const { tabForPinyinConvert } = storeToRefs(useEditorLocalConfigStore())
 onMounted(()=>{
     config.value.pinyinConvert ??= {
         caseType: 0,
-        rules: "公园:Park\n广场:Square\n路:Rd.\n街:St."
+        rules: "公园:Park\n广场:Square\n路$:Rd.\n街$:St."
     }
 })
 </script>
@@ -48,9 +48,11 @@ onMounted(()=>{
         <tr>
             <td colspan="2">
                 <div class="smallNote">
-                    <p>根据个人需求添加更多翻译规则，例如</p>
-                    <p>大学:University、会展中心:Expo Center</p>
-                    <p>南站:South Rwy Sta、城市名:城市英文名</p>
+                    <p>根据个人需求添加更多翻译规则，例如:</p>
+                    <p class="example-p">大学:University、会展中心:Expo Center</p>
+                    <p class="example-p">南站:South Rwy Sta、城市名:城市英文名</p>
+                    <p>^表示开头处、$表示结尾处，例如:</p>
+                    <p class="example-p">^省:provincial、站$:Rwy Sta</p>
                 </div>
             </td>
         </tr>
@@ -83,5 +85,8 @@ textarea{
 }
 .smallNote{
     text-align: left;
+}
+.example-p{
+    margin-left: 10px;
 }
 </style>

@@ -45,14 +45,15 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-10-2更新'">
-        1. 新注册账号为游客，无法公开展示作品，需管理员转正变为会员后才能展示
+    <Notice :type="'info'" :title="'2025-10-4更新'">
+        1. 拼音转换：可使用^和$匹配开头和结尾，例如“^市”仅匹配开头的“市”字、“站$”仅匹配结尾的“站”字
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
-        1. 标签/站名的旋转和压缩<br/>
+        1. 图片上传存储功能（图标和背景可直接上传、无需找图床）
+        <!-- 1. 标签/站名的旋转和压缩<br/>
         2. 多选和创建“元素组”功能<br/>
         3. 站点/线路搜索定位功能<br/>
-        4. 指定线路导出<br/>
+        4. 指定线路导出<br/> -->
     </Notice>
 </div>
 <GiteeInfo></GiteeInfo>
