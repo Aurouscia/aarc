@@ -1,5 +1,6 @@
 ﻿using AARC.Utils;
-using Microsoft.Extensions.FileProviders;
+using HeyRed.Mime;
+using System.Net;
 
 namespace AARC.Services.Files
 {
@@ -81,20 +82,64 @@ namespace AARC.Services.Files
 
     public static class UserFileMapping
     {
+        /// <summary>
+        /// 将向路径<see cref="UserFileService.userFileAccessPath"/>的请求<br/>
+        /// 指向按<see cref="UserFileService"/>的约定规定的物理路径文件
+        /// </summary>
         public static IApplicationBuilder UseUserFiles(
-            this IApplicationBuilder app, string contentPath)
+            this IApplicationBuilder app)
         {
-            var root = Path.Combine(
-                contentPath, UserFileService.userFileBaseDir);
-            var dirInfo = new DirectoryInfo(root);
-            if (!dirInfo.Exists)
-                dirInfo.Create();
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(root),
-                RequestPath = UserFileService.userFileAccessPath
-            });
+            app.UseMiddleware<UserFileMiddleware>();
             return app;
+        }
+
+        public class UserFileMiddleware
+        {
+            private readonly string _root;
+            private readonly string _pathPrefix;
+            private readonly RequestDelegate _next;
+            public UserFileMiddleware(
+                RequestDelegate next, IWebHostEnvironment env)
+            {
+                _root = Path.Combine(env.ContentRootPath, UserFileService.userFileBaseDir);
+                _pathPrefix = UserFileService.userFileAccessPath;
+                if (!_pathPrefix.EndsWith('/'))
+                    _pathPrefix += '/';
+                _next = next;
+            }
+            public async Task InvokeAsync(HttpContext ctx)
+            {
+                string? path = ctx.Request.Path.Value;
+                bool isOurTarget = path is not null 
+                    && path.StartsWith(_pathPrefix, StringComparison.OrdinalIgnoreCase);
+                if (!isOurTarget)
+                {
+                    await _next(ctx);
+                    return;
+                }
+
+                var fileName = Path.GetFileName(path);
+                var fileNameNoExt = Path.GetFileNameWithoutExtension(fileName);
+                if (string.IsNullOrEmpty(fileName) 
+                    || string.IsNullOrEmpty(fileNameNoExt) 
+                    || fileNameNoExt.Length < 2)
+                {
+                    ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    return;
+                }
+
+                var subDir = fileNameNoExt[..2].ToLowerInvariant();
+                var physicalPath = Path.Combine(_root, subDir, fileName);
+
+                if (!File.Exists(physicalPath))
+                {
+                    ctx.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    return;
+                }
+
+                ctx.Response.ContentType = MimeTypesMap.GetMimeType(fileName);
+                await ctx.Response.SendFileAsync(physicalPath);
+            }
         }
     }
 }

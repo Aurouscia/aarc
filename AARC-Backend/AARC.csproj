@@ -22,6 +22,7 @@
 	  <PrivateAssets>all</PrivateAssets>
 	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>
+	<PackageReference Include="MimeTypesMap" Version="1.0.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	<PackageReference Include="NSwag.AspNetCore" Version="14.5.0" />
 	<PackageReference Include="NSwag.CodeGeneration.TypeScript" Version="14.5.0" />

@@ -1,8 +1,4 @@
-﻿using AARC.Services.App.ActionFilters;
-using AARC.Services.App.Authentication;
-using AARC.Services.App.HttpAuthInfo;
-
-namespace AARC.Services.Files
+﻿namespace AARC.Services.Files
 {
     public static class FilesServices
     {
@@ -22,7 +18,7 @@ namespace AARC.Services.Files
         {
             var contentPath = env.ContentRootPath;
             app.UseSaveMiniatureFiles(contentPath);
-            app.UseUserFiles(contentPath);
+            app.UseUserFiles();
             return app;
         }
     }
