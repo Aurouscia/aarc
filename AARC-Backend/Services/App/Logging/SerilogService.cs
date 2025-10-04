@@ -32,9 +32,8 @@ namespace AARC.Services.App.Logging
             app.UseSerilogRequestLogging(options =>
             {
                 options.MessageTemplate 
-                    = "HTTP {RequestMethod} by {UserId} {RequestPath}{QueryString}" +
-                    " with {RequestLength} bytes" +
-                    " => code {StatusCode} with {ResponseLength} bytes in {Elapsed:0.000}ms";
+                    = "HTTP {RequestMethod} by {UserId} {RequestPath}{QueryString}{RequestLength}" +
+                    " => code {StatusCode}{ResponseLength} in {Elapsed:0.000}ms";
 
                 options.GetLevel = (httpContext, elapsed, ex) =>
                 {
@@ -47,12 +46,20 @@ namespace AARC.Services.App.Logging
 
                 options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
                 {
-                    var requestLength = httpContext.Request.ContentLength ?? 0;
                     var requestQuery = httpContext.Request.QueryString;
-                    var responseLength = httpContext.Response.ContentLength ?? 0;
                     diagnosticContext.Set("QueryString", requestQuery);
-                    diagnosticContext.Set("RequestLength", requestLength);
-                    diagnosticContext.Set("ResponseLength", responseLength);
+
+                    var requestLength = httpContext.Request.ContentLength;
+                    var reqLengthText = string.Empty;
+                    if (requestLength is long reqLength)
+                        reqLengthText = $" with {reqLength} bytes";
+                    diagnosticContext.Set("RequestLength", reqLengthText);
+
+                    var responseLength = httpContext.Response.ContentLength;
+                    var respLengthText = string.Empty;
+                    if (responseLength is long respLength)
+                        respLengthText = $" with {respLength} bytes";
+                    diagnosticContext.Set("ResponseLength", respLengthText);
                 };
             });
 
