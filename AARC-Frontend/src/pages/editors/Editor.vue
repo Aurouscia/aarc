@@ -41,6 +41,7 @@ const loadComplete = ref(false)
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const isDemo = computed(()=>props.saveId.toLowerCase() == 'demo')
+const isOwner = ref(true) //悲观估计：是owner
 const savingDisabledWarning = ref<string>()
 async function load() {
     loadedSave.value = true
@@ -49,8 +50,8 @@ async function load() {
         await checkLoginLeftTime(userInfo)
         const resp = await api.save.loadData(saveIdNum.value)
         const ownerId = (await api.save.loadInfo(saveIdNum.value))?.ownerUserId || -1
-        const isOwner = ownerId && ownerId === userInfo.id
-        mainCvsDispatcher.visitorMode = !isOwner
+        isOwner.value = !!ownerId && ownerId === userInfo.id // 写入是否isOwner
+        mainCvsDispatcher.visitorMode = !isOwner.value
         try{
             const obj = resp ? JSON.parse(resp) : undefined
             saveStore.save = normalizeSave(obj)
@@ -61,7 +62,7 @@ async function load() {
         }catch{
             pop.value?.show('存档损坏，请联系管理员', 'failed')
         }
-        if(userInfo.id && !isOwner){
+        if(userInfo.id && !isOwner.value){
             savingDisabledWarning.value = '非存档所有者，仅供浏览，不能保存'
             preventLeavingDisabled.value = true //登录了但不是所有者，不阻止未保存退出
         }
@@ -177,7 +178,7 @@ const cachePreventerInputId = 'cachePreventerInput'
 const { cachePreventStart, cachePreventStop } = useCachePreventer(cachePreventerInputId)
 const showHiddenLongWarn = ref(false)
 const hiddenLongWatcher = new DocumentHiddenLongWatcher(30*1000, ()=>{
-    if(!isDemo.value)
+    if(!isDemo.value && isOwner.value)
         showHiddenLongWarn.value = true
 }) 
 onBeforeMount(async()=>{

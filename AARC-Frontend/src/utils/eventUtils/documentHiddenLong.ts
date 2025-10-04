@@ -1,5 +1,5 @@
 export class DocumentHiddenLongWatcher{
-    hideTime:number = 0
+    hideTime:number = -1
     hideTimeThrsMs:number
     exceededCallback:()=>void
     constructor(hideTimeThrsMs:number, exceededCallback:()=>void){
@@ -17,7 +17,7 @@ export class DocumentHiddenLongWatcher{
         const now = Date.now()
         if(state==='hidden'){
             this.hideTime = now
-        }else{
+        }else if(this.hideTime >= 0){
             const hiddenFor = now - this.hideTime
             if(hiddenFor > this.hideTimeThrsMs){
                 this.exceededCallback()
