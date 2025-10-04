@@ -5,7 +5,6 @@ using AARC.Services.App.HttpAuthInfo;
 using AARC.Services.App.Logging;
 using AARC.Services.App.Mapping;
 using AARC.Services.App.OpenApi;
-using AARC.Services.App.PwdRecord;
 using AARC.Utils;
 using AspNetCore.Proxy;
 using Microsoft.AspNetCore.Mvc;
@@ -48,9 +47,7 @@ namespace AARC.Services.App
             services.AddScoped<HttpUserInfoService>();
             services.AddScoped<UserCheckFilter>();
 
-            services.AddSingleton<PwdRecorder>();
             services.AddSingleton<MasterKeyChecker>();
-
             services.AddNSwagDocument();
             services.AddSingleton<NSwagTsGenService>();
 

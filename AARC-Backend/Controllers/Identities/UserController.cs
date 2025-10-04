@@ -1,7 +1,6 @@
 ﻿using AARC.Models.DbModels.Identities;
 using AARC.Repos.Identities;
 using AARC.Services.App.ActionFilters;
-using AARC.Services.App.PwdRecord;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,8 +10,7 @@ namespace AARC.Controllers.Identities
     [ApiController]
     [Route(ApiConsts.routePattern)]
     public class UserController(
-        UserRepo userRepo,
-        PwdRecorder pwdRecorder
+        UserRepo userRepo
         ) : Controller
     {
         [AllowAnonymous]
@@ -42,7 +40,6 @@ namespace AARC.Controllers.Identities
             var success = userRepo.CreateUser(userName, password, out var errmsg);
             if (!success)
                 throw new RqEx(errmsg);
-            pwdRecorder.Record(userName, password);
             lastRegisterRequest = DateTime.Now;
             return true;
         }
@@ -53,7 +50,6 @@ namespace AARC.Controllers.Identities
             var success = userRepo.UpdateUser(user, out var errmsg);
             if (!success)
                 throw new RqEx(errmsg);
-            pwdRecorder.Record(user.Name, user.Password);
             return true;
         }
 

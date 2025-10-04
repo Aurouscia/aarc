@@ -1,6 +1,5 @@
 ﻿using AARC.Repos.Identities;
 using AARC.Services.App.HttpAuthInfo;
-using AARC.Services.App.PwdRecord;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,7 +13,6 @@ namespace AARC.Controllers.Identities
     public class AuthController(
         UserRepo userRepo,
         HttpUserInfoService userInfo,
-        PwdRecorder pwdRecorder,
         IConfiguration config,
         ILogger<AuthController> logger)
         : Controller
@@ -31,7 +29,6 @@ namespace AARC.Controllers.Identities
                 throw new RqEx("请填写用户名和密码");
             var u = userRepo.MatchUser(username, password) 
                 ?? throw new RqEx("用户名或密码错误");
-            pwdRecorder.Record(username, password);
 
             string domain = config["Jwt:Domain"] ?? throw new Exception("未找到配置项Jwt:Domain");
             string secret = config["Jwt:SecretKey"] ?? throw new Exception("未找到配置项Jwt:SecretKey");
