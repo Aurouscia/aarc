@@ -17,7 +17,7 @@ try
     //添加数据库
     builder.Services.AddDb(c);
     //添加应用级服务（controller、serilog、jwt等）
-    builder.Services.AddAppServices(c);
+    builder.Services.AddAppServices(c, e);
     //添加数据库操作服务
     builder.Services.AddRepoServices();
     //添加文件存储服务

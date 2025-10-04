@@ -16,10 +16,10 @@ namespace AARC.Services.App
     public static class AppServices
     {
         public static IServiceCollection AddAppServices(
-            this IServiceCollection services, IConfiguration config)
+            this IServiceCollection services, IConfiguration config, IWebHostEnvironment env)
         {
             services.AddCors(config);
-            services.AddSerilog(config);
+            services.AddSerilog(config, env);
             services.AddJwtService(config);
             services.AddProxies();
             services.AddControllers(options =>

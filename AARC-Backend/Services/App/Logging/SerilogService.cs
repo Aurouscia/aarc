@@ -6,10 +6,21 @@ namespace AARC.Services.App.Logging
 {
     public static class SerilogService
     {
-        public static IServiceCollection AddSerilog(this IServiceCollection services, IConfiguration config)
+        public static IServiceCollection AddSerilog(
+            this IServiceCollection services, IConfiguration config, IWebHostEnvironment env)
         {
             var logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(config)
+                .WriteTo.Debug()
+                .WriteTo.Console()
+                .WriteTo.File(
+                    path: Path.Combine(env.ContentRootPath, "Logs", "log-.txt"),
+                    rollingInterval: RollingInterval.Day,
+                    outputTemplate: "{Timestamp:HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
+                    shared: true,
+                    rollOnFileSizeLimit: true,
+                    fileSizeLimitBytes: 500000,
+                    retainedFileCountLimit: 60)
                 .CreateLogger();
             services.AddSerilog(logger);
             Log.Logger = logger;
