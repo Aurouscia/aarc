@@ -16,8 +16,7 @@
         public static IApplicationBuilder UseAppendedStaticFiles(
             this IApplicationBuilder app, IWebHostEnvironment env)
         {
-            var contentPath = env.ContentRootPath;
-            app.UseSaveMiniatureFiles(contentPath);
+            app.UseSaveMiniatureFiles(env);
             app.UseUserFiles();
             return app;
         }

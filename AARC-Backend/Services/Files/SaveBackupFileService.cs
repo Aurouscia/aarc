@@ -2,17 +2,19 @@
 
 namespace AARC.Services.Files
 {
-    public class SaveBackupFileService
+    public class SaveBackupFileService(IWebHostEnvironment env)
     {
-        public const string backupFileBaseDir = "./Data/Backups";
+        public const string backupFileBaseDir = "Data/Backups";
         public const int backupFileMaxCountPerId = 15;
         public const int backupFileCreateThrsMins = 20;
+        private readonly string backupFileBaseDirAbsolute
+            = Path.Combine(env.ContentRootPath, backupFileBaseDir);
         public void Write(string data, int cvsId)
         {
-            var baseDir = new DirectoryInfo(backupFileBaseDir);
+            var baseDir = new DirectoryInfo(backupFileBaseDirAbsolute);
             if (!baseDir.Exists)
                 baseDir.Create();
-            var cvsDirPath = Path.Combine(backupFileBaseDir, cvsId.ToString());
+            var cvsDirPath = Path.Combine(backupFileBaseDirAbsolute, cvsId.ToString());
             var cvsDir = new DirectoryInfo(cvsDirPath);
             if (!cvsDir.Exists)
                 cvsDir.Create();
@@ -61,7 +63,7 @@ namespace AARC.Services.Files
         public int CleanupForAll()
         {
             int deleteCount = 0;
-            var baseDir = new DirectoryInfo(backupFileBaseDir);
+            var baseDir = new DirectoryInfo(backupFileBaseDirAbsolute);
             if (!baseDir.Exists)
                 return deleteCount;
             foreach(var d in baseDir.EnumerateDirectories())

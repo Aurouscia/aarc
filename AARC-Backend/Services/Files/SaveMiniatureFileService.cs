@@ -2,16 +2,18 @@
 
 namespace AARC.Services.Files
 {
-    public class SaveMiniatureFileService
+    public class SaveMiniatureFileService(IWebHostEnvironment env)
     {
-        public const string miniFileBaseDir = "./Data/Miniatures";
+        public const string miniFileBaseDir = "Data/Miniatures";
         public const string miniFileAccessPath = "/mini";
+        private readonly string miniFileBaseDirAbsolute
+            = Path.Combine(env.ContentRootPath, miniFileBaseDir);
         public void Write(Stream input, int cvsId)
         {
-            var baseDir = new DirectoryInfo(miniFileBaseDir);
+            var baseDir = new DirectoryInfo(miniFileBaseDirAbsolute);
             if (!baseDir.Exists)
                 baseDir.Create();
-            var cvsDirPath = Path.Combine(miniFileBaseDir, cvsId.ToString());
+            var cvsDirPath = Path.Combine(miniFileBaseDirAbsolute, cvsId.ToString());
             var cvsDir = new DirectoryInfo(cvsDirPath);
             if (!cvsDir.Exists)
                 cvsDir.Create();
@@ -29,7 +31,7 @@ namespace AARC.Services.Files
         public string? GetUrl(int id)
         {
             string idStr = id.ToString();
-            var cvsDirPath = Path.Combine(miniFileBaseDir, idStr);
+            var cvsDirPath = Path.Combine(miniFileBaseDirAbsolute, idStr);
             var cvsDir = new DirectoryInfo(cvsDirPath);
             if (cvsDir.Exists)
             {
@@ -57,10 +59,10 @@ namespace AARC.Services.Files
     public static class SaveMiniatureFileMapping
     {
         public static IApplicationBuilder UseSaveMiniatureFiles(
-            this IApplicationBuilder app, string contentPath)
+            this IApplicationBuilder app, IWebHostEnvironment env)
         {
             var root = Path.Combine(
-                contentPath, SaveMiniatureFileService.miniFileBaseDir);
+                env.ContentRootPath, SaveMiniatureFileService.miniFileBaseDir);
             var dirInfo = new DirectoryInfo(root);
             if (!dirInfo.Exists)
                 dirInfo.Create();

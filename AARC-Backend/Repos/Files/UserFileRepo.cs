@@ -16,7 +16,7 @@ namespace AARC.Repos.Files
             = [".png", ".jpg", ".jpeg", ".svg", ".webp"];
         public void Add(IFormFile f)
         {
-            if (f.Length > fileSizeLimitMB)
+            if (f.Length > fileSizeLimitMB * 1024 * 1024)
                 throw new RqEx($"文件不能大于 {fileSizeLimitMB}MB");
             var uid = httpUserIdProvider.RequireUserId();
             var fileName = f.FileName;

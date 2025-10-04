@@ -9,9 +9,9 @@ namespace AARC.Services.Files
     /// 约定：文件以小写md5命名（后缀转小写保留）<br/>
     /// 文件放在一级子目录里，子目录名为md5前两位
     /// </summary>
-    public class UserFileService
+    public class UserFileService(IWebHostEnvironment env)
     {
-        public const string userFileBaseDir = "./Data/UserFiles";
+        public const string userFileBaseDir = "Data/UserFiles";
         public const string userFileAccessPath = "/userfile";
         /// <summary>
         /// 按约定路径保存文件
@@ -60,19 +60,20 @@ namespace AARC.Services.Files
             }
         }
 
-        private static DirectoryInfo GetBaseDir()
+        private DirectoryInfo GetBaseDir()
         {
-            var dir = new DirectoryInfo(userFileBaseDir);
+            var dirPath = Path.Combine(env.ContentRootPath, userFileBaseDir);
+            var dir = new DirectoryInfo(dirPath);
             if (!dir.Exists)
                 dir.Create();
             return dir;
         }
-        private static DirectoryInfo GetTargetDir(string md5)
+        private DirectoryInfo GetTargetDir(string md5)
         {
             if (md5 is null || md5.Length < 2)
                 throw new RqEx("文件保存：md5异常");
             var prefix = md5[..2];
-            var subdirPath = Path.Combine(userFileBaseDir, prefix);
+            var subdirPath = Path.Combine(env.ContentRootPath, userFileBaseDir, prefix);
             var subdir = new DirectoryInfo(subdirPath);
             if (!subdir.Exists)
                 subdir.Create();
