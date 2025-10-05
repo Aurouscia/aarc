@@ -17,7 +17,7 @@
             this IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseSaveMiniatureFiles(env);
-            app.UseUserFiles();
+            app.UseUserFiles(env);
             return app;
         }
     }
