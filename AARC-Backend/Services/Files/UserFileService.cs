@@ -17,6 +17,7 @@ namespace AARC.Services.Files
         public const string userFileAccessPath = "/userfile";
         public const string userFileThumbAccessPath = "/userfile/thumb";
         public const string userFileThumbNameSuffix = "_tb";
+        public readonly string[] userFileNoThumbExt = [".svg"];
         /// <summary>
         /// 按约定路径保存文件，按需生成thumb
         /// </summary>
@@ -45,14 +46,13 @@ namespace AARC.Services.Files
                 var md5 = tempS.GetMD5();
 
                 string finalName = Path.ChangeExtension(md5, ext);
-                string finalDir = GetTargetDir(md5).FullName;
+                string finalDir = GetTargetSubdir(md5).FullName;
                 string finalPath = Path.Combine(finalDir, finalName);
 
                 // 按需生成略缩图（thumb）文件
-                if (ext != ".svg")
+                if (!userFileNoThumbExt.Contains(ext))
                 {
-                    string thumbName = md5 + userFileThumbNameSuffix;
-                    thumbName = Path.ChangeExtension(thumbName, ImageThumbHelper.thumbFileExt);
+                    string thumbName = GetThumbName(finalName);
                     string thumbPath = Path.Combine(finalDir, thumbName);
                     if (!File.Exists(thumbPath))
                     {
@@ -102,6 +102,27 @@ namespace AARC.Services.Files
             }
         }
 
+        public string? GetUrl(string? storeName, bool thumb)
+        {
+            if (storeName is null)
+                return null;
+            var ext = Path.GetExtension(storeName);
+            if (string.IsNullOrEmpty(ext) || userFileNoThumbExt.Contains(ext))
+                thumb = false;
+            string? targetFileName = null;
+            if (thumb)
+            {
+                var thumbName = GetThumbName(storeName);
+                var dir = GetTargetSubdir(storeName).FullName;
+                var thumbPath = Path.Combine(dir, thumbName);
+                if (File.Exists(thumbPath))
+                    targetFileName = thumbName;
+            }
+            targetFileName ??= storeName;
+            var subdirName = GetTargetSubdirName(storeName);
+            return string.Join('/', userFileAccessPath, subdirName, targetFileName);
+        }
+
         private DirectoryInfo GetBaseDir()
         {
             var dirPath = Path.Combine(env.ContentRootPath, userFileBaseDir);
@@ -110,16 +131,30 @@ namespace AARC.Services.Files
                 dir.Create();
             return dir;
         }
-        private DirectoryInfo GetTargetDir(string md5)
+        private static string GetTargetSubdirName(string fileName)
         {
-            if (md5 is null || md5.Length < 2)
-                throw new RqEx("文件保存：md5异常");
-            var prefix = md5[..2];
-            var subdirPath = Path.Combine(env.ContentRootPath, userFileBaseDir, prefix);
+            fileName = Path.GetFileNameWithoutExtension(fileName);
+            var subdirName =
+                fileName.Length >= 2
+                ? fileName[..2]
+                : "-";
+            return subdirName;
+        }
+        private DirectoryInfo GetTargetSubdir(string fileName)
+        {
+            var subdirName = GetTargetSubdirName(fileName);
+            var subdirPath = Path.Combine(env.ContentRootPath, userFileBaseDir, subdirName);
             var subdir = new DirectoryInfo(subdirPath);
             if (!subdir.Exists)
                 subdir.Create();
             return subdir;
+        }
+        private static string GetThumbName(string originalName)
+        {
+            string nameNoExt = Path.GetFileNameWithoutExtension(originalName);
+            string thumbName = nameNoExt + userFileThumbNameSuffix;
+            thumbName = Path.ChangeExtension(thumbName, ImageThumbHelper.thumbFileExt);
+            return thumbName;
         }
     }
 
