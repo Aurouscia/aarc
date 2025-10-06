@@ -2,7 +2,7 @@
 
 namespace AARC.Services.Files
 {
-    public class SaveMiniatureFileService(IWebHostEnvironment env)
+    public class SaveMiniatureFileService(IWebHostEnvironment env, ILogger<SaveMiniatureFileService> logger)
     {
         public const string miniFileBaseDir = "Data/Miniatures";
         public const string miniFileAccessPath = "/mini";
@@ -44,15 +44,36 @@ namespace AARC.Services.Files
             }
             return null;
         }
+        /// <summary>
+        /// 把指定存档的略缩图目录清理得只剩最新的那个
+        /// </summary>
         public void CleanUp(DirectoryInfo cvsDir)
         {
-            var oneDayAgo = DateTime.Now.AddDays(-1);
-            if (cvsDir.Exists)
+            if (!cvsDir.Exists)
+                return;
+            var allFiles = cvsDir.EnumerateFiles()
+                .OrderByDescending(f => f.CreationTimeUtc)
+                .ToList();
+            if (allFiles.Count <= 1)        // 没有或只有一个文件，无需清理
+                return;
+            foreach (var file in allFiles.Skip(1))
             {
-                var tooOld = cvsDir.EnumerateFiles()
-                    .Where(x => x.CreationTime < oneDayAgo);
-                foreach(var f in tooOld)
-                    f.Delete();
+                try
+                {
+                    // 去掉只读标记，避免 UnauthorizedAccessException
+                    if (file.IsReadOnly)
+                        file.IsReadOnly = false;
+                    file.Delete();
+                    logger.LogTrace("略缩图：已清理 {File}", file.FullName);
+                }
+                catch (IOException ex) // 占用、网络中断等
+                {
+                    logger.LogWarning(ex, "略缩图：文件可能正在使用无法清理 {File}", file.FullName);
+                }
+                catch (Exception ex) // 其他意外
+                {
+                    logger.LogError(ex, "略缩图：清理文件时发生异常 {File}", file.FullName);
+                }
             }
         }
     }
