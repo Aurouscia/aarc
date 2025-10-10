@@ -11,7 +11,7 @@ http://aarc.jowei19.com
 ## 项目地址
 [Gitee（本体）](https://gitee.com/au114514/aarc)  
 [Github（自动同步镜像）](https://github.com/Aurouscia/aarc)  
-issue请在gitee提出，github那边一般不看
+issue请在gitee提出，github那边一般不看，想参与贡献请查看本文件下面的[贡献代码](#贡献代码)部分
 
 ## 主要功能
 - 绘制线条角度为45度整数倍的线路图，以及车站、水体、出站换乘、线路列表等内容
@@ -27,7 +27,7 @@ issue请在gitee提出，github那边一般不看
 - ORM：entityFrameworkCore
 - api文档和客户端代码生成：NSwag
 
-## 安装
+## 部署
 ### 前提条件
 1. [Visual Studio](https://visualstudio.microsoft.com/zh-hans/) 尽可能新版+web应用开发负载
 2. [node客户端](https://nodejs.org/en) 尽可能新版，并确认命令行中有npm命令可用
@@ -60,7 +60,7 @@ issue请在gitee提出，github那边一般不看
     - 后续注意不要把数据库覆盖了，定期保存备份
 10. 尝试启动并进入网站
 
-## 初始化
+### 初始化账号
 1. 记住在`appsettings.json`（或其变体）中填写的`MasterKey`
 2. 在地址栏中输入`<域名>/#/sudo`，进入管理页面
 3. 点击“初始化管理员账号”
@@ -69,15 +69,24 @@ issue请在gitee提出，github那边一般不看
 
 *TODO：部署后更新数据库架构的方法*
 
-### 法律风险
+## 贡献代码
+- 请**与作者充分qq沟通后**再修改代码和提出pr，避免做浪费时间的无用功，作者有义务避免代码库野蛮生长，所以会拒绝计划之外的pr
+- 请查看项目根目录的`commit-msg.mjs`，并按照其中的指示设置git钩子，确保提交信息合规
+- 与作者交流，请加本文件[帮助](#帮助)部分中可以联系作者的那个qq群
+
+## 法律风险
 **本部分仅需“部署者”阅读，使用者无需关心**  
-本项目的依赖项`AutoMapper`(15.0.0+)由MIT许可证改为dual commercial/OSS许可证  
+### AutoMapper
+本项目的依赖项`AutoMapper`(15.0.0+)属于`Lucky Penny Software LLC.`，使用dual commercial/OSS许可证  
 详情请访问 https://automapper.io 并检查其中“免费使用”的条件  
-可：在上述链接获取许可证key并填入配置文件的`AutoMapper:LicenseKey`处  
-或：确认自己满足“免费使用”条件并自行承担法律风险
+- 可：在上述链接获取许可证key并填入配置文件的`AutoMapper:LicenseKey`处  
+- 或：确认自己满足“免费使用”条件并自行承担法律风险
+### ImageSharp
+本项目的依赖项`ImageSharp`属于`Six Labors`，使用Six Labors Split License许可证  
+详情请访问 https://sixlabors.com/products/imagesharp 并检查其中“免费使用”的条件
 
 ## 帮助
-**部署遇到问题，请加qq群 798877093 联系作者**  
+**部署/开发遇到问题，请加qq群 798877093 联系作者**  
 **使用遇到问题，请加qq群 1083848751 联系作者或其他用户**
 
 ## 许可证

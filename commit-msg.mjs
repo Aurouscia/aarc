@@ -2,10 +2,12 @@
 // 提交信息钩子（确保提交信息符合约定）
 // 使用方法：
 // 1. 在 .git/hooks 目录下创建 commit-msg 文件（不要后缀名）
-// 2. 在 pre-commit 文件中添加以下内容：（即使在windows系统中，第一行的shebang也必须有）
-
-// #!/bin/sh
-// exit $(node ./commit-msg.mjs $1)
+// 2. 在上述文件中添加以下内容：（即使在windows系统中，第一行的shebang也必须有）
+//
+//      #!/bin/sh
+//      exit $(node ./commit-msg.mjs $1)
+// 
+// 3. （在非windows系统中）使用chmod确保该文件有执行权限
 // ==========================================
 
 import { readFileSync } from 'fs';
