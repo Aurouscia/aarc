@@ -4,8 +4,8 @@
 
 ## 首先
 1. 确保本地安装了`node.js`尽可能新的稳定版本
-2. 命令行运行`npm install`，若长时间无反应，更换国内镜像源
-3. 启动**后端调试**，并进入`/swagger`
+2. 在本目录打开命令行，运行`npm install`，npm会自动使用国内镜像源
+3. 启动**后端调试**，并在浏览器地址栏进入`<调试域名>/swagger`
 4. 找到`Dev/GenApiTsClient`，点击`Try it out`，再点击`Execute`，生成`apiGenerated.ts`文件
 
 ### 注意
