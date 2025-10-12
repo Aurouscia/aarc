@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+# 用法：
+#   1. 将本文件复制到 .git/hooks/commit-msg
+#   2. （非windows上）chmod a+x .git/hooks/commit-msg
+
+msg=$(head -n1 "$1")
+prefix_regex='^(【后端】|【前端】|【前端/后端】|【编辑器】|【编辑器/后端】|【项目】|Merge branch)'
+if ! echo "$msg" | grep -Eq "$prefix_regex"; then
+  cat <<< 提交信息必须符合正则：${prefix_regex}
+  exit 1
+fi
+exit 0

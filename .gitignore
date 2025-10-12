@@ -365,18 +365,5 @@ FodyWeavers.xsd
 # JetBrains IDE generated
 .idea/
 
-# Sqlite Files
-*.db
-*.db-shm
-*.db-wal
-
-# Private Settings Files
-/AARC-Backend/appsettings.Production.json
-/AARC-Backend/appsettings.Development.json
-/AARC-Backend/appsettingsLocal.json
-
-# vue build dist
-/AARC-Backend/wwwroot
-
-# Data
-/AARC-Backend/Data/
+# macOS
+.DS_Store

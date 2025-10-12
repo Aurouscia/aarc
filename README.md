@@ -29,8 +29,10 @@ issue请在gitee提出，github那边一般不看，想参与贡献请查看本�
 
 ## 部署
 ### 前提条件
-1. [Visual Studio](https://visualstudio.microsoft.com/zh-hans/) 尽可能新版+web应用开发负载
-2. [node客户端](https://nodejs.org/en) 尽可能新版，并确认命令行中有npm命令可用
+1. （必需）后端开发环境（二选一），确保`dotnet sdk 9.0`可用（ide一般会为你安装）
+    - [Visual Studio](https://visualstudio.microsoft.com/zh-hans/) 尽可能新版+web应用开发负载
+    - [JetBrains Rider](https://www.jetbrains.com/zh-cn/rider/) 尽可能新版
+2. （必需）[node客户端](https://nodejs.org/en) 尽可能新版，并确认命令行中有npm命令可用
 3. [git客户端](https://git-scm.com/downloads) 用来下载代码和提交更新
 4. [visual studio code](https://code.visualstudio.com/download)（和第一条是两个东西）用来编辑前端代码
 5. 一台windows系统的服务器（照理说linux的也行，请自行研究.net网站部署方法）  
@@ -38,14 +40,17 @@ issue请在gitee提出，github那边一般不看，想参与贡献请查看本�
 *TODO：dockerfile，谁需要linux部署可联系作者*
 
 ### 步骤
+过程中遇到任何问题，请看本文[帮助](#帮助)部分
+
 1. 下载代码文件  
     - 如果使用git，在命令行中输入`git clone 【本仓库链接】`
 2. 进入前端文件夹(`/AARC-Frontend`)，按照该目录下的`README.md`文件进行操作，编译前端代码
     - 编译完成后，会自动输出到后端的`wwwroot`目录下
-3. 双击项目根目录的sln文件，进入vs
-4. 顶部栏-工具-Nuget包管理器-包管理器控制台，在控制台中输入`update-database`
-    - 该操作将在本地的`/Data`目录中生成/更新数据库架构
-5. 修改配置（vs文件资源管理器中找到`appsettings.json`）
+3. 双击项目根目录的sln文件，进入vs或rider
+4. 在本地的`/Data`目录中生成/更新数据库架构
+    - vs：顶部栏-工具-Nuget包管理器-包管理器控制台，在控制台中输入`update-database`
+    - rider：资源管理器-右键AARC项目（注意是项目不是解决方案）-EntityFrameworkCore-更新数据库
+5. 修改配置（资源管理器中找到`appsettings.json`）
     - 如果需要保存配置到git，直接修改（注意其中“必须修改”的部分）
     - 如果不想保存配置到git，可选择新建：
         - `appsettings.Development.json`（git忽略、仅本地调试）
@@ -53,7 +58,9 @@ issue请在gitee提出，github那边一般不看，想参与贡献请查看本�
         - `appsettingsLocal.json`（git忽略）
         上述四个文件格式完全一样
 6. 点击顶部绿色启动按钮启动调试，检查是否正常
-7. 停止调试，点击顶部栏`生成-发布`即可选择位置导出
+7. 停止调试，选择导出位置和方式
+    - vs：点击顶部栏`生成-发布`
+    - rider：资源管理器-右键AARC项目-发布
 8. windows服务器上安装`.net9.0 hosting bundle`（dotnet官网可以下载到）
 9. 把导出的程序移动到服务器上(建议使用webDeploy，也可以直接用远程桌面的复制粘贴)，并给予Users用户组该文件夹的控制权限，用IIS新建网站并指向该文件夹
     - 第一次移动后需要手动放入`/Data`中的数据库(.db文件)

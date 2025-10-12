@@ -1,0 +1,15 @@
+# Sqlite 文件
+*.db
+*.db-shm
+*.db-wal
+
+# 后端的本地配置文件
+appsettings.Production.json
+appsettings.Development.json
+appsettingsLocal.json
+
+# vite编译结果目录，如果需要添加静态资源，应该放在前端项目的public下
+wwwroot/
+
+# 数据目录
+Data/
