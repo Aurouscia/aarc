@@ -94,15 +94,26 @@ namespace AARC.Repos.Saves
             var q = Viewable;
 
             //sqlite默认大小写敏感，此处强制转为不敏感的（应该不怎么影响性能）
-            if (Context is AarcSqliteContext)
-                q = q.Where(x => x.Name.ToLower().Contains(search.ToLower()));
-            else
-                q = q.Where(x => x.Name.Contains(search));
+            if (string.IsNullOrWhiteSpace(search))
+                return [];
+            if (search != "所有作品")
+            {
+                if (Context is AarcSqliteContext)
+                    q = q.Where(x => x.Name.ToLower().Contains(search.ToLower()));
+                else
+                    q = q.Where(x => x.Name.Contains(search));
+            }
             if (orderby == "sta")
             {
                 q = q
                     .OrderByDescending(q => q.StaCount)
                     .ThenByDescending(q => q.LastActive);
+            }
+            else if (orderby == "line")
+            {
+                q = q
+                    .OrderByDescending(x => x.LineCount)
+                    .ThenByDescending(x => x.LastActive);
             }
             else
                 q = q

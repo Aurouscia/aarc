@@ -75,6 +75,7 @@ onMounted(()=>{
         <select v-model="orderBy" @change="load">
             <option :value="'active'">最新更新</option>
             <option :value="'sta'">车站最多</option>
+            <option :value="'line'">线路最多</option>
         </select>
     </div>
 </h1>

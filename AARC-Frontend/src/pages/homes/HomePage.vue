@@ -45,8 +45,8 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-10-4更新'">
-        1. 拼音转换：可使用^和$匹配开头和结尾，例如“^市”仅匹配开头的“市”字、“站$”仅匹配结尾的“站”字
+    <Notice :type="'info'" :title="'2025-10-15更新'">
+        1. 搜索存档：可选按线路数量排序<br/>
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
         1. 图片上传存储功能（图标和背景可直接上传、无需找图床）
