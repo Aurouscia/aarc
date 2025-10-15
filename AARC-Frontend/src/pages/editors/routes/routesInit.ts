@@ -1,5 +1,4 @@
 import { Router } from "vue-router";
-import Editor from "../Editor.vue";
 import { addToRouter } from "@/app/router/addToRouter";
 import { editorName, editorParamNameSaveId } from "./routesNames";
 
@@ -11,7 +10,7 @@ const routes = [
     {
         path:`/Editor/:${editorParamNameSaveId}`,
         props:true,
-        component:Editor,
+        component: ()=>import("../Editor.vue"),
         name:editorName
     }
 ]
