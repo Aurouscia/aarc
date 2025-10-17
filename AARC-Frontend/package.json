@@ -23,6 +23,7 @@
     "axios": "^1.12.2",
     "bowser": "^2.12.1",
     "color": "^5.0.2",
+    "copy-to-clipboard": "^3.3.3",
     "js-file-download": "^0.4.12",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.5.0",

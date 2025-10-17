@@ -45,11 +45,11 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-10-15更新'">
-        1. 搜索存档：可选按线路数量排序<br/>
+    <Notice :type="'info'" :title="'2025-10-18更新'">
+        1. 资源库，可上传图片并用于标签图标和背景图
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
-        1. 图片上传存储功能（图标和背景可直接上传、无需找图床）
+        1. 时间轴
         <!-- 1. 标签/站名的旋转和压缩<br/>
         2. 多选和创建“元素组”功能<br/>
         3. 站点/线路搜索定位功能<br/>

@@ -15,9 +15,23 @@ namespace AARC.Controllers.Files
     {
         [HttpPost]
         [UserCheck(UserType.Member)]
-        public bool UploadFile([FromForm]IFormFile userFile)
+        public bool Upload(
+            IFormFile? userFile,
+            [FromForm]string? displayName,
+            [FromForm]string? intro)
         {
-            userFileRepo.Add(userFile);
+            userFileRepo.Add(userFile, displayName, intro);
+            return true;
+        }
+
+        [HttpPost]
+        [UserCheck(UserType.Member)]
+        public bool Edit(
+            [FromForm] int id,
+            [FromForm] string? displayName,
+            [FromForm] string? intro)
+        {
+            userFileRepo.Edit(id, displayName, intro);
             return true;
         }
         [HttpGet]

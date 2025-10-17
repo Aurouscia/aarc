@@ -147,6 +147,7 @@ export const useApiStore = defineStore('api', () => {
     const auth = w(new api.AuthClient(baseUrl, instance))
     const user = w(new api.UserClient(baseUrl, instance))
     const save = w(new api.SaveClient(baseUrl, instance))
+    const userFile = w(new api.UserFileClient(baseUrl, instance))
     const saveUtils = w(new api.SaveUtilsClient(baseUrl, instance))
 
     return {
@@ -157,6 +158,7 @@ export const useApiStore = defineStore('api', () => {
         auth,
         user,
         save,
+        userFile,
         saveUtils
     }
 })

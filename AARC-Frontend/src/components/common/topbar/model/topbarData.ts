@@ -3,6 +3,7 @@ import { TopbarModel } from "./topbarModel";
 import { aboutName, loginName, userListName } from "@/pages/identities/routes/routesNames";
 import { faq } from "@/pages/homes/routes/routesNames";
 import { useCommonLocalConfigStore } from "@/app/localConfig/commonLocalConfig";
+import { userFileList } from "@/pages/files/routes/routesNames";
 
 export async function getTopbarData(): Promise<TopbarModel> {
     const faqTitle = "疑问"
@@ -22,6 +23,15 @@ export async function getTopbarData(): Promise<TopbarModel> {
                     {
                         Title: "搜索作品",
                         Link: {name: searchSaveName}
+                    }
+                ]
+            },
+            {
+                Title: "资源",
+                SubItems:[
+                    { 
+                        Title: "我的资源",
+                        Link: {name: userFileList}
                     }
                 ]
             },
