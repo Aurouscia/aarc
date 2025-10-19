@@ -184,7 +184,7 @@ onMounted(async()=>{
     <tr v-for="s in saveList">
         <td>
             <RouterLink :to="editorRoute(s.id??0)">
-                <img :src="s.miniUrl || defaultMini" class="mini"/>
+                <img :src="s.miniUrl || defaultMini" class="mini" loading="lazy"/>
             </RouterLink>
         </td>
         <td>

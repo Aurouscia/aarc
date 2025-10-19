@@ -59,7 +59,7 @@ onMounted(async()=>{
 <div class="newestSaves">
     <div v-for="s in list" :key="s.id">
         <RouterLink :to="editorRoute(s.id??0)">
-            <img :src="s.miniUrl || defaultMini"/>
+            <img :src="s.miniUrl || defaultMini" loading="lazy"/>
         </RouterLink>
         <div class="cvsName">{{ s.name }}</div>
         <div class="cvsData">{{ s.lineCount }}线 {{ s.staCount }}站</div>
