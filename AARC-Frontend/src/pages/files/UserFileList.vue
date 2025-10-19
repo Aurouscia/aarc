@@ -88,10 +88,24 @@ function copyImageLink(file: UserFileDto) {
     const imageUrl = `${domain}${file.urlOriginal}`;
     const success = copy(imageUrl);
     if (success) {
-        pop?.show('已复制图片链接', 'success');
+        pop?.show('已复制链接', 'success');
     } else {
         pop?.show('链接复制失败，请改用正规浏览器', 'failed');
     }
+}
+
+function deleteFile(fileId:number){
+    if(!fileId)
+        return
+    if(!window.confirm('删除资源后，使用它的画布将无法再正常加载它，是否继续？'))
+        return
+    api.userFile.delete(fileId).then((res)=>{
+        if(res){
+            pop?.show('删除成功','success')
+            sidebar.value?.fold()
+            loadFileList()
+        }
+    })
 }
 
 onMounted(async() => {
@@ -154,7 +168,7 @@ onMounted(async() => {
     </div>
     <SideBar ref="sidebar">
         <h1>{{ isCreating? '上传资源' : '编辑资源' }}</h1>
-        <table><tbody>
+        <table class="fullWidth"><tbody>
             <tr>
                 <td>名称</td>
                 <td>
@@ -185,6 +199,9 @@ onMounted(async() => {
                 <p>如果图片过大，请使用 <a href="https://imageresizer.com/">https://imageresizer.com</a> 缩小你的图片到限制以下。</p>
             </div>
         </Notice>
+        <div v-if="!isCreating" class="delete-btn-container">
+            <button @click="deleteFile(editingId)" class="minor">删除资源</button>
+        </div>
     </SideBar>
 </template>
 
@@ -312,5 +329,11 @@ onMounted(async() => {
             height: 200px;
         }
     }
+}
+
+.delete-btn-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
 }
 </style>

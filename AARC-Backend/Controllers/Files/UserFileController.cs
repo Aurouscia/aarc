@@ -34,6 +34,15 @@ namespace AARC.Controllers.Files
             userFileRepo.Edit(id, displayName, intro);
             return true;
         }
+
+        [HttpDelete]
+        [UserCheck(UserType.Member)]
+        public bool Delete([FromForm] int id)
+        {
+            userFileRepo.Delete(id);
+            return true;
+        }
+        
         [HttpGet]
         public List<UserFileDto> Get()
         {

@@ -62,6 +62,15 @@ namespace AARC.Repos.Files
             base.Update(model, true);
         }
 
+        public void Delete(int id)
+        {
+            var uid = httpUserIdProvider.RequireUserId();
+            var model = base.Get(id) ?? throw new RqEx("找不到指定数据");
+            if (model.OwnerUserId != uid) throw new RqEx("无权操作");
+            base.FakeRemove(model);
+            // TODO: 清理失去引用的文件
+        }
+
         private const int pageSize = 50;
         public List<UserFileDto> GetUserFiles(
             int pageIdx, int ownerId, string? nameSearch)
