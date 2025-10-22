@@ -101,9 +101,7 @@ const showGuideInfos = guideInfo.findHelp || guideInfo.extra
     <div>
         <h3>背景图/图标的链接</h3>
         <div>
-            <p>请自行寻找图床（上传图片，生成链接）。</p>
-            <p>或：考虑我们的<a href="http://wiki.jowei19.com" target="_blank">FicCloud</a>网站，可当作图床使用。</p>
-            <p>若图片链接无法使用，可能是由于其所属网站的防盗链机制。</p>
+            <p>请把图片上传到“资源库”，点击“⛓️”图标复制其链接，粘贴到对应位置。</p>
         </div>
     </div>
     <div>
