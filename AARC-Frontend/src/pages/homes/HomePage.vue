@@ -45,11 +45,13 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-10-18更新'">
-        1. 资源库，可上传图片并用于标签图标和背景图
+    <Notice :type="'info'" :title="'2025-10-25更新'">
+        1. 顶部栏添加直接打开个人设置的按钮
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
-        1. 时间轴
+        1. 画布隐私等设置<br/>
+        2. 站点搜索<br/>
+        3. （待定）
         <!-- 1. 标签/站名的旋转和压缩<br/>
         2. 多选和创建“元素组”功能<br/>
         3. 站点/线路搜索定位功能<br/>

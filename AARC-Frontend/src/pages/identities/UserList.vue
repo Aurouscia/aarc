@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useApiStore } from '@/app/com/apiStore';
 import { userTypeReadable } from './models/utils';
 import SideBar from '@/components/common/SideBar.vue';
@@ -18,7 +18,7 @@ const api = useApiStore()
 const { someonesSavesRoute } = useSavesRoutesJump()
 const { loginRouteJump, userListRoute } = useIdentitiesRoutesJump()
 const configStore = useUserListLocalConfigStore()
-const { orderby } = storeToRefs(configStore)
+const { orderby, openingSelfEdit } = storeToRefs(configStore)
 const orderbySave = computed(() => orderby.value === 'save')
 const orderbyActive = computed(() => !orderby.value || orderby.value === 'active')
 const router = useRouter()
@@ -76,10 +76,29 @@ function summerizeNameAndPwd(){
     })
 }
 
+function tryOpenSelfEdit(){
+    if(openingSelfEdit.value){
+        openingSelfEdit.value = false // 一次性指令
+        // 按约定，登录用户自己必定会出现在用户列表第一个
+        // 如果读取到“正在打开用户设置”，则找到自己的dto并打开编辑
+        const myId = userInfo.value.id
+        if(!myId)
+            pop?.show('请先登录', 'failed')
+        else {
+            const me = list.value?.find(x => x.id == myId)
+            if(me){
+                startEditing(me)
+            }
+        }
+    }
+}
+watch(openingSelfEdit, tryOpenSelfEdit)
+
 onMounted(async()=>{
     configStore.backCompat()
     orderby.value ??= 'active'
     await loadList()
+    tryOpenSelfEdit()
 })
 </script>
 

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { getTopbarData } from './model/topbarData';
+import { TopbarModel } from '@/app/topbar/topbarModel';
+import { getTopbarData } from '@/app/topbar/topbarData';
 import itemsImg from '@/assets/ui/items.svg';
 import aarcLogo from '@/assets/logo/aarc-new.svg'
 import defaultAvatar from '@/assets/defaultAvatar.svg'
-import { TopbarModel } from './model/topbarModel';
 import TopbarBodyHorizontal from './TopbarBodyHorizontal.vue';
 import TopbarBodyVertical from './TopbarBodyVertical.vue';
 import { storeToRefs } from 'pinia';

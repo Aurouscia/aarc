@@ -7,6 +7,7 @@ export const defaultOrderby:UserListOrderBy = 'active'
 
 export const useUserListLocalConfigStore = defineStore('userListLocalConfig',()=>{
     const orderby = ref<UserListOrderBy>()
+    const openingSelfEdit = ref<boolean>(false)
 
     //兼容旧版（过段时间可以删了）
     function backCompat(){
@@ -20,11 +21,13 @@ export const useUserListLocalConfigStore = defineStore('userListLocalConfig',()=
 
     return {
         orderby,
+        openingSelfEdit,
         backCompat
     }
 },
 {
     persist:{
-        key: `${localConfigKeyPrefix}-userList`
+        key: `${localConfigKeyPrefix}-userList`,
+        pick: ['orderby']
     }
 })

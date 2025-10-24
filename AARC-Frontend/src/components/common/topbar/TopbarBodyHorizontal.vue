@@ -1,25 +1,27 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { TopbarModel, TopbarModelItem } from './model/topbarModel';
+import { TopbarModel, TopbarModelItem } from '@/app/topbar/topbarModel';
 
 const router = useRouter();
 defineProps<{
     data: TopbarModel
 }>();
 function clickHandler(item: TopbarModelItem){
-    if(item.Link)
-        router.push(item.Link);
+    if(item.beforeJump)
+        item.beforeJump()
+    if(item.link)
+        router.push(item.link);
 }
 </script>
 <template>
 <div class="topbarBodyHorizontal">
-    <div v-for="i in data.Items" class="topbarItem">
+    <div v-for="i in data.items" class="topbarItem">
         <div class="topbarText" @click="clickHandler(i)">
-            {{ i.Title }}
+            {{ i.title }}
         </div>
-        <div v-if="i.SubItems" class="topbarSubItemList">
-            <div v-for="si in i.SubItems" @click="router.push(si.Link)">
-                {{ si.Title }}
+        <div v-if="i.children" class="topbarSubItemList">
+            <div v-for="si in i.children" @click="clickHandler(si)">
+                {{ si.title }}
             </div>
         </div>
     </div>

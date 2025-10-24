@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { TopbarModel, TopbarModelItem } from './model/topbarModel';
+import { TopbarModel, TopbarModelItem } from '@/app/topbar/topbarModel';
 import { ref } from 'vue';
 import foldImg from '@/assets/ui/fold.svg';
 import { SwipeListener } from '@/utils/eventUtils/swipe'
@@ -10,13 +10,15 @@ const props = defineProps<{
     data: TopbarModel
 }>();
 function clickHandler(item: TopbarModelItem){
-    if(item.SubItems){
-        item.IsActive = !item.IsActive;
+    if(item.children){
+        item.childrenShow = !item.childrenShow;
         return;
     }
-    if(item.Link){
-        router.push(item.Link);
-        folded.value = true;
+    if(item.beforeJump)
+        item.beforeJump()
+    if(item.link){
+        toggleFold('fold')
+        router.push(item.link);
     }
 }
 
@@ -32,8 +34,8 @@ function toggleFold(force:"fold"|"extend"|"toggle"= "toggle"){
         folded.value = false;
     }
     if(!folded.value){
-        props.data.Items.forEach(i=>{
-            i.IsActive = false;
+        props.data.items.forEach(i=>{
+            i.childrenShow = false;
         });
         swl = new SwipeListener((n)=>{
             if(n=="right"){
@@ -56,14 +58,14 @@ let swl: SwipeListener|undefined
 
 <template>
 <div class="topbarBodyVertical" :class="{folded}">
-    <div v-for="i in data.Items" class="topbarItem">
+    <div v-for="i in data.items" class="topbarItem">
         <div class="topbarText" @click="clickHandler(i)">
-            <span>{{ i.Title }}</span>
-            <img v-show="i.SubItems" :src="foldImg" :class="{activeSubFoldImg:i.IsActive}"/>
+            <span>{{ i.title }}</span>
+            <img v-show="i.children" :src="foldImg" :class="{activeSubFoldImg:i.childrenShow}"/>
         </div>
-        <div v-if="i.SubItems && i.IsActive" class="topbarSubItemList">
-            <div v-for="si in i.SubItems" @click="router.push(si.Link);toggleFold('fold')">
-                {{ si.Title }}
+        <div v-if="i.children && i.childrenShow" class="topbarSubItemList">
+            <div v-for="si in i.children" @click="clickHandler(si)">
+                {{ si.title }}
             </div>
         </div>
     </div>
