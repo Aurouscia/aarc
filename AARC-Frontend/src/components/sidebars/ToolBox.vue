@@ -5,6 +5,7 @@ import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
 import { usePointLinkStore } from '@/models/stores/pointLinkStore';
 import { ControlPointLinkType } from '@/models/save';
+import SearchStation from './search/SearchStation.vue'; // <-- 新增
 
 const envStore = useEnvStore()
 const { creatingLinkType } = storeToRefs(usePointLinkStore())
@@ -22,12 +23,16 @@ defineExpose({
 
 <template>
 <SideBar ref="sidebar">
+    <!-- 搜索站名：添加到工具侧栏顶部 -->
+    <SearchStation />
+
     <div class="toolItem">
         <div class="smallNote">用于添加标题/作者等信息，请勿用于标注站名</div>
         <div class="smallNote">需要线路/地形名称标签，请点击线路/地形创建</div>
         <div class="smallNoteVital">拖动到屏幕左上角即可删除</div>
         <button @click="envStore.createTextTag();fd()">创建文本标签</button>
     </div>
+    <!-- 其余保留不变 -->
     <div class="toolItem">
         <div v-if="creatingLinkType===ControlPointLinkType.cluster" class="smallNote">
             选择“车站团”模式时，连线中央会有标记用细线，其仅在编辑器可见，导出时会隐藏
