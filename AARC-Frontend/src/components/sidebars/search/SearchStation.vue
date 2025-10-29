@@ -2,8 +2,11 @@
 import { ref, computed, watch } from 'vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
+import { ControlPoint } from '@/models/save';
+import { useEnvStore } from '@/models/stores/envStore';
 
 const saveStore = useSaveStore();
+const envStore = useEnvStore();
 const cvs = useCvsFrameStore();
 
 const searchText = ref('');
@@ -28,23 +31,11 @@ watch(searchText, (v)=>{
   showResults.value = !!v && v.trim().length > 0;
 });
 
-// 把站点居中显示到画布视窗中
-function centerOnPt(pt:any){
-  // translateToOffset 将存档坐标转换为 arena 像素偏移（相对于 arena 左上角）
-  const offset = cvs.translateToOffset(pt.pos);
-  const frameEl = cvs.cvsFrame?.value;
-  if(!offset || !frameEl) return;
-  // 让该点成为视窗中心
-  frameEl.scrollLeft = offset[0] - frameEl.clientWidth / 2;
-  frameEl.scrollTop = offset[1] - frameEl.clientHeight / 2;
-  // 触发视图移动回调，确保其他 store 刷新
-  try{
-    if((cvs as any).viewMoveHandlers?.value){
-      (cvs as any).viewMoveHandlers.value.forEach((h:()=>void)=>{ try{h()}catch{} });
-    }
-  }catch{}
-  // 当用户选择一个结果后自动收起结果
+function centerOnPt(pt:ControlPoint){
+  cvs.focusViewToPos(pt.pos)
   showResults.value = false;
+  envStore.activePt = pt;
+  envStore.cursorPos = [...pt.pos]
 }
 
 // 辅助：获取该站所属线路信息（name + color）
