@@ -17,6 +17,7 @@ import snapNeighborExtendImg from '@/assets/ui/editor/snapNeighborExtend.svg';
 import snapNeighborExtendEnabledImg from '@/assets/ui/editor/snapNeighborExtendEnabled.svg';
 import ToolBox from './sidebars/ToolBox.vue';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
+import NameSearch from './NameSearch.vue';
 
 const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()
@@ -24,6 +25,7 @@ const toolBox = ref<InstanceType<typeof ToolBox>>()
 const sizeEdit = ref<InstanceType<typeof Terrains>>()
 const exportPng = ref<InstanceType<typeof ExportPng>>()
 const configs = ref<InstanceType<typeof Configs>>()
+const nameSearch = ref<InstanceType<typeof NameSearch>>()
 const { preventingLeaving, unsavedForALongTime } = storeToRefs(usePreventLeavingUnsavedStore())
 const { 
     snapNeighborExtendsEnabled:snee,
@@ -74,6 +76,12 @@ function openSidebarOf(name:SidebarNames){
         toolBox.value?.fold()
 }
 
+function toggleNameSearch(){
+    if(nameSearch.value){
+        nameSearch.value.show = !nameSearch.value.show
+    }
+}
+
 const { goBackToWhereWeEntered } = useEnteredCanvasFromStore()
 function saveData(){
     if(saveBtnMode.value=='save')
@@ -106,18 +114,26 @@ const emit = defineEmits<{
     <SizeEdit ref="sizeEdit"></SizeEdit>
     <ExportPng ref="exportPng"></ExportPng>
     <Configs ref="configs"></Configs>
+    <NameSearch ref="nameSearch"></NameSearch>
     <div class="anotherMenu" :class="{anotherMenuFolded}">
-        <div class="foldBtn sqrBtn withShadow" @click="anotherMenuFolded=!anotherMenuFolded">
-            <img :src="foldImg"/>
+        <div class="anotherMenuColumn">
+            <div class="sqrBtn withShadow" @click="toggleNameSearch">
+                搜站
+            </div>
+            <div class="foldBtn sqrBtn withShadow" @click="anotherMenuFolded=!anotherMenuFolded">
+                <img :src="foldImg"/>
+            </div>
         </div>
-        <div @click="snee=!snee" :class="{snapEnabled:snee}" class="sqrBtn withShadow">
-            <img :src="snee ? snapNeighborExtendEnabledImg : snapNeighborExtendImg"/>
-        </div>
-        <div @click="sipe=!sipe" :class="{snapEnabled:sipe}" class="sqrBtn withShadow">
-            <img :src="sipe ? snapInterPtEnabledImg : snapInterPtImg"/>
-        </div>
-        <div @click="sge=!sge" :class="{snapEnabled:sge}" class="sqrBtn withShadow">
-            <img :src="sge ? snapGridEnabledImg : snapGridImg"/>
+        <div class="anotherMenuColumn">
+            <div @click="snee=!snee" :class="{snapEnabled:snee}" class="sqrBtn withShadow">
+                <img :src="snee ? snapNeighborExtendEnabledImg : snapNeighborExtendImg"/>
+            </div>
+            <div @click="sipe=!sipe" :class="{snapEnabled:sipe}" class="sqrBtn withShadow">
+                <img :src="sipe ? snapInterPtEnabledImg : snapInterPtImg"/>
+            </div>
+            <div @click="sge=!sge" :class="{snapEnabled:sge}" class="sqrBtn withShadow">
+                <img :src="sge ? snapGridEnabledImg : snapGridImg"/>
+            </div>
         </div>
     </div>
 </template>
@@ -129,23 +145,24 @@ const emit = defineEmits<{
     right: 5px;
     bottom: 5px;
     display: flex;
-    flex-direction: column;
     gap: 8px;
+    .anotherMenuColumn{
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 8px;
+    }
     .sqrBtn{
         width: 30px;
         height: 30px;
         line-height: 30px;
         font-size: 12px;
+        color: #333; //一般不会有文字，文字是临时使用
     }
     .snapEnabled{
         box-shadow: 0px 0px 8px 0px green;
     }
     .foldBtn{
-        position: absolute;
-        left: -38px;
-        bottom: 0px;
-        width: 30px;
-        height: 30px;
         background-color: white;
         display: flex;
         justify-content: center;
@@ -160,8 +177,10 @@ const emit = defineEmits<{
 }
 .anotherMenuFolded{
     right: -35px;
-    .foldBtn{
+    .anotherMenuColumn:first-child{
         opacity: 0.4;
+    }
+    .foldBtn{
         img{
             transform: rotate(90deg);
         }

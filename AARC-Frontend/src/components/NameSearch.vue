@@ -4,11 +4,15 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { ControlPoint } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
+import { storeToRefs } from 'pinia';
+import { useNameSearchStore } from '@/models/stores/nameSearchStore';
 
 const saveStore = useSaveStore();
 const envStore = useEnvStore();
 const cvs = useCvsFrameStore();
 
+const { show } = storeToRefs(useNameSearchStore())
+const searchInput = ref<HTMLInputElement>();
 const searchText = ref('');
 const showResults = ref(false);
 
@@ -33,9 +37,9 @@ watch(searchText, (v)=>{
 
 function centerOnPt(pt:ControlPoint){
   cvs.focusViewToPos(pt.pos)
-  showResults.value = false;
   envStore.activePt = pt;
   envStore.cursorPos = [...pt.pos]
+  show.value = false
 }
 
 // 辅助：获取该站所属线路信息（name + color）
@@ -47,18 +51,31 @@ function getPtLines(pt:any){
     color: saveStore.getLineActualColorById(l.id) || l.color || '#000'
   }));
 }
+
+defineExpose({show})
+watch(show, (newVal)=>{
+  if(!newVal){
+    searchText.value = ''
+    showResults.value = false
+  }
+  else{
+    if(searchInput.value)
+      searchInput.value.focus()
+  }
+})
 </script>
 
 <template>
-  <div class="searchStation">
+  <div class="bangPanel searchStation" :class="{retracted:!show}">
     <input
+      ref="searchInput"
       v-model="searchText"
       class="searchInput"
-      placeholder="搜索站名或拼音（回车/下拉选择）"
+      placeholder="搜索站名"
       @keydown.enter.prevent="() => { if(results.length>0) centerOnPt(results[0]) }"
     />
     <div v-if="showResults" class="resultsPanel">
-      <div v-if="results.length === 0" class="noRes">未发现该站点</div>
+      <div v-if="results.length === 0" class="noRes">未找到相关站点</div>
       <div v-else class="resList">
         <div v-for="pt in results" :key="pt.id" class="resItem" @click="centerOnPt(pt)">
           <div class="resMain">
@@ -78,31 +95,20 @@ function getPtLines(pt:any){
 
 <style scoped lang="scss">
 .searchStation{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  padding:8px;
   .searchInput{
-    width: 100%;
-    box-sizing: border-box;
-    padding:8px 10px;
-    border-radius:6px;
-    border: 1px solid #ccc;
-    font-size:14px;
-    outline: none;
-    &:focus{
-      box-shadow: 0 0 0 3px rgba(100,150,255,0.12);
-      border-color: #7aa7ff;
-    }
+    width: 300px;
+    border: none;
+    margin: 0px;
   }
   .resultsPanel{
+    position: absolute;
     margin-top:4px;
-    width: min(50vw, 520px); /* 不超过页面一半 */
+    width: 300px;
     max-height: 300px;
     overflow: auto;
     background: white;
     border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.4);
     border: 1px solid #e6e6e6;
     .noRes{
       color:#888;

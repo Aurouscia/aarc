@@ -9,6 +9,7 @@ import { ColorPreset, ControlPoint, ControlPointDir, ControlPointSta, Line, Line
 import { useSnapStore } from "./snapStore";
 import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
 import { useNameEditStore } from "./nameEditStore";
+import { useNameSearchStore } from "./nameSearchStore";
 import { useFormalizedLineStore } from "./saveDerived/formalizedLineStore";
 import { useStaNameRectStore } from "./saveDerived/staNameRectStore";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
@@ -37,6 +38,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const activePtNameSnapped = ref<'no'|'vague'|'accu'>('no')
     const nameEditStore = useNameEditStore()
     const textTagEditStore = useTextTagEditStore()
+    const nameSearchStore = useNameSearchStore()
     const staClusterStore = useStaClusterStore()
     const activeLine = ref<Line>()
     const activeTextTag = ref<TextTag>()
@@ -111,6 +113,7 @@ export const useEnvStore = defineStore('env', ()=>{
         textTagEditStore.endEditing()
         nameEditStore.edited = false
         textTagEditStore.edited = false
+        nameSearchStore.show = false
     }
     function pureClickHandler(clientCord:Coord, clickType?:PureClickType){
         const coord = translateFromClient(clientCord);
