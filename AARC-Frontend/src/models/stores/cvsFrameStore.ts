@@ -145,6 +145,13 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
     function touchStatusClear(){
         scaler?.touchStatusClearBinded()
     }
+    function focusViewToPos(pos:Coord){
+        const ratio = getDisplayRatio('smaller')
+        scaler?.scale(ratio)
+        const offset = translateToOffset(pos);
+        if(!offset) return
+        scaler?.moveTo(offset[0], offset[1])
+    }
     return {
         cvsFrame, cvsCont, initScaler,
         getDisplayRatio, getViewRectSideLengths, getViewRectBiggerSideLength,
@@ -153,7 +160,7 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         translateFromOffset, translateFromClient,
         translateToOffset, translateToClient,
         clientCoordRatio, initContSizeStyle,
-        touchStatusClear,
+        touchStatusClear, focusViewToPos,
         viewMoveHandlers, viewScaleHandlers
     }
 })

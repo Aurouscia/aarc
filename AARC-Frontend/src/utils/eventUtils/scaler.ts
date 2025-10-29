@@ -218,6 +218,11 @@ export class Scaler{
         this.frame.scrollTop -= increY
         this.moveCallback();
     }
+    moveTo(offsetX:number, offsetY:number){
+        this.frame.scrollLeft = offsetX - this.frame.clientWidth / 2;
+        this.frame.scrollTop = offsetY - this.frame.clientHeight / 2;
+        this.moveCallback();
+    }
     widthReset(mutiple?:number){
         mutiple = mutiple || 1;
         const ww = this.frame.clientWidth;
