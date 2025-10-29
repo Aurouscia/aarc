@@ -33,7 +33,7 @@ try{
     contributors.sort((x,y)=>y.count-x.count)
     
     const d = new Date()
-    const updatedAt = `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`
+    const updatedAt = `${d.toLocaleDateString('zh-Hans')} ${d.toLocaleTimeString('zh-Hans')}`
     const resObj = {
         contributors,
         updatedAt
