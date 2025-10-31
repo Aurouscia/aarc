@@ -72,6 +72,8 @@ import colorSetsSource_404 from './colorSetsSource/404-HTML颜色.ts'
 import colorSetsSource_405 from './colorSetsSource/405-网页颜色.ts'
 import colorSetsSource_410 from './colorSetsSource/410-MC常用方块.ts'
 import colorSetsSource_412 from './colorSetsSource/412-架空世界代表颜色.ts'
+import colorSetsSource_420 from './colorSetsSource/420-无机颜料.ts'
+import colorSetsSource_421 from './colorSetsSource/421-有机颜料.ts'
 import colorSetsSource_444 from './colorSetsSource/444-虚拟歌姬应援色.ts'
 import colorSetsSource_500 from './colorSetsSource/500-新中海城.ts'
 import colorSetsSource_501 from './colorSetsSource/501-敬表.ts'
@@ -157,6 +159,8 @@ export default [
     {name:'网页颜色', pri:405, data:colorSetsSource_405},
     {name:'MC常用方块', pri:410, data:colorSetsSource_410},
     {name:'架空世界代表颜色', pri:412, data:colorSetsSource_412},
+    {name:'无机颜料', pri:420, data:colorSetsSource_420},
+    {name:'有机颜料', pri:421, data:colorSetsSource_421},
     {name:'虚拟歌姬应援色', pri:444, data:colorSetsSource_444},
     {name:'新中海城', pri:500, data:colorSetsSource_500},
     {name:'敬表', pri:501, data:colorSetsSource_501},

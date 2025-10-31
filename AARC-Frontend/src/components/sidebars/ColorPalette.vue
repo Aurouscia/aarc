@@ -80,8 +80,8 @@ function toggleSetShowing(colorSet:ColorSetExtended){
     }
 }
 
-const parenthesisAndContent = /\([^)]*\)/
-const parenthesisContent = /(?<=\()[^)]*(?=\))/
+const parenthesisAndContent = /\([^\(\)]*(?:\([^\(\)]*\)[^\(\)]*)*\)/
+const parenthesisContent = /(?<=\().*(?=\))/
 function parseColorSetData(data: string){
     let res: ColorSetItem[] = []
     //去除(首尾)可能存在的空行
@@ -100,6 +100,7 @@ function parseColorSetData(data: string){
             }
             const nameMain = name.replace(parenthesisAndContent, '')
             const nameSub = name.match(parenthesisContent)?.at(0)
+            console.log(row,name,color)
             const colorInv = colorProcStore.colorProcInvBinary.convertNoCache(color)
             res.push({
                 name: nameMain,
