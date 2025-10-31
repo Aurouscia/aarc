@@ -31,7 +31,7 @@ const results = computed(()=>{
     const name = (pt.name ?? '').toString();
     const nameS = (pt.nameS ?? '').toString();
     return name.toLowerCase().includes(s) || nameS.toLowerCase().includes(s);
-  }).slice(0, 80);
+  }).slice(0, 80).filter(x=>getPtLines(x).length>0);
   return matched;
 });
 
