@@ -2,14 +2,17 @@
 import { ref, computed, watch } from 'vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
-import { ControlPoint } from '@/models/save';
+import { ControlPoint,Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
 import { useNameSearchStore } from '@/models/stores/nameSearchStore';
+import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
 
 const saveStore = useSaveStore();
 const envStore = useEnvStore();
+const staClusterStore = useStaClusterStore()
 const cvs = useCvsFrameStore();
+
 
 const { show } = storeToRefs(useNameSearchStore())
 const searchInput = ref<HTMLInputElement>();
@@ -27,7 +30,7 @@ const results = computed(()=>{
     const name = (pt.name ?? '').toString();
     const nameS = (pt.nameS ?? '').toString();
     return name.toLowerCase().includes(s) || nameS.toLowerCase().includes(s);
-  }).slice(0, 80);
+  }).slice(0, 80).filter(x=>getPtLines(x).length>0);
   return matched;
 });
 
@@ -43,12 +46,32 @@ function centerOnPt(pt:ControlPoint){
 }
 
 // 辅助：获取该站所属线路信息（name + color）
-function getPtLines(pt:any){
-  const lines = saveStore.getLinesByPt(pt.id) || [];
-  return lines.map((l:any)=>({
+function getPtLines(pt:ControlPoint){
+  const cluster = staClusterStore.getStaClusters()?.find(cluster => 
+    cluster.some(sta => sta.id === pt.id)
+  );
+  const stationIds = cluster ? cluster.map(sta => sta.id) : [pt.id];
+  const lines = stationIds.flatMap(id => 
+    saveStore.getLinesByPt(id) ?? []
+  );
+  const seenIds = new Set<number>();
+  return lines.filter(x=>{
+    if (x.isFake){
+      return false
+    }
+    else {
+      if (seenIds.has(x.id)){
+        return false
+      }
+      else{
+        seenIds.add(x.id)
+        return true
+      }
+    }
+  }).map((l:Line)=>({
     id: l.id,
     name: l.name || '',
-    color: saveStore.getLineActualColorById(l.id) || l.color || '#000'
+    color: saveStore.getLineActualColorById(l.id) || l.color || '#000',
   }));
 }
 

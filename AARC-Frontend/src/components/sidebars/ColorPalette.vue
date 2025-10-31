@@ -80,8 +80,8 @@ function toggleSetShowing(colorSet:ColorSetExtended){
     }
 }
 
-const parenthesisAndContent = /\([^)]*\)/
-const parenthesisContent = /(?<=\()[^)]*(?=\))/
+const parenthesisAndContent = /\([^\(\)]*(?:\([^\(\)]*\)[^\(\)]*)*\)/
+const parenthesisContent = /(?<=\().*(?=\))/
 function parseColorSetData(data: string){
     let res: ColorSetItem[] = []
     //去除(首尾)可能存在的空行
