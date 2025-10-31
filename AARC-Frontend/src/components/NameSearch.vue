@@ -13,7 +13,6 @@ const envStore = useEnvStore();
 const staClusterStore = useStaClusterStore()
 const cvs = useCvsFrameStore();
 
-const staClusters=staClusterStore.getStaClusters()
 
 const { show } = storeToRefs(useNameSearchStore())
 const searchInput = ref<HTMLInputElement>();
@@ -48,6 +47,7 @@ function centerOnPt(pt:ControlPoint){
 
 // 辅助：获取该站所属线路信息（name + color）
 function getPtLines(pt:ControlPoint){
+const staClusters=staClusterStore.getStaClusters()
   const cluster = staClusters?.find(cluster => 
     cluster.some(sta => sta.id === pt.id)
   );
