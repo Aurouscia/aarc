@@ -100,7 +100,6 @@ function parseColorSetData(data: string){
             }
             const nameMain = name.replace(parenthesisAndContent, '')
             const nameSub = name.match(parenthesisContent)?.at(0)
-            console.log(row,name,color)
             const colorInv = colorProcStore.colorProcInvBinary.convertNoCache(color)
             res.push({
                 name: nameMain,
