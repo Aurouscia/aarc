@@ -2,14 +2,18 @@
 import { ref, computed, watch } from 'vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
-import { ControlPoint } from '@/models/save';
+import { ControlPoint,Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
 import { useNameSearchStore } from '@/models/stores/nameSearchStore';
+import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
 
 const saveStore = useSaveStore();
 const envStore = useEnvStore();
+const staClusterStore = useStaClusterStore()
 const cvs = useCvsFrameStore();
+
+const staClusters=staClusterStore.getStaClusters()
 
 const { show } = storeToRefs(useNameSearchStore())
 const searchInput = ref<HTMLInputElement>();
@@ -43,9 +47,15 @@ function centerOnPt(pt:ControlPoint){
 }
 
 // 辅助：获取该站所属线路信息（name + color）
-function getPtLines(pt:any){
-  const lines = saveStore.getLinesByPt(pt.id).filter(x=>!x.isFake) || [];
-  return lines.map((l:any)=>({
+function getPtLines(pt:ControlPoint){
+  const cluster = staClusters?.find(cluster => 
+    cluster.some(sta => sta.id === pt.id)
+  );
+  const stationIds = cluster ? cluster.map(sta => sta.id) : [pt.id];
+  const lines = stationIds.flatMap(id => 
+    saveStore.getLinesByPt(id) ?? []
+  );
+  return lines.filter(x=>!x.isFake).map((l:Line)=>({
     id: l.id,
     name: l.name || '',
     color: saveStore.getLineActualColorById(l.id) || l.color || '#000',
