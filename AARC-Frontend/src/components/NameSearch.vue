@@ -44,11 +44,11 @@ function centerOnPt(pt:ControlPoint){
 
 // 辅助：获取该站所属线路信息（name + color）
 function getPtLines(pt:any){
-  const lines = saveStore.getLinesByPt(pt.id) || [];
+  const lines = saveStore.getLinesByPt(pt.id).filter(x=>!x.isFake) || [];
   return lines.map((l:any)=>({
     id: l.id,
     name: l.name || '',
-    color: saveStore.getLineActualColorById(l.id) || l.color || '#000'
+    color: saveStore.getLineActualColorById(l.id) || l.color || '#000',
   }));
 }
 
