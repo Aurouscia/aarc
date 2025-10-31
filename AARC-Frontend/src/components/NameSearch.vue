@@ -54,7 +54,21 @@ function getPtLines(pt:ControlPoint){
   const lines = stationIds.flatMap(id => 
     saveStore.getLinesByPt(id) ?? []
   );
-  return lines.filter(x=>!x.isFake).map((l:Line)=>({
+  const seenIds = new Set<number>();
+  return lines.filter(x=>{
+    if (x.isFake){
+      return false
+    }
+    else {
+      if (seenIds.has(x.id)){
+        return false
+      }
+      else{
+        seenIds.add(x.id)
+        return true
+      }
+    }
+  }).map((l:Line)=>({
     id: l.id,
     name: l.name || '',
     color: saveStore.getLineActualColorById(l.id) || l.color || '#000',
