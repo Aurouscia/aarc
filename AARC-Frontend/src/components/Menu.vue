@@ -9,6 +9,7 @@ import { storeToRefs } from 'pinia';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { useSnapStore } from '@/models/stores/snapStore';
 import foldImg from '@/assets/ui/fold.svg';
+import searchImg from '@/assets/ui/search.svg';
 import snapGridImg from '@/assets/ui/editor/snapGrid.svg';
 import snapGridEnabledImg from '@/assets/ui/editor/snapGridEnabled.svg';
 import snapInterPtImg from '@/assets/ui/editor/snapInterPt.svg';
@@ -126,8 +127,8 @@ onUnmounted(()=>{
     <NameSearch ref="nameSearch"></NameSearch>
     <div class="anotherMenu" :class="{anotherMenuFolded}">
         <div class="anotherMenuColumn">
-            <div class="sqrBtn withShadow" @click="toggleNameSearch">
-                搜站
+            <div class="searchBtn sqrBtn withShadow" @click="toggleNameSearch">
+                <img :src="searchImg"/>
             </div>
             <div class="foldBtn sqrBtn withShadow" @click="anotherMenuFolded=!anotherMenuFolded">
                 <img :src="foldImg"/>
@@ -148,30 +149,27 @@ onUnmounted(()=>{
 </template>
 
 <style scoped lang="scss">
+$btn-size: 36px;
+$gap: 10px;
+$dist-from-edge: 5px;
+
 .anotherMenu{
     z-index: 1000;
     position: fixed;
-    right: 5px;
-    bottom: 5px;
+    right: $dist-from-edge;
+    bottom: $dist-from-edge;
     display: flex;
-    gap: 8px;
+    gap: $gap;
     .anotherMenuColumn{
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
-        gap: 8px;
-    }
-    .sqrBtn{
-        width: 30px;
-        height: 30px;
-        line-height: 30px;
-        font-size: 12px;
-        color: #333; //一般不会有文字，文字是临时使用
+        gap: $gap;
     }
     .snapEnabled{
         box-shadow: 0px 0px 8px 0px green;
     }
-    .foldBtn{
+    .foldBtn, .searchBtn{
         background-color: white;
         display: flex;
         justify-content: center;
@@ -179,15 +177,17 @@ onUnmounted(()=>{
         img{
             width: 70%;
             height: 70%;
-            transition: 0.2s;
-            transform: rotate(270deg);
         }
+    }
+    .foldBtn img{
+        transition: 0.2s;
+        transform: rotate(270deg);
     }
 }
 .anotherMenuFolded{
-    right: -35px;
+    right: -($btn-size + $dist-from-edge);
     .anotherMenuColumn:first-child{
-        opacity: 0.4;
+        opacity: 0.6;
     }
     .foldBtn{
         img{
@@ -199,17 +199,18 @@ onUnmounted(()=>{
 .menu{
     z-index: 1002;
     position: fixed;
-    bottom: 5px;
-    left: 5px;
+    bottom: $dist-from-edge;
+    left: $dist-from-edge;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    .sqrBtn{
-        width: 36px;
-        height: 36px;
-        line-height: 36px;
-        font-size: 14px;
-    }
+    gap: $gap;
+}
+
+.sqrBtn{
+    width: $btn-size;
+    height: $btn-size;
+    line-height: $btn-size;
+    font-size: 14px;
 }
 .saveBtn{
     color: white;
