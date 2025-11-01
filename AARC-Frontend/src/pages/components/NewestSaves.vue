@@ -78,7 +78,7 @@ onMounted(async()=>{
     flex-wrap: nowrap;
     max-width: 100%;
     overflow-x: auto;
-    justify-content: space-around;
+    justify-content: flex-start;
     padding: 15px;
     gap: 15px;
     $blockWidthMobile: 128px;
