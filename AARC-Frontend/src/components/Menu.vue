@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import Lines from './sidebars/sideList/Lines.vue';
 import Terrains from './sidebars/sideList/Terrains.vue';
 import SizeEdit from './sidebars/SizeEdit.vue';
@@ -18,6 +18,7 @@ import snapNeighborExtendEnabledImg from '@/assets/ui/editor/snapNeighborExtendE
 import ToolBox from './sidebars/ToolBox.vue';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 import NameSearch from './NameSearch.vue';
+import { AuShortcutListener } from '@aurouscia/keyboard-shortcut';
 
 const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()
@@ -93,6 +94,14 @@ function saveData(){
 const emit = defineEmits<{
     (e:'saveData'):void
 }>()
+
+const searchShortcut = new AuShortcutListener(toggleNameSearch, {code: 'KeyF', ctrl: true})
+onMounted(()=>{
+    searchShortcut.start()
+})
+onUnmounted(()=>{
+    searchShortcut.dispose()
+})
 </script>
 
 <template>

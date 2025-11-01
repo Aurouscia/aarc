@@ -160,7 +160,7 @@ const cvsComponent = ref<InstanceType<typeof Cvs>>()
 watch(props, async()=>{
     window.location.reload()
 })
-const saveShortcutListener = new ShortcutListener(()=>{ saveData() }, 's', true)
+const saveShortcutListener = new ShortcutListener(()=>{ saveData() }, {code:'KeyS', ctrl:true})
 const deleteShortcutListener = new ShortcutListener(()=>{
     const ael = document.activeElement
     const focusingText = ael instanceof HTMLInputElement || ael instanceof HTMLTextAreaElement
@@ -173,7 +173,7 @@ const deleteShortcutListener = new ShortcutListener(()=>{
         envStore.delActivePt(true, true)
         envStore.delActiveTextTag(true)
     }
-}, 'Delete', false)
+}, {code:'Delete'})
 const cachePreventerInputId = 'cachePreventerInput'
 const { cachePreventStart, cachePreventStop } = useCachePreventer(cachePreventerInputId)
 const showHiddenLongWarn = ref(false)
@@ -188,8 +188,8 @@ onBeforeMount(async()=>{
     setLeavingPreventing()
     topbarShow.value = false
     await load()
-    saveShortcutListener.startListen()
-    deleteShortcutListener.startListen()
+    saveShortcutListener.start()
+    deleteShortcutListener.start()
     cachePreventStart()
     hiddenLongWatcher.startWatching()
 })
