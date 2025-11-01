@@ -20,27 +20,27 @@
     "@aurouscia/au-undo-redo": "^0.3.0",
     "@aurouscia/keyboard-shortcut": "^3.0.0",
     "@aurouscia/vite-app-version": "^0.2.0",
-    "axios": "^1.12.2",
+    "axios": "^1.13.1",
     "bowser": "^2.12.1",
     "color": "^5.0.2",
     "copy-to-clipboard": "^3.3.3",
     "js-file-download": "^0.4.12",
     "pinia": "^3.0.3",
-    "pinia-plugin-persistedstate": "^4.5.0",
+    "pinia-plugin-persistedstate": "^4.7.1",
     "rfdc": "^1.4.1",
     "vue": "^3.5.22",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.6.3"
   },
   "devDependencies": {
     "@types/color": "^4.2.0",
-    "@types/node": "^24.7.2",
+    "@types/node": "^24.9.2",
     "@vitejs/plugin-vue": "^6.0.1",
     "execa": "^9.6.0",
-    "sass": "^1.93.2",
+    "sass": "^1.93.3",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
-    "vite": "^7.1.9",
+    "vite": "^7.1.12",
     "vite-plugin-full-reload": "^1.2.0",
-    "vue-tsc": "^3.1.1"
+    "vue-tsc": "^3.1.2"
   }
 }

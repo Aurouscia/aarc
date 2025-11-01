@@ -45,8 +45,10 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-10-29更新'">
-        1. 站名搜索功能（在右下角）
+    <Notice :type="'info'" :title="'2025-11-2更新'">
+        1. bs：线路信息导出（在导出菜单底部）（半成品）
+        2. bs：站名编辑：与已有站名重复时显示警告（半成品）
+        3. au：可通过ctrl+F打开站名搜索
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
         - 画布隐私等设置<br/>
@@ -143,7 +145,7 @@ onMounted(()=>{
    display: flex;
    flex-wrap: wrap;
    justify-content: center;
-   align-items: flex-start;
+   align-items: stretch;
    gap: 10px;
 }
 .welcome{
