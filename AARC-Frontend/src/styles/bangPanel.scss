@@ -13,7 +13,7 @@
     z-index: 10;
     transition: 0.2s;
     transition-timing-function: ease-out;
-    .retractBtn,.duplicateBtn,.settingsBtn,.pinyinConvertBtn{
+    .retractBtn,.duplicateBtn,.settingsBtn,.pinyinConvertBtn,.repeatNameWarning{
         position: absolute;
         bottom: -22px;
         width: 27px;
@@ -31,6 +31,17 @@
         align-items: center;
         img{
             transform: rotate(180deg);
+            width: 80%;
+            height: 80%;
+        }
+    }
+    .repeatNameWarning{
+        right: 105px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color:#B3B3B3;
+        img{
             width: 80%;
             height: 80%;
         }
