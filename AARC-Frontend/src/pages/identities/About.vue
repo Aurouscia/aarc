@@ -1,6 +1,13 @@
 <script lang="ts" setup>
 import logoImg from '@/assets/logo/aarc-new.svg';
-import contribution from '@/utils/gitCommitSum/commitSumRes';
+import { GitInfo } from '@/utils/gitInfo/gitInfoGen';
+import { getGitInfo } from '@/utils/gitInfo/gitInfoGet'
+import { onBeforeMount, ref } from 'vue';
+
+const gitInfo = ref<GitInfo>()
+onBeforeMount(async () => {
+    gitInfo.value = await getGitInfo()
+})
 </script>
 
 <template>
@@ -27,6 +34,20 @@ import contribution from '@/utils/gitCommitSum/commitSumRes';
             </div>
             <div class="appName1">线路图画布</div>
         </div>
+        <div v-if="gitInfo" class="gitInfo">
+            <div class="gitInfoItem">
+                <div>提交</div>
+                <div>{{ gitInfo.commitId }}</div>
+            </div>
+            <div class="gitInfoItem">
+                <div>分支</div>
+                <div>{{ gitInfo.branchName }}</div>
+            </div>
+            <div class="gitInfoItem">
+                <div>构建于</div>
+                <div>{{ gitInfo.builtAt }}</div>
+            </div>
+        </div>
         <div class="license">
             本项目以<a href="https://www.apache.org/licenses/LICENSE-2.0.html" target="_blank">Apache-2.0</a>许可证提供<br/>
             任何人有权下载、使用、修改、再分发本项目的源代码和可执行文件，且无需保持开源<br/>
@@ -38,13 +59,13 @@ import contribution from '@/utils/gitCommitSum/commitSumRes';
         </div>
         <div class="thankList">
             <div>源码贡献者：
-                <div class="contributors">
-                    <div v-for="c in contribution.contributors">
+                <div v-if="gitInfo?.contributors" class="contributors">
+                    <div v-for="c in gitInfo.contributors">
                         <div class="contributorName">{{ c.name }}</div>
                         <div>{{ c.count }}提交</div>
                     </div>
                     <div>
-                        <div>(更新于{{ contribution.updatedAt }})</div>
+                        <div>(更新于{{ gitInfo.builtAt }})</div>
                     </div>
                 </div>
             </div>
@@ -175,7 +196,7 @@ import contribution from '@/utils/gitCommitSum/commitSumRes';
             white-space: nowrap;
             display: flex;
             align-items: center;
-            transition: 0.5s;
+            transition: 0.3s;
         }
         .ab:hover{
             background-color: #ddd;
@@ -191,6 +212,33 @@ import contribution from '@/utils/gitCommitSum/commitSumRes';
         font-size: 16px;
         margin-top: 6px;
         color: #666;
+    }
+}
+.gitInfo{
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    font-size: 14px;
+    margin: 20px auto;
+    &>div{
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        &>div{
+            flex-grow: 1;
+        }
+        &>div:first-child{
+            flex-basis: 0px;
+            font-weight: bold;
+            color: #aaa;
+            text-align: right;
+        }
+        &>div:last-child{
+            flex-basis: 40px;
+            color: #666;
+            text-align: left;
+        }
     }
 }
 </style>

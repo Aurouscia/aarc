@@ -23,4 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
+# 排除自动生成的文件
 public/vavTimestamp.txt
+public/gitInfo.json
