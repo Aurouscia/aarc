@@ -51,28 +51,14 @@ function getPtLines(pt:ControlPoint){
     cluster.some(sta => sta.id === pt.id)
   );
   const stationIds = cluster ? cluster.map(sta => sta.id) : [pt.id];
-  const lines = stationIds.flatMap(id => 
+  const lines =[...new Set(stationIds.flatMap(id => 
     saveStore.getLinesByPt(id) ?? []
-  );
-  const seenIds = new Set<number>();
-  return lines.filter(x=>{
-    if (x.isFake){
-      return false
-    }
-    else {
-      if (seenIds.has(x.id)){
-        return false
-      }
-      else{
-        seenIds.add(x.id)
-        return true
-      }
-    }
-  }).map((l:Line)=>({
+  ))]
+  return lines.filter(x=>!x.isFake).map((l:Line)=>({
     id: l.id,
     name: l.name || '',
     color: saveStore.getLineActualColorById(l.id) || l.color || '#000',
-  }));
+  })).slice(0,10);
 }
 
 defineExpose({show})

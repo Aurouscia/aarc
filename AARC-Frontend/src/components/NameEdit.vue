@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useNameEditStore } from '@/models/stores/nameEditStore';
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import { useSaveStore } from '@/models/stores/saveStore';
 import { storeToRefs } from 'pinia';
 import { useTwinTextarea } from './composables/useTwinTextarea';
 import { enableContextMenu, disableContextMenu } from '@/utils/eventUtils/contextMenu';
@@ -8,8 +10,11 @@ import settingsImg from '@/assets/ui/settings.svg'
 import pinyinConvertImg from '@/assets/ui/pinyinConvert.svg'
 import ControlPointOptions from './sidebars/options/ControlPointOptions.vue';
 import { usePinyinConvert } from './composables/usePinyinConvert';
-import { onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 
+
+const { pop } = useUniqueComponentsStore()
+const saveStore = useSaveStore();
 const nameEditStore = useNameEditStore()
 const { nameMain, nameSub, editing, edited, nameEditorDiv, controlPointOptionsPanel } = storeToRefs(nameEditStore)
 const { convertPinyin, pinyinOverriding } = usePinyinConvert(nameMain, nameSub, ()=>nameEditStore.applyName())
@@ -48,6 +53,17 @@ onMounted(()=>{
 onUnmounted(()=>{
     window.removeEventListener('keydown', keyHandler)
 })
+
+const hasSameNameInSave=computed(()=>{
+    if(!nameMain.value){
+        return false
+    }
+    let sameNameSta=saveStore.save?.points.filter(p=>p.name==nameMain.value)
+    if (!sameNameSta){
+        return false
+    }
+    return sameNameSta.length>1
+})
 </script>
 
 <template>
@@ -58,6 +74,10 @@ onUnmounted(()=>{
         <textarea v-model="nameSub" ref="nameSubInput" :rows="nameSubRows" @input="inputHandler('sub')"
             @focus="nameEditStore.nameInputFocusHandler();focusHandler()" @blur="blurHandler()" class="secondary"
             spellcheck="false" placeholder="请输入外语站名/副站名"></textarea>
+        <div class="repeatNameWarning sqrBtn withShadow" @click="pop?.show('站名重复', 'warning')"
+        v-if="hasSameNameInSave" title="这个站名已经在地图内出现过">
+            ⚠
+        </div>
         <div @click="convertPinyinCall" class="pinyinConvertBtn sqrBtn withShadow" :class="{pinyinOverriding}">
             <img v-if="!pinyinOverriding" :src="pinyinConvertImg"/>
             <div v-else>再次<br/>点击</div>

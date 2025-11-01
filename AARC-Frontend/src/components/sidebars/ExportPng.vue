@@ -3,6 +3,7 @@ import { onMounted, ref, watch } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useApiStore } from '@/app/com/apiStore';
+import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
 import { useRoute } from 'vue-router';
 import { editorParamNameSaveId } from '@/pages/editors/routes/routesNames';
 import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
@@ -16,11 +17,15 @@ import Notice from '../common/Notice.vue';
 import ExportWatermarkConfig from './configs/ExportWatermarkConfig.vue';
 import ConfigSection from './configs/shared/ConfigSection.vue';
 import { storeToRefs } from 'pinia';
+import { LineType } from '@/models/save';
+import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
+import {  copyToClipboard} from "@/utils/lang/copyToClipboard";
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const saveStore = useSaveStore()
+const staClusterStore = useStaClusterStore()
 const api = useApiStore()
 const route = useRoute()
 const { pop } = useUniqueComponentsStore()
@@ -30,6 +35,13 @@ const exportFailed = ref<boolean>(false)
 
 const exportLocalConfig = useExportLocalConfigStore()
 const { fileNameStyle, pixelRestrict, ads } = storeToRefs(exportLocalConfig)
+
+const staNameSplitChar=ref('')
+const autoLineSuffix=ref(false)
+const autoLineSuffixHaoxian=ref(false)
+const removeZeroOnFirstChar=ref(false)
+const exportColorInfo=ref(true)
+
 async function downloadMainCvsAsPng() {
     if(exporting.value)
         return
@@ -136,6 +148,68 @@ async function getExportPngFileName(isMini?:boolean){
     }
     return `${name}.png`
 }
+async function downloadStaNameListTxt() {
+    let txt = ''
+    const clusters = staClusterStore.getStaClusters()
+    saveStore.save?.lines.filter(l => l.type == LineType.common&&!l.isFake).forEach(l => {
+        let lname=l.name
+        if (removeZeroOnFirstChar.value){
+            lname = lname.replace(/^0+/, '')
+        }
+        if (autoLineSuffix.value) {
+            if (/^\d+$/.test(lname)) {
+                //1号线
+                lname += '号线'
+            }
+            if (/^[a-zA-Z]+$/.test(lname)) {
+                //A线
+                lname += '线';
+            }
+            // 检查是否是字母和数字的组合（至少包含一个字母）
+            if (/^(?=.*[a-zA-Z])[a-zA-Z0-9]+$/.test(lname)) {
+                if (autoLineSuffixHaoxian.value) {
+                    //S1号线
+                    lname += '号线'
+                }
+                else {
+                    //S1线
+                    lname += '线';
+                }
+            }
+        }
+        if (exportColorInfo.value) { txt += `# ${lname}\n${l.color}#\n` }
+        else {
+            txt += `# ${lname}\n`
+        }
+        let stationNameList: string[] = []
+        l.pts.forEach(p => {
+            const cluster = clusters?.find(cluster =>
+                cluster.some(sta => sta.id === p)
+            );
+            if (cluster) {
+                let staHaveName = cluster.find(c => c.name)
+                if (staHaveName)
+                    if (staHaveName.name)
+                        stationNameList.push(staHaveName.name)
+            }
+            else {
+                let staHaveName = saveStore.save?.points.find(x => x.id == p)
+                if (staHaveName)
+                    if (staHaveName.name)
+                        stationNameList.push(staHaveName.name)
+            }
+        })
+        stationNameList=removeConsecutiveSameItem(stationNameList)
+        if (stationNameList.length>1){
+            let splitChar=staNameSplitChar.value
+            if (!splitChar){
+                splitChar=' '
+            }
+            txt += stationNameList.join(splitChar)+'\n'
+            }
+    })
+    copyToClipboard(txt)
+}
 function getExportRenderSize():{scale:number, cvsWidth:number, cvsHeight:number}{
     const epr = Number(pixelRestrict.value||'')
     const asIs = ()=>{
@@ -185,82 +259,147 @@ onMounted(()=>{
 </script>
 
 <template>
-<SideBar ref="sidebar" @extend="enableContextMenu()"
-    @fold="disableContextMenu();exported=false;exportFailed=false">
-<h1>导出作品</h1>
-<div class="exportOps">
-    <div class="configItem">
-        <div class="itemName">文件名</div>
-        <select v-model="fileNameStyle">
-            <option :value="'plain'">存档名</option>
-            <option :value="'date'">日期</option>
-            <option :value="'dateTime'">日期时间</option>
-            <option :value="'lineCount'">线路站点</option>
-        </select>
-    </div>
-    <div class="configItem">
-        <div class="itemName">像素上限</div>
-        <input v-model="pixelRestrict" type="number"/>
-    </div>
-    <div class="configItem">
-        <div class="itemName">宣传水印</div>
-        <select v-model="ads">
-            <option :value="'no'">无</option>
-            <option :value="'less'">简略</option>
-            <option :value="'more'">详细</option>
-        </select>
-    </div>
-    <button @click="downloadMainCvsAsPng" class="ok">导出为图片</button>
-    <button @click="downloadMiniatureCvsAsPng" class="minor">导出为缩略图</button>
-    <div v-show="exported" class="note">
-        若点击导出后没有开始下载<br/>请尝试<a :id="downloadAnchorElementId" class="downloadAnchor">点击此处</a>
-    </div>
-    <Notice v-show="exporting" :title="'请等待'" :type="'info'">
-        正在导出，可能需要几秒
-    </Notice>
-    <div v-show="exporting || exported || exportFailed" class="note" :style="{color: exportFailed?'red':undefined}">
-        若导出失败或长时间无响应<br/>请查看本页下方“浏览器限制”部分
-    </div>
-    <div class="exportConfigs">
-        <ExportWatermarkConfig></ExportWatermarkConfig>
-        <ConfigSection :title="'已知的浏览器限制'">
-            <table class="fullWidth browserLimit"><tbody>
-                <tr>
-                    <td colspan="2">
-                        若导出失败，可能由于系统/浏览器限制了画布像素上限，
-                        请尝试设置<b>“像素上限”</b>为你的浏览器对应值，若仍然失败则逐步调低直至导出成功。
-                        需要清晰的图片，请换用其他设备/浏览器。
-                    </td>
-                </tr>
-                <tr>
-                    <th>浏览器</th>
-                    <th>导出像素上限</th>
-                </tr>
-                <tr>
-                    <td>Chrome/Edge/<br/>常见自带浏览器</td>
-                    <td>16000</td>
-                </tr>
-                <tr>
-                    <td>iOS系统上<br/>任意浏览器</td>
-                    <td>4000</td>
-                </tr>
-                <tr>
-                    <td>FireFox(PC版)</td>
-                    <td>暂未发现限制</td>
-                </tr>
-                <tr>
-                    <td colspan="2" class="smallNote">欢迎向我们反馈更多</td>
-                </tr>
-                <tr><th colspan="2">建议</th></tr>
-                <tr><td colspan="2">
-                    请尽可能使用推荐的站距（线路延长手柄的长度）控制合适的站点密度，让线路图变得实用、美观、易于分享<br/>
-                    作为参考：一张上海的线路图一般仅需要4000x3200的画布
-                </td></tr>
-            </tbody></table>
-        </ConfigSection>
-    </div>
-</div>
-</SideBar>
+    <SideBar ref="sidebar" @extend="enableContextMenu()" @fold="disableContextMenu();exported=false;exportFailed=false">
+        <h1>导出作品</h1>
+        <div class="exportOps">
+            <div class="configItem">
+                <div class="itemName">文件名</div>
+                <select v-model="fileNameStyle">
+                    <option :value="'plain'">存档名</option>
+                    <option :value="'date'">日期</option>
+                    <option :value="'dateTime'">日期时间</option>
+                    <option :value="'lineCount'">线路站点</option>
+                </select>
+            </div>
+            <div class="configItem">
+                <div class="itemName">像素上限</div>
+                <input v-model="pixelRestrict" type="number" />
+            </div>
+            <div class="configItem">
+                <div class="itemName">宣传水印</div>
+                <select v-model="ads">
+                    <option :value="'no'">无</option>
+                    <option :value="'less'">简略</option>
+                    <option :value="'more'">详细</option>
+                </select>
+            </div>
+            <button @click="downloadMainCvsAsPng" class="ok">导出为图片</button>
+            <button @click="downloadMiniatureCvsAsPng" class="minor">导出为缩略图</button>
+            <div v-show="exported" class="note">
+                若点击导出后没有开始下载<br />请尝试<a :id="downloadAnchorElementId" class="downloadAnchor">点击此处</a>
+            </div>
+            <Notice v-show="exporting" :title="'请等待'" :type="'info'">
+                正在导出，可能需要几秒
+            </Notice>
+            <div v-show="exporting || exported || exportFailed" class="note"
+                :style="{color: exportFailed?'red':undefined}">
+                若导出失败或长时间无响应<br />请查看本页下方“浏览器限制”部分
+            </div>
+            <div class="exportConfigs">
+                <ExportWatermarkConfig></ExportWatermarkConfig>
+                <ConfigSection :title="'已知的浏览器限制'">
+                    <table class="fullWidth browserLimit">
+                        <tbody>
+                            <tr>
+                                <td colspan="2">
+                                    若导出失败，可能由于系统/浏览器限制了画布像素上限，
+                                    请尝试设置<b>“像素上限”</b>为你的浏览器对应值，若仍然失败则逐步调低直至导出成功。
+                                    需要清晰的图片，请换用其他设备/浏览器。
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>浏览器</th>
+                                <th>导出像素上限</th>
+                            </tr>
+                            <tr>
+                                <td>Chrome/Edge/<br />常见自带浏览器</td>
+                                <td>16000</td>
+                            </tr>
+                            <tr>
+                                <td>iOS系统上<br />任意浏览器</td>
+                                <td>4000</td>
+                            </tr>
+                            <tr>
+                                <td>FireFox(PC版)</td>
+                                <td>暂未发现限制</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="smallNote">欢迎向我们反馈更多</td>
+                            </tr>
+                            <tr>
+                                <th colspan="2">建议</th>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    请尽可能使用推荐的站距（线路延长手柄的长度）控制合适的站点密度，让线路图变得实用、美观、易于分享<br />
+                                    作为参考：一张上海的线路图一般仅需要4000x3200的画布
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </ConfigSection>
+                <ConfigSection :title="'导出作品信息'">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    站名分隔符
+                                    <div class="note">
+                                        默认为空格；用\n换行
+                                    </div>
+                                </td>
+                                <td>
+                                    <input v-model="staNameSplitChar" style="width: 2em;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    导出颜色信息
+                                </td>
+                                <td>
+                                    <input v-model="exportColorInfo" type="checkbox">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    数字路号移除首位的“0”
+                                    <div class="note">
+                                        "01"转为"1"
+                                    </div>
+                                </td>
+                                <td>
+                                    <input v-model="removeZeroOnFirstChar" type="checkbox">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    自动补全线路名
+                                    <div class="note">
+                                        为数字和字母线路补全“号线”和“线”：1号线，A线，S1线
+                                    </div>
+                                </td>
+                                <td>
+                                    <input v-model="autoLineSuffix" type="checkbox">
+                                </td>
+                            </tr>
+                            <tr v-if="autoLineSuffix">
+                                <td>
+                                    线路名后缀为“号线”
+                                    <div class="note">
+                                        开启后S1将补全为S1号线，而非S1线
+                                    </div>
+                                </td>
+                                <td>
+                                    <input v-model="autoLineSuffixHaoxian" type="checkbox">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button @click="downloadStaNameListTxt" class="minor">复制站名列表（适用于wiki）</button>
+                </ConfigSection>
+            </div>
+        </div>
+    </SideBar>
 </template>
 
 <style scoped lang="scss">
