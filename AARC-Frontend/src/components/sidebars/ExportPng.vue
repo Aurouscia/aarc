@@ -19,7 +19,7 @@ import ConfigSection from './configs/shared/ConfigSection.vue';
 import { storeToRefs } from 'pinia';
 import { LineType } from '@/models/save';
 import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
-import {  copyToClipboard} from "@/utils/lang/copyToClipboard";
+import copy from 'copy-to-clipboard';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -208,7 +208,12 @@ async function downloadStaNameListTxt() {
             txt += stationNameList.join(splitChar)+'\n'
             }
     })
-    copyToClipboard(txt)
+    const success = copy(txt);
+    if (success) {
+        pop?.show('已复制', 'success');
+    } else {
+        pop?.show('复制失败，请改用正规浏览器', 'failed');
+    }
 }
 function getExportRenderSize():{scale:number, cvsWidth:number, cvsHeight:number}{
     const epr = Number(pixelRestrict.value||'')
