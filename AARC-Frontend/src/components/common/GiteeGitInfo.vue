@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { GitInfo } from '@/utils/gitInfo/gitInfoGen';
+import { GitInfo } from '@/utils/gitInfo/gitInfo';
 import { getGitInfo } from '@/utils/gitInfo/gitInfoGet';
 import { onMounted, ref } from 'vue';
 

@@ -1,4 +1,4 @@
-import { GitInfo } from "./gitInfoGen";
+import { GitInfo } from "./gitInfo";
 
 // 缓存变量，用于存储第一次获取的数据
 let cachedGitInfo: GitInfo | null = null;
