@@ -82,12 +82,14 @@ import colorSetsSource_503 from './colorSetsSource/503-花新竹歌山.ts'
 import colorSetsSource_504 from './colorSetsSource/504-花新星月.ts'
 import colorSetsSource_511 from './colorSetsSource/511-新靖春泉(MC).ts'
 import colorSetsSource_512 from './colorSetsSource/512-新靖麦都.ts'
+import colorSetsSource_513 from './colorSetsSource/513-新靖柯源.ts'
 import colorSetsSource_520 from './colorSetsSource/520-中海滨蜀.ts'
 import colorSetsSource_521 from './colorSetsSource/521-中海格州.ts'
 import colorSetsSource_522 from './colorSetsSource/522-中海咏胜.ts'
 import colorSetsSource_550 from './colorSetsSource/550-波斯兰康城.ts'
 import colorSetsSource_600 from './colorSetsSource/600-云海.ts'
 import colorSetsSource_601 from './colorSetsSource/601-云港.ts'
+import colorSetsSource_602 from './colorSetsSource/602-桃州.ts'
 export default [
     {name:'北京', pri:0, data:colorSetsSource_0},
     {name:'上海', pri:1, data:colorSetsSource_1},
@@ -169,10 +171,12 @@ export default [
     {name:'花新星月', pri:504, data:colorSetsSource_504},
     {name:'新靖春泉(MC)', pri:511, data:colorSetsSource_511},
     {name:'新靖麦都', pri:512, data:colorSetsSource_512},
+    {name:'新靖柯源', pri:513, data:colorSetsSource_513},
     {name:'中海滨蜀', pri:520, data:colorSetsSource_520},
     {name:'中海格州', pri:521, data:colorSetsSource_521},
     {name:'中海咏胜', pri:522, data:colorSetsSource_522},
     {name:'波斯兰康城', pri:550, data:colorSetsSource_550},
     {name:'云海', pri:600, data:colorSetsSource_600},
     {name:'云港', pri:601, data:colorSetsSource_601},
+    {name:'桃州', pri:602, data:colorSetsSource_602},
 ]

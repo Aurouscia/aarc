@@ -84,7 +84,7 @@ async function copyLineListTxt() {
         txt += '\n'
     })
     if (!wikiMode.value)
-        txt = txt.replaceAll('|', ' ')
+        txt = txt.replaceAll('|', ' ').replaceAll('/-c-/','')
     copyText(txt)
 }
 async function copyStaNameListTxt() {
@@ -160,6 +160,9 @@ defineExpose({
                 <tr>
                     <td>
                         是否用于fic3Wiki
+                        <div class="note">
+                            如果是，则会应用fic3Wiki站包含的语法
+                        </div>
                     </td>
                     <td>
                         <input v-model="wikiMode" type="checkbox">

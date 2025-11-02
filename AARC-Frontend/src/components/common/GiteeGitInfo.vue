@@ -37,6 +37,10 @@ onMounted(()=>{
     <div class="smallNote" style="text-align: center;">
         本项目为滚动更新，无“版本号”概念
     </div>
+     <div class="note" style="text-align: center;">
+        <a href="http://wiki.jowei19.com/#/w/aarc-update-log">更新日志</a>
+    </div>
+    
 </template>
 
 <style>
