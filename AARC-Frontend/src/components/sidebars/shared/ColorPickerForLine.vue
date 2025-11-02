@@ -21,8 +21,8 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <AuColorPicker :initial="line.color"
-        @done="c=>{line.color=c;emit('colorUpdated');envStore.lineInfoChanged(line)}"
+    <AuColorPicker v-model="line.color"
+        @done="()=>{emit('colorUpdated');envStore.lineInfoChanged(line)}"
         ref="picker" :panel-base-z-index="zIndex"
         :show-package-name="true"
         :entry-respond-delay="1"

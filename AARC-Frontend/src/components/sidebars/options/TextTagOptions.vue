@@ -34,17 +34,6 @@ function startEditing(tag: TextTag) {
     sidebar.value?.extend()
 }
 
-function colorChangeHandler(from: 'main'|'sub', c:string){
-    if(!editing.value?.textOp || !editing.value.textSOp)
-        return
-    emit('changed')
-    if(from==='main'){
-        editing.value.textOp.color = c
-    }else{
-        editing.value.textSOp.color = c
-    }
-}
-
 function ensureIconInSelection(){
     if(editing.value){
         if(!editing.value.icon || !iconStore.prefixedIcons.some(x=>x.i.id===editing.value?.icon)){
@@ -197,9 +186,9 @@ defineExpose({
             <table class="fullWidth"><tbody>
                 <tr v-if="!editing.forId">
                     <td>颜色</td>
-                    <td class="colorPickerTd">
-                        <AuColorPicker ref="picker1" :initial="editing.textOp?.color" :pos="-120"
-                            @change="c=>colorChangeHandler('main', c)" @done="c=>colorChangeHandler('main', c)"
+                    <td class="colorPickerTd" v-if="editing.textOp">
+                        <AuColorPicker ref="picker1" v-model="editing.textOp.color" :pos="-120"
+                            @done="emit('changed')"
                             :panel-click-stop-propagation="true" :entry-respond-delay="1">
                         </AuColorPicker>
                     </td>
@@ -221,9 +210,9 @@ defineExpose({
             <table class="fullWidth"><tbody>
                 <tr v-if="!editing.forId">
                     <td>颜色</td>
-                    <td class="colorPickerTd">
-                        <AuColorPicker ref="picker2" :initial="editing.textSOp?.color" :pos="-120"
-                            @change="c=>colorChangeHandler('sub', c)" @done="c=>colorChangeHandler('sub', c)"
+                    <td class="colorPickerTd" v-if="editing.textSOp">
+                        <AuColorPicker ref="picker2" v-model="editing.textSOp.color" :pos="-120"
+                            @done="emit('changed')"
                             :panel-click-stop-propagation="true" :entry-respond-delay="1">
                         </AuColorPicker>
                     </td>

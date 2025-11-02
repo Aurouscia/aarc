@@ -16,7 +16,7 @@
     "colorSetsGen": "tsx src/data/palette/colorSetsGen.ts"
   },
   "dependencies": {
-    "@aurouscia/au-color-picker": "^0.5.1",
+    "@aurouscia/au-color-picker": "^1.0.0",
     "@aurouscia/au-undo-redo": "^0.3.0",
     "@aurouscia/keyboard-shortcut": "^3.0.0",
     "@aurouscia/vite-app-version": "^0.2.0",

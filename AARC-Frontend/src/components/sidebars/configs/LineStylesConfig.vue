@@ -8,7 +8,7 @@ import { moveUpInArray } from '@/utils/lang/moveUpInArray';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
 import { storeToRefs } from 'pinia';
 import { CSSProperties, onMounted, onUnmounted, ref } from 'vue';
-import { hsl } from 'color-convert'
+import convert from 'color-convert'
 import { timestampMS } from '@/utils/timeUtils/timestamp';
 import ConfigSection from '../configs/shared/ConfigSection.vue';
 
@@ -73,7 +73,7 @@ function renderPreviewCvs(){
     if(!save.value?.lineStyles)
         return
     const hue = timestampMS()/20 % 360
-    const dynaColor = '#'+hsl.hex([hue, 80, 50])
+    const dynaColor = '#'+convert.hsl.hex([hue, 80, 50])
     for(const s of save.value?.lineStyles){
         renderPreviewCvsOf(s, dynaColor)
     }
@@ -137,8 +137,8 @@ onUnmounted(()=>{
                         <div class="colorConfig">
                             <div class="leftPart">
                                 <AuColorPicker v-if="!layer.colorMode || layer.colorMode==='fixed'"
-                                    ref="colorPicker" @change="c=>layer.color=c"
-                                    :initial="layer.color" @done="c=>{layer.color=c;rr()}"
+                                    ref="colorPicker"
+                                    v-model="layer.color" @done="rr()"
                                     :entry-styles="{border:'1px solid black'}" :pos="-85"
                                     :entry-respond-delay="1"
                                     :panel-click-stop-propagation="true"></AuColorPicker>
