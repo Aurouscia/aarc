@@ -14,7 +14,7 @@ const saveStore = useSaveStore()
 const staClusterStore = useStaClusterStore()
 const { pop } = useUniqueComponentsStore()
 
-const wikiMode=ref(true)
+const wikiMode = ref(true)
 
 const staNameSplitChar = ref('')
 const autoLineSuffix = ref(true)
@@ -81,8 +81,10 @@ async function copyLineListTxt() {
         else {
             txt += `环行||`
         }
-        txt+='\n'
+        txt += '\n'
     })
+    if (!wikiMode.value)
+        txt = txt.replaceAll('|', ' ')
     copyText(txt)
 }
 async function copyStaNameListTxt() {
@@ -90,13 +92,23 @@ async function copyStaNameListTxt() {
     const clusters = staClusterStore.getStaClusters()
     saveStore.save?.lines.filter(l => l.type == LineType.common && !l.isFake).forEach(l => {
         let lname = parseLineName(l.name)
-
-        if (exportColorInfo.value) {
-            txt += `# ${lname} \n${l.color}#\n`
+        if (wikiMode.value) {
+            if (exportColorInfo.value) {
+                txt += `# ${lname} \n${l.color}#\n`
+            }
+            else {
+                txt += `# ${lname}\n`
+            }
         }
         else {
-            txt += `# ${lname}\n`
+            if (exportColorInfo.value) {
+                txt += `${lname} ${l.color}\n`
+            }
+            else {
+                txt += `${lname}\n`
+            }
         }
+
         let stationNameList: string[] = []
         l.pts.forEach(p => {
             const cluster = clusters?.find(cluster =>
@@ -147,13 +159,10 @@ defineExpose({
             <tbody>
                 <tr>
                     <td>
-                        站名分隔符
-                        <div class="note">
-                            默认为空格；用\n换行
-                        </div>
+                        是否用于fic3Wiki
                     </td>
                     <td>
-                        <input v-model="staNameSplitChar" style="width: 2em;">
+                        <input v-model="wikiMode" type="checkbox">
                     </td>
                 </tr>
                 <tr>
@@ -216,14 +225,14 @@ defineExpose({
 </template>
 
 <style scoped lang="scss">
-
 .note {
     margin: 8px 0px;
     font-size: 14px;
     color: #999;
     text-align: center;
 }
-button{
+
+button {
     text-align: center;
 }
 </style>
