@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import logoImg from '@/assets/logo/aarc-new.svg';
-import { GitInfo } from '@/utils/gitInfo/gitInfoGen';
+import { GitInfo } from '@/utils/gitInfo/gitInfo';
 import { getGitInfo } from '@/utils/gitInfo/gitInfoGet'
 import { onBeforeMount, ref } from 'vue';
 

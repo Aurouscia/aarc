@@ -3,16 +3,7 @@ import { join } from 'path'
 import { cwd } from 'process';
 import { exit } from 'process';
 import fs from 'fs'
-
-export interface GitInfo {
-    branchName: string;
-    commitId: string;
-    contributors: Array<{
-      name: string;
-      count: number;
-    }>;
-    builtAt: string;
-}
+import { GitInfo } from './gitInfo';
 
 // 检查cwd下是否有package.json
 if(!fs.existsSync(join(cwd(), 'package.json'))){

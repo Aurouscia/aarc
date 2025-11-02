@@ -1,11 +1,18 @@
 <script setup lang="ts">
+import { GitInfo } from '@/utils/gitInfo/gitInfo';
+import { getGitInfo } from '@/utils/gitInfo/gitInfoGet';
 import { onMounted, ref } from 'vue';
 
 const widgeturl = "https://gitee.com/au114514/aarc/widget_preview"
 const scriptContainer = ref<HTMLDivElement>()
 const gitWidget = ref<HTMLDivElement>()
+const gitInfo = ref<GitInfo>()
 
 onMounted(()=>{
+    getGitInfo().then((info)=>{
+        gitInfo.value = info
+    })
+
     if(!scriptContainer.value){
         return;
     }
@@ -29,16 +36,15 @@ onMounted(()=>{
 </script>
 
 <template>
+    <div v-if="gitInfo" class="gitInfo">
+        <div>提交ID：{{ gitInfo.commitId }}</div>
+        <div>构建于：{{ gitInfo.builtAt }}</div>
+    </div>
     <div ref="scriptContainer"></div>
     <div ref="gitWidget" id="osc-gitee-widget-tag"></div>
-    <div class="smallNote" style="text-align: center;">
-        代码提交不代表实际运营情况，发布可能存在延迟。
+    <div class="smallNote" style="text-align: center; margin-top: 8px;">
+        github/gitee中的代码提交不代表实际运营情况，发布可能存在延迟。
     </div>
-    <div class="smallNote" style="text-align: center;">
-        本项目为滚动更新，无“版本号”概念。
-        <a href="http://wiki.jowei19.com/#/w/aarc-update-log">更新日志</a>
-    </div>
-    
 </template>
 
 <style>
@@ -48,4 +54,22 @@ onMounted(()=>{
     .osc_border_color {border-color: #e3e9ed !important;}
     .osc_desc_color {color: #666666 !important;}
     .osc_link_color * {color: #9b9b9b !important;}
+</style>
+
+<style lang="scss" scoped>
+.gitInfo{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 25px 0px 10px;
+    &>div{
+        font-size: 14px;
+        color: #666;
+        background-color: #eee;
+        padding: 5px 10px;
+        border-radius: 6px;
+    }
+}
 </style>
