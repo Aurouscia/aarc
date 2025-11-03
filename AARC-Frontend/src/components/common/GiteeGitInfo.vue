@@ -35,9 +35,7 @@ onMounted(()=>{
         代码提交不代表实际运营情况，发布可能存在延迟。
     </div>
     <div class="smallNote" style="text-align: center;">
-        本项目为滚动更新，无“版本号”概念
-    </div>
-     <div class="note" style="text-align: center;">
+        本项目为滚动更新，无“版本号”概念。
         <a href="http://wiki.jowei19.com/#/w/aarc-update-log">更新日志</a>
     </div>
     
