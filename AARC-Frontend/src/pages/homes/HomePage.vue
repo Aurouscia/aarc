@@ -62,6 +62,11 @@ onMounted(()=>{
 </div>
 <GiteeInfo></GiteeInfo>
 <div class="roadmap">
+    <h3>
+        <a href="http://wiki.jowei19.com/#/w/aarc-update-log">
+            更新日志
+        </a>
+    </h3>
     <h2>近期规划</h2>
     <div class="done">
         <h3>自由插入图片（已完成✔）</h3>

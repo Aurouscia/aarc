@@ -152,7 +152,7 @@ onUnmounted(()=>{
                         <h3>宽度</h3>
                         <div class="numberConfig">
                             <div class="leftPart">
-                                <input type="range" v-model="layer.width" :min="0" :max="1" :step="0.05" @blur="rr()"/>
+                                <input type="range" v-model="layer.width" :min="0" :max="2" :step="0.05" @blur="rr()"/>
                             </div>
                             <div class="numberView">{{ layer.width }}</div>
                         </div>
