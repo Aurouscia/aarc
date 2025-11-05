@@ -24,14 +24,6 @@ watch(()=>props.line.id, initPreName) //线路更换时初始化一次
 
 watch(()=>colorPreNameSelected.value, (presetName:string|undefined)=>{
     props.line.colorPre = getPresetEnumByName(presetName)
-    window.setTimeout(()=>{
-        envStore.lineInfoChanged(props.line)
-    },1)
-})
-watch(()=>props.line.color, ()=>{
-    if(!props.line.colorPre){
-        envStore.lineInfoChanged(props.line)
-    }
 })
 defineExpose({
     close:()=>picker.value?.closePanel()
@@ -43,11 +35,11 @@ defineExpose({
         v-model="line.color"
         v-model:model-value-selected-preset="colorPreNameSelected"
         :presets="presets"
-        :initial-selected-preset="getPresetNameByEnum(line.colorPre)"
         :show-package-name="true"
         :entry-respond-delay="1"
         ref="picker" :panel-base-z-index="zIndex"
         :panel-click-stop-propagation="true"
         :entry-styles="entryStyles"
+        @done="envStore.lineInfoChanged(line)"
         ></AuColorPickerPresetsNested>
 </template>
