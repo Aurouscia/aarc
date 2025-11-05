@@ -2,7 +2,7 @@
 import { Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { AuColorPickerPresetsNested } from '@aurouscia/au-color-picker';
-import { CSSProperties, onBeforeMount, ref, watch } from 'vue';
+import { CSSProperties, ref, watch } from 'vue';
 import { useColorPresetNames } from '../sideList/shared/useColorPresetNames';
 
 const envStore = useEnvStore()
@@ -16,9 +16,12 @@ const props = defineProps<{
 const { getPresetNameByEnum, getPresetEnumByName, presets } = useColorPresetNames()
 
 const colorPreNameSelected = ref<string>()
-onBeforeMount(()=>{
+function initPreName(){
     colorPreNameSelected.value = getPresetNameByEnum(props.line.colorPre)
-})
+}
+initPreName() //组件创建时初始化一次（不能在beforeMount中调用，否则会触发重新渲染）
+watch(()=>props.line.id, initPreName) //线路更换时初始化一次
+
 watch(()=>colorPreNameSelected.value, (presetName:string|undefined)=>{
     props.line.colorPre = getPresetEnumByName(presetName)
     emit('colorUpdated')
