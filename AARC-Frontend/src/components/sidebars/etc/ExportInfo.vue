@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import SideBar from '@/components/common/SideBar.vue';
 import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
@@ -9,13 +8,11 @@ import { LineType } from '@/models/save';
 import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
 import copy from 'copy-to-clipboard';
 
-const sidebar = ref<InstanceType<typeof SideBar>>()
 const saveStore = useSaveStore()
 const staClusterStore = useStaClusterStore()
 const { pop } = useUniqueComponentsStore()
 
-const wikiMode = ref(true)
-
+const wikiMode = ref(false)
 const staNameSplitChar = ref('')
 const autoLineSuffix = ref(true)
 const autoLineSuffixHaoxian = ref(false)
@@ -54,26 +51,26 @@ function getStaName(ptid: number) {
     const cluster = clusters?.find(cluster =>
         cluster.some(sta => sta.id === ptid)
     );
+    let res = undefined
     if (!cluster) {
         let point = saveStore.save?.points.find(x => x.id == ptid)
-        if (point)
-            return point.name
-        else
-            return ''
+        res = point?.name
     }
     else {
         let clusterHaveName = cluster.find(x => x.name)
-        if (clusterHaveName)
-            return clusterHaveName.name
-        else
-            return ''
+        res = clusterHaveName?.name
     }
+    res = res?.replaceAll('\n', '')
+    return res ?? ''
 }
 async function copyLineListTxt() {
     let txt = '|线路|颜色|起点|终点|\n'
     saveStore.save?.lines.filter(l => l.type == LineType.common && !l.isFake).forEach(l => {
         let lname = parseLineName(l.name)
-        txt += `|${lname}|/-c-/${l.color}|`
+        txt += `|${lname}|`
+        if(wikiMode.value)
+            txt += `/-c-/`
+        txt += `${l.color}|`
         let firstStaName = getStaName(l.pts[0])
         let lastStaName = getStaName(l.pts[l.pts.length - 1])
         if (firstStaName != lastStaName)
@@ -83,13 +80,10 @@ async function copyLineListTxt() {
         }
         txt += '\n'
     })
-    if (!wikiMode.value)
-        txt = txt.replaceAll('|', ' ')
     copyText(txt)
 }
 async function copyStaNameListTxt() {
     let txt = ''
-    const clusters = staClusterStore.getStaClusters()
     saveStore.save?.lines.filter(l => l.type == LineType.common && !l.isFake).forEach(l => {
         let lname = parseLineName(l.name)
         if (wikiMode.value) {
@@ -111,21 +105,7 @@ async function copyStaNameListTxt() {
 
         let stationNameList: string[] = []
         l.pts.forEach(p => {
-            const cluster = clusters?.find(cluster =>
-                cluster.some(sta => sta.id === p)
-            );
-            if (cluster) {
-                let staHaveName = cluster.find(c => c.name)
-                if (staHaveName)
-                    if (staHaveName.name)
-                        stationNameList.push(staHaveName.name)
-            }
-            else {
-                let staHaveName = saveStore.save?.points.find(x => x.id == p)
-                if (staHaveName)
-                    if (staHaveName.name)
-                        stationNameList.push(staHaveName.name)
-            }
+            stationNameList.push(getStaName(p)) 
         })
         stationNameList = removeConsecutiveSameItem(stationNameList)
         if (stationNameList.length > 1) {
@@ -146,20 +126,18 @@ function copyText(txt: string) {
         pop?.show('复制失败，请改用正规浏览器', 'failed');
     }
 }
-defineExpose({
-    comeOut: () => { sidebar.value?.extend() },
-    fold: () => { sidebar.value?.fold() }
-})
-
 </script>
 
 <template>
-    <ConfigSection :title="'导出作品信息'">
-        <table>
+    <ConfigSection :title="'导出作品信息（试验）'">
+        <table class="fullWidth">
             <tbody>
                 <tr>
                     <td>
-                        是否用于fic3Wiki
+                        用于ficCloud系统
+                        <div class="smallNote">
+                            http://wiki.jowei19.com
+                        </div>
                     </td>
                     <td>
                         <input v-model="wikiMode" type="checkbox">
@@ -168,12 +146,12 @@ defineExpose({
                 <tr>
                     <td>
                         站名分隔符
-                        <div class="note">
-                            默认为空格；用\n换行
+                        <div class="smallNote">
+                            默认为空格（可用\n换行）
                         </div>
                     </td>
                     <td>
-                        <input v-model="staNameSplitChar" style="width: 2em;">
+                        <input v-model="staNameSplitChar" style="width: 3em;">
                     </td>
                 </tr>
                 <tr>
@@ -186,9 +164,9 @@ defineExpose({
                 </tr>
                 <tr>
                     <td>
-                        数字路号移除首位的“0”
-                        <div class="note">
-                            "01"转为"1"
+                        线路号移除首位“0”
+                        <div class="smallNote">
+                            02→2
                         </div>
                     </td>
                     <td>
@@ -197,42 +175,43 @@ defineExpose({
                 </tr>
                 <tr>
                     <td>
-                        自动补全线路名
-                        <div class="note">
-                            为数字和字母线路补全“号线”和“线”：1号线，A线，S1线
+                        自动补全后缀
+                        <div class="smallNote">
+                            为数字/字母线路补全后缀<br/>
+                            1→1号线，A→A线，S1→S1线
                         </div>
                     </td>
                     <td>
                         <input v-model="autoLineSuffix" type="checkbox">
                     </td>
                 </tr>
-                <tr v-if="autoLineSuffix">
+                <tr :class={disabled:!autoLineSuffix}>
                     <td>
-                        线路名后缀为“号线”
-                        <div class="note">
-                            开启后S1将补全为S1号线，而非S1线
+                        始终补全“号线”
+                        <div class="smallNote">
+                            S1→S1号线
                         </div>
                     </td>
                     <td>
-                        <input v-model="autoLineSuffixHaoxian" type="checkbox">
+                        <input v-model="autoLineSuffixHaoxian" type="checkbox" :disabled="!autoLineSuffix">
                     </td>
                 </tr>
             </tbody>
         </table>
-        <button @click="copyStaNameListTxt" class="minor">复制站名列表（适用于Fic3Wiki）</button>
-        <button @click="copyLineListTxt" class="minor">复制线路列表（适用于Fic3Wiki）</button>
+        <button @click="copyStaNameListTxt" class="minor">复制站名列表</button>
+        <button @click="copyLineListTxt" class="minor">复制线路列表</button>
     </ConfigSection>
 </template>
 
 <style scoped lang="scss">
-.note {
-    margin: 8px 0px;
-    font-size: 14px;
-    color: #999;
-    text-align: center;
-}
-
 button {
-    text-align: center;
+    display: block;
+    margin: 10px auto;
+}
+button:last-child{
+    margin-bottom: 100px;
+}
+.disabled, .disabled *{
+    color: #aaa
 }
 </style>

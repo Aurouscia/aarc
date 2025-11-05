@@ -16,7 +16,7 @@ import Notice from '../common/Notice.vue';
 import ExportWatermarkConfig from './configs/ExportWatermarkConfig.vue';
 import ConfigSection from './configs/shared/ConfigSection.vue';
 import { storeToRefs } from 'pinia';
-import ExportInfo from './configs/ExportInfo.vue'
+import ExportInfo from './etc/ExportInfo.vue'
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
