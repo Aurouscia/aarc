@@ -74,9 +74,9 @@ const hasSameNameInSave=computed(()=>{
         <textarea v-model="nameSub" ref="nameSubInput" :rows="nameSubRows" @input="inputHandler('sub')"
             @focus="nameEditStore.nameInputFocusHandler();focusHandler()" @blur="blurHandler()" class="secondary"
             spellcheck="false" placeholder="请输入外语站名/副站名"></textarea>
-        <div class="repeatNameWarning sqrBtn withShadow" @click="pop?.show('站名重复', 'warning')"
+        <div class="repeatNameWarning sqrBtn withShadow" @click="pop?.show('已有其他同名车站', 'warning')"
         v-if="hasSameNameInSave" title="这个站名已经在地图内出现过">
-            ⚠
+            ⚠️
         </div>
         <div @click="convertPinyinCall" class="pinyinConvertBtn sqrBtn withShadow" :class="{pinyinOverriding}">
             <img v-if="!pinyinOverriding" :src="pinyinConvertImg"/>

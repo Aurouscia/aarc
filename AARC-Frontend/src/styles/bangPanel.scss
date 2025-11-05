@@ -41,9 +41,11 @@
         justify-content: center;
         align-items: center;
         color:#B3B3B3;
-        img{
-            width: 80%;
-            height: 80%;
+        animation: pulse 1s infinite;
+        @keyframes pulse {
+            0%   { color: rgba(0,0,0,1); }
+            40%  { color: rgba(0,0,0,1); }
+            100% { color: rgba(0,0,0,.3); }
         }
     }
     .settingsBtn{
