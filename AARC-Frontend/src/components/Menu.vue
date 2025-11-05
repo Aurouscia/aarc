@@ -20,6 +20,7 @@ import ToolBox from './sidebars/ToolBox.vue';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 import NameSearch from './NameSearch.vue';
 import { AuShortcutListener } from '@aurouscia/keyboard-shortcut';
+import { useEnvStore } from '@/models/stores/envStore';
 
 const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()
@@ -28,6 +29,7 @@ const sizeEdit = ref<InstanceType<typeof Terrains>>()
 const exportPng = ref<InstanceType<typeof ExportPng>>()
 const configs = ref<InstanceType<typeof Configs>>()
 const nameSearch = ref<InstanceType<typeof NameSearch>>()
+const envStore = useEnvStore()
 const { preventingLeaving, unsavedForALongTime } = storeToRefs(usePreventLeavingUnsavedStore())
 const { 
     snapNeighborExtendsEnabled:snee,
@@ -51,6 +53,8 @@ const saveBtnText = computed<'保存'|'离开'>(()=>{
 })
 
 function openSidebarOf(name:SidebarNames){
+    envStore.endEveryEditing()
+    envStore.cancelActive()
     activeSidebarName.value = name
     if(name==='lines')
         lines.value?.comeOut()

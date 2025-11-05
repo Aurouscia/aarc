@@ -105,6 +105,7 @@ export const useEnvStore = defineStore('env', ()=>{
         cursorPos.value = undefined
         movedPoint.value = false
         movedTextTag.value = false
+        setOpsPos(false)
     }
     function endEveryEditing(exceptName?:boolean){
         //结束editing状态，将edited重置回false
@@ -603,6 +604,7 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         const createTagForLine = ()=>{
             if(activeLine.value?.id){
+                setOpsPos(false)
                 const lineId = activeLine.value.id
                 activeLine.value = undefined
                 createTextTag(lineId)
