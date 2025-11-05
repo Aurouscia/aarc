@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useApiStore } from '@/app/com/apiStore';
@@ -15,8 +15,9 @@ import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contex
 import Notice from '../common/Notice.vue';
 import ExportWatermarkConfig from './configs/ExportWatermarkConfig.vue';
 import ConfigSection from './configs/shared/ConfigSection.vue';
-import { storeToRefs } from 'pinia';
 import ExportInfo from './etc/ExportInfo.vue'
+import { storeToRefs } from 'pinia';
+
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
@@ -29,7 +30,7 @@ const exporting = ref<boolean>(false)
 const exportFailed = ref<boolean>(false)
 
 const exportLocalConfig = useExportLocalConfigStore()
-const { fileNameStyle, pixelRestrict, ads } = storeToRefs(exportLocalConfig)
+const { fileNameStyle, pixelRestrict, pixelRestrictMode, ads } = storeToRefs(exportLocalConfig)
 
 async function downloadMainCvsAsPng() {
     if(exporting.value)
@@ -151,7 +152,7 @@ function getExportRenderSize():{scale:number, cvsWidth:number, cvsHeight:number}
         return asIs()
     }
     const biggerSide = Math.max(saveStore.cvsWidth, saveStore.cvsHeight)
-    if(biggerSide <= epr)
+    if(biggerSide <= epr && pixelRestrictMode.value=='max')
         return asIs()
     const scale = epr/biggerSide
     return {
@@ -181,9 +182,9 @@ defineExpose({
     fold: ()=>{sidebar.value?.fold()}
 })
 
-onMounted(()=>{
-    exportLocalConfig.backCompat()
-})
+function explainPixelMode(){
+    window.alert('选择“指定”模式后，将严格按“像素”的值进行导出，“像素”值较大时可获得高清图片')
+}
 </script>
 
 <template>
@@ -193,15 +194,26 @@ onMounted(()=>{
             <div class="configItem">
                 <div class="itemName">文件名</div>
                 <select v-model="fileNameStyle">
-                    <option :value="'plain'">存档名</option>
+                    <option :value="'plain'">仅存档名</option>
                     <option :value="'date'">日期</option>
                     <option :value="'dateTime'">日期时间</option>
                     <option :value="'lineCount'">线路站点</option>
                 </select>
             </div>
             <div class="configItem">
-                <div class="itemName">像素上限</div>
-                <input v-model="pixelRestrict" type="number" />
+                <div class="itemName">长边像素</div>
+                <input v-model="pixelRestrict" type="number" placeholder='参考"已知限制"'/>
+            </div>
+            <div class="configItem">
+                <div class="itemName">
+                    像素模式
+                    <!--TODO：删除它，改为使用统一的自定义alert组件-->
+                    <div class="question-mark" @click="explainPixelMode">?</div>
+                </div>
+                <select v-model="pixelRestrictMode">
+                    <option :value="'max'">上限</option>
+                    <option :value="'exact'">指定</option>
+                </select>
             </div>
             <div class="configItem">
                 <div class="itemName">宣传水印</div>
@@ -284,7 +296,7 @@ onMounted(()=>{
         color:#666;
     }
     input{
-        max-width: 120px;
+        max-width: 140px;
     }
 }
 .explainItem{
@@ -308,5 +320,19 @@ onMounted(()=>{
 }
 .browserLimit{
     font-size: 14px;
+}
+
+// TODO：删除它，改为使用统一的自定义alert组件
+.question-mark{
+    height: 16px;
+    width: 16px;
+    border: 2px solid #aaa;
+    color: #aaa;
+    font-size: 14px;
+    line-height: 16px;
+    text-align: center;
+    border-radius: 100px;
+    cursor: pointer;
+    display: inline-block;
 }
 </style>

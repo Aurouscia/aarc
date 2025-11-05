@@ -24,6 +24,7 @@ export interface ExportWatermarkLocalConfig{
 export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
     const fileNameStyle = ref<ExportFileNameStyle>('lineCount')
     const pixelRestrict = ref<string|number>('')
+    const pixelRestrictMode = ref<'max'|'exact'>('max')
     const ads = ref<AdsRenderType>('no')
 
     const watermark = ref<ExportWatermarkLocalConfig>(waterMarkDefault())
@@ -40,52 +41,14 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
         return defaultVal
     }
 
-    //#region 旧版兼容性，过段时间删了
-    function backCompat(){
-        const legacyFileNameStyleKey = 'localConfig_export_exportFileNameStyle'
-        const legacyFileNameStyle = localStorage.getItem(legacyFileNameStyleKey)
-        if(legacyFileNameStyle){
-            fileNameStyle.value = legacyFileNameStyle as ExportFileNameStyle    
-        }
-        localStorage.removeItem(legacyFileNameStyleKey) 
-
-        const legacyPixelRestrictKey = 'localConfig_export_exportPixelRestrict'
-        const legacyPixelRestrict = localStorage.getItem(legacyPixelRestrictKey)
-        if(legacyPixelRestrict){
-            pixelRestrict.value = legacyPixelRestrict
-        }
-        localStorage.removeItem(legacyPixelRestrictKey)
-
-        const legacyAdsKey = 'localConfig_export_exportWithAds'
-        const legacyAds = localStorage.getItem(legacyAdsKey)
-        if(legacyAds){
-            ads.value = legacyAds as AdsRenderType
-        }
-        localStorage.removeItem(legacyAdsKey)
-
-        const legacyWatermarkJsonKey = 'localConfig_export_watermark'
-        const legacyWatermarkJson = localStorage.getItem(legacyWatermarkJsonKey)
-        try{
-            if(legacyWatermarkJson){
-                const legacyWatermark = JSON.parse(legacyWatermarkJson) as ExportWatermarkLocalConfig
-                watermark.value = legacyWatermark 
-            }
-        }
-        finally{
-            localStorage.removeItem(legacyWatermarkJsonKey)
-        }
-    }
-    //#endregion
-
     return {
         fileNameStyle,
         pixelRestrict,
+        pixelRestrictMode,
         ads,
         watermark,
         watermarkReset,
-        waterMarkDefault,
-
-        backCompat
+        waterMarkDefault
     }
 },
 {

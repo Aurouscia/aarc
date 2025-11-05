@@ -45,10 +45,9 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-11-2更新'">
-        1. bs：线路信息导出（在导出菜单底部）（半成品）
-        2. bs：站名编辑：与已有站名重复时显示警告（半成品）
-        3. au：可通过ctrl+F打开站名搜索
+    <Notice :type="'info'" :title="'2025-11-5更新'">
+        1. au：可导出高于画布像素的图片（指定“像素模式”）<br/>
+        2. au：修复线路列表颜色在特定情况下缺少更新的问题
     </Notice>
     <Notice :type="'info'" :title="'正在开发'">
         - 画布隐私等设置<br/>
