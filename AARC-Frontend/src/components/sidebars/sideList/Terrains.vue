@@ -15,8 +15,7 @@ const {
     createLine, editingInfoLine, editInfoOfLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe,
     showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
-    showListSidebar, hideListSidebar,
-    renderColorPickers, reloadColorPickers
+    showListSidebar, hideListSidebar
 } = useSideListShared(LineType.terrain)
 
 const pickers = ref<InstanceType<typeof ColorPickerForTerrain>[]>([])
@@ -51,9 +50,7 @@ onUnmounted(()=>{
         </div>
         <div class="lines" :class="{arranging: arrangingId >= 0}">
             <div v-for="l,idx in terrains" :key="l.id" :class="{arranging: arrangingId==l.id}">
-                <template v-if="renderColorPickers">
-                    <ColorPickerForTerrain ref="pickers" :line="l" :z-index="idx"></ColorPickerForTerrain>
-                </template>
+                <ColorPickerForTerrain ref="pickers" :line="l" :z-index="idx"></ColorPickerForTerrain>
                 <LineItemBtns :showing-btns="'arrange'"
                     :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
                     :edit-info-of-line="editInfoOfLine" :show-children-of="()=>{}" :leave-parent="()=>{}"
@@ -67,6 +64,5 @@ onUnmounted(()=>{
     <LineDelPrompt :line="wantDelLine" :line-called="'地形'" :pt-called="'节点'" :with-sta-default="true"
         @abort="delLineAbort" @exe="delLineExe"></LineDelPrompt>
     <LineOptions ref="lineOptions" v-if="editingInfoLine" :line="editingInfoLine"
-        :line-type-called="'地形'" :line-width-range="{min:0.5, max:12, step:0.5}"
-        @color-updated="reloadColorPickers"></LineOptions>
+        :line-type-called="'地形'" :line-width-range="{min:0.5, max:12, step:0.5}"></LineOptions>
 </template>

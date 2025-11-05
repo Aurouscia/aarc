@@ -15,14 +15,11 @@ defineExpose({
     close:()=>picker.value?.closePanel(),
     enforceTo:(hex:string)=>picker.value?.enforceTo(hex)
 })
-const emit = defineEmits<{
-    (e:'colorUpdated'):void
-}>()
 </script>
 
 <template>
     <AuColorPicker v-model="line.color"
-        @done="()=>{emit('colorUpdated');envStore.lineInfoChanged(line)}"
+        @done="envStore.lineInfoChanged(line)"
         ref="picker" :panel-base-z-index="zIndex"
         :show-package-name="true"
         :entry-respond-delay="1"

@@ -24,7 +24,6 @@ watch(()=>props.line.id, initPreName) //线路更换时初始化一次
 
 watch(()=>colorPreNameSelected.value, (presetName:string|undefined)=>{
     props.line.colorPre = getPresetEnumByName(presetName)
-    emit('colorUpdated')
     window.setTimeout(()=>{
         envStore.lineInfoChanged(props.line)
     },1)
@@ -32,15 +31,11 @@ watch(()=>colorPreNameSelected.value, (presetName:string|undefined)=>{
 watch(()=>props.line.color, ()=>{
     if(!props.line.colorPre){
         envStore.lineInfoChanged(props.line)
-        emit('colorUpdated')
     }
 })
 defineExpose({
     close:()=>picker.value?.closePanel()
 })
-const emit = defineEmits<{
-    (e:'colorUpdated'):void
-}>()
 </script>
 
 <template>
