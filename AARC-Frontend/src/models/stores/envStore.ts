@@ -114,7 +114,7 @@ export const useEnvStore = defineStore('env', ()=>{
         textTagEditStore.endEditing()
         nameEditStore.edited = false
         textTagEditStore.edited = false
-        nameSearchStore.show = false
+        nameSearchStore.toggleShow(false)
     }
     function pureClickHandler(clientCord:Coord, clickType?:PureClickType){
         const coord = translateFromClient(clientCord);

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { computed } from 'vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { ControlPoint,Line } from '@/models/save';
@@ -13,15 +13,12 @@ const envStore = useEnvStore();
 const staClusterStore = useStaClusterStore()
 const cvs = useCvsFrameStore();
 
-
-const { show } = storeToRefs(useNameSearchStore())
-const searchInput = ref<HTMLInputElement>();
-const searchText = ref('');
-const showResults = ref(false);
+const nameSearchStore = useNameSearchStore()
+const { show, searchText, showResults, searchInput } = storeToRefs(nameSearchStore)
 
 // 匹配逻辑：name 或 nameS 包含搜索串（不区分大小写）
 const results = computed(()=>{
-  const q = searchText.value.trim();
+  const q = searchText.value?.trim();
   if(!q) return [];
   const s = q.toLowerCase();
   const pts = saveStore.save?.points || [];
@@ -34,15 +31,11 @@ const results = computed(()=>{
   return matched;
 });
 
-watch(searchText, (v)=>{
-  showResults.value = !!v && v.trim().length > 0;
-});
-
 function centerOnPt(pt:ControlPoint){
   cvs.focusViewToPos(pt.pos)
   envStore.activePt = pt;
   envStore.cursorPos = [...pt.pos]
-  show.value = false
+  nameSearchStore.toggleShow(false)
 }
 
 // 辅助：获取该站所属线路信息（name + color）
@@ -60,18 +53,6 @@ function getPtLines(pt:ControlPoint){
     color: saveStore.getLineActualColorById(l.id) || l.color || '#000',
   })).slice(0,10);
 }
-
-defineExpose({show})
-watch(show, (newVal)=>{
-  if(!newVal){
-    searchText.value = ''
-    showResults.value = false
-  }
-  else{
-    if(searchInput.value)
-      searchInput.value.focus()
-  }
-})
 </script>
 
 <template>

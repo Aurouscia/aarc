@@ -21,6 +21,7 @@ import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom'
 import NameSearch from './NameSearch.vue';
 import { AuShortcutListener } from '@aurouscia/keyboard-shortcut';
 import { useEnvStore } from '@/models/stores/envStore';
+import { useNameSearchStore } from '@/models/stores/nameSearchStore';
 
 const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()
@@ -30,6 +31,7 @@ const exportPng = ref<InstanceType<typeof ExportPng>>()
 const configs = ref<InstanceType<typeof Configs>>()
 const nameSearch = ref<InstanceType<typeof NameSearch>>()
 const envStore = useEnvStore()
+const nameSearchStore = useNameSearchStore()
 const { preventingLeaving, unsavedForALongTime } = storeToRefs(usePreventLeavingUnsavedStore())
 const { 
     snapNeighborExtendsEnabled:snee,
@@ -82,17 +84,6 @@ function openSidebarOf(name:SidebarNames){
         toolBox.value?.fold()
 }
 
-function toggleNameSearch(){
-    if(nameSearch.value){
-        const currentShow = nameSearch.value.show
-        if(!currentShow){
-            envStore.cancelActive()
-            envStore.endEveryEditing()
-        }
-        nameSearch.value.show = !currentShow
-    }
-}
-
 const { goBackToWhereWeEntered } = useEnteredCanvasFromStore()
 function saveData(){
     if(saveBtnMode.value=='save')
@@ -105,7 +96,7 @@ const emit = defineEmits<{
     (e:'saveData'):void
 }>()
 
-const searchShortcut = new AuShortcutListener(toggleNameSearch, {code: 'KeyF', ctrl: true})
+const searchShortcut = new AuShortcutListener(nameSearchStore.toggleShow, {code: 'KeyF', ctrl: true})
 onMounted(()=>{
     searchShortcut.start()
 })
@@ -136,7 +127,7 @@ onUnmounted(()=>{
     <NameSearch ref="nameSearch"></NameSearch>
     <div class="anotherMenu" :class="{anotherMenuFolded}">
         <div class="anotherMenuColumn">
-            <div class="searchBtn sqrBtn withShadow" @click="toggleNameSearch">
+            <div class="searchBtn sqrBtn withShadow" @click="nameSearchStore.toggleShow()">
                 <img :src="searchImg"/>
             </div>
             <div class="foldBtn sqrBtn withShadow" @click="anotherMenuFolded=!anotherMenuFolded">

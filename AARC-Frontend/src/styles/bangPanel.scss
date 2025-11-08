@@ -13,7 +13,7 @@
     z-index: 10;
     transition: 0.2s;
     transition-timing-function: ease-out;
-    .retractBtn,.duplicateBtn,.settingsBtn,.pinyinConvertBtn,.repeatNameWarning{
+    .retractBtn,.duplicateBtn,.settingsBtn,.pinyinConvertBtn,.duplicateNameWarning{
         position: absolute;
         bottom: -22px;
         width: 27px;
@@ -35,7 +35,7 @@
             height: 80%;
         }
     }
-    .repeatNameWarning{
+    .duplicateNameWarning{
         right: 105px;
         display: flex;
         justify-content: center;

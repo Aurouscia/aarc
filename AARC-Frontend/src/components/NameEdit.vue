@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useNameEditStore } from '@/models/stores/nameEditStore';
-import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { storeToRefs } from 'pinia';
 import { useTwinTextarea } from './composables/useTwinTextarea';
@@ -11,11 +10,11 @@ import pinyinConvertImg from '@/assets/ui/pinyinConvert.svg'
 import ControlPointOptions from './sidebars/options/ControlPointOptions.vue';
 import { usePinyinConvert } from './composables/usePinyinConvert';
 import { computed, onMounted, onUnmounted } from 'vue';
+import { useNameSearchStore } from '@/models/stores/nameSearchStore';
 
-
-const { pop } = useUniqueComponentsStore()
 const saveStore = useSaveStore();
 const nameEditStore = useNameEditStore()
+const nameSearchStore = useNameSearchStore()
 const { nameMain, nameSub, editing, edited, nameEditorDiv, controlPointOptionsPanel } = storeToRefs(nameEditStore)
 const { convertPinyin, pinyinOverriding } = usePinyinConvert(nameMain, nameSub, ()=>nameEditStore.applyName())
 const { 
@@ -38,6 +37,10 @@ const {
 
 async function convertPinyinCall(){
     await convertPinyin()
+}
+
+function clickDuplicateWarning(){
+    nameSearchStore.toggleShow(nameMain.value)
 }
 
 function focusHandler(){
@@ -74,7 +77,7 @@ const hasSameNameInSave=computed(()=>{
         <textarea v-model="nameSub" ref="nameSubInput" :rows="nameSubRows" @input="inputHandler('sub')"
             @focus="nameEditStore.nameInputFocusHandler();focusHandler()" @blur="blurHandler()" class="secondary"
             spellcheck="false" placeholder="请输入外语站名/副站名"></textarea>
-        <div class="repeatNameWarning sqrBtn withShadow" @click="pop?.show('已有其他同名车站', 'warning')"
+        <div class="duplicateNameWarning sqrBtn withShadow" @click="clickDuplicateWarning"
         v-if="hasSameNameInSave" title="这个站名已经在地图内出现过">
             ⚠️
         </div>
