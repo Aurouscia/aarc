@@ -178,7 +178,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 cursorPos.value = [...pt.pos]
                 const done = pointLinkStore.ptLinkClick(pt.id)
                 if(done)
-                    rerender.value()
+                    rerender.value() // 如果点连接创建完成，重新渲染
             }
             return
         }
@@ -857,16 +857,6 @@ export const useEnvStore = defineStore('env', ()=>{
         movedPoint.value = true
         cursorPos.value = [...newPt.pos]
     }
-    function startCreatingPtLink(){
-        endEveryEditing()
-        cancelActive()
-        pointLinkStore.startCreatingPtLink()
-        rerender.value()
-    }
-    function abortCreatingPtLink(){
-        pointLinkStore.abortCreatingPtLink()
-        rerender.value()
-    }
 
     function pointlessLineScan(){
         if(!saveStore.save)
@@ -997,7 +987,6 @@ export const useEnvStore = defineStore('env', ()=>{
         rerender, rescaled, getActivePtOpsAvoidance,
         delActivePt, delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
         createTextTag, duplicateTextTag, delActiveTextTag, createPlainPt,
-        startCreatingPtLink, abortCreatingPtLink,
         endEveryEditing, cancelActive, splitLineByPt, mergeLinesByPt,
         removeRepeatPtOnLines,
         closeOps:()=>setOpsPos(false)

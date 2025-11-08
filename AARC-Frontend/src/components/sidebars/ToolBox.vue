@@ -7,7 +7,8 @@ import { usePointLinkStore } from '@/models/stores/pointLinkStore';
 import { ControlPointLinkType } from '@/models/save';
 
 const envStore = useEnvStore()
-const { creatingLinkType } = storeToRefs(usePointLinkStore())
+const pointLinkStore = usePointLinkStore()
+const { creatingLinkType } = storeToRefs(pointLinkStore)
 
 function fd(){
     sidebar.value?.fold()
@@ -39,7 +40,7 @@ defineExpose({
             <option :value="ControlPointLinkType.dotCover">虚线(覆盖)</option>
             <option :value="ControlPointLinkType.cluster">车站团</option>
         </select>
-        <button @click="envStore.startCreatingPtLink();fd()">创建车站间连线</button>
+        <button @click="pointLinkStore.startCreatingPtLink();fd()">创建车站间连线</button>
     </div>
     <div class="toolItem">
         <div class="smallNote">可用于创建带折角/分叉的车站间连线</div>

@@ -113,7 +113,7 @@ defineExpose({init})
     <TextTagEdit></TextTagEdit>
     <div v-if="pointLinkStore.isCreating" class="statusDisplay pointLinkCreatingStatus">
         正在创建连接，请点击第<b>{{ pointLinkStore.helpTextNumber }}</b>个点<br/>
-        <button class="lite" @click="envStore.abortCreatingPtLink">取消创建</button>
+        <button class="lite" @click="pointLinkStore.abortCreatingPtLink">取消创建</button>
     </div>
 </template>
 
