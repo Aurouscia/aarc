@@ -17,7 +17,7 @@ export const useNameSearchStore = defineStore('nameSearch', ()=>{
         if(force){
             const envStore = useEnvStore()
             envStore.cancelActive()
-            envStore.endEveryEditing()
+            envStore.endEveryEditing({rerenderIfEdited:true})
             if(typeof force === 'string'){
                 searchText.value = force
             }

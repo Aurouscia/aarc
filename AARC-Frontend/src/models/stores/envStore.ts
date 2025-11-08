@@ -107,14 +107,20 @@ export const useEnvStore = defineStore('env', ()=>{
         movedTextTag.value = false
         setOpsPos(false)
     }
-    function endEveryEditing(exceptName?:boolean){
+    function endEveryEditing(options?:{
+        exceptName?:boolean,
+        rerenderIfEdited?:boolean
+    }){
         //结束editing状态，将edited重置回false
-        if(!exceptName)
+        if(!options?.exceptName)
             nameEditStore.endEditing()
         textTagEditStore.endEditing()
+        nameSearchStore.toggleShow(false)
+        if(options?.rerenderIfEdited && (nameEditStore.edited || textTagEditStore.edited)){
+            rerender.value([], [activePt.value?.id ?? 0])
+        }
         nameEditStore.edited = false
         textTagEditStore.edited = false
-        nameSearchStore.toggleShow(false)
     }
     function pureClickHandler(clientCord:Coord, clickType?:PureClickType){
         const coord = translateFromClient(clientCord);
@@ -189,7 +195,7 @@ export const useEnvStore = defineStore('env', ()=>{
         const staName = onStaName(coord)
         if(staName){
             //点到站名上了
-            endEveryEditing(true)
+            endEveryEditing({exceptName:true})
             activePt.value = saveStore.getPtById(staName.id)
             activePtType.value = 'name'
             if(isRightBtnOnly){
@@ -233,7 +239,7 @@ export const useEnvStore = defineStore('env', ()=>{
         const activePtChanged = activePtIdJustNow !== pt?.id
         if(pt){
             //点到点上了
-            endEveryEditing(true)
+            endEveryEditing({exceptName:true})
             activePt.value = pt
             activePtType.value = 'body'
             cursorPos.value = [...pt.pos]

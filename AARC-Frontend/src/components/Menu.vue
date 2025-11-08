@@ -55,7 +55,7 @@ const saveBtnText = computed<'保存'|'离开'>(()=>{
 })
 
 function openSidebarOf(name:SidebarNames){
-    envStore.endEveryEditing()
+    envStore.endEveryEditing({rerenderIfEdited:true})
     envStore.cancelActive()
     activeSidebarName.value = name
     if(name==='lines')
