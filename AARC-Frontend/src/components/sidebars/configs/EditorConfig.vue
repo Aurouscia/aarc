@@ -5,7 +5,7 @@ import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 
 const configStore = useEditorLocalConfigStore()
-const { staNameFob } = storeToRefs(configStore)
+const { staNameFob, duplicateNameDistThrs } = storeToRefs(configStore)
 
 onMounted(()=>{
     configStore.backCompat()
@@ -15,11 +15,26 @@ onMounted(()=>{
 <template>
 <ConfigSection :title="'编辑器'">
     <table><tbody>
+        <tr><th>重复站名检测</th></tr>
+        <tr>
+            <td>
+                <input v-model="duplicateNameDistThrs" placeholder="0-1000"/>
+                <div>
+                    <button class="minor" @click="duplicateNameDistThrs = 0">严格</button>
+                    <button class="minor" @click="duplicateNameDistThrs = 200">标准</button>
+                    <button class="minor" @click="duplicateNameDistThrs = 99999">关闭</button>
+                </div>
+                <div class="explain">
+                    <p>当两个站的距离小于该值时，不会对“站名重复”作出警告，允许“靠近的地铁站与电车站同名”这种设计。</p>
+                    <p style="color:cornflowerblue">本设置暂未生效</p>
+                </div>
+            </td>
+        </tr>
         <tr><th>站名糊弄机制</th></tr>
         <tr>
             <td>
-                <input v-model="staNameFob" class="staNameFob" placeholder="0.1-10"/>
-                <div class="staNameFobBtns">
+                <input v-model="staNameFob" placeholder="0.1-10"/>
+                <div>
                     <button class="minor" @click="staNameFob = 0.01">关闭</button>
                     <button class="minor" @click="staNameFob = 0.7">严格</button>
                     <button class="minor" @click="staNameFob = 1">标准</button>
@@ -38,7 +53,7 @@ onMounted(()=>{
 </template>
 
 <style lang="scss" scoped>
-.staNameFob{
+input{
     width: 100px;
     text-align: center;
 }
