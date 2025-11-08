@@ -84,7 +84,12 @@ function openSidebarOf(name:SidebarNames){
 
 function toggleNameSearch(){
     if(nameSearch.value){
-        nameSearch.value.show = !nameSearch.value.show
+        const currentShow = nameSearch.value.show
+        if(!currentShow){
+            envStore.cancelActive()
+            envStore.endEveryEditing()
+        }
+        nameSearch.value.show = !currentShow
     }
 }
 
