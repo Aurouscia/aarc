@@ -218,6 +218,11 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         staClusters.value = undefined
         neighbors = {}
     }
+    function getStaClusterById(ptId:number){
+        return getStaClusters()?.find(cluster =>
+                cluster.some(sta => sta.id === ptId)
+            )
+    }
 
     return {
         getStaClusters,
@@ -225,6 +230,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         tryTransferStaNameWithinCluster,
         getMaxSizePtWithinCluster,
         clearItems,
-        getRectOfCluster
+        getRectOfCluster,
+        getStaClusterById
     }
 })

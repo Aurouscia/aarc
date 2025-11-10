@@ -112,10 +112,7 @@ const { pop } = useUniqueComponentsStore()
     function applySomeNamePos(points:ControlPoint[]){
         //暂时忽略车站团
         let allSinglePos=points.filter(p => {
-            const cluster=staClusterStore.getStaClusters()?.find(cluster =>
-                cluster.some(sta => sta.id === p.id)
-            )
-            return !cluster||cluster.length<=1
+            saveStore.isPtSingle(p.id)
         })||[]
         allSinglePos.forEach(x => {
             x.nameP = newNamePos(x.id)
@@ -130,9 +127,7 @@ const { pop } = useUniqueComponentsStore()
         if (!pt) {
             return []
         }
-        const cluster = staClusterStore.getStaClusters()?.find(cluster =>
-            cluster.some(sta => sta.id === ptId)
-        )
+        const cluster = staClusterStore.getStaClusterById(ptId)
         const nextPtsPos =
             saveStore.getLinesByPt(ptId).map(x => {
                 return formalizedLineStore.findAdjacentFormatPts(x.pts.findIndex(p => p == ptId), x.id)
@@ -148,7 +143,7 @@ const { pop } = useUniqueComponentsStore()
         const pt = saveStore.getPtById(ptId)
         const ptSize = staClusterStore.getMaxSizePtWithinCluster(ptId, 'ptSize')
         const dist = cs.config.snapOctaClingPtNameDist * ptSize
-        //TODO：自动选择不遮挡线路的位置
+        //自动选择不遮挡线路的位置
         if (pt) {
             //得到相邻点和这个站的相对位置
             const nextPtsPos = getNextPtsPos(ptId)
@@ -181,6 +176,6 @@ const { pop } = useUniqueComponentsStore()
         startEditing, endEditing, toggleEditing, applyName,
         nameInputFocusHandler, nameEditorDiv, getEditorDivEffectiveHeight,
         controlPointOptionsPanel, controlPointOptionsPanelOpen,
-        newNamePos, clearItems,applyNamePos,applyAllNamePos
+        newNamePos, clearItems,applyNamePos,applyAllNamePos,applySomeNamePos
     }
 })

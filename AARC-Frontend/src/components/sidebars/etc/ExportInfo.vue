@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import ConfigSection from '../configs/shared/ConfigSection.vue';
@@ -9,7 +8,6 @@ import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameIte
 import copy from 'copy-to-clipboard';
 
 const saveStore = useSaveStore()
-const staClusterStore = useStaClusterStore()
 const { pop } = useUniqueComponentsStore()
 
 const wikiMode = ref(false)
@@ -46,23 +44,7 @@ function parseLineName(lname: string) {
     }
     return lname
 }
-function getStaName(ptid: number) {
-    const clusters = staClusterStore.getStaClusters()
-    const cluster = clusters?.find(cluster =>
-        cluster.some(sta => sta.id === ptid)
-    );
-    let res = undefined
-    if (!cluster) {
-        let point = saveStore.save?.points.find(x => x.id == ptid)
-        res = point?.name
-    }
-    else {
-        let clusterHaveName = cluster.find(x => x.name)
-        res = clusterHaveName?.name
-    }
-    res = res?.replaceAll('\n', '')
-    return res ?? ''
-}
+
 async function copyLineListTxt() {
     let txt = '|线路|颜色|起点|终点|\n'
     saveStore.save?.lines.filter(l => l.type == LineType.common && !l.isFake).forEach(l => {
@@ -71,8 +53,8 @@ async function copyLineListTxt() {
         if(wikiMode.value)
             txt += `/-c-/`
         txt += `${l.color}|`
-        let firstStaName = getStaName(l.pts[0])
-        let lastStaName = getStaName(l.pts[l.pts.length - 1])
+        let firstStaName =saveStore. getStaName(l.pts[0])
+        let lastStaName = saveStore.getStaName(l.pts[l.pts.length - 1])
         if (firstStaName != lastStaName)
             txt += `${firstStaName}|${lastStaName}|`
         else {
@@ -105,7 +87,7 @@ async function copyStaNameListTxt() {
 
         let stationNameList: string[] = []
         l.pts.forEach(p => {
-            stationNameList.push(getStaName(p)) 
+            stationNameList.push(saveStore.getStaName(p)) 
         })
         stationNameList = removeConsecutiveSameItem(stationNameList)
         if (stationNameList.length > 1) {

@@ -340,8 +340,9 @@ export const useEnvStore = defineStore('env', ()=>{
             }
             const newPtId = saveStore.insertNewPtToLine(
                 lineExtend.lineId, lineExtend.at, lineExtend.btnPos, lineExtend.btnDir, ControlPointSta.sta)
+            
             if (newPtId) {
-                if(nameEditStore.edited)
+                if (nameEditStore.edited)
                     rerender.value([], [activePt.value.id])
                 activePt.value = saveStore.getPtById(newPtId)
                 if (activePt.value) {
@@ -353,7 +354,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     nameEditStore.startEditing(newPtId)
                     //新建的点立即进行一次snap
                     const snapRes = snap(activePt.value)
-                    if(snapRes){
+                    if (snapRes) {
                         activePt.value.pos = snapRes
                     }
                     coordRound(activePt.value.pos)
