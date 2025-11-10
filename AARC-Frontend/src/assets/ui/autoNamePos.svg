@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_图层_2" data-name="图层 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 43.89 43.89">
+  <defs>
+    <style>
+      .cls-1, .cls-2, .cls-3 {
+        fill: none;
+      }
+
+      .cls-4 {
+        fill: #c30d23;
+        stroke: #c30d23;
+        stroke-width: 3px;
+      }
+
+      .cls-4, .cls-2, .cls-5, .cls-3 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-6 {
+        fill: #595757;
+        opacity: .5;
+      }
+
+      .cls-6, .cls-7 {
+        font-family: SimHei, SimHei;
+        font-size: 16px;
+      }
+
+      .cls-7 {
+        fill: #231815;
+      }
+
+      .cls-2, .cls-5, .cls-3 {
+        stroke: #231815;
+      }
+
+      .cls-5 {
+        fill: #fff;
+      }
+
+      .cls-3 {
+        stroke-width: 1.5px;
+      }
+    </style>
+  </defs>
+  <g id="_图层_1-2" data-name="图层 1">
+    <rect class="cls-1" width="43.89" height="43.89"/>
+  </g>
+  <g id="_图层_2-2" data-name="图层 2">
+    <line class="cls-4" x1="2.85" y1="41.04" x2="41.04" y2="2.85"/>
+    <circle class="cls-5" cx="18.5" cy="24.96" r="3.01"/>
+  </g>
+  <g id="_" data-name="‘">
+    <text class="cls-6" transform="translate(23.08 15.7)"><tspan x="0" y="0">名</tspan></text>
+    <text class="cls-7" transform="translate(18.5 38.43)"><tspan x="0" y="0">名</tspan></text>
+    <path class="cls-3" d="M37.2,17.8l.11.11c2.15,2.15,2.15,5.63,0,7.78l-1.67,1.67"/>
+    <polyline class="cls-2" points="35.27 23.19 35.27 27.66 39.65 27.66"/>
+  </g>
+</svg>
