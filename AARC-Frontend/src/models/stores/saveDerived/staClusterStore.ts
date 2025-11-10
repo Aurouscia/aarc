@@ -6,6 +6,7 @@ import { useSaveStore } from "../saveStore";
 import { useConfigStore } from "../configStore";
 import { numberCmpEpsilon } from "@/utils/consts";
 import { computed, ref } from "vue";
+import { Coord } from '@/models/coord';
 
 export const useStaClusterStore = defineStore('staCluster', ()=>{
     const saveStore = useSaveStore()
@@ -197,7 +198,22 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             return 1
         return Math.max(...sizes)
     }
-
+    function getRectOfCluster(cluster: ControlPoint[]|undefined):Coord[] {
+        //获取四角点
+        if (cluster) {
+            const maxXInCluster = Math.max(...cluster.map(x => x.pos[0]))
+            const maxYInCluster = Math.max(...cluster.map(x => x.pos[1]))
+            const minXInCluster = Math.min(...cluster.map(x => x.pos[0]))
+            const minYInCluster = Math.min(...cluster.map(x => x.pos[1]))
+            return [
+                [maxXInCluster, maxYInCluster],
+                [maxXInCluster, minYInCluster],
+                [minXInCluster, maxYInCluster],
+                [minXInCluster, minYInCluster]
+            ]
+        }
+        return []
+    }
     function clearItems(){
         staClusters.value = undefined
         neighbors = {}
@@ -208,6 +224,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         updateClustersBecauseOf,
         tryTransferStaNameWithinCluster,
         getMaxSizePtWithinCluster,
-        clearItems
+        clearItems,
+        getRectOfCluster
     }
 })

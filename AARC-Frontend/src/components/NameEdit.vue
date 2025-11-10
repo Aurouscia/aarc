@@ -10,7 +10,7 @@ import pinyinConvertImg from '@/assets/ui/pinyinConvert.svg'
 import autoNamePos from '@/assets/ui/autoNamePos.svg'
 import ControlPointOptions from './sidebars/options/ControlPointOptions.vue';
 import { usePinyinConvert } from './composables/usePinyinConvert';
-import { computed, onMounted, onUnmounted ,ref} from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { useNameSearchStore } from '@/models/stores/nameSearchStore';
 
 const saveStore = useSaveStore();
