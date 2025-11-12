@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { localConfigKeyPrefix } from "./common/keyPrefix";
 
 export type SaveListOrderBy = 'active'|'sta'
-export const defaultOrderby:SaveListOrderBy = 'active'
+export const defaultOrderby:SaveListOrderBy = 'sta'
 
 export const useSaveListLocalConfigStore = defineStore('saveListLocalConfig', ()=>{
     const searchOrderby = ref<SaveListOrderBy>(defaultOrderby)
