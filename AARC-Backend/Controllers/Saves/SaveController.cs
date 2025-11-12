@@ -109,7 +109,7 @@ namespace AARC.Controllers.Saves
             return true;
         }
         [AllowAnonymous]
-        [HttpGet]
+        [HttpPost]
         public SaveDto? LoadInfo(int id)
         {
             var data = saveRepo.LoadInfo(id, out var errmsg);
@@ -118,7 +118,7 @@ namespace AARC.Controllers.Saves
             return data;
         }
         [AllowAnonymous]
-        [HttpGet]
+        [HttpPost]
         public string? LoadData(int id)
         {
             var data = saveRepo.LoadData(id, out var errmsg);
