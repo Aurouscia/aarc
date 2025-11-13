@@ -10,13 +10,11 @@ import { coordAdd } from "@/utils/coordUtils/coordMath";
 import { getMayRingLinePtIds } from "@/utils/lineUtils/isRing";
 import { readNumKeyedRecord } from "@/utils/lang/readNumKeyedRecord";
 import { keepOrderSort } from "@/utils/lang/keepOrderSort";
-import { useStaClusterStore } from "./saveDerived/staClusterStore";
 
 export const useSaveStore = defineStore('save', () => {
     //不应直接在此删除/添加车站/线路，应通过envStore进行，避免数据不一致
     const save = ref<Save>()
     const configStore = useConfigStore()
-    const staClusterStore = useStaClusterStore()
     const ptDict = computed<Record<number, ControlPoint|undefined>>(()=>{
         const res:Record<number, ControlPoint|undefined> = {}
         if(!save.value?.points)
@@ -170,20 +168,7 @@ export const useSaveStore = defineStore('save', () => {
             return 'black'
         return getLineActualColor(line)
     }
-    function getStaName(ptId: number) {
-        const cluster = staClusterStore.getStaClusterById(ptId)
-        let res = undefined
-        if (!cluster) {
-            let point = save.value?.points.find(x => x.id == ptId)
-            res = point?.name
-        }
-        else {
-            let clusterHaveName = cluster.find(x => x.name)
-            res = clusterHaveName?.name
-        }
-        res = res?.replaceAll('\n', '')
-        return res ?? ''
-    }
+    
     function adjacentSegs(ptId:number):LineSeg[]{
         const lines = save.value?.lines
         if(!lines)
@@ -520,14 +505,6 @@ export const useSaveStore = defineStore('save', () => {
         }
         return false
     }
-    function isPtSingle(ptId:number){
-        let pt=getPtById(ptId)
-        if (!pt){
-            return false
-        }
-        const cluster=staClusterStore. getStaClusterById(ptId)
-            return !cluster||cluster.length<=1
-    }
     function getStaCount(){
         if(save.value)
             return saveStaCount(save.value)
@@ -553,11 +530,11 @@ export const useSaveStore = defineStore('save', () => {
         getPtById, getPtsByIds, getLineById, getLinesByIds, linesSortedByZIndex,
         getLinesDecidedPtSize, getLinesDecidedPtSizes, getLinesDecidedPtNameSize,
         getLineActualColor, linesActualColorSame, getLineActualColorById,
-        getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getLinesByParent, getTextTagById, getPointLinksByPt,getStaName,
+        getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getLinesByParent, getTextTagById, getPointLinksByPt,
         insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType, ensureLinesOrdered,
         removePt, removePtFromLine, removeNoLinePoints, removePointLinkByPt, removeDanglingPointLinks, tryMergePt, isNamedPt,
         removeTextTag, moveEverything, setCvsSize,
-        isLineTypeWithoutSta, isPtNoSta,isPtSingle,
+        isLineTypeWithoutSta, isPtNoSta,
         getLineCount, getStaCount
     }
 })

@@ -6,8 +6,10 @@ import ConfigSection from '../configs/shared/ConfigSection.vue';
 import { LineType } from '@/models/save';
 import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
 import copy from 'copy-to-clipboard';
+import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
 
 const saveStore = useSaveStore()
+const staClusterStore = useStaClusterStore()
 const { pop } = useUniqueComponentsStore()
 
 const wikiMode = ref(false)
@@ -53,8 +55,8 @@ async function copyLineListTxt() {
         if(wikiMode.value)
             txt += `/-c-/`
         txt += `${l.color}|`
-        let firstStaName =saveStore. getStaName(l.pts[0])
-        let lastStaName = saveStore.getStaName(l.pts[l.pts.length - 1])
+        let firstStaName =staClusterStore. getStaName(l.pts[0])
+        let lastStaName = staClusterStore.getStaName(l.pts[l.pts.length - 1])
         if (firstStaName != lastStaName)
             txt += `${firstStaName}|${lastStaName}|`
         else {
@@ -87,7 +89,7 @@ async function copyStaNameListTxt() {
 
         let stationNameList: string[] = []
         l.pts.forEach(p => {
-            stationNameList.push(saveStore.getStaName(p)) 
+            stationNameList.push(staClusterStore.getStaName(p)) 
         })
         stationNameList = removeConsecutiveSameItem(stationNameList)
         if (stationNameList.length > 1) {

@@ -223,7 +223,29 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
                 cluster.some(sta => sta.id === ptId)
             )
     }
+    function getStaName(ptId: number) {
+        const cluster = getStaClusterById(ptId)
+        let res = undefined
+        if (!cluster) {
+            let point = saveStore.save?.points.find(x => x.id == ptId)
+            res = point?.name
+        }
+        else {
+            let clusterHaveName = cluster.find(x => x.name)
+            res = clusterHaveName?.name
+        }
+        res = res?.replaceAll('\n', '')
+        return res ?? ''
+    }
 
+    function isPtSingle(ptId: number) {
+        let pt = saveStore.getPtById(ptId)
+        if (!pt) {
+            return false
+        }
+        const cluster = getStaClusterById(ptId)
+        return !cluster || cluster.length <= 1
+    }
     return {
         getStaClusters,
         updateClustersBecauseOf,
@@ -231,6 +253,8 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         getMaxSizePtWithinCluster,
         clearItems,
         getRectOfCluster,
-        getStaClusterById
+        getStaClusterById,
+        isPtSingle,
+        getStaName
     }
 })

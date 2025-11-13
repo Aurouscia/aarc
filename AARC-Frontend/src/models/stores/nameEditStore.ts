@@ -112,7 +112,7 @@ const { pop } = useUniqueComponentsStore()
     function applySomeNamePos(points:ControlPoint[]){
         //暂时忽略车站团
         let allSinglePos=points.filter(p => {
-            saveStore.isPtSingle(p.id)
+            staClusterStore.isPtSingle(p.id)
         })||[]
         allSinglePos.forEach(x => {
             x.nameP = newNamePos(x.id)
