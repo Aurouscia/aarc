@@ -72,7 +72,7 @@ async function copyStaNameListTxt() {
         let lname = parseLineName(l.name)
         if (wikiMode.value) {
             if (exportColorInfo.value) {
-                txt += `# ${lname} \n${l.color}#\n`
+                txt += `# ${lname} ${l.color}#\n`
             }
             else {
                 txt += `# ${lname}\n`

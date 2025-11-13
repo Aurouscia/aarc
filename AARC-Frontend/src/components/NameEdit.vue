@@ -7,7 +7,6 @@ import { enableContextMenu, disableContextMenu } from '@/utils/eventUtils/contex
 import foldImg from '@/assets/ui/fold.svg'
 import settingsImg from '@/assets/ui/settings.svg'
 import pinyinConvertImg from '@/assets/ui/pinyinConvert.svg'
-import autoNamePos from '@/assets/ui/autoNamePos.svg'
 import ControlPointOptions from './sidebars/options/ControlPointOptions.vue';
 import { usePinyinConvert } from './composables/usePinyinConvert';
 import { computed, onMounted, onUnmounted } from 'vue';
@@ -80,10 +79,6 @@ const hasSameNameInSave=computed(()=>{
         <div class="duplicateNameWarning sqrBtn withShadow" @click="clickDuplicateWarning"
         v-if="hasSameNameInSave" title="这个站名已经在地图内出现过">
             ⚠️
-        </div>
-        <div @click="nameEditStore.applyNamePos()" class="resetStaNamePos sqrBtn withShadow" 
-         title="重置站名位置">
-            <img :src="autoNamePos"/>
         </div>
         <div @click="convertPinyinCall" class="pinyinConvertBtn sqrBtn withShadow" :class="{pinyinOverriding}">
             <img v-if="!pinyinOverriding" :src="pinyinConvertImg"/>

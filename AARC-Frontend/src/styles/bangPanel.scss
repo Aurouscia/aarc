@@ -13,7 +13,7 @@
     z-index: 10;
     transition: 0.2s;
     transition-timing-function: ease-out;
-    .retractBtn,.duplicateBtn,.settingsBtn,.pinyinConvertBtn,.duplicateNameWarning,.resetStaNamePos{
+    .retractBtn,.duplicateBtn,.settingsBtn,.pinyinConvertBtn,.duplicateNameWarning{
         position: absolute;
         bottom: -22px;
         width: 27px;
@@ -36,19 +36,6 @@
         }
     }
     .duplicateNameWarning{
-        right: 140px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color:#B3B3B3;
-        animation: pulse 1s infinite;
-        @keyframes pulse {
-            0%   { color: rgba(0,0,0,1); }
-            40%  { color: rgba(0,0,0,1); }
-            100% { color: rgba(0,0,0,.3); }
-        }
-    }
-    .resetStaNamePos{
         right: 105px;
         display: flex;
         justify-content: center;
