@@ -43,6 +43,7 @@ namespace AARC.Services.App
                 options.Level = CompressionLevel.Optimal;
             });
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddMemoryCache();
             services.AddScoped<HttpUserIdProvider>();
             services.AddScoped<HttpUserInfoService>();
             services.AddScoped<UserCheckFilter>();

@@ -103,9 +103,13 @@ export const useApiStore = defineStore('api', () => {
                                     if(!errmsg)
                                         errmsg = '无权限'
                                 }
+                                else if(error.status === 429){
+                                    if(!errmsg)
+                                        errmsg = '操作过于频繁\n请稍后再试'
+                                }
                                 else if(error.status>=400 && error.status<500){
                                     if(!errmsg)
-                                        errmsg = '操作非法'
+                                        errmsg = '未知错误，请联系管理员'
                                 }
                                 else if(error.status === 500){
                                     if(!errmsg)

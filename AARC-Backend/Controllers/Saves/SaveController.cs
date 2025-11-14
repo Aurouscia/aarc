@@ -6,6 +6,7 @@ using AARC.Services.Files;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IO.Compression;
+using AARC.Utils;
 
 namespace AARC.Controllers.Saves
 {
@@ -110,6 +111,7 @@ namespace AARC.Controllers.Saves
         }
         [AllowAnonymous]
         [HttpPost]
+        [RateLimit(40, 10)]
         public SaveDto? LoadInfo(int id)
         {
             var data = saveRepo.LoadInfo(id, out var errmsg);

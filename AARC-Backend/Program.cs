@@ -33,6 +33,7 @@ try
     app.UseFileServer();
     app.UseAppendedStaticFiles(e);
     app.UseRouting();
+    app.UseIpRateLimit();
     app.UseAuthorization();
     app.UseSerilog();
     app.UseResponseCompression();
