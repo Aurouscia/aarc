@@ -72,7 +72,7 @@ export const useApiStore = defineStore('api', () => {
     })
 
     const baseUrl = import.meta.env.VITE_ApiUrlBase;
-    function wrapClientWithHandling<T extends object>(client:T){
+    function wrapClientWithHandling<T extends object>(client:T, throwOnErrorForActions?:Array<keyof T>){
         const clientName = tn(client)?.replace('Client', '')
         return new Proxy<T>(client, {
             get(target, prop, receiver) {
@@ -134,6 +134,9 @@ export const useApiStore = defineStore('api', () => {
                                 console.error(error)
                                 pop.value?.show(`网络异常`, 'failed')
                             }
+                            if(throwOnErrorForActions?.includes(action as keyof T)){
+                                throw error
+                            }
                             //外部调用代码应该通过判断返回值的truthiness来判断是否发生了错误
                             return undefined
                         }
@@ -150,7 +153,7 @@ export const useApiStore = defineStore('api', () => {
     const sudo = w(new api.SudoClient(baseUrl, instance))
     const auth = w(new api.AuthClient(baseUrl, instance))
     const user = w(new api.UserClient(baseUrl, instance))
-    const save = w(new api.SaveClient(baseUrl, instance))
+    const save = w(new api.SaveClient(baseUrl, instance), ['loadData'])
     const userFile = w(new api.UserFileClient(baseUrl, instance))
     const saveUtils = w(new api.SaveUtilsClient(baseUrl, instance))
 

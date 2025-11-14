@@ -48,7 +48,13 @@ async function load() {
     if(!isNaN(saveIdNum.value)){
         const userInfo = await userInfoStore.getIdentityInfo(true)
         await checkLoginLeftTime(userInfo)
-        const resp = await api.save.loadData(saveIdNum.value)
+        let resp
+        try{
+            resp = await api.save.loadData(saveIdNum.value)
+        }
+        catch{
+            return // http失败：中止加载，避免cvs出现
+        }
         const ownerId = (await api.save.loadInfo(saveIdNum.value))?.ownerUserId || -1
         isOwner.value = !!ownerId && ownerId === userInfo.id // 写入是否isOwner
         mainCvsDispatcher.visitorMode = !isOwner.value
