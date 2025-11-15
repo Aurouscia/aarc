@@ -1,3 +1,5 @@
+using AARC.Controllers.System;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace AARC.Utils;
@@ -17,15 +19,16 @@ public class RateLimitMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // 该中间件必然在静态文件中间件之后调用，如果对静态文件的请求进入了这里，说明肯定404了，直接短路，不计入
-        var path = context.Request.Path.Value ?? "";
-        var ext  = Path.GetExtension(path).ToLowerInvariant();
-        if (!string.IsNullOrEmpty(ext))
-            return; 
-        
         // 必须是 Controller 动作才限流
         var endpoint = context.GetEndpoint();
         if (endpoint is null) { await _next(context); return; }
+
+        // 如果是对于 ProxyController 的请求：直接放行
+        var desc = endpoint.Metadata.GetMetadata<ControllerActionDescriptor>();
+        if(desc is not null && desc.ControllerTypeInfo.Name == nameof(ProxyController)) {
+            await _next(context);
+            return;
+        }
 
         var rateLimit = GetRateLimit(endpoint);  // 读 Attribute
         if (rateLimit is null) { await _next(context); return; }
