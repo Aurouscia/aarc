@@ -12,8 +12,10 @@ namespace AARC.Repos
         protected DbSet<T> Set => context.Set<T>();
         public IQueryable<T> All => Set;
         public IQueryable<T> Existing => All.Existing();
-        public T? Get(int id) => Existing.Where(x=>x.Id == id).FirstOrDefault();
+        public T? Get(int id) => Existing.FirstOrDefault(x => x.Id == id);
         public IQueryable<T> WithId(int id) => Existing.Where(x => x.Id == id);
+        public virtual bool AllowUpdate => true;
+        public virtual bool AllowRealRemove => false;
         protected int Add(T item, bool saveChanges = true)
         {
             item.LastActive = DateTime.Now;
@@ -23,7 +25,9 @@ namespace AARC.Repos
             return item.Id;
         }
         protected void Update(T item, bool updateLastActive, bool saveChanges = true)
-        { 
+        {
+            if (!AllowUpdate)
+                throw new InvalidOperationException("该Repo不允许更新");
             if(updateLastActive)
                 item.LastActive = DateTime.Now;
             context.Update(item);
@@ -45,9 +49,17 @@ namespace AARC.Repos
                     .SetProperty(x => x.LastActive, DateTime.Now)
                     .SetProperty(x => x.Deleted, true));
         }
+        protected void RealRemove(T item, bool saveChanges = true)
+        {
+            if (!AllowUpdate)
+                throw new InvalidOperationException("该Repo不允许真删除");
+            context.Remove(item);
+            if(saveChanges)
+                context.SaveChanges();
+        }
     }
 
-    public static class DbModelQuerableExtension
+    public static class DbModelQueryableExtension
     {
         public static IQueryable<T> Existing<T>(
             this IQueryable<T> q) where T : IDbModel

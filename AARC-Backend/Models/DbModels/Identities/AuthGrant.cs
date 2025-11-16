@@ -15,7 +15,7 @@ public class AuthGrant : IDbModel, IPrioritizable
     /// </summary>
     public int OnId { get; set; }
     /// <summary>
-    /// 授权主体
+    /// 授权主体类型
     /// </summary>
     public AuthGrantTo To { get; set; }
     /// <summary>
@@ -39,6 +39,9 @@ public class AuthGrant : IDbModel, IPrioritizable
     public bool Deleted { get; set; }
 }
 
+/// <summary>
+/// 授权客体类型（约定与<see cref="IOwnable"/>的类型名称对应）
+/// </summary>
 public enum AuthGrantOn : byte
 {
     Unknown = 0,
@@ -47,6 +50,9 @@ public enum AuthGrantOn : byte
     UserFile = 3
 }
 
+/// <summary>
+/// 授权主体类型
+/// </summary>
 public enum AuthGrantTo : byte
 {
     Unknown = 0,

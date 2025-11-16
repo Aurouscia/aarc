@@ -2,7 +2,7 @@
 
 namespace AARC.Models.DbModels.Files
 {
-    public class UserFile : IDbModel, IPrioritizable
+    public class UserFile : IDbModel, IPrioritizable, IOwnable
     {
         public int Id { get; set; }
         [MaxLength(displayNameMaxLength)]

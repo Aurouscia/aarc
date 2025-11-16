@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AARC.Models.DbModels.Saves;
 
-public class SaveFolder:IDbModel,IPrioritizable
+public class SaveFolder:IDbModel, IPrioritizable, IOwnable
 {
     public int Id { get; set; }
     public int OwnerUserId { get; set; }

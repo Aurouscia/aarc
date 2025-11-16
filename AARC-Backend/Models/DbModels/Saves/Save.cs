@@ -3,7 +3,7 @@ using AARC.Models.DbModels.Enums;
 
 namespace AARC.Models.DbModels.Saves
 {
-    public class Save : IDbModel, IPrioritizable
+    public class Save : IDbModel, IPrioritizable, IOwnable
     {
         public int Id { get; set; }
         [MaxLength(nameMaxLength)]
