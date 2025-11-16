@@ -6,6 +6,7 @@ using AARC.Services.Files;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IO.Compression;
+using AARC.Models.DbModels.Enums;
 using AARC.Utils;
 
 namespace AARC.Controllers.Saves

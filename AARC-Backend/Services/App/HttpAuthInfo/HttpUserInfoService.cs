@@ -2,6 +2,7 @@
 using AARC.Models.DbModels.Identities;
 using AARC.Repos;
 using System.IdentityModel.Tokens.Jwt;
+using AARC.Models.DbModels.Enums;
 
 namespace AARC.Services.App.HttpAuthInfo
 {

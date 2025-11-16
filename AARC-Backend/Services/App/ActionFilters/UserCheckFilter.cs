@@ -3,6 +3,7 @@ using AARC.Services.App.HttpAuthInfo;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Net;
+using AARC.Models.DbModels.Enums;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace AARC.Services.App.ActionFilters

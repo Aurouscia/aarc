@@ -2,7 +2,7 @@
 
 namespace AARC.Models.DbModels.Files
 {
-    public class UserFile : IDbModel
+    public class UserFile : IDbModel, IPrioritizable
     {
         public int Id { get; set; }
         [MaxLength(displayNameMaxLength)]
@@ -13,17 +13,11 @@ namespace AARC.Models.DbModels.Files
         [MaxLength(introMaxLength)]
         public string? Intro { get; set; }
         public int Size { get; set; }
-        public UserFileScope Scope { get; set; }
+        public byte Priority { get; set; }
         public DateTime LastActive { get; set; }
         public bool Deleted { get; set; }
 
         public const int displayNameMaxLength = 64;
         public const int introMaxLength = 128;
-    }
-    public enum UserFileScope: byte
-    {
-        Private = 0,
-        Friends = 1,
-        Public = 255
     }
 }

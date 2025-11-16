@@ -1,5 +1,6 @@
 ﻿using AARC.Models.Db.Context;
 using AARC.Models.Db.Context.Specific;
+using AARC.Models.DbModels.Enums;
 using AARC.Models.DbModels.Identities;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Utils;

@@ -1,4 +1,5 @@
-﻿using AARC.Models.DbModels.Identities;
+﻿using AARC.Models.DbModels.Enums;
+using AARC.Models.DbModels.Identities;
 using AARC.Repos.Identities;
 using AARC.Services.App.ActionFilters;
 using Microsoft.AspNetCore.Authorization;

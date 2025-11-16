@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using AARC.Models.DbModels.Enums;
 
 namespace AARC.Models.DbModels.Saves
 {
-    public class Save : IDbModel
+    public class Save : IDbModel, IPrioritizable
     {
         public int Id { get; set; }
         [MaxLength(nameMaxLength)]
@@ -10,13 +11,21 @@ namespace AARC.Models.DbModels.Saves
         [MaxLength(versionMaxLength)]
         public string? Version { get; set; }
         public int OwnerUserId { get; set; }
+        public CcLicense CcLicense { get; set; }
         [MaxLength(introMaxLength)]
         public string? Intro { get; set; }
+        [MaxLength(int.MaxValue)]
         public string? Data { get; set; }
         public int StaCount { get; set; }
         public int LineCount { get; set; }
         public byte Priority { get; set; }
+        public DateTime HeartbeatAt { get; set; }
+        public int HeartbeatUserId { get; set; }
         public DateTime LastActive { get; set; }
+        [MaxLength(int.MaxValue)]
+        public string? Metadata0 { get; set; }
+        [MaxLength(int.MaxValue)]
+        public string? Metadata1 { get; set; }
         public bool Deleted { get; set; }
 
         public const int nameMaxLength = 64;
