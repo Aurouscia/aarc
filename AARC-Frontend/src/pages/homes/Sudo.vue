@@ -18,6 +18,12 @@ async function runBackupCleanup() {
     runBackupCleanupResMsg.value = undefined
     runBackupCleanupResMsg.value = await api.sudo.runBackupCleanup(masterKey.value)
 }
+
+const migrateDbResMsg = ref<string>()
+async function migrateDb() {
+    migrateDbResMsg.value = undefined
+    migrateDbResMsg.value = await api.sudo.migrateDb(masterKey.value)
+}
 </script>
 
 <template>
@@ -31,6 +37,10 @@ async function runBackupCleanup() {
             @click="mode='runBackupCleanup';runBackupCleanupResMsg = undefined">
             运行备份清理
         </button>
+        <button :class="mode=='migrateDb'?'confirm':'minor'"
+            @click="mode='migrateDb';migrateDbResMsg = undefined">
+            更新数据库架构
+        </button>
     </div>
     <div class="inputs"> 
         <template v-if="mode=='initAdmin'">
@@ -43,6 +53,11 @@ async function runBackupCleanup() {
             <input v-model="masterKey" placeholder="masterKey">
             <button v-if="!runBackupCleanupResMsg" @click="runBackupCleanup" class="ok">运行</button>
             <div v-else>{{ runBackupCleanupResMsg }}</div>
+        </template>
+        <template v-if="mode=='migrateDb'">
+            <input v-model="masterKey" placeholder="masterKey">
+            <button v-if="!migrateDbResMsg" @click="migrateDb" class="ok">更新</button>
+            <div v-else>{{ migrateDbResMsg }}</div>
         </template>
     </div>
 </div>

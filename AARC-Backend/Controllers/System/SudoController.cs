@@ -1,7 +1,9 @@
-﻿using AARC.Repos.Identities;
+﻿using AARC.Models.Db.Context;
+using AARC.Repos.Identities;
 using AARC.Services.App.Config;
 using AARC.Services.Files;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AARC.Controllers.System
 {
@@ -10,7 +12,8 @@ namespace AARC.Controllers.System
     public class SudoController(
         UserRepo userRepo,
         SaveBackupFileService saveBackupFileService,
-        MasterKeyChecker masterKeyChecker
+        MasterKeyChecker masterKeyChecker,
+        AarcContext context
         ) : Controller
     {
         [HttpPost]
@@ -32,6 +35,14 @@ namespace AARC.Controllers.System
             masterKeyChecker.Check(masterKey);
             int deleteCount = saveBackupFileService.CleanupForAll();
             return $"已清理 {deleteCount} 个文件";
+        }
+
+        [HttpPost]
+        public string MigrateDb([FromForm] string masterKey)
+        {
+            masterKeyChecker.Check(masterKey);
+            context.Database.Migrate();
+            return "已更新数据库到最新迁移";
         }
     }
 }
