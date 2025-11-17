@@ -120,15 +120,16 @@ const { pop } = useUniqueComponentsStore()
         pop?.show(`重置了${allSinglePos.length}个站名位置`, 'success')
         envStore.rerender()
     }
-    const recommendedNamePos = [[[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]], [[1, 1], [1, -1], [-1, 1], [-1, -1], [0, 1], [0, -1], [1, 0], [-1, 0]]]
+    const recommendedNamePosDir0 = [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]
+    const recommendedNamePosDir1 =[[1, 1], [1, -1], [-1, 1], [-1, -1], [0, 1], [0, -1], [1, 0], [-1, 0]]
     const sqrt2 = Math.sqrt(2)
-    function getNextPtsPos(ptId: number) {
+    function getAdjacentPtsPos(ptId: number) {
         const pt = saveStore.getPtById(ptId)
         if (!pt) {
             return []
         }
         const cluster = staClusterStore.getStaClusterById(ptId)
-        const nextPtsPos =
+        const adjacentPtsPos =
             saveStore.getLinesByPt(ptId).map(x => {
                 return formalizedLineStore.findAdjacentFormatPts(x.pts.findIndex(p => p == ptId), x.id)
             }).flat()
@@ -136,7 +137,7 @@ const { pop } = useUniqueComponentsStore()
                 .map(x => {
                     return [Math.sign(x[0] - pt?.pos[0]), Math.sign(x[1] - pt?.pos[1])]
                 })
-        return nextPtsPos
+        return adjacentPtsPos
     }
     //用 pt  dir决定用哪个组
     function newNamePos(ptId: number): Coord {
@@ -146,11 +147,12 @@ const { pop } = useUniqueComponentsStore()
         //自动选择不遮挡线路的位置
         if (pt) {
             //得到相邻点和这个站的相对位置
-            const nextPtsPos = getNextPtsPos(ptId)
+            const adjacentPtsPos = getAdjacentPtsPos(ptId)
+            const isDir1=!!adjacentPtsPos.find(np=>np[0]*np[1]!=0)
             for (let i = 0; i < 8; i++) {
                 //有斜线就得用斜坐标点位
-                let thisPos = recommendedNamePos[Number(!!nextPtsPos.find(np=>np[0]*np[1]!=0))][i]
-                if (!nextPtsPos.find(pos => pos[0] == thisPos[0] && pos[1] == thisPos[1])) {
+                const thisPos = isDir1 ? recommendedNamePosDir1[i] : recommendedNamePosDir0[i];
+                if (!adjacentPtsPos.find(pos => pos[0] == thisPos[0] && pos[1] == thisPos[1])) {
                     //没有重复，就用这个位置
                     if (thisPos[0] * thisPos[1] != 0) {
                         //斜边特征
