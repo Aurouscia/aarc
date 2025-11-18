@@ -76,7 +76,7 @@ function removeRepeatPt(){
     envStore.removeRepeatPtOnLines()
 }
 const { browserInfo } = storeToRefs(useBrowserInfoStore())
-const visibilityChangedTimes = ref(0.333)
+const visibilityChangedTimes = ref(0)
 function visibilityChangedHandler(){
     if(document.visibilityState==='visible'){
         visibilityChangedTimes.value += 1
