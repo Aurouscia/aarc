@@ -186,9 +186,8 @@ onMounted(()=>{
                 :step="lineWidthRange.step"
                 @change="reportInfoChanged(true)"
                 />
-            <input v-if="line.type===LineType.terrain" type="number"
+            <input  type="number" min="0"
                 v-model.number.lazy="props.line.width" @blur="reportInfoChanged(true)"/>
-            <div v-else>{{ props.line.width }}×</div>
         </td>
     </tr>
     <tr v-if="line.type===LineType.common">

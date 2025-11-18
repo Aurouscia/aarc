@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref ,computed} from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useEnvStore } from '@/models/stores/envStore';
@@ -76,11 +76,28 @@ function removeRepeatPt(){
     envStore.removeRepeatPtOnLines()
 }
 const { browserInfo } = storeToRefs(useBrowserInfoStore())
-const visibilityChangedTimes = ref(0)
+const visibilityChangedTimes = ref(0.333)
 function visibilityChangedHandler(){
     if(document.visibilityState==='visible'){
         visibilityChangedTimes.value += 1
     }
+}
+
+//自定义线宽部分
+const lineWidthList=computed(()=>{
+    let widthList=[...new Set(['0.5', '0.75', '1', '1.25', '1.5', '1.75', '2']
+    .concat(Object.keys(config.value.lineWidthMapped)))]
+    widthList.sort((a,b)=>Number(a)-Number(b))
+    return widthList
+})
+const customWidth=ref(0)
+function addCustomWidthSetting(){
+    if (!customWidth.value){
+        //不允许设置宽度为0
+        return
+    }
+    applyLineWidthMapped(`${customWidth.value}`,"staSize",'0')
+    customWidth.value=0
 }
 
 onMounted(()=>{
@@ -127,11 +144,11 @@ defineExpose({
         </td>
     </tr>
     <tr>
-        <th></th>
+        <th>线宽</th>
         <th>车站</th>
         <th>站名</th>
     </tr>
-    <tr v-for="width in ['0.5', '0.75', '1', '1.25', '1.5', '1.75', '2']">
+    <tr v-for="width in lineWidthList">
         <td>{{ width }}</td>
         <td>
             <input :value="config.lineWidthMapped[width]?.staSize" :placeholder="width"
@@ -141,6 +158,15 @@ defineExpose({
             <input :value="config.lineWidthMapped[width]?.staNameSize" :placeholder="width"
                 @blur="e=>applyLineWidthMapped(width, 'staNameSize', (e.target as HTMLInputElement).value)"/>
         </td>
+    </tr>
+    <tr>
+        <td>
+            <input v-model="customWidth" style="width: 3em;margin:0px">
+        </td>
+        <td>
+            <button @click="addCustomWidthSetting()">+</button>
+        </td>
+        <td></td>
     </tr>
     <tr>
         <td class="explain" colspan="3">
