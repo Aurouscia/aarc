@@ -297,6 +297,11 @@ export const devSave:Save = {
             icon:1000000
         },
         {
+            id: 1008,
+            pos: [750, 1050],
+            icon:1000001
+        },
+        {
             id: 1007,
             pos: [1700, 350],
             text: "此处为体验环境，无法保存",
@@ -343,6 +348,12 @@ export const devSave:Save = {
             width: 50,
             name: '测试-机场',
             url: 'http://wiki.jowei19.com/fcloud.svg'
+        },
+        {
+            id: 1000001,
+            width: 50,
+            name: '测试-火车站',
+            url: 'http://aarc.jowei19.com/icons/a/train.svg'
         }
     ],
     config:{},

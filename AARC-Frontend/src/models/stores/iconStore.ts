@@ -122,6 +122,10 @@ export const useIconStore = defineStore('iconStore', ()=>{
     function convertToProxyUrlIfNeeded(url:string){
         if(url.startsWith('/'))
             return url
+        const origin = window.location.origin
+        if(url.startsWith(origin)){
+            return url
+        }
         const encoded = encodeURIComponent(url)
         const baseUrl = import.meta.env.VITE_ApiUrlBase
         return `${baseUrl}/proxy/icon/${encoded}`
