@@ -7,9 +7,11 @@ import { storeToRefs } from 'pinia';
 import { computed, CSSProperties, onMounted, ref, watch } from 'vue';
 import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
 import ColorPickerForTerrain from '../shared/ColorPickerForTerrain.vue';
+import { useConfigStore } from '@/models/stores/configStore';
 
 const envStore = useEnvStore()
 const saveStore = useSaveStore()
+const configStore = useConfigStore()
 const { save } = storeToRefs(saveStore)
 const props = defineProps<{
     line:Line,
@@ -139,6 +141,12 @@ function foldHander(){
     }
 }
 
+const openCustomWidthMode=ref(false)
+const customWidthList=computed(()=>{
+    return Object.keys(configStore.config.lineWidthMapped)
+                            .filter(w=>!['0.5', '0.75', '1', '1.25', '1.5', '1.75', '2'].includes(w))
+})
+
 onMounted(()=>{
     init()
 })
@@ -188,7 +196,22 @@ onMounted(()=>{
                 />
             <input v-if="line.type===LineType.terrain" type="number"
                 v-model.number.lazy="props.line.width" @blur="reportInfoChanged(true)"/>
-            <div v-else>{{ props.line.width }}×</div>
+            <div v-else>{{ props.line.width }}×
+                <button @click="openCustomWidthMode=!openCustomWidthMode">
+                    更多
+                </button>
+                <div v-if="openCustomWidthMode">
+                    <div v-if="customWidthList.length!=0">
+                        <button v-for="lineWidthMapped in customWidthList"
+                        @click="line.width=parseFloat(lineWidthMapped);reportInfoChanged(true)">
+                        {{ lineWidthMapped }}
+                        </button>
+                    </div>
+                    <div v-else class="smallNote">
+                        (可在设置-线宽对应<br/>自定义更多宽度)
+                    </div>
+                </div>
+            </div>
         </td>
     </tr>
     <tr v-if="line.type===LineType.common">

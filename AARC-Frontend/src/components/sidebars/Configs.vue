@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref,computed } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useEnvStore } from '@/models/stores/envStore';
@@ -83,6 +83,24 @@ function visibilityChangedHandler(){
     }
 }
 
+//自定义线宽部分
+const defaultWidthList=['0.5', '0.75', '1', '1.25', '1.5', '1.75', '2']
+const lineWidthList=computed(()=>{
+    let widthList=[...new Set(defaultWidthList
+    .concat(Object.keys(config.value.lineWidthMapped))
+)]
+    widthList.sort((a,b)=>parseFloat(a)-parseFloat(b))
+    return widthList
+})
+const customWidth=ref(0)
+function addCustomWidthSetting(){
+    if (customWidth.value<=0||customWidth.value>4){
+        return
+    }
+    applyLineWidthMapped(`${customWidth.value}`,"staSize")
+    customWidth.value=0
+}
+
 onMounted(()=>{
     if(!config.value.lineWidthMapped){
         config.value.lineWidthMapped = {}
@@ -127,11 +145,11 @@ defineExpose({
         </td>
     </tr>
     <tr>
-        <th></th>
+        <th>线宽</th>
         <th>车站</th>
         <th>站名</th>
     </tr>
-    <tr v-for="width in ['0.5', '0.75', '1', '1.25', '1.5', '1.75', '2']">
+    <tr v-for="width in lineWidthList">
         <td>{{ width }}</td>
         <td>
             <input :value="config.lineWidthMapped[width]?.staSize" :placeholder="width"
@@ -140,6 +158,15 @@ defineExpose({
         <td>
             <input :value="config.lineWidthMapped[width]?.staNameSize" :placeholder="width"
                 @blur="e=>applyLineWidthMapped(width, 'staNameSize', (e.target as HTMLInputElement).value)"/>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <input v-model="customWidth" style="width: 3em;margin:0px;text-align: center;"
+            min="0" max="4" type="number" step="0.1">
+        </td>
+        <td colspan="2">
+            <button @click="addCustomWidthSetting()">手动添加自定义宽度</button>
         </td>
     </tr>
     <tr>
