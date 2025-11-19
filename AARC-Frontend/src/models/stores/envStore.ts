@@ -116,13 +116,15 @@ export const useEnvStore = defineStore('env', ()=>{
             nameEditStore.endEditing()
         textTagEditStore.endEditing()
         nameSearchStore.toggleShow(false)
-        if(options?.rerenderIfEdited && (nameEditStore.edited || textTagEditStore.edited)){
-            rerender.value([], [activePt.value?.id ?? 0])
+        if(options?.rerenderIfEdited){
+            // 如果rerenderIfEdited，则看作点击了空白处（调用pureClickHandler并绕过检测）
+            // pureClickHandler内部也有endEveryEditing调用，但并不会“rerenderIfEdited”，所以不会无限递归
+            pureClickHandler([0,0], undefined, true)
         }
         nameEditStore.edited = false
         textTagEditStore.edited = false
     }
-    function pureClickHandler(clientCord:Coord, clickType?:PureClickType){
+    function pureClickHandler(clientCord:Coord, clickType?:PureClickType, noDetect=false){
         const coord = translateFromClient(clientCord);
         if(!coord)
             return
@@ -190,109 +192,109 @@ export const useEnvStore = defineStore('env', ()=>{
         //清除snap可视化线条
         snapStore.snapLines = []
 
-
-        //判断是否在站名上
-        const staName = onStaName(coord)
-        if(staName){
-            //点到站名上了
-            endEveryEditing({exceptName:true})
-            activePt.value = saveStore.getPtById(staName.id)
-            activePtType.value = 'name'
-            if(isRightBtnOnly){
-                nameEditStore.startEditing(staName.id, true)
-            }else{
-                const namingPtChanged = activePtIdJustNow !== staName.id
-                if(namingPtChanged)
-                    nameEditStore.startEditing(staName.id)
-                else if(opsStore.showingOps && nameEditStore.editing){
-                    //如果正在命名的车站没变，而且菜单显示着，则保留站名编辑
+        if(!noDetect){
+            //判断是否在站名上
+            const staName = onStaName(coord)
+            if(staName){
+                //点到站名上了
+                endEveryEditing({exceptName:true})
+                activePt.value = saveStore.getPtById(staName.id)
+                activePtType.value = 'name'
+                if(isRightBtnOnly){
+                    nameEditStore.startEditing(staName.id, true)
                 }else{
-                    //如果正在命名的车站没变，而且菜单未显示，则收起站名编辑
-                    nameEditStore.toggleEditing(staName.id)
+                    const namingPtChanged = activePtIdJustNow !== staName.id
+                    if(namingPtChanged)
+                        nameEditStore.startEditing(staName.id)
+                    else if(opsStore.showingOps && nameEditStore.editing){
+                        //如果正在命名的车站没变，而且菜单显示着，则保留站名编辑
+                    }else{
+                        //如果正在命名的车站没变，而且菜单未显示，则收起站名编辑
+                        nameEditStore.toggleEditing(staName.id)
+                    }
                 }
+                setOpsPos(false)
+                //立即检查该点是否是snap位置
+                if(activePt.value){
+                    const snapRes = snapNameStatus(activePt.value)
+                    if(snapRes){
+                        activePtNameSnapped.value = snapRes.type
+                    }else{
+                        activePtNameSnapped.value = 'no'
+                    }
+                }
+                return
             }
-            setOpsPos(false)
-            //立即检查该点是否是snap位置
-            if(activePt.value){
-                const snapRes = snapNameStatus(activePt.value)
-                if(snapRes){
-                    activePtNameSnapped.value = snapRes.type
+
+            //判断是否在文本标签上
+            const textTagMatch = onTextTag(coord);
+            if(textTagMatch){
+                activeTextTag.value = textTagMatch
+                setOpsPos(false)
+                endEveryEditing()
+                textTagEditStore.startEditing(textTagMatch.id, isRightBtnOnly)
+                return
+            }
+
+            //判断是否在点上
+            const pt = onPt(coord, true)
+            const activePtChanged = activePtIdJustNow !== pt?.id
+            if(pt){
+                //点到点上了
+                endEveryEditing({exceptName:true})
+                activePt.value = pt
+                activePtType.value = 'body'
+                cursorPos.value = [...pt.pos]
+                if(isRightBtnOnly){
+                    //右键点击控制点，切换其方向
+                    if(pt.dir===ControlPointDir.incline)
+                        pt.dir = ControlPointDir.vertical
+                    else
+                        pt.dir = ControlPointDir.incline
+                    movedPoint.value = true
+                }else if(isRightBtnAndCtrl){
+                    //右键+ctrl点击切换控制点sta
+                    if(pt.sta===ControlPointSta.sta)
+                        pt.sta = ControlPointSta.plain
+                    else
+                        pt.sta = ControlPointSta.sta
+                    movedPoint.value = true
                 }else{
-                    activePtNameSnapped.value = 'no'
+                    if(!opsStore.clientPos || activePtChanged){
+                        //菜单不在时，弹出菜单
+                        opsStore.atAvoidWays = getActivePtOpsAvoidance.value()
+                        setOpsPos(pt.pos)
+                        setOpsForPt()
+                        nameEditStore.startEditing(pt.id)
+                    }else if(!activePtChanged){
+                        //菜单已在同一个点上时，再次点击使其收起
+                        setOpsPos(false)
+                        nameEditStore.endEditing()
+                    }
                 }
+                return
             }
-            return
-        }
-
-        //判断是否在文本标签上
-        const textTagMatch = onTextTag(coord);
-        if(textTagMatch){
-            activeTextTag.value = textTagMatch
-            setOpsPos(false)
-            endEveryEditing()
-            textTagEditStore.startEditing(textTagMatch.id, isRightBtnOnly)
-            return
-        }
-
-        //判断是否在点上
-        const pt = onPt(coord, true)
-        const activePtChanged = activePtIdJustNow !== pt?.id
-        if(pt){
-            //点到点上了
-            endEveryEditing({exceptName:true})
-            activePt.value = pt
-            activePtType.value = 'body'
-            cursorPos.value = [...pt.pos]
-            if(isRightBtnOnly){
-                //右键点击控制点，切换其方向
-                if(pt.dir===ControlPointDir.incline)
-                    pt.dir = ControlPointDir.vertical
-                else
-                    pt.dir = ControlPointDir.incline
-                movedPoint.value = true
-            }else if(isRightBtnAndCtrl){
-                //右键+ctrl点击切换控制点sta
-                if(pt.sta===ControlPointSta.sta)
-                    pt.sta = ControlPointSta.plain
-                else
-                    pt.sta = ControlPointSta.sta
-                movedPoint.value = true
-            }else{
-                if(!opsStore.clientPos || activePtChanged){
-                    //菜单不在时，弹出菜单
-                    opsStore.atAvoidWays = getActivePtOpsAvoidance.value()
-                    setOpsPos(pt.pos)
-                    setOpsForPt()
-                    nameEditStore.startEditing(pt.id)
-                }else if(!activePtChanged){
-                    //菜单已在同一个点上时，再次点击使其收起
-                    setOpsPos(false)
-                    nameEditStore.endEditing()
+            
+            //判断是否在线上
+            //如果已经移动过点，这时formalPts还未更新，不应该进行点击线路判断，直接视为点击空白处
+            const lineMatches = onLine(coord);
+            if(lineMatches && lineMatches.length>0){
+                //点到线上了
+                const lineMatch = lineMatches[0]
+                activeLine.value = saveStore.getLineById(lineMatch.lineId)
+                cursorPos.value = [...lineMatch.alignedPos]
+                cursorOnLineAfterPtIdx.value = lineMatch.afterPtIdx
+                cursorDir.value = lineMatch.dir
+                if(isRightBtn){
+                    optionsOpenerStore.openOptionsFor(activeLine.value)
+                }else{
+                    setOpsPos(lineMatch.alignedPos)
+                    setOpsForLine(activeLine.value)
                 }
+                endEveryEditing()
+                return
             }
-            return
         }
-        
-        //判断是否在线上
-        //如果已经移动过点，这时formalPts还未更新，不应该进行点击线路判断，直接视为点击空白处
-        const lineMatches = onLine(coord);
-        if(lineMatches && lineMatches.length>0){
-            //点到线上了
-            const lineMatch = lineMatches[0]
-            activeLine.value = saveStore.getLineById(lineMatch.lineId)
-            cursorPos.value = [...lineMatch.alignedPos]
-            cursorOnLineAfterPtIdx.value = lineMatch.afterPtIdx
-            cursorDir.value = lineMatch.dir
-            if(isRightBtn){
-                optionsOpenerStore.openOptionsFor(activeLine.value)
-            }else{
-                setOpsPos(lineMatch.alignedPos)
-                setOpsForLine(activeLine.value)
-            }
-            endEveryEditing()
-            return
-        }
-
         //点击空白位置
         setOpsPos(false)
         activePtNameSnapped.value = 'no'

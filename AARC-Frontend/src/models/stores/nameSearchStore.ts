@@ -15,18 +15,21 @@ export const useNameSearchStore = defineStore('nameSearch', ()=>{
             force = !showPrivate.value
         }
         if(force){
-            const envStore = useEnvStore()
-            envStore.cancelActive()
-            envStore.endEveryEditing({rerenderIfEdited:true})
             if(typeof force === 'string'){
                 searchText.value = force
             }
-            searchInput.value?.focus()
         }
         else{
             searchText.value = ''
         }
-        showPrivate.value = !!force
+        const newValueOfShow = !!force
+        if(newValueOfShow){
+            searchInput.value?.focus()
+            const envStore = useEnvStore()
+            envStore.endEveryEditing({rerenderIfEdited:true})
+            envStore.cancelActive()
+        }
+        showPrivate.value = newValueOfShow
     }
     return { show, searchText, searchInput, showResults, toggleShow }
 })
