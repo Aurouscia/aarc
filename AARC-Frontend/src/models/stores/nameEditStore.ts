@@ -9,6 +9,7 @@ import { Coord } from "../coord";
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import {useFormalizedLineStore} from "./saveDerived/formalizedLineStore.ts";
 import { ControlPoint } from "../save.ts";
+import { sqrt2 } from "@/utils/consts.ts";
 export const useNameEditStore = defineStore('nameEdit', ()=>{
     const cs = useConfigStore()
     const saveStore = useSaveStore()
@@ -61,7 +62,7 @@ const { pop } = useUniqueComponentsStore()
             pt.name = nameMain.value
             pt.nameS = nameSub.value
             if(saveStore.isNamedPt(pt) && !pt.nameP){
-                pt.nameP = newNamePos(pt.id)
+                pt.nameP = optimizedNamePos(pt.id)
             }
         }
     }
@@ -95,34 +96,28 @@ const { pop } = useUniqueComponentsStore()
             return 0
         return nameEditorDiv.value?.clientHeight || 0
     }
-    function applyNamePos(){
-        const pt = saveStore.getPtById(targetPtId.value || -1)
-        if(pt){
-            pt.nameP = newNamePos(pt.id)
-            envStore.rerender()
-        }
-    }
-    function applyAllNamePos() {
-        const confirmApplyAllNamePos=confirm("你真的要重置所有单点车站的站名位置吗？此操作无法考虑全部情况，且不可撤销！")
+
+    //#region 自动站名位置（负责人 binshu2233）
+    function optimizeAllNamePos() {
+        const confirmApplyAllNamePos = confirm("你真的要重置所有单点车站的站名位置吗？此操作无法考虑全部情况，且不可撤销！")
         if (!confirmApplyAllNamePos){
             return
         }
-        applySomeNamePos(saveStore.save?.points||[])
+        optimizeSomeNamePos(saveStore.save?.points||[])
     }
-    function applySomeNamePos(points:ControlPoint[]){
+    function optimizeSomeNamePos(points:ControlPoint[]){
         //暂时忽略车站团
-        let allSinglePos=points.filter(p => {
+        let allSinglePos = points.filter(p => {
             staClusterStore.isPtSingle(p.id)
-        })||[]
+        }) || []
         allSinglePos.forEach(x => {
-            x.nameP = newNamePos(x.id)
+            x.nameP = optimizedNamePos(x.id)
         })
         pop?.show(`重置了${allSinglePos.length}个站名位置`, 'success')
         envStore.rerender()
     }
     const recommendedNamePosDir0 = [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]
-    const recommendedNamePosDir1 =[[1, 1], [1, -1], [-1, 1], [-1, -1], [0, 1], [0, -1], [1, 0], [-1, 0]]
-    const sqrt2 = Math.sqrt(2)
+    const recommendedNamePosDir1 = [[1, 1], [1, -1], [-1, 1], [-1, -1], [0, 1], [0, -1], [1, 0], [-1, 0]]
     function getAdjacentPtsPos(ptId: number) {
         const pt = saveStore.getPtById(ptId)
         if (!pt) {
@@ -140,7 +135,7 @@ const { pop } = useUniqueComponentsStore()
         return adjacentPtsPos
     }
     //用 pt  dir决定用哪个组
-    function newNamePos(ptId: number): Coord {
+    function optimizedNamePos(ptId: number): Coord {
         const pt = saveStore.getPtById(ptId)
         const ptSize = staClusterStore.getMaxSizePtWithinCluster(ptId, 'ptSize')
         const dist = cs.config.snapOctaClingPtNameDist * ptSize
@@ -167,6 +162,7 @@ const { pop } = useUniqueComponentsStore()
             return [0, dist]
         }
     }
+    //#endregion
 
     function clearItems(){
         targetPtId.value = undefined
@@ -178,6 +174,6 @@ const { pop } = useUniqueComponentsStore()
         startEditing, endEditing, toggleEditing, applyName,
         nameInputFocusHandler, nameEditorDiv, getEditorDivEffectiveHeight,
         controlPointOptionsPanel, controlPointOptionsPanelOpen,
-        newNamePos, clearItems,applyNamePos,applyAllNamePos,applySomeNamePos
+        optimizedNamePos, optimizeAllNamePos, clearItems 
     }
 })

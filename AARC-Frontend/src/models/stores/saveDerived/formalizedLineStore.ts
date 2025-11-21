@@ -11,7 +11,7 @@ export const useFormalizedLineStore = defineStore('formalizedLine', ()=>{
     const { getItem, setItem, enumerateItems, clearItems } = useKvStoreCore<FormalPt[]>()
     let localFormalSegs:FormalizedLine[] = []
 
-    // TODO: 无法处理自交点
+    // TODO: 无法处理自交点，考虑另外加一个以站点id为参数的
     function findAdjacentFormalPts(ptIdx:number, lineId:number){
         let pts:FormalPt[] = []
         // 先在“局部”里找（activeCvs画布中算出的，可能还没有更新）

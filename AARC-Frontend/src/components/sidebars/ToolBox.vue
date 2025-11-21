@@ -5,10 +5,8 @@ import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
 import { usePointLinkStore } from '@/models/stores/pointLinkStore';
 import { ControlPointLinkType } from '@/models/save';
-import { useNameEditStore } from '@/models/stores/nameEditStore';
 
 const envStore = useEnvStore()
-const nameEditStore = useNameEditStore()
 const pointLinkStore = usePointLinkStore()
 const { creatingLinkType } = storeToRefs(pointLinkStore)
 
@@ -28,7 +26,6 @@ defineExpose({
     <div class="toolItem">
         <div class="smallNote">用于添加标题/作者等信息，请勿用于标注站名</div>
         <div class="smallNote">需要线路/地形名称标签，请点击线路/地形创建</div>
-        <div class="smallNoteVital">拖动到屏幕左上角即可删除</div>
         <button @click="envStore.createTextTag();fd()">创建文本标签</button>
     </div>
     <div class="toolItem">
@@ -47,11 +44,6 @@ defineExpose({
     <div class="toolItem">
         <div class="smallNote">可用于创建带折角/分叉的车站间连线</div>
         <button @click="envStore.createPlainPt();fd()">创建控制点</button>
-    </div>
-    <div class="toolItem">
-        <div class="smallNote">暂时不作用于车站团</div>
-        <div class="smallNote">暂时无法考虑全部情况，请谨慎使用</div>
-        <button @click="nameEditStore.applyAllNamePos()">重置所有站名位置</button>
     </div>
     <div class="toolItem">
         <button class="off">创建区间类型标记</button>

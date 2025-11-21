@@ -29,7 +29,7 @@ function startEditing(pt: ControlPoint) {
     if(editing.value.nameSize===undefined)
         editing.value.nameSize = 0
     if(editing.value.nameP===undefined)
-        editing.value.nameP = nameEditStore.newNamePos(editing.value.id)
+        editing.value.nameP = nameEditStore.optimizedNamePos(editing.value.id)
     showLineSplitMenu.value = false
     showLineMergeMenu.value = false
     initSplittableLines()
