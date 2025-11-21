@@ -16,13 +16,14 @@ import EditorConfig from './configs/EditorConfig.vue';
 import FaqAsConfig from './configs/FaqAsConfig.vue';
 import TextTagIconConfig from './configs/TextTagIconConfig.vue';
 import PinyinConvertConfig from './configs/PinyinConvertConfig.vue';
+import { useNameEditStore } from '@/models/stores/nameEditStore';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
 const configStore = useConfigStore()
 const { config } = storeToRefs(configStore)
 const { preventLeaving } = usePreventLeavingUnsavedStore() //无需rerender的地方需要手动调用“阻止未保存离开”
-//const cvsBlocksControl = useCvsBlocksControlStore()
+const nameEditStore = useNameEditStore()
 
 const showLineWidthMapped = ref(false)
 function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', value?:string){
@@ -261,6 +262,14 @@ defineExpose({
         </td>
         <td>
             <b>修复线路节点重复问题</b>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button @click="nameEditStore.optimizeAllNamePos()">执行</button>
+        </td>
+        <td>
+            <b>重置所有站名位置</b>
         </td>
     </tr>
     <tr>

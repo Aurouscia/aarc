@@ -6,6 +6,7 @@ import { useSaveStore } from "../saveStore";
 import { useConfigStore } from "../configStore";
 import { numberCmpEpsilon } from "@/utils/consts";
 import { computed, ref } from "vue";
+import { Coord } from '@/models/coord';
 
 export const useStaClusterStore = defineStore('staCluster', ()=>{
     const saveStore = useSaveStore()
@@ -197,17 +198,63 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             return 1
         return Math.max(...sizes)
     }
-
+    function getRectOfCluster(cluster: ControlPoint[]|undefined):Coord[] {
+        //获取四角点
+        if (cluster) {
+            const maxXInCluster = Math.max(...cluster.map(x => x.pos[0]))
+            const maxYInCluster = Math.max(...cluster.map(x => x.pos[1]))
+            const minXInCluster = Math.min(...cluster.map(x => x.pos[0]))
+            const minYInCluster = Math.min(...cluster.map(x => x.pos[1]))
+            return [
+                [maxXInCluster, maxYInCluster],
+                [maxXInCluster, minYInCluster],
+                [minXInCluster, maxYInCluster],
+                [minXInCluster, minYInCluster]
+            ]
+        }
+        return []
+    }
     function clearItems(){
         staClusters.value = undefined
         neighbors = {}
     }
+    function getStaClusterById(ptId:number){
+        return getStaClusters()?.find(cluster =>
+                cluster.some(sta => sta.id === ptId)
+            )
+    }
+    function getStaName(ptId: number) {
+        const cluster = getStaClusterById(ptId)
+        let res = undefined
+        if (!cluster) {
+            let point = saveStore.save?.points.find(x => x.id == ptId)
+            res = point?.name
+        }
+        else {
+            let clusterHaveName = cluster.find(x => x.name)
+            res = clusterHaveName?.name
+        }
+        res = res?.replaceAll('\n', '')
+        return res ?? ''
+    }
 
+    function isPtSingle(ptId: number) {
+        let pt = saveStore.getPtById(ptId)
+        if (!pt) {
+            return false
+        }
+        const cluster = getStaClusterById(ptId)
+        return !cluster || cluster.length <= 1
+    }
     return {
         getStaClusters,
         updateClustersBecauseOf,
         tryTransferStaNameWithinCluster,
         getMaxSizePtWithinCluster,
-        clearItems
+        clearItems,
+        getRectOfCluster,
+        getStaClusterById,
+        isPtSingle,
+        getStaName
     }
 })

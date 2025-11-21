@@ -1,14 +1,20 @@
 import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
+import { useEnvStore } from "./envStore";
 import { useConfigStore } from "./configStore";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
 import ControlPointOptions from "@/components/sidebars/options/ControlPointOptions.vue";
 import { Coord } from "../coord";
-
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import {useFormalizedLineStore} from "./saveDerived/formalizedLineStore.ts";
+import { ControlPoint } from "../save.ts";
+import { sqrt2 } from "@/utils/consts.ts";
 export const useNameEditStore = defineStore('nameEdit', ()=>{
     const cs = useConfigStore()
     const saveStore = useSaveStore()
+    const envStore = useEnvStore()
+    const formalizedLineStore = useFormalizedLineStore()
     const staClusterStore = useStaClusterStore()
     const { disposedStaNameOf } = storeToRefs(saveStore)
     disposedStaNameOf.value = disposedStaNameHandler
@@ -20,6 +26,7 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
     const nameInputFocusHandler = ref<()=>void>(()=>{})
     const nameEditorDiv = ref<HTMLDivElement>()
     const controlPointOptionsPanel = ref<InstanceType<typeof ControlPointOptions>>()
+const { pop } = useUniqueComponentsStore()
     function startEditing(ptId:number, openOptionsPanel?:boolean){
         endEditing()
         if(saveStore.isPtNoSta(ptId))
@@ -55,7 +62,7 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
             pt.name = nameMain.value
             pt.nameS = nameSub.value
             if(saveStore.isNamedPt(pt) && !pt.nameP){
-                pt.nameP = newNamePos(pt.id)
+                pt.nameP = optimizedNamePos(pt.id)
             }
         }
     }
@@ -90,12 +97,72 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
         return nameEditorDiv.value?.clientHeight || 0
     }
 
-    function newNamePos(ptId:number):Coord{
+    //#region 自动站名位置（负责人 binshu2233）
+    function optimizeAllNamePos() {
+        const confirmApplyAllNamePos = confirm("你真的要重置所有单点车站的站名位置吗？此操作无法考虑全部情况，且不可撤销！")
+        if (!confirmApplyAllNamePos){
+            return
+        }
+        optimizeSomeNamePos(saveStore.save?.points||[])
+    }
+    function optimizeSomeNamePos(points:ControlPoint[]){
+        //暂时忽略车站团
+        let allSinglePos = points.filter(p => {
+            staClusterStore.isPtSingle(p.id)
+        }) || []
+        allSinglePos.forEach(x => {
+            x.nameP = optimizedNamePos(x.id)
+        })
+        pop?.show(`重置了${allSinglePos.length}个站名位置`, 'success')
+        envStore.rerender()
+    }
+    const recommendedNamePosDir0 = [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]
+    const recommendedNamePosDir1 = [[1, 1], [1, -1], [-1, 1], [-1, -1], [0, 1], [0, -1], [1, 0], [-1, 0]]
+    function getAdjacentPtsPos(ptId: number) {
+        const pt = saveStore.getPtById(ptId)
+        if (!pt) {
+            return []
+        }
+        const cluster = staClusterStore.getStaClusterById(ptId)
+        const adjacentPtsPos =
+            saveStore.getLinesByPt(ptId).map(x => {
+                return formalizedLineStore.findAdjacentFormalPts(x.pts.findIndex(p => p == ptId), x.id)
+            }).flat()
+                .concat(staClusterStore.getRectOfCluster(cluster))
+                .map(x => {
+                    return [Math.sign(x[0] - pt?.pos[0]), Math.sign(x[1] - pt?.pos[1])]
+                })
+        return adjacentPtsPos
+    }
+    //用 pt  dir决定用哪个组
+    function optimizedNamePos(ptId: number): Coord {
+        const pt = saveStore.getPtById(ptId)
         const ptSize = staClusterStore.getMaxSizePtWithinCluster(ptId, 'ptSize')
         const dist = cs.config.snapOctaClingPtNameDist * ptSize
-        //TODO：自动选择不遮挡线路的位置
-        return [0, dist]
+        //自动选择不遮挡线路的位置
+        if (pt) {
+            //得到相邻点和这个站的相对位置
+            const adjacentPtsPos = getAdjacentPtsPos(ptId)
+            const isDir1=!!adjacentPtsPos.find(np=>np[0]*np[1]!=0)
+            for (let i = 0; i < 8; i++) {
+                //有斜线就得用斜坐标点位
+                const thisPos = isDir1 ? recommendedNamePosDir1[i] : recommendedNamePosDir0[i];
+                if (!adjacentPtsPos.find(pos => pos[0] == thisPos[0] && pos[1] == thisPos[1])) {
+                    //没有重复，就用这个位置
+                    if (thisPos[0] * thisPos[1] != 0) {
+                        //斜边特征
+                        return [thisPos[0] * dist / sqrt2, thisPos[1] * dist / sqrt2]
+                    }
+                    return [thisPos[0] * dist, thisPos[1] * dist]
+                }
+            }
+            return [0, dist]
+        }
+        else {
+            return [0, dist]
+        }
     }
+    //#endregion
 
     function clearItems(){
         targetPtId.value = undefined
@@ -107,6 +174,6 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
         startEditing, endEditing, toggleEditing, applyName,
         nameInputFocusHandler, nameEditorDiv, getEditorDivEffectiveHeight,
         controlPointOptionsPanel, controlPointOptionsPanelOpen,
-        newNamePos, clearItems
+        optimizedNamePos, optimizeAllNamePos, clearItems 
     }
 })

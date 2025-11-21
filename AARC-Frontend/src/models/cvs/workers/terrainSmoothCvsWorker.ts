@@ -107,7 +107,7 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                 return
             const adjss: { pos: Coord, belongLine: number, belongInLineIdx:number }[] = []
             pt.belongs.forEach(belong => {
-                const adjPoss = formalizedLineStore.findAdjacentFormatPts(belong.inLineIdx, belong.lineId)
+                const adjPoss = formalizedLineStore.findAdjacentFormalPts(belong.inLineIdx, belong.lineId)
                 const adjs = adjPoss.map(x => { return { pos: x, belongLine: belong.lineId, belongInLineIdx: belong.inLineIdx } })
                 adjss.push(...adjs)
             })
