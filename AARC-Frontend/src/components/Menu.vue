@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 import Lines from './sidebars/sideList/Lines.vue';
 import Terrains from './sidebars/sideList/Terrains.vue';
 import SizeEdit from './sidebars/SizeEdit.vue';
-import ExportPng from './sidebars/ExportPng.vue';
+import ExportImage from './sidebars/ExportImage.vue';
 import Configs from './sidebars/Configs.vue';
 import { storeToRefs } from 'pinia';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
@@ -27,7 +27,7 @@ const lines = ref<InstanceType<typeof Lines>>()
 const terrains = ref<InstanceType<typeof Terrains>>()
 const toolBox = ref<InstanceType<typeof ToolBox>>()
 const sizeEdit = ref<InstanceType<typeof Terrains>>()
-const exportPng = ref<InstanceType<typeof ExportPng>>()
+const exportImage = ref<InstanceType<typeof ExportImage>>()
 const configs = ref<InstanceType<typeof Configs>>()
 const nameSearch = ref<InstanceType<typeof NameSearch>>()
 const envStore = useEnvStore()
@@ -40,7 +40,7 @@ const {
 } = storeToRefs(useSnapStore())
 const anotherMenuFolded = ref(true)
 
-type SidebarNames = 'lines'|'terrains'|'sizeEdit'|'exportPng'|'configs'|'toolBox'|undefined
+type SidebarNames = 'lines'|'terrains'|'sizeEdit'|'exportImage'|'configs'|'toolBox'|undefined
 const activeSidebarName = ref<SidebarNames>()
 
 const saveBtnMode = computed<'save'|'leave'>(()=>{
@@ -70,10 +70,10 @@ function openSidebarOf(name:SidebarNames){
         sizeEdit.value?.comeOut()
     else
         sizeEdit.value?.fold()
-    if(name==='exportPng')
-        exportPng.value?.comeOut()
+    if(name==='exportImage')
+        exportImage.value?.comeOut()
     else
-        exportPng.value?.fold()
+        exportImage.value?.fold()
     if(name==='configs')
         configs.value?.comeOut()
     else
@@ -112,7 +112,7 @@ onUnmounted(()=>{
         <div @click="openSidebarOf('toolBox')" class="sqrBtn withShadow">工具</div>
         <div @click="openSidebarOf('sizeEdit')" class="sqrBtn withShadow">画布</div>
         <div @click="openSidebarOf('configs')" class="sqrBtn withShadow">设置</div>
-        <div @click="openSidebarOf('exportPng')" class="sqrBtn withShadow">导出</div>
+        <div @click="openSidebarOf('exportImage')" class="sqrBtn withShadow">导出</div>
         <div @click="saveData" class="sqrBtn withShadow saveBtn">
             <div v-show="preventingLeaving" class="saveRedDot" :class="{unsavedForALongTime}"></div>
             {{ saveBtnText }}
@@ -122,7 +122,7 @@ onUnmounted(()=>{
     <Terrains ref="terrains"></Terrains>
     <ToolBox ref="toolBox"></ToolBox>
     <SizeEdit ref="sizeEdit"></SizeEdit>
-    <ExportPng ref="exportPng"></ExportPng>
+    <ExportImage ref="exportImage"></ExportImage>
     <Configs ref="configs"></Configs>
     <NameSearch ref="nameSearch"></NameSearch>
     <div class="anotherMenu" :class="{anotherMenuFolded}">

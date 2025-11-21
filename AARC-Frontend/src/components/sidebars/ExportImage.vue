@@ -39,7 +39,7 @@ async function downloadMainCvsAsPng() {
     exporting.value = true
     exportFailed.value = false
 
-    const fileName = await getExportPngFileName()
+    const fileName = await getExportImageFileName()
     if(fileName){
         const { scale, cvsWidth, cvsHeight } = getExportRenderSize()
         const cvs = new OffscreenCanvas(cvsWidth, cvsHeight)
@@ -88,7 +88,7 @@ async function downloadMiniatureCvsAsPng() {
         return
     exported.value = false
     exporting.value = true
-    const fileName = await getExportPngFileName(true)
+    const fileName = await getExportImageFileName(true)
     if(fileName){
         if(activeUrl)
             URL.revokeObjectURL(activeUrl)
@@ -108,7 +108,7 @@ async function downloadMiniatureCvsAsPng() {
     }
     exporting.value = false
 }
-async function getExportPngFileName(isMini?:boolean){
+async function getExportImageFileName(isMini?:boolean){
     let saveId = route.params[editorParamNameSaveId]
     if(typeof saveId === 'object')
         saveId = saveId[0] || 'err'
