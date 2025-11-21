@@ -17,27 +17,29 @@ import ExportWatermarkConfig from './configs/ExportWatermarkConfig.vue';
 import ConfigSection from './configs/shared/ConfigSection.vue';
 import ExportInfo from './etc/ExportInfo.vue'
 import { storeToRefs } from 'pinia';
+import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 
 const sidebar = ref<InstanceType<typeof SideBar>>()
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const saveStore = useSaveStore()
 const api = useApiStore()
+const { browserInfo } = storeToRefs(useBrowserInfoStore())
 const route = useRoute()
 const { pop } = useUniqueComponentsStore()
 const exported = ref<boolean>(false)
 const exporting = ref<boolean>(false)
-const exportFailed = ref<boolean>(false)
+const exportFailedMsg = ref<false|string>(false)
 
 const exportLocalConfig = useExportLocalConfigStore()
-const { fileNameStyle, pixelRestrict, pixelRestrictMode, ads } = storeToRefs(exportLocalConfig)
+const { fileNameStyle, fileFormat, fileQuality, pixelRestrict, pixelRestrictMode, ads } = storeToRefs(exportLocalConfig)
 
-async function downloadMainCvsAsPng() {
+async function downloadMainCvsAsImage() {
     if(exporting.value)
         return
     exported.value = false
     exporting.value = true
-    exportFailed.value = false
+    exportFailedMsg.value = false
 
     const fileName = await getExportImageFileName()
     if(fileName){
@@ -55,23 +57,24 @@ async function downloadMainCvsAsPng() {
         }
         mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
 
-        let pngDataUrl
+        let imageDataUrl
         try{
-            pngDataUrl = await cvsToDataUrl(cvs)
+            imageDataUrl = await cvsToDataUrl(cvs)
         }
-        catch{
+        catch(e){
+            console.error(e)
             pop?.show('导出失败\n请查看指引', 'failed')
             exporting.value = false
-            exportFailed.value = true
+            exportFailedMsg.value = '可能是浏览器像素上限，请查看指引'
             return
         }
-        if(!pngDataUrl){
+        if(!imageDataUrl){
             return
         }
         var link = getDownloadAnchor()
         if(link && 'href' in link){
             exported.value = true
-            link.href = pngDataUrl;
+            link.href = imageDataUrl;
             if('download' in link)
                 link.download = fileName
             link.click();
@@ -83,11 +86,12 @@ async function downloadMainCvsAsPng() {
     exporting.value = false
 }
 let activeUrl:string|undefined = undefined;
-async function downloadMiniatureCvsAsPng() {
+async function downloadMiniatureCvsAsImage() {
     if(exporting.value)
         return
     exported.value = false
     exporting.value = true
+    exportFailedMsg.value = false
     const fileName = await getExportImageFileName(true)
     if(fileName){
         if(activeUrl)
@@ -136,7 +140,7 @@ async function getExportImageFileName(isMini?:boolean){
     if (isMini) {
         name = `${name}-mini`
     }
-    return `${name}.png`
+    return `${name}.${fileFormat.value}`
 }
 
 function getExportRenderSize():{scale:number, cvsWidth:number, cvsHeight:number}{
@@ -161,8 +165,23 @@ function getExportRenderSize():{scale:number, cvsWidth:number, cvsHeight:number}
         cvsHeight: saveStore.cvsHeight*scale
     }
 }
+function canEncodeWebP() {
+  const c = document.createElement('canvas');
+  return c.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+}
 async function cvsToDataUrl(cvs:OffscreenCanvas):Promise<string>{
-    const blob = await cvs.convertToBlob({ type: 'image/png' });
+    let mime = 'image/png'
+    if(fileFormat.value=='webp')
+        mime = 'image/webp'
+    else if(fileFormat.value=='jpeg')
+        mime = 'image/jpeg'
+    if(mime=='image/webp' && !canEncodeWebP()){
+        let msg = `当前浏览器(${browserInfo.value.browser.name})不支持webp格式`
+        pop?.show(msg, 'failed')
+        exportFailedMsg.value = msg
+        return ''
+    }
+    const blob = await cvs.convertToBlob({ type: mime, quality: fileQuality.value});
     return URL.createObjectURL(blob);
 }
 
@@ -185,10 +204,13 @@ defineExpose({
 function explainPixelMode(){
     window.alert('选择“指定”模式后，将严格按“像素”的值进行导出，“像素”值较大时可获得高清图片')
 }
+function explainFileFormat(){
+    window.alert('如果png尺寸过大，可考虑改为更高效的webp格式，并适当调低“图片质量”，以获得较小文件；敬请期待svg导出功能')
+}
 </script>
 
 <template>
-    <SideBar ref="sidebar" @extend="enableContextMenu()" @fold="disableContextMenu();exported=false;exportFailed=false">
+    <SideBar ref="sidebar" @extend="enableContextMenu()" @fold="disableContextMenu();exported=false;exportFailedMsg=false">
         <h1>导出作品</h1>
         <div class="exportOps">
             <div class="configItem">
@@ -208,12 +230,31 @@ function explainPixelMode(){
                 <div class="itemName">
                     像素模式
                     <!--TODO：删除它，改为使用统一的自定义alert组件-->
-                    <div class="question-mark" @click="explainPixelMode">?</div>
+                    <div class="questionMark" @click="explainPixelMode">?</div>
                 </div>
                 <select v-model="pixelRestrictMode">
                     <option :value="'max'">上限</option>
                     <option :value="'exact'">指定</option>
                 </select>
+            </div>
+            <div class="configItem">
+                <div class="itemName">
+                    图片格式
+                    <!--TODO：删除它，改为使用统一的自定义alert组件-->
+                    <div class="questionMark" @click="explainFileFormat">?</div>
+                </div>
+                <select v-model="fileFormat">
+                    <option :value="'png'">PNG</option>
+                    <option :value="'webp'">WEBP</option>
+                    <option :value="'jpeg'">JPG</option>
+                </select>
+            </div>
+            <div class="configItem" v-if="fileFormat!='png'">
+                <div class="itemName">图片质量</div>
+                <div>
+                    <input v-model.number="fileQuality" type="range" :min="0" :max="1" :step="0.01"/>
+                    <div class="rangeDisplay">{{ fileQuality?.toFixed(2) }}</div>
+                </div>
             </div>
             <div class="configItem">
                 <div class="itemName">宣传水印</div>
@@ -223,16 +264,19 @@ function explainPixelMode(){
                     <option :value="'more'">详细</option>
                 </select>
             </div>
-            <button @click="downloadMainCvsAsPng" class="ok">导出为图片</button>
-            <button @click="downloadMiniatureCvsAsPng" class="minor">导出为缩略图</button>
+            <button @click="downloadMainCvsAsImage" class="ok">导出为图片</button>
+            <button @click="downloadMiniatureCvsAsImage" class="minor">导出为缩略图</button>
             <div v-show="exported" class="note">
                 若点击导出后没有开始下载<br />请尝试<a :id="downloadAnchorElementId" class="downloadAnchor">点击此处</a>
             </div>
-            <Notice v-show="exporting" :title="'请等待'" :type="'info'">
+            <Notice v-show="exporting && !exportFailedMsg" :title="'请等待'" :type="'info'">
                 正在导出，可能需要几秒
             </Notice>
-            <div v-show="exporting || exported || exportFailed" class="note"
-                :style="{color: exportFailed?'red':undefined}">
+            <Notice v-show="exportFailedMsg" :title="'导出失败'" :type="'danger'">
+                {{ exportFailedMsg }}
+            </Notice>
+            <div v-show="exporting || exported || exportFailedMsg" class="note"
+                :style="{color: exportFailedMsg?'red':undefined}">
                 若导出失败或长时间无响应<br />请查看本页下方“浏览器限制”部分
             </div>
             <div class="exportConfigs">
@@ -323,16 +367,23 @@ function explainPixelMode(){
 }
 
 // TODO：删除它，改为使用统一的自定义alert组件
-.question-mark{
-    height: 16px;
-    width: 16px;
-    border: 2px solid #aaa;
+.questionMark{
+    height: 12px;
+    width: 12px;
+    border: 1px solid #aaa;
     color: #aaa;
-    font-size: 14px;
-    line-height: 16px;
+    font-size: 10px;
+    line-height: 12px;
     text-align: center;
     border-radius: 100px;
     cursor: pointer;
     display: inline-block;
+}
+
+.rangeDisplay{
+    margin-top: -10px;
+    font-size: 12px;
+    color: #999;
+    text-align: center;
 }
 </style>
