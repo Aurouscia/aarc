@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useApiStore } from '@/app/com/apiStore';
@@ -205,8 +205,17 @@ function explainPixelMode(){
     window.alert('选择“指定”模式后，将严格按“像素”的值进行导出，“像素”值较大时可获得高清图片')
 }
 function explainFileFormat(){
-    window.alert('如果png尺寸过大，可考虑改为更高效的webp格式，并适当调低“图片质量”，以获得较小文件；敬请期待svg导出功能')
+    window.alert('png文件较大（但兼容性好且无损），webp文件较小且可以设置画质（但老设备可能无法查看），jpg建议不要用；敬请期待svg导出功能')
 }
+
+onMounted(()=>{
+    // safari浏览器不支持webp格式导出，所以mounted时自动转换为png一次
+    if(browserInfo.value.browser.name == 'Safari'){
+        if(fileFormat.value == 'webp'){
+            fileFormat.value = 'png'
+        }
+    }
+})
 </script>
 
 <template>

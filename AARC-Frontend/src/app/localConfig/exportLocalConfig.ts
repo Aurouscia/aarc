@@ -23,7 +23,7 @@ export interface ExportWatermarkLocalConfig{
 
 export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
     const fileNameStyle = ref<ExportFileNameStyle>('lineCount')
-    const fileFormat = ref<'png'|'webp'|'jpeg'>('png')
+    const fileFormat = ref<'png'|'webp'|'jpeg'>('webp')
     const fileQuality = ref(1)
     const pixelRestrict = ref<string|number>('')
     const pixelRestrictMode = ref<'max'|'exact'>('max')
