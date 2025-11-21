@@ -26,3 +26,6 @@ dist-ssr
 # 排除自动生成的文件
 public/vavTimestamp.txt
 public/gitInfo.json
+
+# 排除无需记录的“最近更新”文件
+public/recentUpdates.json

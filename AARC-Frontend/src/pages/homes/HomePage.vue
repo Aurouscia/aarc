@@ -2,12 +2,12 @@
 import { guideInfo } from '@/app/guideInfo';
 import NewestSaves from '../components/NewestSaves.vue';
 import GiteeInfo from '@/components/common/GiteeGitInfo.vue';
-import Notice from '@/components/common/Notice.vue';
 import { onMounted } from 'vue';
 import { appVersionCheck } from '@/app/appVersionCheck';
 import SearchSaveEntrance from '../components/SearchSaveEntrance.vue';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
+import RecentUpdates from '../components/RecentUpdates.vue';
 
 const { setEnteredFrom } = useEnteredCanvasFromStore()
 const userInfoStore = useUserInfoStore()
@@ -45,19 +45,16 @@ onMounted(()=>{
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
 <div class="releaseNotes">
-    <Notice :type="'info'" :title="'2025-11-5更新'">
-        1. au：可导出高于画布像素的图片（指定“像素模式”）<br/>
-        2. au：修复线路列表颜色在特定情况下缺少更新的问题
-    </Notice>
-    <Notice :type="'info'" :title="'正在开发'">
+    <RecentUpdates></RecentUpdates>
+    <!-- <Notice :type="'info'" :title="'正在开发'">
         - 画布隐私等设置<br/>
         - 重名站点查找<br/>
         - （线路级）时间轴
-        <!-- 1. 标签/站名的旋转和压缩<br/>
+        1. 标签/站名的旋转和压缩<br/>
         2. 多选和创建“元素组”功能<br/>
         3. 站点/线路搜索定位功能<br/>
-        4. 指定线路导出<br/> -->
-    </Notice>
+        4. 指定线路导出<br/>
+    </Notice> -->
 </div>
 <GiteeInfo></GiteeInfo>
 <div class="roadmap">

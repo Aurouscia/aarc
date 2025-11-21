@@ -63,7 +63,7 @@ onMounted(()=>{
     justify-content: center;
     align-items: center;
     gap: 10px;
-    margin: 25px 0px 10px;
+    margin: 15px 0px 10px;
     &>div{
         font-size: 14px;
         color: #666;
