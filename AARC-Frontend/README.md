@@ -27,5 +27,11 @@ npm run dev
 ```
 命令行会输出一个访问地址，`ctrl+点击`即可打开
 
+### 调试时连接指定服务
+在`env`目录中新建`.env.development.local`，填写如下内容：
+```env
+VITE_ApiUrlBase = "http://aarc.jowei19.com" #或其他服务实例（注意结尾不要斜杠）
+```
+
 ## 开发备忘录
 ⚠️注意：不要将fs、execa等仅在node使用的模块导入运行时代码（直接或间接），否则会出现难以辨认的打包/运行时问题
