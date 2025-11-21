@@ -131,7 +131,7 @@ const { pop } = useUniqueComponentsStore()
         const cluster = staClusterStore.getStaClusterById(ptId)
         const adjacentPtsPos =
             saveStore.getLinesByPt(ptId).map(x => {
-                return formalizedLineStore.findAdjacentFormatPts(x.pts.findIndex(p => p == ptId), x.id)
+                return formalizedLineStore.findAdjacentFormalPts(x.pts.findIndex(p => p == ptId), x.id)
             }).flat()
                 .concat(staClusterStore.getRectOfCluster(cluster))
                 .map(x => {

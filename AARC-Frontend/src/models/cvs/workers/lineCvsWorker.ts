@@ -121,9 +121,14 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         const relatedPts:Set<ControlPoint> = new Set()
         const formalizedSegs:FormalizedLine[] = []
         searchRes.forEach(res=>{
+            // 得到区间首个点（肯定是靠近线路起点的）在线路中的索引，使formalize算出正确的afterIdxEqv
+            const firstPt = res.formalizePtIds.at(0)
+            if(firstPt === undefined) return 
             const line = res.line
+            const firstPtInLineIdx = line.pts.indexOf(firstPt)
+            if(firstPtInLineIdx == -1) return
             const fpts = saveStore.getPtsByIds(res.formalizePtIds)
-            const formalized = formalize(fpts)
+            const formalized = formalize(fpts, firstPtInLineIdx)
             if(res.trimLeft && formalized.length>0){
                 let leftIdx = formalized[0].afterIdxEqv
                 const trimCount = formalized.findIndex(x=>x.afterIdxEqv!==leftIdx)
@@ -143,12 +148,13 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             const enforceLineWidth = line.isFilled ? 1 : undefined
             doRender(ctx, line, true, enforceLineWidth)
         })
+        formalizedLineStore.setLocalFormalSegs(formalizedSegs)
         return {
             relatedPts,
             formalizedSegs
         }
     }
-    function formalize(pts:ControlPoint[]):FormalPt[]{
+    function formalize(pts:ControlPoint[], idxOffset = 0):FormalPt[]{
         if(pts.length<2)
             return [];
         const isRingLine = isRing(pts)
@@ -185,11 +191,11 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             formalSegs.pop()
         }
         const formalPts:FormalPt[] = []
-        formalPts.push({pos:formalSegs[0].a, afterIdxEqv:0})
+        formalPts.push({pos:formalSegs[0].a, afterIdxEqv:0 + idxOffset })
         for(let i=0;i<formalSegs.length;i++){
             const seg = formalSegs[i]
-            seg.itp.forEach(p=>formalPts.push({pos:p, afterIdxEqv:i}))
-            formalPts.push({pos:seg.b, afterIdxEqv:i+1})
+            seg.itp.forEach(p=>formalPts.push({pos:p, afterIdxEqv: i + idxOffset }))
+            formalPts.push({pos:seg.b, afterIdxEqv: i + 1 + idxOffset })
         }
         return formalPts
     }
