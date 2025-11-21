@@ -75,7 +75,8 @@ function removeDanglingPointLinks(){
 function removeRepeatPt(){
     envStore.removeRepeatPtOnLines()
 }
-const { browserInfo } = storeToRefs(useBrowserInfoStore())
+const browserInfoStore = useBrowserInfoStore()
+const { browserInfo } = storeToRefs(browserInfoStore)
 const visibilityChangedTimes = ref(0)
 function visibilityChangedHandler(){
     if(document.visibilityState==='visible'){
@@ -291,6 +292,13 @@ defineExpose({
             <div>
                 系统 {{ browserInfo.os.name }}
                 <span class="ver">{{ browserInfo.os.version }}</span>
+            </div>
+            <div>
+                <span class="ver">{{ browserInfoStore.ua }}</span>
+                <br/>
+                <span class="ver">是百度app：{{ browserInfoStore.isBaiduApp }}</span>
+                <br/>
+                <span class="ver">是QQ内置：{{ browserInfoStore.isQQBuiltIn }}</span>
             </div>
         </td>
     </tr>
