@@ -219,21 +219,25 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         neighbors = {}
     }
     function getStaClusterById(ptId:number){
-        return getStaClusters()?.find(cluster =>
-                cluster.some(sta => sta.id === ptId)
-            )
+        const cluster=getStaClusters()?.find(cluster =>
+            cluster.some(sta => sta.id === ptId)
+        )
+        if (cluster){
+            return cluster
+        }
+        else{
+            const pt=saveStore.getPtById(ptId)
+            if (pt)
+                return [pt]
+            else
+                return []
+        }
     }
     function getStaName(ptId: number) {
         const cluster = getStaClusterById(ptId)
         let res = undefined
-        if (!cluster) {
-            let point = saveStore.save?.points.find(x => x.id == ptId)
-            res = point?.name
-        }
-        else {
-            let clusterHaveName = cluster.find(x => x.name)
-            res = clusterHaveName?.name
-        }
+        let clusterHaveName = cluster.find(x => x.name)
+        res = clusterHaveName?.name
         res = res?.replaceAll('\n', '')
         return res ?? ''
     }
@@ -244,7 +248,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             return false
         }
         const cluster = getStaClusterById(ptId)
-        return !cluster || cluster.length <= 1
+        return cluster.length <= 1
     }
     return {
         getStaClusters,

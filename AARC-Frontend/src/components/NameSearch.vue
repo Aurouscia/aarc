@@ -41,7 +41,7 @@ function centerOnPt(pt:ControlPoint){
 // 辅助：获取该站所属线路信息（name + color）
 function getPtLines(pt:ControlPoint){
   const cluster = staClusterStore.getStaClusterById(pt.id)
-  const stationIds = cluster ? cluster.map(sta => sta.id) : [pt.id];
+  const stationIds = cluster.map(sta => sta.id);
   const lines =[...new Set(stationIds.flatMap(id => 
     saveStore.getLinesByPt(id) ?? []
   ))]

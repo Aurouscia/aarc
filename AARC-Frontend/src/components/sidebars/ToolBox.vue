@@ -46,6 +46,10 @@ defineExpose({
         <button @click="envStore.createPlainPt();fd()">创建控制点</button>
     </div>
     <div class="toolItem">
+        <div class="smallNote" style="text-align: center;">为所有没有站名的车站创建临时数字名<br>从当前最大的数字名开始自增填写</div>
+        <button @click="envStore.enterBidNumber();fd();envStore.rerender()">生成竞标号</button>
+    </div>
+    <div class="toolItem">
         <button class="off">创建区间类型标记</button>
         <div class="smallNote">后续更新，敬请期待</div>
     </div>

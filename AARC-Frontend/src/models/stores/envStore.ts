@@ -980,6 +980,35 @@ export const useEnvStore = defineStore('env', ()=>{
         delLine(line2Id, true, false)
         rerender.value()
     }
+    //填写竞标号 例如：-1-
+    //辅助函数
+    function extractBidNumber(str: string|undefined): string | null {
+        if (!str){
+            return null
+        }
+        const match = str.match(/^-(\d+)-$/);
+        return match ? match[1] : null;
+    }
+    function enterBidNumber(){
+        //1.找到当前最大竞标号
+        const bidNumbers=saveStore.save?.points.filter(x=>x.sta)
+        .map(x=>extractBidNumber(x.name)).filter(x=>x!=null).map(x=>parseFloat(x))
+        let maxBidNumber=0
+        if (bidNumbers){
+            if (bidNumbers.length!=0)
+                maxBidNumber=Math.max(...bidNumbers)
+        }
+        saveStore.save?.points.filter(x=>x.sta).forEach(p=>{
+            if (!staClusterStore.getStaName(p.id))
+            {
+                //没有名字才给数字
+                maxBidNumber++
+                p.name=`-${maxBidNumber}-`
+                p.nameP=nameEditStore.optimizedNamePos(p.id)
+            }
+            
+        })
+    }
     
     return { 
         init, activePt, activePtType, activePtNameSnapped,
@@ -990,7 +1019,7 @@ export const useEnvStore = defineStore('env', ()=>{
         delActivePt, delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
         createTextTag, duplicateTextTag, delActiveTextTag, createPlainPt,
         endEveryEditing, cancelActive, splitLineByPt, mergeLinesByPt,
-        removeRepeatPtOnLines,
+        removeRepeatPtOnLines,enterBidNumber,
         closeOps:()=>setOpsPos(false)
     }
 })
