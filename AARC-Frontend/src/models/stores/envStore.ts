@@ -980,6 +980,7 @@ export const useEnvStore = defineStore('env', ()=>{
         delLine(line2Id, true, false)
         rerender.value()
     }
+    //#region 滨蜀
     //填写竞标号 例如：-1-
     //辅助函数
     function extractBidNumber(str: string|undefined): string | null {
@@ -998,18 +999,61 @@ export const useEnvStore = defineStore('env', ()=>{
             if (bidNumbers.length!=0)
                 maxBidNumber=Math.max(...bidNumbers)
         }
-        saveStore.save?.points.filter(x=>x.sta).forEach(p=>{
-            if (!staClusterStore.getStaName(p.id))
-            {
-                //没有名字才给数字
-                maxBidNumber++
-                p.name=`-${maxBidNumber}-`
-                p.nameP=nameEditStore.optimizedNamePos(p.id)
-            }
-            
+        saveStore.save?.lines.filter(x => !x.isFake && x.type == LineType.common).forEach(l => {
+            l.pts.forEach(ptId => {
+                const p = saveStore.getPtById(ptId)
+                if (p) {
+                    if (p.sta){
+                        if (!staClusterStore.getStaName(p.id)) {
+                            //没有名字才给数字
+                            maxBidNumber++
+                            p.name = `-${maxBidNumber}-`
+                            p.nameP = nameEditStore.optimizedNamePos(p.id)
+                        }
+                    }
+                }
+
+            })
+
         })
     }
-    
+    function replaceAllText(replacedObject:string[],replacedMainSub:string[],oldString:string,newString:string,autoRegenPinyin:boolean){
+        //autoRegenPinyin：预留：拼音自动更新
+        //站name,nameS 线和地形name,nameSub 标签text,textS
+        const replaceMain=replacedMainSub.includes('mainName')
+        const replaceSub=replacedMainSub.includes('subName')
+        if (replacedObject.includes('stationName')){
+            //替换站名
+            saveStore.save?.points.forEach(p => {
+                if (replaceSub)
+                    p.nameS=p.nameS?.replaceAll(oldString,newString)
+                if (replaceMain)
+                    p.name=p.name?.replaceAll(oldString,newString)
+            });
+        }
+        if (replacedObject.includes('lineName')||replacedObject.includes('terrainName')){
+            //替换线路名
+            saveStore.save?.lines.forEach(l => {
+                if ((l.type==LineType.common&&replacedObject.includes('lineName'))||
+            l.type==LineType.terrain&&replacedObject.includes('terrainName')){
+                    if (replaceSub)
+                        l.nameSub=l.nameSub?.replaceAll(oldString,newString)
+                    if (replaceMain)
+                        l.name=l.name?.replaceAll(oldString,newString)
+                }
+            });
+        }
+        if (replacedObject.includes('textTag')){
+            //替换站名
+            saveStore.save?.textTags.forEach(texttag => {
+                if (replaceSub)
+                    texttag.textS=texttag.textS?.replaceAll(oldString,newString)
+                if (replaceMain)
+                    texttag.text=texttag.text?.replaceAll(oldString,newString)
+            });
+        }
+    }
+    //#endregion
     return { 
         init, activePt, activePtType, activePtNameSnapped,
         activeLine, activeTextTag, somethingActive,
@@ -1019,7 +1063,7 @@ export const useEnvStore = defineStore('env', ()=>{
         delActivePt, delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
         createTextTag, duplicateTextTag, delActiveTextTag, createPlainPt,
         endEveryEditing, cancelActive, splitLineByPt, mergeLinesByPt,
-        removeRepeatPtOnLines,enterBidNumber,
+        removeRepeatPtOnLines,enterBidNumber,replaceAllText,
         closeOps:()=>setOpsPos(false)
     }
 })

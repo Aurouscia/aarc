@@ -10,6 +10,12 @@ const envStore = useEnvStore()
 const pointLinkStore = usePointLinkStore()
 const { creatingLinkType } = storeToRefs(pointLinkStore)
 
+const replacedObject=ref(['stationName'])
+const replacedMainSub=ref(['mainName'])
+const oldString=ref('')
+const newString=ref('')
+const autoRegenPinyin=ref(false)
+
 function fd(){
     sidebar.value?.fold()
 }
@@ -50,6 +56,74 @@ defineExpose({
         <button @click="envStore.enterBidNumber();fd();envStore.rerender()">生成竞标号</button>
     </div>
     <div class="toolItem">
+        <div class="smallNote">替换文本内容</div>
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        对象
+                    </td>
+                    <td>
+                        <label>
+                            站名<input type="checkbox" checked value="stationName" v-model="replacedObject">
+                        </label>
+                        <br>
+                        <label>
+                            线名<input type="checkbox" checked value="lineName" v-model="replacedObject">
+                        </label>
+                        <br>
+                        <label>
+                            地形名<input type="checkbox" checked value="terrainName" v-model="replacedObject">
+                        </label>
+                        <br>
+                        <label>
+                            文本标签<input type="checkbox" checked value="textTag" v-model="replacedObject">
+                        </label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        主副
+                    </td>
+                    <td>
+                        <label>
+                            主名<input type="checkbox"  value="mainName" v-model="replacedMainSub">
+                        </label>
+                        <br>
+                        <label>
+                            副名<input type="checkbox"  value="subName" v-model="replacedMainSub">
+                        </label>
+                    </td>
+                </tr>
+                <tr hidden>
+                    <td>
+                        更新翻译
+                    </td>
+                    <td>
+                        <input type="checkbox" value="true" v-model="autoRegenPinyin">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        替换：
+                    </td>
+                    <td>
+                        <input v-model="oldString" class="replaceStringInput">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        为：
+                    </td>
+                    <td>
+                        <input v-model="newString" class="replaceStringInput">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <button @click="envStore.replaceAllText(replacedObject,replacedMainSub,oldString,newString,autoRegenPinyin);fd();envStore.rerender()">全部替换</button>
+    </div>
+    <div class="toolItem">
         <button class="off">创建区间类型标记</button>
         <div class="smallNote">后续更新，敬请期待</div>
     </div>
@@ -64,5 +138,8 @@ defineExpose({
     border-bottom: 1px solid #aaa;
     align-items: center;
     padding: 12px;
+}
+.replaceStringInput{
+    width: 8em;
 }
 </style>
