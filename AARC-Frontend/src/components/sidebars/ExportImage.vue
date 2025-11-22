@@ -24,7 +24,7 @@ const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const saveStore = useSaveStore()
 const api = useApiStore()
-const { browserInfo } = storeToRefs(useBrowserInfoStore())
+const { browserInfo, isIPhoneOrIPad, isWebkit } = storeToRefs(useBrowserInfoStore())
 const route = useRoute()
 const { pop } = useUniqueComponentsStore()
 const exported = ref<boolean>(false)
@@ -176,7 +176,12 @@ async function cvsToDataUrl(cvs:OffscreenCanvas):Promise<string>{
     else if(fileFormat.value=='jpeg')
         mime = 'image/jpeg'
     if(mime=='image/webp' && !canEncodeWebP()){
-        let msg = `当前浏览器(${browserInfo.value.browser.name})不支持webp格式`
+        const bi = browserInfo.value
+        let msg = "当前环境不支持webp格式，请咨询管理员"
+        if(isIPhoneOrIPad.value)
+            msg = `当前设备（iPhone/iPad）不支持webp格式`
+        else if(isWebkit.value)
+            msg = `当前浏览器（${bi.browser.name}，${bi.engine.name}内核）不支持webp格式`
         pop?.show(msg, 'failed')
         exportFailedMsg.value = msg
         return ''
@@ -209,8 +214,8 @@ function explainFileFormat(){
 }
 
 onMounted(()=>{
-    // safari浏览器不支持webp格式导出，所以mounted时自动转换为png一次
-    if(browserInfo.value.browser.name == 'Safari'){
+    // 如果浏览器不支持webp，自动改为png
+    if(!canEncodeWebP()){
         if(fileFormat.value == 'webp'){
             fileFormat.value = 'png'
         }
