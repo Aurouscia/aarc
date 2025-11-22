@@ -14,7 +14,6 @@ const replacedObject=ref(['stationName'])
 const replacedMainSub=ref(['mainName'])
 const oldString=ref('')
 const newString=ref('')
-const autoRegenPinyin=ref(false)
 
 function fd(){
     sidebar.value?.fold()
@@ -95,14 +94,6 @@ defineExpose({
                         </label>
                     </td>
                 </tr>
-                <tr hidden>
-                    <td>
-                        更新翻译
-                    </td>
-                    <td>
-                        <input type="checkbox" value="true" v-model="autoRegenPinyin">
-                    </td>
-                </tr>
                 <tr>
                     <td>
                         替换：
@@ -121,7 +112,7 @@ defineExpose({
                 </tr>
             </tbody>
         </table>
-        <button @click="envStore.replaceAllText(replacedObject,replacedMainSub,oldString,newString,autoRegenPinyin);fd();envStore.rerender()">全部替换</button>
+        <button @click="envStore.replaceAllText(replacedObject,replacedMainSub,oldString,newString);fd();envStore.rerender()">全部替换</button>
     </div>
     <div class="toolItem">
         <button class="off">创建区间类型标记</button>

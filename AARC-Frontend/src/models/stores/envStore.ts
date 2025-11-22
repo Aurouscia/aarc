@@ -1017,8 +1017,8 @@ export const useEnvStore = defineStore('env', ()=>{
 
         })
     }
-    function replaceAllText(replacedObject:string[],replacedMainSub:string[],oldString:string,newString:string,autoRegenPinyin:boolean){
-        //autoRegenPinyin：预留：拼音自动更新
+    function replaceAllText(replacedObject:string[],replacedMainSub:string[],oldString:string,newString:string){
+        //预留：拼音自动更新
         //站name,nameS 线和地形name,nameSub 标签text,textS
         const replaceMain=replacedMainSub.includes('mainName')
         const replaceSub=replacedMainSub.includes('subName')
