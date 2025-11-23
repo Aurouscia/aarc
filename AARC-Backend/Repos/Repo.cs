@@ -51,7 +51,7 @@ namespace AARC.Repos
         }
         protected void RealRemove(T item, bool saveChanges = true)
         {
-            if (!AllowUpdate)
+            if (!AllowRealRemove)
                 throw new InvalidOperationException("该Repo不允许真删除");
             context.Remove(item);
             if(saveChanges)
@@ -64,5 +64,33 @@ namespace AARC.Repos
         public static IQueryable<T> Existing<T>(
             this IQueryable<T> q) where T : IDbModel
             => q.Where(x => !x.Deleted);
+    }
+    
+    public static class PrioritizableExtension
+    {
+        public static void RearrangePriority<T>(
+            this List<T> list, List<int> order) where T : class, IPrioritizable
+        {
+            var orderDict = order
+                .Select((value, index) => (value, index))
+                .ToDictionary(x => x.value, x => x.index);
+            list.Sort((x, y) =>
+            {
+                int ox = orderDict.TryGetValue(x.Id, out var ix) ? ix : int.MaxValue;
+                int oy = orderDict.TryGetValue(y.Id, out var iy) ? iy : int.MaxValue;
+                return ox.CompareTo(oy);
+            });
+            RearrangePriority(list);
+        }
+        public static void RearrangePriority<T>(
+            this List<T> list) where T : class, IPrioritizable
+        {
+            byte p = 1;
+            foreach (var x in list)
+            {
+                x.Priority = p;
+                p++;
+            }
+        }
     }
 }

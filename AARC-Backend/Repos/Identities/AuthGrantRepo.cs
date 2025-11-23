@@ -15,10 +15,27 @@ public class AuthGrantRepo(
     public override bool AllowUpdate => false;
     public override bool AllowRealRemove => true;
 
+    public List<AuthGrant> LoadAuthGrants(AuthGrantOn on, int onId, byte type)
+    {
+        EnsureIsOwnerOf(on, onId);
+        return ExistingFiltered(on, onId, type).ToList();
+    }
+    
     public void CreateAuthGrant(AuthGrant item)
     {
         AccessCheck(item);
         Add(item);
+        var list = ExistingFiltered(item.On, item.OnId, item.Type).ToList();
+        list.Add(item);
+        list.RearrangePriority();
+        Context.SaveChanges();
+    }
+
+    public void SetAuthGrantPriorities(AuthGrantOn on, int onId, byte type, List<int> ids)
+    {
+        var list = ExistingFiltered(on, onId, type).ToList();
+        list.RearrangePriority(ids);
+        Context.SaveChanges();
     }
 
     public void RemoveAuthGrant(AuthGrant item)
@@ -48,6 +65,13 @@ public class AuthGrantRepo(
         // 且OnId对应的实体的所有者是当前用户
         var onId = item.OnId;
         var on = item.On;
+        EnsureIsOwnerOf(on, onId);
+    }
+
+    public void EnsureIsOwnerOf(AuthGrantOn on, int onId)
+    {
+        if (onId == 0)
+            return;
         switch (on)
         {
             case AuthGrantOn.Save:
@@ -74,5 +98,19 @@ public class AuthGrantRepo(
         var uid = httpUserIdProvider.RequireUserId();
         if (uid != ownerId)
             throw new RqEx("无权操作AuthGrant");
+    }
+
+    private IQueryable<AuthGrant> ExistingFiltered(AuthGrantOn on, int onId, byte type)
+    {
+        var q = Existing
+            .Where(x => x.On == on && x.Type == type);
+        if(onId > 0)
+            q = q.Where(x => x.OnId == onId);
+        else
+        {
+            var uid = httpUserIdProvider.RequireUserId();
+            q = q.Where(x => x.UserId == uid);
+        }
+        return q.OrderBy(x => x.Priority);
     }
 }
