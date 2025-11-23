@@ -7,11 +7,13 @@ import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { storeToRefs } from 'pinia';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { useUserListLocalConfigStore } from '@/app/localConfig/userListLocalConfig';
-import { UserDto, UserType } from '@/app/com/apiGenerated';
+import { AuthGrantOn, AuthGrantTypeOfSave, UserDto, UserType } from '@/app/com/apiGenerated';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
 import { useRouter } from 'vue-router';
+import AuthGrantEdit from '../components/AuthGrantEdit.vue';
+import SwitchingTabs from '@/components/common/SwitchingTabs.vue';
 
 const list = ref<WithIntroShow<UserDto>[]>()
 const api = useApiStore()
@@ -162,7 +164,7 @@ onMounted(async()=>{
 </tbody></table>
 </div>
 <SideBar ref="sidebar">
-    <h1>编辑信息</h1>
+    <h1>个人信息</h1>
     <table v-if="editingUser" class="fullWidth">
         <tbody>
             <tr>
@@ -206,6 +208,13 @@ onMounted(async()=>{
             </tr>
         </tbody>
     </table>
+    <div v-if="editingUser && editingUser.id == userInfo.id" style="margin-top: 20px;">
+        <h1>权限设置</h1>
+        <SwitchingTabs :texts="['存档查看', '存档下载']">
+            <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="0" :type="AuthGrantTypeOfSave.View"/>
+            <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="0" :type="AuthGrantTypeOfSave.ExportJson"/>
+        </SwitchingTabs>
+    </div>
 </SideBar>
 </template>
 
