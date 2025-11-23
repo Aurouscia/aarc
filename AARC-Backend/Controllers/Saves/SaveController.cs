@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IO.Compression;
 using AARC.Models.DbModels.Enums;
+using AARC.Models.DbModels.Enums.AuthGrantTypes;
+using AARC.Services.App.AuthGrants;
 using AARC.Utils;
 
 namespace AARC.Controllers.Saves
@@ -19,6 +21,7 @@ namespace AARC.Controllers.Saves
         UserRepo userRepo,
         SaveMiniatureFileService saveMiniatureFileService,
         SaveBackupFileService saveBackupFileService,
+        AuthGrantCheckService authGrantCheckService,
         ILogger<SaveController> logger
         ) : Controller
     {
@@ -115,6 +118,7 @@ namespace AARC.Controllers.Saves
         [RateLimit(40, 10)]
         public SaveDto? LoadInfo(int id)
         {
+            authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.View, true);
             var data = saveRepo.LoadInfo(id, out var errmsg);
             if (errmsg is not null)
                 throw new RqEx(errmsg);
@@ -124,6 +128,7 @@ namespace AARC.Controllers.Saves
         [HttpPost]
         public string? LoadData(int id)
         {
+            authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.View, true);
             var data = saveRepo.LoadData(id, out var errmsg);
             if (errmsg is not null)
                 throw new RqEx(errmsg);

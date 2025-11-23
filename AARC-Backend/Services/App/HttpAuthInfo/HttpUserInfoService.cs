@@ -10,6 +10,7 @@ namespace AARC.Services.App.HttpAuthInfo
     {
         public Lazy<HttpUserInfo> UserInfo { get; }
         public bool IsAdmin => UserInfo.Value.IsAdmin;
+        public bool IsMember => UserInfo.Value.IsMember;
         public bool IsTourist => UserInfo.Value.IsTourist;
 
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -68,6 +69,7 @@ namespace AARC.Services.App.HttpAuthInfo
         public int LeftHours { get; set; } = leftHours;
         public UserType Type { get; set; } = userType;
         public bool IsAdmin => Type >= UserType.Admin;
+        public bool IsMember => Type >= UserType.Member;
         public bool IsTourist => Type <= UserType.Tourist;
     }
 }

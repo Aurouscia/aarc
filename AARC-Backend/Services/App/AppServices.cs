@@ -10,6 +10,7 @@ using AspNetCore.Proxy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
+using AARC.Services.App.AuthGrants;
 
 namespace AARC.Services.App
 {
@@ -51,6 +52,9 @@ namespace AARC.Services.App
             services.AddSingleton<MasterKeyChecker>();
             services.AddNSwagDocument();
             services.AddSingleton<NSwagTsGenService>();
+
+            services.AddScoped<AuthGrantOwnerService>();
+            services.AddScoped<AuthGrantCheckService>();
 
             services.SetupAutoMapper(config);
             return services;
