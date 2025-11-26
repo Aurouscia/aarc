@@ -23,6 +23,22 @@ namespace AARC.Controllers.Identities
             return list;
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        public List<UserDtoSimple> QuickSearch(string? search)
+        {
+            if (string.IsNullOrWhiteSpace(search))
+                return [];
+            return userRepo.QuickSearchUser(search);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public List<UserDtoSimple> QuickDisplay([FromBody]List<int> ids)
+        {
+            return userRepo.QuickDisplayUser(ids);
+        }
+        
         private const int registerRestrictSecs = 20;
         private static DateTime lastRegisterRequest = DateTime.Now.AddSeconds(-registerRestrictSecs * 2);
         [AllowAnonymous]

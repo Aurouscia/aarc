@@ -38,25 +38,15 @@ namespace AARC.Repos.Identities
         {
             var pwdEncrypted = UserPwdEncryption.Encrypt(password);
             return Existing
-                .Where(x => x.Name == username && x.Password == pwdEncrypted)
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.Name == username && x.Password == pwdEncrypted);
         }
 
         public List<UserDto> IndexUser(string? search, string? orderby)
         {
             int takeCount = 50;
             var myId = httpUserInfoService.UserInfo.Value.Id;
-            var userQ = Viewable;
+            var userQ = FilterByName(Viewable, search);
             var saveQ = base.Context.Saves.Existing().Where(x => x.StaCount > 0);
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                //sqlite默认大小写敏感，此处强制转为不敏感的（应该不怎么影响性能）
-                if (Context is AarcSqliteContext)
-                    userQ = userQ.Where(x => x.Name.ToLower().Contains(search.ToLower()));
-                else
-                    userQ = userQ.Where(x => x.Name.Contains(search));
-            }
             var orderbySave = orderby == "save";
 
             List<UserDto> finalList;
@@ -119,6 +109,28 @@ namespace AARC.Repos.Identities
             return finalList;
         }
 
+        public List<UserDtoSimple> QuickSearchUser(string search)
+        {
+            var userQ = FilterByName(Viewable, search);
+            var res = userQ
+                .OrderBy(x => x.Name.Length)
+                .ThenByDescending(x => x.LastActive)
+                .Take(10)
+                .ProjectTo<UserDtoSimple>(mapper.ConfigurationProvider)
+                .ToList();
+            return res;
+        }
+
+        public List<UserDtoSimple> QuickDisplayUser(List<int> userIds)
+        {
+            userIds = userIds.DistinctAndTake(50);
+            var userQ = Viewable
+                .Where(x => userIds.Contains(x.Id))
+                .ProjectTo<UserDtoSimple>(mapper.ConfigurationProvider)
+                .ToList();
+            return userQ;
+        }
+        
         public bool CreateUser(
             string? username, string? password, out string? errmsg, bool createAdmin = false)
         {
@@ -233,6 +245,18 @@ namespace AARC.Repos.Identities
                 return $"个人简介不能超过{User.introMaxLength}个字符";
             return null;
         }
+
+        private IQueryable<User> FilterByName(IQueryable<User> userQ, string? search)
+        {
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                //sqlite默认大小写敏感，此处强制转为不敏感的（应该不怎么影响性能）
+                userQ = Context is AarcSqliteContext
+                    ? userQ.Where(x => x.Name.ToLower().Contains(search.ToLower()))
+                    : userQ.Where(x => x.Name.Contains(search));
+            }
+            return userQ;
+        }
     }
 
     public class UserDto
@@ -247,6 +271,12 @@ namespace AARC.Repos.Identities
         public string? LastActive { get; set; }
         public int SaveCount { get; set; }
     }
+    
+    public class UserDtoSimple
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+    }
 
     public class UserDtoProfile : Profile
     {
@@ -258,6 +288,7 @@ namespace AARC.Repos.Identities
                     mem => mem.MapFrom(source => source.LastActive.ToString("yyyy-MM-dd HH:mm")));
             CreateMap<UserDto, User>()
                 .ForMember(x => x.Password, mem => mem.Ignore());
+            CreateMap<User, UserDtoSimple>();
         }
     }
 }

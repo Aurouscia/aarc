@@ -10,6 +10,7 @@ namespace AARC.Repos
             this IServiceCollection services)
         {
             services.AddScoped<UserRepo>();
+            services.AddScoped<AuthGrantRepo>();
             services.AddScoped<SaveRepo>();
             services.AddScoped<UserFileRepo>();
             return services;

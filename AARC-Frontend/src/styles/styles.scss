@@ -77,6 +77,15 @@ h1.h1WithBtns{
         }   
     }
 }
+.sidebar h1{
+    text-align: center;
+    padding: 0px 0px 4px;
+    margin: 6px 0px 4px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    border-bottom: none;
+}
 
 
 a{
@@ -220,6 +229,12 @@ button.lite{
     margin: 0px;
     &:hover{
       text-decoration: underline;
+    }
+    &.confirm{
+        color:cornflowerblue;
+        &:hover{
+            background-color: transparent;
+        }
     }
 }
 

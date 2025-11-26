@@ -1,12 +1,12 @@
-﻿using AARC.Repos.Identities;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using AARC.Repos.Identities;
 using AARC.Services.App.HttpAuthInfo;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
-namespace AARC.Controllers.Identities
+namespace AARC.Controllers.System
 {
     [ApiController]
     [Route(ApiConsts.routePattern)]

@@ -153,6 +153,7 @@ export const useApiStore = defineStore('api', () => {
     const sudo = w(new api.SudoClient(baseUrl, instance))
     const auth = w(new api.AuthClient(baseUrl, instance))
     const user = w(new api.UserClient(baseUrl, instance))
+    const authGrant = w(new api.AuthGrantClient(baseUrl, instance))
     const save = w(new api.SaveClient(baseUrl, instance), ['loadData'])
     const userFile = w(new api.UserFileClient(baseUrl, instance))
     const saveUtils = w(new api.SaveUtilsClient(baseUrl, instance))
@@ -164,6 +165,7 @@ export const useApiStore = defineStore('api', () => {
         sudo,
         auth,
         user,
+        authGrant,
         save,
         userFile,
         saveUtils

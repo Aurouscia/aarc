@@ -44,10 +44,17 @@ export async function getTopbarData(): Promise<TopbarModel> {
                     link: { name: userListName }
                 },
                 {
-                    title: "个人设置",
+                    title: "个人信息设置",
                     link: { name: userListName },
                     beforeJump: ()=>{
-                        userList.openingSelfEdit = true
+                        userList.openingSelfEdit = 'info'
+                    }
+                },
+                {
+                    title: "个人授权管理",
+                    link: { name: userListName },
+                    beforeJump: ()=>{
+                        userList.openingSelfEdit = 'authGrant'
                     }
                 },
                 {
