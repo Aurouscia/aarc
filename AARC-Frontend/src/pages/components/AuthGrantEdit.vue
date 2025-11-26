@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { AuthGrant, AuthGrantOn, AuthGrantTo } from '@/app/com/apiGenerated';
+import { AuthGrant, AuthGrantOn, AuthGrantTo, UserDtoSimple } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
+import { useNameMapStore } from '@/app/globalStores/nameMap';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import UserSelect from './UserSelect.vue';
 
 const props = defineProps<{
     on: AuthGrantOn,
@@ -14,24 +16,31 @@ interface AuthGrantDisplay extends AuthGrant {
     flagText: string
     flagColor: string
     toText: string
+    toName?: string
 }
 const apiStore = useApiStore()
 const userInfoStore = useUserInfoStore()
 const { pop } = useUniqueComponentsStore()
+const nameMapStore = useNameMapStore()
 
 const list = ref<AuthGrant[]>([])
 const authGrantToText = new Map<AuthGrantTo|undefined, string>([
     [AuthGrantTo.All, '任何人'],
     [AuthGrantTo.AllMembers, '会员'],
-    [AuthGrantTo.Gallery, '画廊'],
+    [AuthGrantTo.User, '某用户']
 ])
 const listDisplay = computed<AuthGrantDisplay[]>(() => {
     return list.value.map((ag) => {
+        let toName = undefined
+        if(ag.to == AuthGrantTo.User){
+            toName = nameMapStore.userNameMap.get(ag.toId ?? 0)
+        }
         return {
             ...ag,
             flagText: ag.flag ? '允许' : '拒绝',
             flagColor: ag.flag? 'green' : 'red',
-            toText: authGrantToText.get(ag.to) ?? '??'
+            toText: authGrantToText.get(ag.to) ?? '??',
+            toName: toName
         }
     })
 })
@@ -64,6 +73,32 @@ const newAg = ref<AuthGrant>({
     onId: props.onId,
     type: props.type,
 })
+const userSelectShow = ref(false)
+function userSelectSelected(u?:UserDtoSimple){
+    userSelectShow.value = false
+    if(!u){
+        newAg.value.to = AuthGrantTo.All
+        wantAdd.value = false
+        return;
+    }
+    if(!u.id || !u.name) return
+    newAg.value.toId = u.id
+    nameMapStore.appendToMap('userNameMap', u.id, u.name)
+}
+watch(()=>newAg.value.to, (to) => {
+    if(to == AuthGrantTo.User){
+        userSelectShow.value = true
+    }else{
+        newAg.value.toId = 0
+    }
+})
+const newAgToName = computed(() => {
+    if(!newAg.value.toId)
+        return ''
+    if(newAg.value.to == AuthGrantTo.User){
+        return nameMapStore.userNameMap.get(newAg.value.toId)
+    }
+})
 async function add(){
     if(props.onId == 0){
         newAg.value.userId = userInfoStore.userInfo.id
@@ -79,6 +114,10 @@ async function load() {
     const data = await apiStore.authGrant.load(props.on, props.onId, props.type)
     if(data){
         list.value = data
+        const uids = data.filter(x=>x.to == AuthGrantTo.User).map(x=>x.toId ?? 0)
+        if(uids.length > 0){
+            nameMapStore.ensureLoaded('userNameMap', uids)
+        }
     }
 }
 
@@ -91,7 +130,12 @@ onMounted(async() => {
 <table class="fullWidth"><tbody>
     <tr v-for="ag,idx in listDisplay">
         <td :style="{color: ag.flagColor}">{{ ag.flagText }}</td>
-        <td>{{ ag.toText }}</td>
+        <td>
+            {{ ag.toText }}
+            <div v-if="ag.toName" class="ag-to-name">
+                {{ ag.toName }}
+            </div>
+        </td>
         <td class="ag-ops">
             <button class="lite" v-if="idx>0" @click="moveUp(ag)">上移</button>
             <button class="lite" @click="del(ag)">删</button>
@@ -112,10 +156,14 @@ onMounted(async() => {
                 <option :value="AuthGrantTo.AllMembers">
                     {{ authGrantToText.get(AuthGrantTo.AllMembers) }}
                 </option>
-                <option :value="AuthGrantTo.Gallery">
-                    {{ authGrantToText.get(AuthGrantTo.Gallery) }}
+                <option :value="AuthGrantTo.User">
+                    {{ authGrantToText.get(AuthGrantTo.User) }}
                 </option>
             </select>
+            <div v-if="newAgToName" class="ag-to-name">
+                {{ newAgToName }}
+            </div>
+            <UserSelect v-if="userSelectShow" @select="userSelectSelected"></UserSelect>
         </td>
         <td>
             <button class="lite" @click="add">新增</button>
@@ -139,5 +187,13 @@ onMounted(async() => {
     button{
         margin: 0px 4px;
     }
+}
+.ag-to-name{
+    font-size: 14px;
+    max-width: 98px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #666;
 }
 </style>

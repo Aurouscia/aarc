@@ -1,6 +1,12 @@
+<script setup lang="ts">
+const emit = defineEmits<{
+    (e:'close'): void
+}>()
+</script>
+
 <template>
     <div class="prompt fixFill">
-        <div class="background fixFill"></div>
+        <div class="background fixFill" @click="emit('close')"></div>
         <div class="panel">
             <slot></slot>
         </div>
