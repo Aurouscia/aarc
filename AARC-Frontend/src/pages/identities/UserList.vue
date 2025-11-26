@@ -34,7 +34,9 @@ async function loadList() {
 }
 
 const { pop } = useUniqueComponentsStore()
-const sidebar = ref<InstanceType<typeof SideBar>>()
+const infoSidebar = ref<InstanceType<typeof SideBar>>()
+const authGrantSidebar = ref<InstanceType<typeof SideBar>>()
+
 const editingUser = ref<UserDto>()
 const pwdRepeat = ref<string>()
 const isCreatingUser = ref(false)
@@ -44,7 +46,7 @@ let originalNameAndPwd = ''
 function startEditing(u:UserDto){
     editingUser.value = u
     originalNameAndPwd = summerizeNameAndPwd()
-    sidebar.value?.extend()
+    infoSidebar.value?.extend()
 }
 async function doneEditing(){
     if(!editingUser.value)
@@ -67,7 +69,7 @@ async function doneEditing(){
             loginRouteJump()
         }else{
             await loadList()
-            sidebar.value?.fold()
+            infoSidebar.value?.fold()
         }
     }
 }
@@ -80,17 +82,21 @@ function summerizeNameAndPwd(){
 
 function tryOpenSelfEdit(){
     if(openingSelfEdit.value){
-        openingSelfEdit.value = false // 一次性指令
-        // 按约定，登录用户自己必定会出现在用户列表第一个
-        // 如果读取到“正在打开用户设置”，则找到自己的dto并打开编辑
+        let type = openingSelfEdit.value
+        openingSelfEdit.value = false
         const myId = userInfo.value.id
         if(!myId)
             pop?.show('请先登录', 'failed')
-        else {
+        if(type == 'info'){
+            // 按约定，登录用户自己必定会出现在用户列表第一个
+            // 如果读取到“正在打开用户设置”，则找到自己的dto并打开编辑
             const me = list.value?.find(x => x.id == myId)
             if(me){
                 startEditing(me)
             }
+        }
+        else if(type == 'authGrant'){
+            authGrantSidebar.value?.extend()
         }
     }
 }
@@ -163,7 +169,7 @@ onMounted(async()=>{
     </tr>
 </tbody></table>
 </div>
-<SideBar ref="sidebar">
+<SideBar ref="infoSidebar">
     <h1>个人信息</h1>
     <table v-if="editingUser" class="fullWidth">
         <tbody>
@@ -208,13 +214,12 @@ onMounted(async()=>{
             </tr>
         </tbody>
     </table>
-    <div v-if="editingUser && editingUser.id == userInfo.id" style="margin-top: 20px;">
-        <h1>权限设置</h1>
-        <SwitchingTabs :texts="['存档查看', '存档下载']">
-            <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="0" :type="AuthGrantTypeOfSave.View"/>
-            <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="0" :type="AuthGrantTypeOfSave.ExportJson"/>
-        </SwitchingTabs>
-    </div>
+</SideBar>
+<SideBar ref="authGrantSidebar">
+    <h1>授权管理</h1>
+    <SwitchingTabs :texts="['存档查看']">
+        <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="0" :type="AuthGrantTypeOfSave.View"/>
+    </SwitchingTabs>
 </SideBar>
 </template>
 
