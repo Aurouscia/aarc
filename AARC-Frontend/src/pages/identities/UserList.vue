@@ -39,7 +39,6 @@ const authGrantSidebar = ref<InstanceType<typeof SideBar>>()
 
 const editingUser = ref<UserDto>()
 const pwdRepeat = ref<string>()
-const isCreatingUser = ref(false)
 const userInfoStore = useUserInfoStore()
 const { userInfo } = storeToRefs(userInfoStore)
 let originalNameAndPwd = ''
@@ -52,15 +51,11 @@ async function doneEditing(){
     if(!editingUser.value)
         return
     let success:boolean|undefined = false
-    if(isCreatingUser.value){
-        success = await api.user.add(editingUser.value.name || "", editingUser.value.password || "")
-    }else{
-        if(editingUser.value.password && editingUser.value.password !== pwdRepeat.value){
-            pop?.show("两次输入的密码不一致", "failed")
-            return
-        }
-        success = await api.user.update(editingUser.value)
+    if(editingUser.value.password && editingUser.value.password !== pwdRepeat.value) {
+        pop?.show("两次输入的密码不一致", "failed")
+        return
     }
+    success = await api.user.update(editingUser.value)
     if(success){
         pop?.show("操作成功", "success")
         let newNameAndPwd = summerizeNameAndPwd()
@@ -191,13 +186,13 @@ onMounted(async()=>{
                     <input v-model="pwdRepeat" type="password" autocomplete="new-password"/>
                 </td>
             </tr>
-            <tr v-if="!isCreatingUser">
+            <tr>
                 <td>简介</td>
                 <td>
                     <textarea v-model="editingUser.intro" placeholder="可提供自己的联系方式（不超过128个字符）"></textarea>
                 </td>
             </tr>
-            <tr v-if="!isCreatingUser && userInfoStore.isAdmin">
+            <tr v-if="userInfoStore.isAdmin">
                 <td>类型</td>
                 <td>
                     <select v-model="editingUser.type">
