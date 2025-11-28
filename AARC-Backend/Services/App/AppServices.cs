@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
 using AARC.Services.App.AuthGrants;
+using AARC.Services.App.Turnstile;
 
 namespace AARC.Services.App
 {
@@ -44,6 +45,7 @@ namespace AARC.Services.App
                 options.Level = CompressionLevel.Optimal;
             });
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpClient();
             services.AddMemoryCache();
             services.AddScoped<HttpUserIdProvider>();
             services.AddScoped<HttpUserInfoService>();
@@ -52,6 +54,7 @@ namespace AARC.Services.App
             services.AddSingleton<MasterKeyChecker>();
             services.AddNSwagDocument();
             services.AddSingleton<NSwagTsGenService>();
+            services.AddSingleton<TurnstileVerifyService>();
 
             services.AddScoped<AuthGrantOwnerService>();
             services.AddScoped<AuthGrantCheckService>();

@@ -1,19 +1,29 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
 import Notice from '@/components/common/Notice.vue';
+import Turnstile from '@/components/common/Turnstile.vue';
 
 const userName = ref<string>("");
 const password = ref<string>("");
 const passwordRepeat = ref<string>("");
+const turnstileToken = ref<string>();
 const { loginRouteJump } = useIdentitiesRoutesJump()
 const noticeRead = ref(false)
 
+const turnstileConfigured = !! import.meta.env.VITE_TurnstileSiteKey
+const turnstileHidden = ref<boolean>(false)
+function handleTurnstileVerify(token:string){
+    turnstileToken.value = token;
+    window.setTimeout(()=>{
+        turnstileHidden.value = true
+    }, 1000)
+}
+
 async function register(){
-    if(!userName.value){
-        pop?.show("用户名不能为空","failed")
+    if(!buttonAllowClick.value){
         return
     }
     if(!password.value || password.value.length <= 6){
@@ -24,12 +34,20 @@ async function register(){
         pop?.show("前后两次输入密码不一致", "failed")
         return
     }
-    const res = await api.user.add(userName.value, password.value)
+    const res = await api.user.add(userName.value, password.value, turnstileToken.value)
     if(res){
         pop?.show("注册成功", "success")
         loginRouteJump(false)
+    }else{
+        turnstileToken.value = "";
+        turnstileHidden.value = false // 需要重新验证
     }
 }
+const buttonAllowClick = computed(()=>{
+    // 如果没有配置turnstile，就不验证；否则，token有值才能点击注册
+    return userName.value && password.value && passwordRepeat.value &&
+        (turnstileConfigured ? turnstileToken.value : true)
+})
 
 const api = useApiStore()
 const { pop } = useUniqueComponentsStore()
@@ -74,9 +92,19 @@ onMounted(async()=>{
                     <input v-model="passwordRepeat" type="password" autocomplete="new-password"/>
                 </td>
             </tr>
+            <tr v-if="turnstileConfigured && !turnstileHidden">
+                <td colspan="2">
+                    <Turnstile @verify="handleTurnstileVerify"/>
+                    <div class="smallNote" style="text-align: center;">
+                        人机验证中
+                    </div>
+                </td>
+            </tr>
             <tr>
                 <td colspan="2">
-                    <button @click="register" style="margin: 0px auto">注&nbsp;册</button>
+                    <button @click="register" :class="{off: !buttonAllowClick}" style="margin: 0px auto">
+                        注&nbsp;册
+                    </button>
                 </td>
             </tr>
         </tbody></table>

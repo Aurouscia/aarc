@@ -2,6 +2,7 @@
 using AARC.Models.DbModels.Identities;
 using AARC.Repos.Identities;
 using AARC.Services.App.ActionFilters;
+using AARC.Services.App.Turnstile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +12,8 @@ namespace AARC.Controllers.Identities
     [ApiController]
     [Route(ApiConsts.routePattern)]
     public class UserController(
-        UserRepo userRepo
+        UserRepo userRepo,
+        TurnstileVerifyService turnstileVerifyService
         ) : Controller
     {
         [AllowAnonymous]
@@ -39,25 +41,17 @@ namespace AARC.Controllers.Identities
             return userRepo.QuickDisplayUser(ids);
         }
         
-        private const int registerRestrictSecs = 20;
-        private static DateTime lastRegisterRequest = DateTime.Now.AddSeconds(-registerRestrictSecs * 2);
         [AllowAnonymous]
         [HttpPost]
-        public bool Add(
+        public async Task<bool> Add(
             [FromForm] string? userName,
-            [FromForm] string? password)
+            [FromForm] string? password,
+            [FromForm] string? turnstileToken)
         {
-            var lastRegisterPassed = 
-                (int)(DateTime.Now - lastRegisterRequest).TotalSeconds;
-            if (lastRegisterPassed < registerRestrictSecs)
-            {
-                int wait = registerRestrictSecs - lastRegisterPassed;
-                throw new RqEx($"【限流】请等待{wait}秒后重试");
-            }
+            await turnstileVerifyService.Verify(turnstileToken);
             var success = userRepo.CreateUser(userName, password, out var errmsg);
             if (!success)
                 throw new RqEx(errmsg);
-            lastRegisterRequest = DateTime.Now;
             return true;
         }
 
