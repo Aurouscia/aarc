@@ -14,6 +14,9 @@ import { SaveDto } from '@/app/com/apiGenerated';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
+import AuthGrantEdit from '../components/AuthGrantEdit.vue';
+import { AuthGrantOn, AuthGrantTypeOfSave } from '@/app/com/apiGenerated';
+import SwitchingTabs from '@/components/common/SwitchingTabs.vue';
 
 const saveList = ref<WithIntroShow<SaveDto>[]>()
 const api = useApiStore();
@@ -154,6 +157,7 @@ async function downloadJson(){
         fileDownload(json, `${editingSave.value.name}.aarc.json`)
 }
 
+const authGrantSb = ref<InstanceType<typeof SideBar>>()
 const { setEnteredFrom } = useEnteredCanvasFromStore()
 onMounted(async()=>{
     setEnteredFrom()
@@ -231,6 +235,12 @@ onMounted(async()=>{
             </td>
         </tr>
         <tr>
+            <td>权限</td>
+            <td>
+                <button class="lite" @click="authGrantSb?.extend">打开设置栏</button>
+            </td>
+        </tr>
+        <tr>
             <td colspan="2">
                 <button @click="done">{{ isCreatingSave ? '创建存档':'保存更改' }}</button>
             </td>
@@ -264,6 +274,17 @@ onMounted(async()=>{
         </div>
         </td></tr>
     </tbody></table>
+</SideBar>
+<SideBar ref="authGrantSb">
+    <h1>授权管理</h1>
+    <template v-if="editingSave?.id">
+        <SwitchingTabs :texts="['存档查看']">
+            <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="editingSave.id" :type="AuthGrantTypeOfSave.View"/>
+        </SwitchingTabs>
+        <div class="smallNote">
+            注：可以在“顶部栏-用户-个人授权管理“中配置自己的全局默认设置，此处的设置仅对当前存档有效（判断时优先于全局设置）
+        </div>
+    </template>
 </SideBar>
 </template>
 
