@@ -25,6 +25,7 @@ import { useIconStore } from '@/models/stores/iconStore';
 import { compressObjectToGzip } from '@/utils/dataUtils/compressObjectToGzip';
 import { useLoadedSave } from '@/models/stores/utils/loadedSave';
 import { HttpUserInfo } from '@/app/com/apiGenerated';
+import DontUseWeirdBrowser from './components/DontUseWeirdBrowser.vue';
 
 const props = defineProps<{saveId:string}>()
 const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
@@ -216,9 +217,8 @@ onUnmounted(()=>{
         :save="saveData" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
     <HiddenLongWarnPrompt v-if="showHiddenLongWarn" @ok="showHiddenLongWarn=false"></HiddenLongWarnPrompt>
     <div v-if="savingDisabledWarning" class="statusDisplay savingDisabledWarning">{{ savingDisabledWarning }}</div>
-    <div class="cachePreventer">
-        <input :id="cachePreventerInputId"/>
-    </div>
+    <div class="cachePreventer"><input :id="cachePreventerInputId"/></div>
+    <DontUseWeirdBrowser></DontUseWeirdBrowser>
 </template>
 
 <style scoped lang="scss">

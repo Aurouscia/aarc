@@ -17,6 +17,7 @@ export const useBrowserInfoStore = defineStore('browserInfo',()=>{
     })
     const isBaiduApp = ua.includes('baiduboxapp')
     const isQQBuiltIn = ua.includes(' QQ/')
+    const isWxBuiltIn = ua.includes('MicroMessenger')
     return {
         browserInfo,
         isWebkit,
@@ -24,6 +25,7 @@ export const useBrowserInfoStore = defineStore('browserInfo',()=>{
         isIPhoneOrIPad,
         ua,
         isBaiduApp,
-        isQQBuiltIn
+        isQQBuiltIn,
+        isWxBuiltIn
     }
 })
