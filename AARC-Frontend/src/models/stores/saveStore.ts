@@ -453,6 +453,9 @@ export const useSaveStore = defineStore('save', () => {
             if(idx >= 0)
                 link.pts[idx] = keepPt.id  
         })
+        // 经过上述转移后，可能造成link的两个点变成了同一个，需要删除
+        if(save.value.pointLinks)
+            removeAllByPred(save.value.pointLinks, ({pts})=> pts[0] == pts[1])
         return {
             mutatedLines:delFromLines,
             mergedWithPt:thatPt,
