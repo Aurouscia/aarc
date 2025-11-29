@@ -20,7 +20,7 @@ const browserName = computed<string>(()=>{
 </script>
 
 <template>
-<Prompt v-show="show" :bg-click-close="false" :close-btn="true" :close-btn-delay="5" @close="dontUseWeirdBrowserShown=true">
+<Prompt v-show="show" :close-btn="true" :close-btn-delay="5" @close="dontUseWeirdBrowserShown=true">
     本应用在<b class="wrong">{{ browserName }}</b>中可能无法正常工作<br/>
     建议复制链接到<b class="right">Chrome</b>或<b class="right">Edge</b>浏览器打开本应用，以获得最佳体验
 </Prompt>

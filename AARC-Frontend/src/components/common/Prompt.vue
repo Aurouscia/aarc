@@ -6,7 +6,7 @@ const props = withDefaults(defineProps<{
     closeBtn?: string|true,
     closeBtnDelay?: number
 }>(), {
-    bgClick: true,
+    bgClick: false,
     closeBtn: undefined,
     closeBtnDelay: 0
 })

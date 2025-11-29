@@ -29,7 +29,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-<Prompt @close="selectUser(undefined)">
+<Prompt @close="selectUser(undefined)" :bg-click-close="true">
     <div class="user-select-title">用户选择器</div>
     <div class="user-select">
         <input v-model="nameSearch" placeholder="搜索用户名" @input="callLoad"/>

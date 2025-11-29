@@ -28,7 +28,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <Prompt v-if="line">
+    <Prompt v-if="line" :bg-click-close="true" @close="emit('abort')">
         <div class="promptDel">
             <div class="promptDeltitle">
                 确定删除
