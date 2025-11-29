@@ -5,9 +5,10 @@
 #   2. （非windows上）chmod a+x .git/hooks/commit-msg
 
 msg=$(head -n1 "$1")
-prefix_regex='^(【后端】|【前端】|【前端/后端】|【编辑器】|【编辑器/后端】|【项目】|Merge branch)'
-if ! echo "$msg" | grep -Eq "$prefix_regex"; then
-  cat <<< 提交信息必须符合正则：${prefix_regex}
+prefix_regex='^(feat|fix|docs|style|refactor|perf|test|chore|revert|build|ci)(\(.+\))?!?: .+|^Merge( .*)?$'
+
+if ! printf '%s\n' "$msg" | grep -Eq "$prefix_regex"; then
+  printf '提交信息必须符合 conventional commits 格式\n' >&2
   exit 1
 fi
 exit 0
