@@ -28,7 +28,7 @@ function upHandler(e:MouseEvent|TouchEvent, callBack:((c:Coord, clickType?:PureC
         if(e instanceof MouseEvent){
             if(e.button === 2){
                 clickType = 'right'
-                if(e.ctrlKey)
+                if(e.ctrlKey || e.metaKey)
                     clickType = 'ctrlAndRight'
             }
         }
