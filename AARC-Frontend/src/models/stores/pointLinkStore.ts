@@ -4,7 +4,6 @@ import { computed, ref } from "vue"
 import { ControlPoint, ControlPointLinkType } from "../save"
 
 export const usePointLinkStore = defineStore('pointLinkStore',()=>{
-    const linkLength = 2
     const saveStore = useSaveStore()
     const creatingLink = ref<Set<number>>()
     const creatingLinkType = ref<ControlPointLinkType>(ControlPointLinkType.fat)
@@ -20,13 +19,14 @@ export const usePointLinkStore = defineStore('pointLinkStore',()=>{
     function ptLinkClick(ptId:number){
         if(isCreating.value && saveStore.save){
             creatingLink.value?.add(ptId)
-            if(creatingLink.value?.size === linkLength){
+            if(creatingLink.value?.size === 2){
                 const newLink = Array.from(creatingLink.value)
+                const pts:[number, number] = [newLink[0], newLink[1]]
                 if(!saveStore.save.pointLinks)
                     saveStore.save.pointLinks = []
-                if(!containExistingLinkBetween(newLink[0], newLink[1])){
+                if(!containExistingLinkBetween(...pts)){
                     saveStore.save.pointLinks.push({
-                        pts: newLink,
+                        pts: pts,
                         type: creatingLinkType.value || ControlPointLinkType.fat
                     })
                 }

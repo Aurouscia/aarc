@@ -43,7 +43,7 @@ export enum ControlPointLinkType{
     cluster = 4
 }
 export interface ControlPointLink{
-    pts:number[]
+    pts:[number, number]
     type:ControlPointLinkType
 }
 

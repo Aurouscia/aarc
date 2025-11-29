@@ -336,11 +336,18 @@ export const useSaveStore = defineStore('save', () => {
         if(!save.value)
             return;
         const relatedLinks = ptRelatedLinks.value[ptId] || []
+        const needRemove = new Set<ControlPointLink>()
         relatedLinks.forEach(link=>{
-            link.pts = link.pts.filter(pt=>pt!==ptId)
+            let newPts = link.pts.filter(pt=>pt!==ptId)
+            if(newPts.length==2){
+                let newPts1:[number, number] = [newPts[0], newPts[1]]
+                link.pts = newPts1
+            }else{
+                needRemove.add(link)
+            }
         })
         if(save.value.pointLinks)
-            removeAllByPred(save.value.pointLinks, link=>link.pts.length<=1)
+            removeAllByPred(save.value.pointLinks, x=>needRemove.has(x))
     }
     function removeDanglingPointLinks(){
         if(!save.value || !save.value.pointLinks)
