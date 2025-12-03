@@ -9,13 +9,22 @@ export interface FormalizedLine{
 
 export const useFormalizedLineStore = defineStore('formalizedLine', ()=>{
     const { getItem, setItem, enumerateItems, clearItems } = useKvStoreCore<FormalPt[]>()
-    let localFormalSegs:FormalizedLine[] = []
+
+    /** formalizedLines“选中点拖动时”的局部值（activeCvs画布中算出的，正经值可能还没更新）该值仅对activePt有效 */
+    let localFormalSegs:FormalizedLine[]|null = null
+    
+    /** 设置formalizedLines“正经值” */
+    function setLinesFormalPts(lineId: number, formalPts:FormalPt[]|undefined){
+        // 设置“正经值”时，清空局部值
+        localFormalSegs = null
+        setItem(lineId, formalPts)
+    }
 
     // TODO: 无法处理自交点，考虑另外加一个以站点id为参数的
     function findAdjacentFormalPts(ptIdx:number, lineId:number){
         let pts:FormalPt[]|null = null
-        // 先在“局部”里找（activeCvs画布中算出的，可能还没有更新）
-        if(localFormalSegs.length>0){
+        // 先在“局部”里找
+        if(localFormalSegs){
             const seg = localFormalSegs.find(x=>x.lineId==lineId)
             if(seg){
                 pts = seg.pts
@@ -47,7 +56,7 @@ export const useFormalizedLineStore = defineStore('formalizedLine', ()=>{
     }
 
     return { 
-        setLinesFormalPts: setItem,
+        setLinesFormalPts,
         enumerateFormalizedLines: enumerateItems,
         findAdjacentFormalPts,
         clearItems,
