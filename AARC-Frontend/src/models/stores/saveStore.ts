@@ -107,6 +107,28 @@ export const useSaveStore = defineStore('save', () => {
         }
         return res
     })
+    const lineDict = computed<Record<number, Line|undefined>>(()=>{
+        const res:Record<number, Line|undefined> = {}
+        if(!save.value?.lines)
+            return res
+        for(const line of save.value.lines){
+            res[line.id] = line
+        }
+        return res
+    })
+    const lineActualColors = computed<Record<number, string|undefined>>(()=>{
+        const res:Record<number, string|undefined> = {}
+        if(!save.value?.lines)
+            return res
+        for(const line of save.value.lines){
+            let actualColor = line.color
+            if(line.colorPre){
+                actualColor = configStore.getPresetColor(line.colorPre)
+            }
+            res[line.id] = actualColor
+        }
+        return res
+    })
     const linesSortedByZIndex = computed(()=>{
         if(!save.value)
             return [];
@@ -147,26 +169,16 @@ export const useSaveStore = defineStore('save', () => {
         return res;
     }
     function getLineById(lineId:number){
-        return save.value?.lines.find(l=>l.id == lineId)
+        return lineDict.value[lineId]
     }
     function getLinesByIds(lineIds:Set<number>){
         return save.value?.lines.filter(l=>lineIds.has(l.id)) || []
     }
     function getLineActualColor(line:Line) {
-        if (line.colorPre) 
-            return configStore.getPresetColor(line.colorPre)
-        return line.color
-    }
-    function linesActualColorSame(lineA:Line, lineB:Line){
-        if(!lineA.colorPre && !lineB.colorPre)
-            return lineA.color === lineB.color
-        return lineA.colorPre === lineB.colorPre
+        return lineActualColors.value[line.id] || line.color
     }
     function getLineActualColorById(lineId:number){
-        const line = getLineById(lineId)
-        if(!line)
-            return 'black'
-        return getLineActualColor(line)
+        return lineActualColors.value[lineId]
     }
     function adjacentSegs(ptId:number):LineSeg[]{
         const lines = save.value?.lines
@@ -538,7 +550,7 @@ export const useSaveStore = defineStore('save', () => {
         save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint, deletedTextTag,
         getPtById, getPtsByIds, getLineById, getLinesByIds, linesSortedByZIndex,
         getLinesDecidedPtSize, getLinesDecidedPtSizes, getLinesDecidedPtNameSize,
-        getLineActualColor, linesActualColorSame, getLineActualColorById,
+        getLineActualColor, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getLinesByParent, getTextTagById, getPointLinksByPt,
         insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType, ensureLinesOrdered,
         removePt, removePtFromLine, removeNoLinePoints, removePointLinkByPt, removeDanglingPointLinks, tryMergePt, isNamedPt,

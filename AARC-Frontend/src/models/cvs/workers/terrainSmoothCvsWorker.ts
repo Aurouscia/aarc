@@ -7,7 +7,6 @@ import { sqrt2 } from "@/utils/consts";
 import { applyBias } from "@/utils/coordUtils/coordBias";
 import { coordDist } from "@/utils/coordUtils/coordDist";
 import { drawArcByThreePoints } from "@/utils/drawUtils/drawArc";
-import { isSameIdxInLine } from "@/utils/lineUtils/isRing";
 import { WayRel, wayRel } from "@/utils/rayUtils/rayParallel";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
@@ -75,30 +74,29 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
     }
     function findTerrainTransitions(){
         //找到所有属于多于一个地形的点
-        const pointBelongTerrain:Record<string, {lineId:number, inLineIdx:number}[]|undefined> = {}
+        const pointBelongTerrain:Map<number, {lineId:number, inLineIdx:number}[]> = new Map()
         saveStore.save?.lines.forEach(line=>{
             if(line.type===LineType.terrain){
                 line.pts.forEach((pt,idx)=>{
-                    const ptBelongLines = pointBelongTerrain[pt]
+                    const ptBelongLines = pointBelongTerrain.get(pt)
                     const belongObj = {lineId:line.id, inLineIdx:idx}
                     if(ptBelongLines)
                         ptBelongLines.push(belongObj)
                     else
-                        pointBelongTerrain[pt] = [belongObj]
+                        pointBelongTerrain.set(pt, [belongObj])
                 })
             }
         })
         const mutiTerrainPts:{ptId:number, belongs:{lineId:number, inLineIdx:number}[]}[] = []
         const relatedLineIds = new Set<number>([])
-        Object.entries(pointBelongTerrain).forEach(([key, value]) => {
-            if(value && value.length>1){
-                const ptId = parseInt(key)
-                mutiTerrainPts.push({ptId, belongs:value})
-                value.forEach(line=>relatedLineIds.add(line.lineId))
+        pointBelongTerrain.forEach((belongs, ptId)=>{
+            if(belongs.length>1){
+                mutiTerrainPts.push({ptId, belongs})
+                belongs.forEach(line=>relatedLineIds.add(line.lineId))
             }
         })
 
-        //分析每个属于多余一个地形的点，按延伸出的线的方位角排序
+        //分析每个属于多于一个地形的点，按延伸出的线的方位角排序
         
         const junctions: { ptPos: Coord, links: TerrainLink[] }[] = []
         mutiTerrainPts.forEach(pt => {
@@ -108,7 +106,7 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
             const adjss: { pos: Coord, belongLine: number, belongInLineIdx:number }[] = []
             pt.belongs.forEach(belong => {
                 const adjPoss = formalizedLineStore.findAdjacentFormalPts(belong.inLineIdx, belong.lineId)
-                const adjs = adjPoss.map(x => { return { pos: x, belongLine: belong.lineId, belongInLineIdx: belong.inLineIdx } })
+                const adjs = adjPoss.map(x => ({ pos: x, belongLine: belong.lineId, belongInLineIdx: belong.inLineIdx }))
                 adjss.push(...adjs)
             })
             const linksHere: TerrainLink[] = []
@@ -127,44 +125,51 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
         junctions.forEach(jun=>{
             if(jun.links.length<2)
                 return
+            let onlyColor:string|undefined = undefined
+            for(let lk of jun.links){
+                let colorHere = saveStore.getLineActualColorById(lk.lineId)
+                if(onlyColor === undefined)
+                    onlyColor = colorHere
+                else{
+                    if(!colorHere || colorHere !== onlyColor){
+                        return // 中止，不再创建transition
+                    }
+                }
+            }
+            if(!onlyColor)
+                return
             const transHere:TerrainTransition[] = []
             let linkA = jun.links[jun.links.length-1]
             let lineA = relatedLines.find(x=>x.id===linkA.lineId)
             if(!lineA)
                 return
-            const firstLine = lineA
-            const firstLineColor = saveStore.getLineActualColor(firstLine)
-            for(let i=0;i<jun.links.length;i++){
+            for(let i=0; i<jun.links.length; i++){
                 let linkB = jun.links[i]
-                if(linkB.lineId === linkA.lineId && isSameIdxInLine(lineA, linkA.inLineIdx, linkB.inLineIdx)){
-                    linkA = linkB
+                if(linkB.lineId === linkA.lineId){
+                    linkA = linkB // TODO：无法支持自交（不只是这里的问题）
                     continue
                 }
                 const lineB = relatedLines.find(x=>x.id===linkB.lineId)
-                if(lineB){
-                    //确保junction的每一条线都颜色一致
-                    if(saveStore.linesActualColorSame(firstLine, lineB)){
-                        linkA.lineWidth = lineA.width || 1
-                        linkB.lineWidth = lineB.width || 1
-                        if(lineA.isFilled)
-                            linkA.lineWidth = 0
-                        if(lineB.isFilled)
-                            linkB.lineWidth = 0
-                        const trans:TerrainTransition = {
-                            center:jun.ptPos,
-                            linkA,
-                            linkB,
-                            color:saveStore.getLineActualColor(lineA)
-                        }
-                        transHere.push(trans)
-                    }
-                }else
+                if(!lineB)
                     return
+                linkA.lineWidth = lineA.width || 1
+                linkB.lineWidth = lineB.width || 1
+                if (lineA.isFilled)
+                    linkA.lineWidth = 0
+                if (lineB.isFilled)
+                    linkB.lineWidth = 0
+                const trans: TerrainTransition = {
+                    center: jun.ptPos,
+                    linkA,
+                    linkB,
+                    color: onlyColor
+                }
+                transHere.push(trans)
                 lineA = lineB
                 linkA = linkB
             }
             if(transHere.length>0){
-                transitions.push({color:firstLineColor, trans:transHere})
+                transitions.push({color:onlyColor, trans:transHere})
             }
         })
         return transitions
