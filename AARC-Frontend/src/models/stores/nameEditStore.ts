@@ -4,7 +4,6 @@ import { useSaveStore } from "./saveStore";
 import { useEnvStore } from "./envStore";
 import { useConfigStore } from "./configStore";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
-import ControlPointOptions from "@/components/sidebars/options/ControlPointOptions.vue";
 import { Coord } from "../coord";
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import {useFormalizedLineStore} from "./saveDerived/formalizedLineStore.ts";
@@ -25,8 +24,15 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
     const editing = ref(false)
     const nameInputFocusHandler = ref<()=>void>(()=>{})
     const nameEditorDiv = ref<HTMLDivElement>()
-    const controlPointOptionsPanel = ref<InstanceType<typeof ControlPointOptions>>()
-const { showPop } = useUniqueComponentsStore()
+    const openOptionsPanelCallback = ref<(pt:ControlPoint)=>void>(()=>{})
+    const { showPop } = useUniqueComponentsStore()
+
+    function init(nameEditorDivValue:HTMLDivElement, openOptionsPanelCallbackValue:(pt:ControlPoint)=>void)
+    {
+        nameEditorDiv.value = nameEditorDivValue
+        openOptionsPanelCallback.value = openOptionsPanelCallbackValue
+    }
+
     function startEditing(ptId:number, openOptionsPanel?:boolean){
         endEditing()
         if(saveStore.isPtNoSta(ptId))
@@ -48,9 +54,7 @@ const { showPop } = useUniqueComponentsStore()
         const pt = saveStore.getPtById(forPtId || targetPtId.value || -1)
         if(!pt)
             return
-        if(controlPointOptionsPanel.value){
-            controlPointOptionsPanel.value.startEditing(pt)
-        }
+        openOptionsPanelCallback.value(pt)
     }
     
     function applyName(){
@@ -170,10 +174,12 @@ const { showPop } = useUniqueComponentsStore()
         nameSub.value = undefined
     }
 
-    return { targetPtId, nameMain, nameSub, editing, edited,
+    return {
+        init,
+        targetPtId, nameMain, nameSub, editing, edited,
         startEditing, endEditing, toggleEditing, applyName,
-        nameInputFocusHandler, nameEditorDiv, getEditorDivEffectiveHeight,
-        controlPointOptionsPanel, controlPointOptionsPanelOpen,
+        nameInputFocusHandler, getEditorDivEffectiveHeight,
+        controlPointOptionsPanelOpen,
         optimizedNamePos, optimizeAllNamePos, clearItems 
     }
 })

@@ -2,7 +2,6 @@ import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { LineType, TextOptions, TextTag } from "../save";
-import TextTagOptions from "@/components/sidebars/options/TextTagOptions.vue";
 
 export const introHead = '【入门引导】'
 export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
@@ -19,7 +18,14 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
     const textInputFocusHandler = ref<()=>void>()
     const textEditorDiv = ref<HTMLDivElement>()
     const options = ref<TextOptions>()
-    const textTagOptionsPanel = ref<InstanceType<typeof TextTagOptions>>()
+    const openOptionsPanelCallback = ref<(textTag:TextTag)=>void>(()=>{})
+
+    function init(textEditorDivValue:HTMLDivElement, openOptionsPanelCallbackValue:(textTag:TextTag)=>void)
+    {
+        textEditorDiv.value = textEditorDivValue
+        openOptionsPanelCallback.value = openOptionsPanelCallbackValue
+    }
+
     function startEditing(textTagId:number, openOptionsPanel?:boolean){
         endEditing()
         const tt = saveStore.getTextTagById(textTagId)
@@ -40,7 +46,7 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
     }
     function textTagOptionsPanelOpen(){
         if(target.value)
-            textTagOptionsPanel.value?.startEditing(target.value)
+            openOptionsPanelCallback.value(target.value)
     }
 
     function applyText(){
@@ -105,11 +111,13 @@ export const useTextTagEditStore = defineStore('textTagEdit', ()=>{
         textSub.value = undefined
     }
 
-    return { targetId, target, textMain, textSub, editing, edited, targetForType, options,
+    return {
+        init, 
+        targetId, target, textMain, textSub, editing, edited, targetForType, options,
         startEditing, endEditing, toggleEditing, applyText,
         textInputFocusHandler,
         textEditorDiv, getEditorDivEffectiveHeight,
-        textTagOptionsPanel, textTagOptionsPanelOpen,
+        textTagOptionsPanelOpen,
         clearItems
     }
 })

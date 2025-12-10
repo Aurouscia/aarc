@@ -3,7 +3,7 @@ import { useTextTagEditStore } from '@/models/stores/textTagEditStore';
 import { storeToRefs } from 'pinia';
 import { useTwinTextarea } from './composables/useTwinTextarea';
 import TextTagOptions from './sidebars/options/TextTagOptions.vue';
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue';
 import { useEnvStore } from '@/models/stores/envStore';
 import foldImg from '@/assets/ui/fold.svg'
 import settingsImg from '@/assets/ui/settings.svg'
@@ -14,8 +14,7 @@ import { usePinyinConvert } from './composables/usePinyinConvert';
 const textTagEditStore = useTextTagEditStore()
 const envStore = useEnvStore()
 const { 
-    textMain, textSub, editing, edited, textEditorDiv, targetForType,
-    textTagOptionsPanel
+    textMain, textSub, editing, edited, targetForType
 } = storeToRefs(textTagEditStore)
 const inputPlaceholder = computed<string|undefined>(()=>{
     const t = targetForType.value
@@ -31,9 +30,13 @@ async function convertPinyinCall(){
     await convertPinyin()
 }
 
+const mainInput = useTemplateRef('mainInput')
+const subInput = useTemplateRef('subInput')
+const textEditorDiv = useTemplateRef('textEditorDiv')
+const textTagOptionsPanel = useTemplateRef('textTagOptionsPanel')
 const { 
-    mainRows, mainInput,
-    subRows, subInput,
+    mainRows,
+    subRows,
     keyHandler,
     inputHandler
 } = useTwinTextarea({
@@ -44,7 +47,9 @@ const {
     subMaxRow: 10,
     apply: textTagEditStore.applyText,
     endEditing: textTagEditStore.endEditing,
-    pinyinConvert: convertPinyin
+    pinyinConvert: convertPinyin,
+    mainInput,
+    subInput,
 })
 function focusHandler(){
     enableContextMenu(10)
@@ -55,6 +60,11 @@ function blurHandler(){
 
 onMounted(()=>{
     window.addEventListener('keydown', keyHandler)
+    if(!textEditorDiv.value)
+        throw new Error('textEditorDiv 获取失败')
+    textTagEditStore.init(textEditorDiv.value, (t)=>{
+        textTagOptionsPanel.value?.startEditing(t)
+    })
 })
 onUnmounted(()=>{
     console.log('unmounted')

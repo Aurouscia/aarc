@@ -9,17 +9,19 @@ import settingsImg from '@/assets/ui/settings.svg'
 import pinyinConvertImg from '@/assets/ui/pinyinConvert.svg'
 import ControlPointOptions from './sidebars/options/ControlPointOptions.vue';
 import { usePinyinConvert } from './composables/usePinyinConvert';
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue';
 import { useNameSearchStore } from '@/models/stores/nameSearchStore';
 
 const saveStore = useSaveStore();
 const nameEditStore = useNameEditStore()
 const nameSearchStore = useNameSearchStore()
-const { nameMain, nameSub, editing, edited, nameEditorDiv, controlPointOptionsPanel } = storeToRefs(nameEditStore)
+const { nameMain, nameSub, editing, edited } = storeToRefs(nameEditStore)
 const { convertPinyin, pinyinOverriding } = usePinyinConvert(nameMain, nameSub, ()=>nameEditStore.applyName())
+const mainInput = useTemplateRef('nameMainInput')
+const subInput = useTemplateRef('nameSubInput')
+const nameEditorDiv = useTemplateRef('nameEditorDiv')
+const controlPointOptionsPanel = useTemplateRef('controlPointOptionsPanel')
 const { 
-    mainInput: nameMainInput,
-    subInput: nameSubInput,
     mainRows: nameMainRows,
     subRows: nameSubRows,
     keyHandler,
@@ -32,7 +34,9 @@ const {
     subMaxRow: 10,
     apply: nameEditStore.applyName,
     endEditing: nameEditStore.endEditing,
-    pinyinConvert: convertPinyin
+    pinyinConvert: convertPinyin,
+    mainInput,
+    subInput,
 })
 
 async function convertPinyinCall(){
@@ -52,6 +56,11 @@ function blurHandler(){
 
 onMounted(()=>{
     window.addEventListener('keydown', keyHandler)
+    if(!nameEditorDiv.value)
+        throw new Error('nameEditorDiv 获取失败')
+    nameEditStore.init(nameEditorDiv.value, (pt)=>{
+        controlPointOptionsPanel.value?.startEditing(pt)
+    })
 })
 onUnmounted(()=>{
     window.removeEventListener('keydown', keyHandler)

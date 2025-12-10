@@ -1,5 +1,5 @@
 import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig"
-import { computed, ref, Ref } from "vue"
+import { computed, Ref } from "vue"
 
 export function useTwinTextarea(options:{
         isEditing:Ref<boolean>,
@@ -9,9 +9,11 @@ export function useTwinTextarea(options:{
         subMaxRow:number,
         apply:()=>void,
         endEditing:()=>void,
-        pinyinConvert:()=>Promise<void>
+        pinyinConvert:()=>Promise<void>,
+        mainInput:Ref<HTMLTextAreaElement|null>,
+        subInput:Ref<HTMLTextAreaElement|null>
     }){
-    const { main, sub, mainMaxRow, subMaxRow } = options
+    const { main, sub, mainMaxRow, subMaxRow, mainInput, subInput } = options
     const editorLocalConfig = useEditorLocalConfigStore()
     const mainRows = computed<number>(()=>{
         return countChar(main.value, '\n')
@@ -19,8 +21,6 @@ export function useTwinTextarea(options:{
     const subRows = computed<number>(()=>{
         return countChar(sub.value, '\n')
     })
-    const mainInput = ref<HTMLTextAreaElement>()
-    const subInput = ref<HTMLTextAreaElement>()
     function countChar(str:string|undefined, char:string){
         let count = 1
         if(!str)
