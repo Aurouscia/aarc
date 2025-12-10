@@ -7,8 +7,10 @@ import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
 import { useNameSearchStore } from '@/models/stores/nameSearchStore';
 import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
+import { useLineStateStore } from '@/models/stores/saveDerived/state/lineStateStore';
 
 const saveStore = useSaveStore();
+const lineStateStore = useLineStateStore()
 const envStore = useEnvStore();
 const staClusterStore = useStaClusterStore()
 const cvs = useCvsFrameStore();
@@ -48,7 +50,7 @@ function getPtLines(pt:ControlPoint){
   return lines.filter(x=>!x.isFake).map((l:Line)=>({
     id: l.id,
     name: l.name || '',
-    color: saveStore.getLineActualColorById(l.id) || l.color || '#000',
+    color: lineStateStore.getLineActualColorById(l.id) || l.color || '#000',
   })).slice(0,10);
 }
 </script>

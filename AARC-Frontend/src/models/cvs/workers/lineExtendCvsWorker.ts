@@ -1,7 +1,7 @@
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { useConfigStore } from "@/models/stores/configStore";
 import { useLineExtendStore } from "@/models/stores/saveDerived/saveDerivedDerived/lineExtendStore";
-import { useSaveStore } from "@/models/stores/saveStore";
+import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
 import { drawCross } from "@/utils/drawUtils/drawCross";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
@@ -10,11 +10,11 @@ import { Coord } from "@/models/coord";
 export const useLineExtendCvsWorker = defineStore('lineExtendCvsWorker', ()=>{
     const { enumerateLineExtendBtns } = useLineExtendStore()
     const { colorProcLineExtend } = useColorProcStore()
-    const saveStore = useSaveStore()
+    const lineStateStore = useLineStateStore()
     const cs = useConfigStore()
     function renderLineExtend(ctx:CvsContext){
         enumerateLineExtendBtns((eb)=>{
-            const lineColor = saveStore.getLineActualColorById(eb.lineId)
+            const lineColor = lineStateStore.getLineActualColorById(eb.lineId)
             let extendColor = colorProcLineExtend.convert(lineColor)
             ctx.lineCap = 'round'
             ctx.beginPath()

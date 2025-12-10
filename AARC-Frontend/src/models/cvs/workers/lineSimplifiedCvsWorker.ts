@@ -6,9 +6,11 @@ import { CvsContext } from "../common/cvsContext";
 import { Line, LineType } from "@/models/save";
 import { useConfigStore } from "@/models/stores/configStore";
 import { keepOrderSort } from "@/utils/lang/keepOrderSort";
+import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
 
 export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker', ()=>{
     const saveStore = useSaveStore()
+    const lineStateStore = useLineStateStore()
     const cs = useConfigStore()
     const formalizedLineStore = useFormalizedLineStore()
     function renderAllLines(ctx:CvsContext, lineWidth:number){
@@ -46,7 +48,7 @@ export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker',
         ctx.lineCap = 'round'
         ctx.lineJoin = 'round'
         ctx.lineWidth = lineWidth
-        const color = saveStore.getLineActualColor(lineInfo)
+        const color = lineStateStore.getLineActualColor(lineInfo)
         ctx.strokeStyle = color
         ctx.fillStyle = color
         ctx.beginPath()

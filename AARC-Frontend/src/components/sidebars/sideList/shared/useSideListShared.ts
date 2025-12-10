@@ -10,9 +10,11 @@ import Lines from "../Lines.vue"
 import { useUniqueComponentsStore } from "@/app/globalStores/uniqueComponents"
 import { useOptionsOpenerStore } from "@/models/stores/utils/optionsOpenerStore"
 import { storeToRefs } from "pinia"
+import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore"
 
 export function useSideListShared(lineType:LineType){
     const saveStore = useSaveStore()
+    const lineStateStore = useLineStateStore()
     const envStore = useEnvStore()
     const mainCvsDispatcher = useMainCvsDispatcher()
     const sidebar = ref<InstanceType<typeof SideBar>>()
@@ -24,7 +26,7 @@ export function useSideListShared(lineType:LineType){
         const parent = saveStore.getLineById(showingChildrenOf.value)
         if(!parent) return {}
         const name = parent.name 
-        const color = saveStore.getLineActualColor(parent)
+        const color = lineStateStore.getLineActualColor(parent)
         return {name, color}
     })
     const lines = computed<Line[]>(()=>{

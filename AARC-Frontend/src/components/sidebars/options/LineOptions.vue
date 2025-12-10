@@ -7,9 +7,11 @@ import { storeToRefs } from 'pinia';
 import { computed, CSSProperties, onMounted, ref, watch } from 'vue';
 import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
 import ColorPickerForTerrain from '../shared/ColorPickerForTerrain.vue';
+import { useLineStateStore } from '@/models/stores/saveDerived/state/lineStateStore';
 
 const envStore = useEnvStore()
 const saveStore = useSaveStore()
+const lineStateStore = useLineStateStore()
 const { save } = storeToRefs(saveStore)
 const props = defineProps<{
     line:Line,
@@ -53,7 +55,7 @@ const lineZIndexSameLines = computed<{n:string,c:string}[]>(()=>{
         return true
     })
     return sameLines?.map(x=>{
-        return {n:x.name||'未命名线路', c:saveStore.getLineActualColor(x)}
+        return {n:x.name||'未命名线路', c:lineStateStore.getLineActualColor(x)}
     }) ?? []
 })
 

@@ -4,6 +4,7 @@ import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { useConfigStore } from "@/models/stores/configStore";
 import { useTextTagRectStore } from "@/models/stores/saveDerived/textTagRectStore";
 import { useSaveStore } from "@/models/stores/saveStore";
+import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
 import { coordSub } from "@/utils/coordUtils/coordMath";
 import { drawText, DrawTextBodyOption, drawTextForLineName, DrawTextStrokeOption, splitLines } from "@/utils/drawUtils/drawText";
 import { defineStore } from "pinia";
@@ -16,6 +17,7 @@ import { drawCross } from "@/utils/drawUtils/drawCross";
 
 export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     const saveStore = useSaveStore()
+    const lineStateStore = useLineStateStore()
     const cs = useConfigStore()
     const textTagRectStore = useTextTagRectStore()
     const colorProcStore = useColorProcStore()
@@ -98,7 +100,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         const terrainLineBuiltinRatio = 1.2
         const mainRatio = getFontSize(t.textOp, cs.config.textTagForTerrain.fontSize??1) * terrainLineBuiltinRatio
         const subRatio = getFontSize(t.textSOp, cs.config.textTagForTerrain.subFontSize??1) * terrainLineBuiltinRatio
-        const terrainColor = saveStore.getLineActualColor(lineInfo)
+        const terrainColor = lineStateStore.getLineActualColor(lineInfo)
         const textColor = colorProcStore.colorProcTerrainTag.convert(terrainColor)
         const mainEmpty = !t.text?.trim()
         const subEmpty = mainEmpty && !t.textS?.trim()

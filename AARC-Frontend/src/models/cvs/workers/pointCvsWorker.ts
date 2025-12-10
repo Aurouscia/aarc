@@ -8,9 +8,11 @@ import { Coord } from "@/models/coord";
 import { useCvsBlocksControlStore } from "../common/cvs";
 import { useSnapStore } from "@/models/stores/snapStore";
 import { isLineFamily } from "@/utils/lineUtils/isLineFamily";
+import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
 
 export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     const saveStore = useSaveStore();
+    const lineStateStore = useLineStateStore()
     const cvsBlocksControlStore = useCvsBlocksControlStore()
     const cs = useConfigStore();
     const snapStore = useSnapStore()
@@ -80,7 +82,7 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             const arcRadius = cs.config.ptStaSize * sizeRatio
             const lineWidth = cs.config.ptStaLineWidth * sizeRatio
             if(relatedLines.length>0 && isLineFamily(relatedLines) && !active){
-                ctx.strokeStyle = saveStore.getLineActualColor(relatedLines[0])
+                ctx.strokeStyle = lineStateStore.getLineActualColor(relatedLines[0])
             }else{
                 ctx.strokeStyle = markColor
                 ctx.beginPath()

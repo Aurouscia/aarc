@@ -24,9 +24,11 @@ import { usePointLinkStore } from "./pointLinkStore";
 import { assignAllProps, removeNonexistentKeys } from "@/utils/lang/assignAllProps";
 import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
 import { useOptionsOpenerStore } from "./utils/optionsOpenerStore";
+import { useLineStateStore } from "./saveDerived/state/lineStateStore";
 
 export const useEnvStore = defineStore('env', ()=>{
     const saveStore = useSaveStore();
+    const lineStateStore = useLineStateStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const opsStore = useOpsStore();
     const activePt = ref<ControlPoint>()
@@ -500,7 +502,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     rerender.value([l.lineId, ...relatedLineIds], [pt.id])
                     setOpsForPt()
                 },
-                color: saveStore.getLineActualColorById(l.lineId),
+                color: lineStateStore.getLineActualColorById(l.lineId),
                 text:'加入',
                 textSub:lineName
             }
@@ -514,7 +516,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     setOpsForPt()
                     activeLine.value = undefined
                 },
-                color: saveStore.getLineActualColor(l),
+                color: lineStateStore.getLineActualColor(l),
                 text:'脱离',
                 textSub: l.name
             }

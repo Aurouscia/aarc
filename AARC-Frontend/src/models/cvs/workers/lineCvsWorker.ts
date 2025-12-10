@@ -19,12 +19,14 @@ import { CvsContext } from "../common/cvsContext";
 import { strokeStyledLine } from "../common/strokeStyledLine";
 import { rayToCoordDist } from "@/utils/rayUtils/rayToCoordDist";
 import { numberCmpEpsilon } from "@/utils/consts";
+import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill:number}
 type LineRenderType = 'both'|'body'|'carpet'
 
 export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     const saveStore = useSaveStore();
+    const lineStateStore = useLineStateStore()
     const envStore = useEnvStore();
     const formalizedLineStore = useFormalizedLineStore()
     const cs = useConfigStore();
@@ -417,7 +419,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 ctx.stroke()
             }
             if(drawBody){
-                const lineColor = saveStore.getLineActualColor(lineInfo)
+                const lineColor = lineStateStore.getLineActualColor(lineInfo)
                 const itsStyle = saveStore.save?.lineStyles?.find(x=>x.id===lineInfo.style)
                 if(itsStyle){
                     strokeStyledLine(ctx, itsStyle, lineWidth, lineColor)
@@ -437,7 +439,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 ctx.stroke()
             }
             if(drawBody){
-                ctx.fillStyle = saveStore.getLineActualColor(lineInfo)
+                ctx.fillStyle = lineStateStore.getLineActualColor(lineInfo)
                 ctx.fill()
             }
         }

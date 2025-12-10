@@ -5,9 +5,11 @@ import { useSaveStore } from "@/models/stores/saveStore";
 import { isRing } from "@/utils/lineUtils/isRing";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
+import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
 
 export const useEmphasizeCvsWorker = defineStore('emphasizeCvsWorker', ()=>{
     const saveStore = useSaveStore()
+    const lineStateStore = useLineStateStore()
     const cs = useConfigStore()
     function renderEmphasizesForRingLines(ctx:CvsContext, range:Line[]){
         const targets:{color:string, pos:Coord}[] = []
@@ -17,7 +19,7 @@ export const useEmphasizeCvsWorker = defineStore('emphasizeCvsWorker', ()=>{
             if(isRing(line)){
                 const pt = saveStore.getPtById(line.pts[0])
                 if(pt)
-                    targets.push({pos:pt.pos, color:saveStore.getLineActualColor(line)})
+                    targets.push({pos:pt.pos, color:lineStateStore.getLineActualColor(line)})
             }
         })
         const radius = cs.config.ptStaSize*2

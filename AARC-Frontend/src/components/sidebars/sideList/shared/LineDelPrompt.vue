@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Prompt from '@/components/common/Prompt.vue';
 import { Line } from '@/models/save';
-import { useSaveStore } from '@/models/stores/saveStore';
+import { useLineStateStore } from '@/models/stores/saveDerived/state/lineStateStore';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
@@ -11,10 +11,10 @@ const props = defineProps<{
     ptCalled:string
 }>()
 
-const saveStore = useSaveStore();
+const lineStateStore = useLineStateStore();
 const lineColor = computed<string|undefined>(()=>{
     if(props.line)
-        return saveStore.getLineActualColor(props.line)
+        return lineStateStore.getLineActualColor(props.line)
 })
 
 const withSta = ref<boolean>(props.withStaDefault)

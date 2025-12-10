@@ -116,19 +116,6 @@ export const useSaveStore = defineStore('save', () => {
         }
         return res
     })
-    const lineActualColors = computed<Record<number, string|undefined>>(()=>{
-        const res:Record<number, string|undefined> = {}
-        if(!save.value?.lines)
-            return res
-        for(const line of save.value.lines){
-            let actualColor = line.color
-            if(line.colorPre){
-                actualColor = configStore.getPresetColor(line.colorPre)
-            }
-            res[line.id] = actualColor
-        }
-        return res
-    })
     const linesSortedByZIndex = computed(()=>{
         if(!save.value)
             return [];
@@ -173,12 +160,6 @@ export const useSaveStore = defineStore('save', () => {
     }
     function getLinesByIds(lineIds:Set<number>){
         return save.value?.lines.filter(l=>lineIds.has(l.id)) || []
-    }
-    function getLineActualColor(line:Line) {
-        return lineActualColors.value[line.id] || line.color
-    }
-    function getLineActualColorById(lineId:number){
-        return lineActualColors.value[lineId]
     }
     function adjacentSegs(ptId:number):LineSeg[]{
         const lines = save.value?.lines
@@ -550,7 +531,6 @@ export const useSaveStore = defineStore('save', () => {
         save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint, deletedTextTag,
         getPtById, getPtsByIds, getLineById, getLinesByIds, linesSortedByZIndex,
         getLinesDecidedPtSize, getLinesDecidedPtSizes, getLinesDecidedPtNameSize,
-        getLineActualColor, getLineActualColorById,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getLinesByParent, getTextTagById, getPointLinksByPt,
         insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType, ensureLinesOrdered,
         removePt, removePtFromLine, removeNoLinePoints, removePointLinkByPt, removeDanglingPointLinks, tryMergePt, isNamedPt,
