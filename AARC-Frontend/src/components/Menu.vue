@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import Lines from './sidebars/sideList/Lines.vue';
 import Terrains from './sidebars/sideList/Terrains.vue';
 import SizeEdit from './sidebars/SizeEdit.vue';
@@ -23,13 +23,12 @@ import { AuShortcutListener } from '@aurouscia/keyboard-shortcut';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useNameSearchStore } from '@/models/stores/nameSearchStore';
 
-const lines = ref<InstanceType<typeof Lines>>()
-const terrains = ref<InstanceType<typeof Terrains>>()
-const toolBox = ref<InstanceType<typeof ToolBox>>()
-const sizeEdit = ref<InstanceType<typeof Terrains>>()
-const exportImage = ref<InstanceType<typeof ExportImage>>()
-const configs = ref<InstanceType<typeof Configs>>()
-const nameSearch = ref<InstanceType<typeof NameSearch>>()
+const lines = useTemplateRef('lines')
+const terrains = useTemplateRef('terrains')
+const toolBox = useTemplateRef('toolBox')
+const sizeEdit = useTemplateRef('sizeEdit')
+const exportImage = useTemplateRef('exportImage')
+const configs = useTemplateRef('configs')
 const envStore = useEnvStore()
 const nameSearchStore = useNameSearchStore()
 const { preventingLeaving, unsavedForALongTime } = storeToRefs(usePreventLeavingUnsavedStore())
@@ -124,7 +123,7 @@ onUnmounted(()=>{
     <SizeEdit ref="sizeEdit"></SizeEdit>
     <ExportImage ref="exportImage"></ExportImage>
     <Configs ref="configs"></Configs>
-    <NameSearch ref="nameSearch"></NameSearch>
+    <NameSearch></NameSearch>
     <div class="anotherMenu" :class="{anotherMenuFolded}">
         <div class="anotherMenuColumn">
             <div class="searchBtn sqrBtn withShadow" @click="nameSearchStore.toggleShow()">

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
-import { onMounted, nextTick, watch, onBeforeUnmount, computed, CSSProperties } from 'vue';
+import { onMounted, nextTick, watch, onBeforeUnmount, computed, CSSProperties, useTemplateRef } from 'vue';
 import Ops from './Ops.vue';
 import NameEdit from './NameEdit.vue';
 import TextTagEdit from './TextTagEdit.vue';
@@ -22,7 +22,6 @@ const { somethingActive } = storeToRefs(envStore)
 const { cvsWidth, cvsHeight } = storeToRefs(useSaveStore())
 const configStore = useConfigStore();
 const cvsFrameStore = useCvsFrameStore()
-const { cvsFrame, cvsCont } = storeToRefs(cvsFrameStore)
 const baseCvsDispatcher = useBaseCvsDispatcher()
 const mainCvsDispatcher = useMainCvsDispatcher()
 const activeCvsDispatcher = useActiveCvsDispatcher()
@@ -32,7 +31,13 @@ const pointLinkStore = usePointLinkStore()
 
 let activeCvsRenderTimer = 0
 const waitKey = 'cvsInit'
+const cvsFrame = useTemplateRef('cvsFrame')
+const cvsCont = useTemplateRef('cvsCont')
+
 async function init(){
+    if(!cvsFrame.value || !cvsCont.value)
+        throw new Error('cvsFrame or cvsCont 未找到')
+    cvsFrameStore.initDoms(cvsFrame.value, cvsCont.value)
     window.clearInterval(activeCvsRenderTimer)
     showWait(waitKey, true)
     cvsFrameStore.initContSizeStyle()

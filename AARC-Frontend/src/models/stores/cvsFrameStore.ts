@@ -152,8 +152,12 @@ export const useCvsFrameStore = defineStore('cvsFrame', ()=>{
         if(!offset) return
         scaler?.moveTo(offset[0], offset[1])
     }
+    function initDoms(cvsFrameDom:HTMLDivElement, cvsContDom:HTMLDivElement){
+        cvsFrame.value = cvsFrameDom
+        cvsCont.value = cvsContDom
+    }
     return {
-        cvsFrame, cvsCont, initScaler,
+        cvsFrame, cvsCont, initDoms, initScaler,
         getDisplayRatio, getViewRectSideLengths, getViewRectBiggerSideLength,
         getViewCenterOffset, getViewRectInRatio,
         updateScaleLock,
