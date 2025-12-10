@@ -27,16 +27,16 @@ async function register(){
         return
     }
     if(!password.value || password.value.length <= 6){
-        pop?.show("密码过短", "failed")
+        showPop("密码过短", "failed")
         return
     }
     if(password.value != passwordRepeat.value){
-        pop?.show("前后两次输入密码不一致", "failed")
+        showPop("前后两次输入密码不一致", "failed")
         return
     }
     const res = await api.user.add(userName.value, password.value, turnstileToken.value)
     if(res){
-        pop?.show("注册成功", "success")
+        showPop("注册成功", "success")
         loginRouteJump(false)
     }else{
         turnstileToken.value = "";
@@ -50,7 +50,7 @@ const buttonAllowClick = computed(()=>{
 })
 
 const api = useApiStore()
-const { pop } = useUniqueComponentsStore()
+const { showPop } = useUniqueComponentsStore()
 const contact = import.meta.env.VITE_GuideMemberApply
 onMounted(async()=>{
 })

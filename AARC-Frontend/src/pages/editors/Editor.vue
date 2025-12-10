@@ -28,7 +28,9 @@ import { HttpUserInfo } from '@/app/com/apiGenerated';
 import DontUseWeirdBrowser from './components/DontUseWeirdBrowser.vue';
 
 const props = defineProps<{saveId:string}>()
-const { topbarShow, pop } = storeToRefs(useUniqueComponentsStore())
+const uniq = useUniqueComponentsStore()
+const { showPop } = uniq
+const { topbarShow } = storeToRefs(uniq)
 const saveStore = useSaveStore()
 const envStore = useEnvStore()
 const configStore = useConfigStore()
@@ -67,7 +69,7 @@ async function load() {
             await iconStore.ensureAllLoaded()
             loadComplete.value = true
         }catch{
-            pop.value?.show('存档损坏，请联系管理员', 'failed')
+            showPop('存档损坏，请联系管理员', 'failed')
         }
         if(userInfo.id && !isOwner.value){
             savingDisabledWarning.value = '非存档所有者，仅供浏览，不能保存'
@@ -84,9 +86,9 @@ async function load() {
         savingDisabledWarning.value = '此处为体验环境，不能保存'
         preventLeavingDisabled.value = true //demo环境，不阻止未保存退出
         if(import.meta.env.PROD){
-            pop.value?.show('此处为体验环境，不能保存', 'warning')
+            showPop('此处为体验环境，不能保存', 'warning')
             window.setTimeout(()=>{
-                pop.value?.show('如需创作，请注册账户并新建存档', 'warning')
+                showPop('如需创作，请注册账户并新建存档', 'warning')
             }, 3000)
         }
     }
@@ -109,7 +111,7 @@ async function saveData(){
             const saveCopy = deepClone(saveStore.save)
             console.log(saveCopy)
         }
-        pop.value?.show('此处不能保存', 'failed')
+        showPop('此处不能保存', 'failed')
         return
     }
     const staCount = saveStore.getStaCount()
@@ -134,7 +136,7 @@ async function saveData(){
     }
     if(resp){
         releasePreventLeaving()
-        pop.value?.show('保存成功', 'success')
+        showPop('保存成功', 'success')
 
         //次要任务：更新缩略图，无论是否成功都不影响主流程
         const miniCvs = miniatureCvsDispatcher.renderMiniatureCvs(256, 2)
@@ -146,15 +148,15 @@ async function checkLoginLeftTime(userInfo:HttpUserInfo){
     const nearExpireMsg = '登录即将过期\n尽快重新登录'
     const noLoginMsg = '当前没有登录\n不能保存'
     if(!userInfo.leftHours){
-        pop.value?.show(noLoginMsg, 'warning')
+        showPop(noLoginMsg, 'warning')
         savingDisabledWarning.value = noLoginMsg
         preventLeavingDisabled.value = true //未登录：不阻止未保存退出（也没法保存）
     }
     else if(userInfo.leftHours <= 6){
-        pop.value?.show(nearExpireMsg, 'warning')
+        showPop(nearExpireMsg, 'warning')
         savingDisabledWarning.value = nearExpireMsg
         window.setTimeout(()=>{
-            pop.value?.show('否则将无法保存', 'warning')
+            showPop('否则将无法保存', 'warning')
         }, 3000)
     }
 }

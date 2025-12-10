@@ -1,0 +1,1 @@
+export type WaitCallback = (reason:string, value: boolean) => void

@@ -18,7 +18,7 @@ export function useSideListShared(lineType:LineType){
     const envStore = useEnvStore()
     const mainCvsDispatcher = useMainCvsDispatcher()
     const sidebar = ref<InstanceType<typeof SideBar>>()
-    const { pop } = useUniqueComponentsStore()
+    const { showPop } = useUniqueComponentsStore()
     const showingLineGroup = ref<number>()
     const showingChildrenOf = ref<number>()
     const showingChildrenOfInfo = computed<{name?:string,color?:string}>(()=>{
@@ -85,7 +85,7 @@ export function useSideListShared(lineType:LineType){
     const wantDelLine = ref<Line>()
     function delLineStart(l:Line){
         if(saveStore.getLinesByParent(l.id)?.length){
-            pop?.show('先删除或移出其所有支线', 'failed')
+            showPop('先删除或移出其所有支线', 'failed')
             return
         }
         wantDelLine.value = l

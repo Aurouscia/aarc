@@ -27,7 +27,7 @@ const failedGuide = ref<string>();
 const userInfoStore = useUserInfoStore()
 const { userInfo } = storeToRefs(userInfoStore)
 const api = useApiStore()
-const { pop } = useUniqueComponentsStore()
+const { showPop } = useUniqueComponentsStore()
 const { registerRoute } = useIdentitiesRoutesJump()
 
 async function Login(){
@@ -37,7 +37,7 @@ async function Login(){
         Number(loginExpireHrs.value) || loginExpireHrsDefault
     )
     if (loginResp && loginResp.token) {
-        pop?.show("登录成功", "success");
+        showPop("登录成功", "success");
         api.setJwtToken(loginResp.token);
         userInfoStore.clearCache();
         await userInfoStore.getIdentityInfo(true);
@@ -54,7 +54,7 @@ async function Login(){
 async function Logout() {
     api.clearJwtToken()
     userInfoStore.clearCache()
-    pop?.show("已退出登录","success");
+    showPop("已退出登录","success");
 }
 
 const leftTimeDisplay = computed<string>(()=>{

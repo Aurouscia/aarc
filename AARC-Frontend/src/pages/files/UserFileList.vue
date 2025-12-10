@@ -13,7 +13,7 @@ import { useUserInfoStore } from '@/app/globalStores/userInfo';
 
 const fileList = ref<UserFileDto[]>();
 const api = useApiStore()
-const { pop } = useUniqueComponentsStore()
+const { showPop } = useUniqueComponentsStore()
 const { userInfo } = useUserInfoStore()
 const urlBase = import.meta.env.VITE_ApiUrlBase
 
@@ -56,7 +56,7 @@ async function done(){
     let res: boolean|undefined
     if(isCreating.value){
         if(!editingFile.value){
-            pop?.show('请选择文件', 'failed')
+            showPop('请选择文件', 'failed')
             return
         }
         res = await api.userFile.upload({
@@ -69,7 +69,7 @@ async function done(){
     }
     if(res){
         resetEditing()
-        pop?.show('上传成功', 'success')
+        showPop('上传成功', 'success')
         sidebar.value?.fold()
         await loadFileList()
     }
@@ -88,9 +88,9 @@ function copyImageLink(file: UserFileDto) {
     const imageUrl = `${domain}${file.urlOriginal}`;
     const success = copy(imageUrl);
     if (success) {
-        pop?.show('已复制链接', 'success');
+        showPop('已复制链接', 'success');
     } else {
-        pop?.show('链接复制失败，请改用正规浏览器', 'failed');
+        showPop('链接复制失败，请改用正规浏览器', 'failed');
     }
 }
 
@@ -101,7 +101,7 @@ function deleteFile(fileId:number){
         return
     api.userFile.delete(fileId).then((res)=>{
         if(res){
-            pop?.show('删除成功','success')
+            showPop('删除成功','success')
             sidebar.value?.fold()
             loadFileList()
         }

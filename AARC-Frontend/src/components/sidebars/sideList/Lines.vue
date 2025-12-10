@@ -14,7 +14,7 @@ import ColorPalette from '../ColorPalette.vue';
 import boxIcon from '@/assets/ui/box.svg'
 
 defineProps<{isChildrenList?:boolean}>()
-const { pop } = useUniqueComponentsStore()
+const { showPop } = useUniqueComponentsStore()
 
 const { 
     sidebar, lineOptions, lines,
@@ -86,7 +86,7 @@ onUnmounted(()=>{
                     <ColorPickerForLine v-else ref="pickers" :line="l" :z-index="idx"></ColorPickerForLine>
                 </div>
                 <div v-else class="sqrBtn" :style="{backgroundColor: l.color, cursor:'default'}"
-                    @click="pop?.show('支线颜色跟随主线，不可单独调整', 'info')">
+                    @click="showPop('支线颜色跟随主线，不可单独调整', 'info')">
                 </div>
                 <LineItemBtns :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
                     :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf"

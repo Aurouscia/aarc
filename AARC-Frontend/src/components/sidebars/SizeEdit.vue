@@ -12,7 +12,7 @@ import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 import Notice from '../common/Notice.vue';
 import { useStaNameMainRectStore } from '@/models/stores/saveDerived/staNameRectStore';
 
-const { pop } = useUniqueComponentsStore()
+const { showPop } = useUniqueComponentsStore()
 const saveStore = useSaveStore()
 const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
 const cvsFrameStore = useCvsFrameStore()
@@ -106,7 +106,7 @@ function applyChange(){
     const newW = cvsWidthPreview.value
     const newH = cvsHeightPreview.value
     if(newW > tooBigRefuseThrs || newH > tooBigRefuseThrs){
-        pop?.show(`边长限制${tooBigRefuseThrs}`, 'failed')
+        showPop(`边长限制${tooBigRefuseThrs}`, 'failed')
         return
     }
     let moveDownward = pc[0]

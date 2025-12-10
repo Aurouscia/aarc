@@ -26,7 +26,7 @@ const saveStore = useSaveStore()
 const api = useApiStore()
 const { browserInfo, isIPhoneOrIPad, isWebkit } = storeToRefs(useBrowserInfoStore())
 const route = useRoute()
-const { pop } = useUniqueComponentsStore()
+const { showPop } = useUniqueComponentsStore()
 const exported = ref<boolean>(false)
 const exporting = ref<boolean>(false)
 const exportFailedMsg = ref<false|string>(false)
@@ -63,7 +63,7 @@ async function downloadMainCvsAsImage() {
         }
         catch(e){
             console.error(e)
-            pop?.show('导出失败\n请查看指引', 'failed')
+            showPop('导出失败\n请查看指引', 'failed')
             exporting.value = false
             exportFailedMsg.value = '可能是浏览器像素上限，请查看指引'
             return
@@ -182,7 +182,7 @@ async function cvsToDataUrl(cvs:OffscreenCanvas):Promise<string>{
             msg = `当前设备（iPhone/iPad）不支持webp格式`
         else if(isWebkit.value)
             msg = `当前浏览器（${bi.browser.name}，${bi.engine.name}内核）不支持webp格式`
-        pop?.show(msg, 'failed')
+        showPop(msg, 'failed')
         exportFailedMsg.value = msg
         return ''
     }
@@ -197,7 +197,7 @@ function getDownloadAnchor(){
 
 watch(ads, ()=>{
     if(ads.value && ads.value !== 'no'){
-        pop?.show('感谢支持', 'success')
+        showPop('感谢支持', 'success')
     }
 })
 

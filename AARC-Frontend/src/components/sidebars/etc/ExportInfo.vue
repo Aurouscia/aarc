@@ -10,7 +10,7 @@ import copy from 'copy-to-clipboard';
 
 const saveStore = useSaveStore()
 const staClusterStore = useStaClusterStore()
-const { pop } = useUniqueComponentsStore()
+const { showPop } = useUniqueComponentsStore()
 
 const wikiMode = ref(false)
 const staNameSplitChar = ref('')
@@ -105,9 +105,9 @@ async function copyStaNameListTxt() {
 function copyText(txt: string) {
     const success = copy(txt);
     if (success) {
-        pop?.show(`复制成功，共${txt.length}字`, 'success');
+        showPop(`复制成功，共${txt.length}字`, 'success');
     } else {
-        pop?.show('复制失败，请改用正规浏览器', 'failed');
+        showPop('复制失败，请改用正规浏览器', 'failed');
     }
 }
 </script>

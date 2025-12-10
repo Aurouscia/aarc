@@ -26,7 +26,7 @@ const { cvsFrame, cvsCont } = storeToRefs(cvsFrameStore)
 const baseCvsDispatcher = useBaseCvsDispatcher()
 const mainCvsDispatcher = useMainCvsDispatcher()
 const activeCvsDispatcher = useActiveCvsDispatcher()
-const { wait } = storeToRefs(useUniqueComponentsStore())
+const { showWait } = useUniqueComponentsStore()
 const cvsBlocksControlStore = useCvsBlocksControlStore()
 const pointLinkStore = usePointLinkStore()
 
@@ -34,7 +34,7 @@ let activeCvsRenderTimer = 0
 const waitKey = 'cvsInit'
 async function init(){
     window.clearInterval(activeCvsRenderTimer)
-    wait.value?.setShowing(waitKey, true)
+    showWait(waitKey, true)
     cvsFrameStore.initContSizeStyle()
     await nextTick()
     envStore.init()
@@ -48,7 +48,7 @@ async function init(){
         activeCvsDispatcher.renderActiveCvs()
     }, 50)
     disableContextMenu()
-    wait.value?.setShowing(waitKey, false)
+    showWait(waitKey, false)
 }
 const bgRefImageStyle = computed<CSSProperties>(()=>{
     const bgRefImage = configStore.config.bgRefImage

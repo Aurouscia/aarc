@@ -1,21 +1,20 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref } from 'vue';
+import { BoxType } from './types/pop';
 
 const rightDefault = -200;
 const height = 70;
 const top = 40;
-export type boxTypes = "success"|"failed"|"warning"|"info"
-export type popDelegate = (msg:string,type:boxTypes)=>void;
 
 interface msgBox {
     right: number,
     msg: string,
-    created:number,
-    type:boxTypes
+    created: number,
+    type: BoxType
 }
 const boxes = ref<msgBox[]>([])
 
-function show(msg: string,type: boxTypes) {
+function show(msg: string,type: BoxType) {
     const newBox:msgBox = {
         right: rightDefault,
         msg: msg,

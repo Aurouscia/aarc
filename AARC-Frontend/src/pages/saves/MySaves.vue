@@ -21,7 +21,7 @@ import SwitchingTabs from '@/components/common/SwitchingTabs.vue';
 const saveList = ref<WithIntroShow<SaveDto>[]>()
 const api = useApiStore();
 const { editorRoute } = useEditorsRoutesJump()
-const { pop } = useUniqueComponentsStore()
+const { showPop } = useUniqueComponentsStore()
 const userInfoStore = useUserInfoStore()
 const props = defineProps<{
     uid?:string
@@ -76,7 +76,7 @@ async function done(){
     if(success){
         saveInfoSb.value?.fold()
         await load()
-        pop?.show('操作成功', 'success')
+        showPop('操作成功', 'success')
     }
 }
 
@@ -88,7 +88,7 @@ const jsonSaveStaCount = ref<number>()
 const jsonSaveLineCount = ref<number>()
 async function removeCurrentCvs(){
     if(repeatCvsName.value !== editingSave.value?.name){
-        pop?.show('请一字不差输入画布名称', 'failed')
+        showPop('请一字不差输入画布名称', 'failed')
         return
     }
     const resp = await api.save.remove(editingSave.value.id)
@@ -103,14 +103,14 @@ function selectReplaceJson(){
     if(!f)
         return
     if(f.size > 10*1000*1000){
-        pop?.show('文件过大', 'failed')
+        showPop('文件过大', 'failed')
         return
     }
     const reader = new FileReader()
     reader.onload = (e)=>{
         const res = e.target?.result?.toString()
         if(!res){
-            pop?.show('文件读取失败', 'failed')
+            showPop('文件读取失败', 'failed')
             return
         }
         try{
@@ -119,7 +119,7 @@ function selectReplaceJson(){
             jsonSaveLineCount.value = saveLineCount(obj)
             jsonContent.value = JSON.stringify(obj)
         }catch{
-            pop?.show('文件格式异常', 'failed')
+            showPop('文件格式异常', 'failed')
             resetReplaceJson()
         }
     }
@@ -134,7 +134,7 @@ async function commitReplaceJson(){
     const lineCount = jsonSaveLineCount.value || 0
     const resp = await api.save.updateData(id, data, staCount, lineCount)
     if(resp){
-        pop?.show('替换成功\n下次保存更新略缩图', 'success')
+        showPop('替换成功\n下次保存更新略缩图', 'success')
         resetDangerZone()
     }
 }

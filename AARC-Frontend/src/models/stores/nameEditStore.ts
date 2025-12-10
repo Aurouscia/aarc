@@ -26,7 +26,7 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
     const nameInputFocusHandler = ref<()=>void>(()=>{})
     const nameEditorDiv = ref<HTMLDivElement>()
     const controlPointOptionsPanel = ref<InstanceType<typeof ControlPointOptions>>()
-const { pop } = useUniqueComponentsStore()
+const { showPop } = useUniqueComponentsStore()
     function startEditing(ptId:number, openOptionsPanel?:boolean){
         endEditing()
         if(saveStore.isPtNoSta(ptId))
@@ -113,7 +113,7 @@ const { pop } = useUniqueComponentsStore()
         allSinglePos.forEach(x => {
             x.nameP = optimizedNamePos(x.id)
         })
-        pop?.show(`重置了${allSinglePos.length}个站名位置`, 'success')
+        showPop(`重置了${allSinglePos.length}个站名位置`, 'success')
         envStore.rerender()
     }
     const recommendedNamePosDir0 = [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]

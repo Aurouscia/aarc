@@ -20,7 +20,7 @@ interface AuthGrantDisplay extends AuthGrant {
 }
 const apiStore = useApiStore()
 const userInfoStore = useUserInfoStore()
-const { pop } = useUniqueComponentsStore()
+const { showPop } = useUniqueComponentsStore()
 const nameMapStore = useNameMapStore()
 
 const list = ref<AuthGrant[]>([])
@@ -53,7 +53,7 @@ async function moveUp(ag:AuthGrant){
     }
     const ids = list.value.map((ag) => ag.id ?? 0)
     await apiStore.authGrant.setPriorities(props.on, props.onId, props.type, ids)
-    pop?.show('已调整顺序','success')
+    showPop('已调整顺序','success')
 }
 async function del(ag:AuthGrant){
     if(!window.confirm('确认删除？'))
@@ -61,7 +61,7 @@ async function del(ag:AuthGrant){
     const success = await apiStore.authGrant.remove(ag)
     if(success){
         await load()
-        pop?.show('删除成功', 'success')
+        showPop('删除成功', 'success')
     }
 }
 
@@ -106,7 +106,7 @@ async function add(){
     const success = await apiStore.authGrant.create(newAg.value)
     if(success){
         await load()
-        pop?.show('新增成功','success')
+        showPop('新增成功','success')
         wantAdd.value = false
     }
 }

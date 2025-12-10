@@ -5,8 +5,23 @@ import { useUniqueComponentsStore } from './app/globalStores/uniqueComponents';
 import { storeToRefs } from 'pinia';
 import TopbarParent from './components/common/topbar/TopbarParent.vue';
 import Footer from './components/common/Footer.vue';
+import { onMounted, useTemplateRef } from 'vue';
 
-const { pop, wait, topbarShow } = storeToRefs(useUniqueComponentsStore())
+const uniq = useUniqueComponentsStore()
+const { topbarShow } = storeToRefs(uniq)
+
+const pop = useTemplateRef('pop')
+const wait = useTemplateRef('wait')
+onMounted(()=>{
+    uniq.initCallbacks({
+        popCallback: (msg, type)=>{
+            pop.value?.show(msg, type)
+        },
+        waitCallback: (reason, value)=>{
+            wait.value?.setShowing(reason, value)
+        }
+    })
+})
 </script>
 
 <template>

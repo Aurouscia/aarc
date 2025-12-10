@@ -33,7 +33,7 @@ async function loadList() {
     await router.replace(userListRoute(searchStr.value))
 }
 
-const { pop } = useUniqueComponentsStore()
+const { showPop } = useUniqueComponentsStore()
 const infoSidebar = ref<InstanceType<typeof SideBar>>()
 const authGrantSidebar = ref<InstanceType<typeof SideBar>>()
 
@@ -52,15 +52,15 @@ async function doneEditing(){
         return
     let success:boolean|undefined = false
     if(editingUser.value.password && editingUser.value.password !== pwdRepeat.value) {
-        pop?.show("两次输入的密码不一致", "failed")
+        showPop("两次输入的密码不一致", "failed")
         return
     }
     success = await api.user.update(editingUser.value)
     if(success){
-        pop?.show("操作成功", "success")
+        showPop("操作成功", "success")
         let newNameAndPwd = summerizeNameAndPwd()
         if(newNameAndPwd !== originalNameAndPwd && userInfo.value?.id === editingUser.value.id){
-            pop?.show("请立即重新登录", "warning")
+            showPop("请立即重新登录", "warning")
             loginRouteJump()
         }else{
             await loadList()
@@ -81,7 +81,7 @@ function tryOpenSelfEdit(){
         openingSelfEdit.value = false
         const myId = userInfo.value.id
         if(!myId)
-            pop?.show('请先登录', 'failed')
+            showPop('请先登录', 'failed')
         if(type == 'info'){
             // 按约定，登录用户自己必定会出现在用户列表第一个
             // 如果读取到“正在打开用户设置”，则找到自己的dto并打开编辑

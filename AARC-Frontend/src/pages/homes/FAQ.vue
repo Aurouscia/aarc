@@ -8,12 +8,12 @@ const uniq = useUniqueComponentsStore()
 function removeFaqFromTopbar(){
     if(window.confirm('您已非常熟悉本项目，不再需要看这里？')){
         common.showFaqOnTopbar=false
-        uniq.pop?.show('刷新后生效', 'success')
+        uniq.showPop('刷新后生效', 'success')
     }
 }
 function recoverFaqToTopbar(){
     common.showFaqOnTopbar=true
-    uniq.pop?.show('刷新后生效', 'success')
+    uniq.showPop('刷新后生效', 'success')
 }
 </script>
 

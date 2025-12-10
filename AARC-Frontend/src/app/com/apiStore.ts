@@ -1,5 +1,5 @@
 import axios, { CanceledError } from "axios";
-import { defineStore, storeToRefs } from "pinia";
+import { defineStore } from "pinia";
 import { useUniqueComponentsStore } from "../globalStores/uniqueComponents";
 import { ref } from "vue";
 import * as api from "./apiGenerated";
@@ -35,7 +35,7 @@ export const useApiStore = defineStore('api', () => {
         //所以这里的transformResponse必须覆盖默认行为
         transformResponse: data => data
     })
-    const { pop, wait } = storeToRefs(useUniqueComponentsStore())
+    const { showPop, showWait } = useUniqueComponentsStore()
 
     const userAbortReason = 'http用户取消'
     let activeAbortCs:AbortController[] = []
@@ -83,7 +83,7 @@ export const useApiStore = defineStore('api', () => {
                     const waitKey = apiWaitKeyPrefix+path
                     return async function (...args: any[]) {
                         try {
-                            wait.value?.setShowing(waitKey, true)
+                            showWait(waitKey, true)
                             console.log(`[http]开始：${path}\n`,args)
                             const methodRes = await originalMethod.apply(client, args);
                             let methodResLog = methodRes
@@ -120,7 +120,7 @@ export const useApiStore = defineStore('api', () => {
                                 if(errmsg.includes('Site') && errmsg.includes('Construction'))
                                     errmsg='正在更新，请等几秒'
                                 console.error(`[http]异常：${path}\n`, errmsg)
-                                pop.value?.show(errmsg, 'failed')
+                                showPop(errmsg, 'failed')
                             }
                             else if(
                                 error instanceof CanceledError 
@@ -128,11 +128,11 @@ export const useApiStore = defineStore('api', () => {
                                 && error.config.signal.reason === userAbortReason)
                             {
                                 console.error(`[http]取消：${path}`)
-                                pop.value?.show('已取消', 'failed')
+                                showPop('已取消', 'failed')
                             }
                             else{
                                 console.error(error)
-                                pop.value?.show(`网络异常`, 'failed')
+                                showPop(`网络异常`, 'failed')
                             }
                             if(throwOnErrorForActions?.includes(action as keyof T)){
                                 throw error
@@ -141,7 +141,7 @@ export const useApiStore = defineStore('api', () => {
                             return undefined
                         }
                         finally{
-                            wait.value?.setShowing(waitKey, false)
+                            showWait(waitKey, false)
                         }
                     }
                 }
