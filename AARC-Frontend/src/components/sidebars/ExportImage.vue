@@ -46,7 +46,7 @@ async function downloadMainCvsAsImage() {
         const { scale, cvsWidth, cvsHeight } = getExportRenderSize()
         const cvs = new OffscreenCanvas(cvsWidth, cvsHeight)
         const ctx2d = cvs.getContext('2d')!
-        const ctx = new CvsContext([new CvsBlock(scale, 0, 0, ctx2d)])
+        const ctx = new CvsContext(new CvsBlock(scale, 0, 0, ctx2d))
         const mainRenderingOptions:MainCvsRenderingOptions = {
             changedLines:[],
             movedStaNames:[],

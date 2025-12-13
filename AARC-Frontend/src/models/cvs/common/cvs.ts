@@ -10,18 +10,21 @@ export function useCvs(canvasIdPrefix:string){
     const { cvsWidth, cvsHeight } = storeToRefs(useSaveStore())
 
     const ctx = computed<CvsContext>(()=>{
-        const blocks = []
-        for(const b of bStore.blocksControl){
-            const canvasId = `${canvasIdPrefix}${b.idx}`
-            const canvas = document.getElementById(canvasId) as HTMLCanvasElement
-            const ctx2d = canvas.getContext('2d')!
+        let block:CvsBlock
+        const b = bStore.blocksControl.at(0)
+        const canvasId = `${canvasIdPrefix}${0}`
+        const canvas = document.getElementById(canvasId) as HTMLCanvasElement
+        const ctx2d = canvas.getContext('2d')!
+        if(b){
             const pxColCount = b.widthRatio * cvsWidth.value
             const mapScale = b.canvasWidth / pxColCount
             const xOffset = mapScale*(cvsWidth.value * b.leftRatio)
             const yOffset = mapScale*(cvsHeight.value * b.topRatio)
-            blocks.push(new CvsBlock(mapScale, xOffset, yOffset, ctx2d))
+            block = new CvsBlock(mapScale, xOffset, yOffset, ctx2d)
         }
-        return new CvsContext(blocks);
+        else
+            block = new CvsBlock(1, 0, 0, ctx2d)
+        return new CvsContext(block);
     })
     function getCtx(){
         return ctx.value

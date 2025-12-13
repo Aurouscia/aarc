@@ -15,23 +15,26 @@ export class CvsBlock{
     mapY(y:number){ return y * this.scale - this.y }
 }
 
+/** 
+ * 画布上下文（模拟canvasAPI）  
+ * 看起来很奇怪是因为block曾经有多个
+ */
 export class CvsContext{
-    private blocks:CvsBlock[]
-    constructor(blocks:CvsBlock[]){
-        this.blocks = blocks
+    private b: CvsBlock
+    constructor(block:CvsBlock){
+        this.b = block
     }
 
-    enumerate(func:(b:CvsBlock)=>void){
-        this.blocks.forEach(func)
-    }
     callMethod(method:'beginPath'|'closePath'|'stroke'|'fill'){
-        this.enumerate(b=>b.ctx2d[method]())
+        this.b.ctx2d[method]()
     }
     callMethodXY(method:'moveTo'|'lineTo', x:number, y:number){
-        this.enumerate(b=>b.ctx2d[method](b.mapX(x), b.mapY(y)))
+        let b = this.b
+        b.ctx2d[method](b.mapX(x), b.mapY(y))
     }
     callMethodXYWH(method:'strokeRect'|'fillRect', x:number, y:number, width:number, height:number){
-        this.enumerate(b=>b.ctx2d[method](b.mapX(x), b.mapY(y), width*b.scale, height*b.scale))
+        let b = this.b
+        b.ctx2d[method](b.mapX(x), b.mapY(y), width*b.scale, height*b.scale)
     }
     beginPath(){this.callMethod('beginPath')}
     closePath(){this.callMethod('closePath')}
@@ -44,21 +47,20 @@ export class CvsContext{
     fillRect(x:number, y:number, width:number, height:number)
         {this.callMethodXYWH('fillRect', x, y, width, height)}
     arc(x:number, y:number, radius:number, startAngle:number, endAngle:number, counterClockwise?:boolean){
-        this.enumerate(b=>
-            b.ctx2d.arc(b.mapX(x), b.mapY(y), radius*b.scale, startAngle, endAngle, counterClockwise))
+        let b = this.b
+        b.ctx2d.arc(b.mapX(x), b.mapY(y), radius*b.scale, startAngle, endAngle, counterClockwise)
     }
     strokeText(text:string, x:number, y:number){
-        this.enumerate(b=>
-            b.ctx2d.strokeText(text, b.mapX(x), b.mapY(y)))
+        let b = this.b
+        b.ctx2d.strokeText(text, b.mapX(x), b.mapY(y))
     }
     fillText(text:string, x:number, y:number){
-        this.enumerate(b=>
-            b.ctx2d.fillText(text, b.mapX(x), b.mapY(y)))
+        let b = this.b
+        b.ctx2d.fillText(text, b.mapX(x), b.mapY(y))
     }
     measureText(text:string):TextMetricsSelected{
-        const sample = this.blocks.at(0)
-        const m = sample?.ctx2d.measureText(text)
-        const scale = sample?.scale || 1
+        const m = this.b.ctx2d.measureText(text)
+        const scale = this.b.scale || 1
         if(m)
             return {
                 width: m.width / scale,
@@ -74,49 +76,43 @@ export class CvsContext{
         }
     }
     setLineDash(segments:Array<number>){
-        this.enumerate(b=>{
-            b.ctx2d.setLineDash(segments.map(x=>x*b.scale))
-        })
+        let b = this.b
+        b.ctx2d.setLineDash(segments.map(x=>x*b.scale))
     }
     drawImage(image:CanvasImageSource, dx:number, dy:number, dw:number, dh:number){
-        this.enumerate(b=>{
-            dx = b.mapX(dx); dy = b.mapY(dy)
-            dw *= b.scale; dh *= b.scale
-            b.ctx2d.drawImage(image, dx, dy, dw, dh)
-        })
+        let b = this.b
+        dx = b.mapX(dx); dy = b.mapY(dy)
+        dw *= b.scale; dh *= b.scale
+        b.ctx2d.drawImage(image, dx, dy, dw, dh)
     }
     clear(){
-        this.enumerate(b=>{
-            const cvs = b.ctx2d.canvas
-            b.ctx2d.clearRect(0, 0, cvs.width, cvs.height)
-        })
+        const cvs = this.b.ctx2d.canvas
+        this.b.ctx2d.clearRect(0, 0, cvs.width, cvs.height)
     }
     fillTotal(){
-        this.enumerate(b=>{
-            const cvs = b.ctx2d.canvas
-            b.ctx2d.fillRect(0, 0, cvs.width, cvs.height)
-        })
+        const cvs = this.b.ctx2d.canvas
+        this.b.ctx2d.fillRect(0, 0, cvs.width, cvs.height)
     }
 
     set lineJoin(value:CanvasLineJoin){
-        this.enumerate(b=>b.ctx2d.lineJoin = value)}
+        this.b.ctx2d.lineJoin = value}
     set lineCap(value:CanvasLineCap){
-        this.enumerate(b=>b.ctx2d.lineCap = value)}
+        this.b.ctx2d.lineCap = value}
     set lineWidth(value:number){
-        this.enumerate(b=>b.ctx2d.lineWidth = value*b.scale)}
+        this.b.ctx2d.lineWidth = value*this.b.scale}
     set strokeStyle(value:string){
-        this.enumerate(b=>b.ctx2d.strokeStyle = value)}
+        this.b.ctx2d.strokeStyle = value}
     set fillStyle(value:string){
-        this.enumerate(b=>b.ctx2d.fillStyle = value)}
+        this.b.ctx2d.fillStyle = value}
     set globalAlpha(value:number){
-        this.enumerate(b=>b.ctx2d.globalAlpha = value)}
+        this.b.ctx2d.globalAlpha = value}
     get globalAlpha(){
-        return this.blocks.at(0)?.ctx2d.globalAlpha ?? 1
+        return this.b.ctx2d.globalAlpha ?? 1
     }
     set textBaseline(value:CanvasTextBaseline){
-        this.enumerate(b=>b.ctx2d.textBaseline = value)}
+        this.b.ctx2d.textBaseline = value}
     set textAlign(value:CanvasTextAlign){
-        this.enumerate(b=>b.ctx2d.textAlign = value)}
+        this.b.ctx2d.textAlign = value}
     set font(value:{fontSize:number, font:string}){
-        this.enumerate(b=>b.ctx2d.font = `${value.fontSize*b.scale}px ${value.font}, sans-serif`)}
+        this.b.ctx2d.font = `${value.fontSize*this.b.scale}px ${value.font}, sans-serif`}
 }

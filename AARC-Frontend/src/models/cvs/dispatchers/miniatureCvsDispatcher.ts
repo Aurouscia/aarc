@@ -26,9 +26,9 @@ export const useMiniatureCvsDispatcher = defineStore('miniatureCvsDispatcher', (
             const diff = (h-w)/2
             left = -diff * ratio
         }
-        const ctx = new CvsContext([
+        const ctx = new CvsContext(
             new CvsBlock(ratio, left, top, ctx2d)
-        ])
+        )
         ctx.fillStyle = 'white'
         ctx.fillTotal()
         lineSimplifiedCvsWorker.renderAllLines(ctx, lineWidth/ratio)
