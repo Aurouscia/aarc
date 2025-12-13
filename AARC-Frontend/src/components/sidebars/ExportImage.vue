@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, useTemplateRef, watch } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useApiStore } from '@/app/com/apiStore';
@@ -19,7 +19,7 @@ import ExportInfo from './etc/ExportInfo.vue'
 import { storeToRefs } from 'pinia';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 
-const sidebar = ref<InstanceType<typeof SideBar>>()
+const sidebar = useTemplateRef('sidebar')
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const saveStore = useSaveStore()

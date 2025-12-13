@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useEnvStore } from '@/models/stores/envStore';
@@ -102,7 +102,7 @@ onUnmounted(()=>{
     document.removeEventListener('visibilitychange', visibilityChangedHandler)
 })
 
-const sidebar = ref<InstanceType<typeof SideBar>>()
+const sidebar = useTemplateRef('sidebar')
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
     fold: ()=>{sidebar.value?.fold()}

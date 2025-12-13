@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref, useTemplateRef } from 'vue';
 
 const props = defineProps<{texts:string[]}>();
 const selectedTab = ref<number>(0);
@@ -24,7 +24,7 @@ const emit = defineEmits<{
     (e:'switch',idx:number):void
 }>();
 var tabs:HTMLCollection;
-const tabsContainer = ref<HTMLDivElement>();
+const tabsContainer = useTemplateRef("tabsContainer")
 onMounted(async ()=>{
     //可能子代组件没挂载好导致获取不到，必须等到下一个tick再执行
     await nextTick();

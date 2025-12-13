@@ -4,12 +4,13 @@ import { ControlPoint } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useNameEditStore } from '@/models/stores/nameEditStore';
 import { useSaveStore } from '@/models/stores/saveStore';
-import { computed, ref } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 import { Line } from '@/models/save';
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { indicesInArrayByPred } from '@/utils/lang/indicesInArray';
 import { isRing } from '@/utils/lineUtils/isRing';
-const sidebar = ref<InstanceType<typeof SideBar>>()
+
+const sidebar = useTemplateRef('sidebar')
 const nameEditStore = useNameEditStore()
 const saveStore = useSaveStore()
 const envStore = useEnvStore()

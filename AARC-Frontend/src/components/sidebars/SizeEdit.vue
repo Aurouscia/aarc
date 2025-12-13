@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, CSSProperties, nextTick, ref, watch } from 'vue';
+import { computed, CSSProperties, nextTick, ref, useTemplateRef, watch } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { storeToRefs } from 'pinia';
@@ -132,7 +132,7 @@ function applyChange(){
 }
 
 const manualMode = ref(false)
-const sidebar = ref<InstanceType<typeof SideBar>>()
+const sidebar = useTemplateRef('sidebar')
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
     fold: ()=>{sidebar.value?.fold()}

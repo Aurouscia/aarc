@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, nextTick, computed, watch } from 'vue';
+import { onMounted, ref, nextTick, computed, watch, useTemplateRef } from 'vue';
 import { useApiStore } from '@/app/com/apiStore';
 import SideBar from '@/components/common/SideBar.vue';
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
@@ -51,7 +51,7 @@ async function load(){
     saveList.value = await api.save.getMySaves(uidNum.value)
 }
 
-const saveInfoSb = ref<InstanceType<typeof SideBar>>()
+const saveInfoSb = useTemplateRef('saveInfoSb')
 const editingSave = ref<SaveDto>()
 const isCreatingSave = ref(false)
 function startCreating(){
@@ -82,7 +82,7 @@ async function done(){
 
 const dangerZone = ref(false)
 const repeatCvsName = ref("")
-const jsonFileInput = ref<HTMLInputElement>()
+const jsonFileInput = useTemplateRef('jsonFileInput')
 const jsonContent = ref<string>()
 const jsonSaveStaCount = ref<number>()
 const jsonSaveLineCount = ref<number>()
@@ -157,7 +157,7 @@ async function downloadJson(){
         fileDownload(json, `${editingSave.value.name}.aarc.json`)
 }
 
-const authGrantSb = ref<InstanceType<typeof SideBar>>()
+const authGrantSb = useTemplateRef('authGrantSb')
 const { setEnteredFrom } = useEnteredCanvasFromStore()
 onMounted(async()=>{
     setEnteredFrom()

@@ -4,7 +4,7 @@ import { Line, LineStyle, LineType } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { storeToRefs } from 'pinia';
-import { computed, CSSProperties, onMounted, ref, watch } from 'vue';
+import { computed, CSSProperties, onMounted, ref, useTemplateRef, watch } from 'vue';
 import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
 import ColorPickerForTerrain from '../shared/ColorPickerForTerrain.vue';
 import { useLineStateStore } from '@/models/stores/saveDerived/state/lineStateStore';
@@ -85,8 +85,8 @@ const haveChildren = computed(()=>{
 })
 const haveParent = computed(()=>!!props.line.parent)
 
-const picker0 = ref<InstanceType<typeof ColorPickerForLine>>()
-const picker1 = ref<InstanceType<typeof ColorPickerForTerrain>>()
+const picker0 = useTemplateRef('picker0')
+const picker1 = useTemplateRef('picker1')
 function closePickers(){
     picker0.value?.close()
     picker1.value?.close()
@@ -107,7 +107,7 @@ function reportInfoChanged(staSizeChanged?:boolean){
     }, 500)
 }
 
-const sidebar = ref<InstanceType<typeof SideBar>>()
+const sidebar = useTemplateRef('sidebar')
 defineExpose({
     open: ()=>{sidebar.value?.extend()}, 
     fold: ()=>{sidebar.value?.fold()}

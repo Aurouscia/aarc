@@ -4,7 +4,7 @@ import { useEnvStore } from "@/models/stores/envStore"
 import { useSaveStore } from "@/models/stores/saveStore"
 import { useLinesArrange } from "@/utils/eventUtils/linesArrange"
 import SideBar from "@/components/common/SideBar.vue"
-import { computed, ref } from "vue"
+import { computed, Ref, ref } from "vue"
 import LineOptions from "../../options/LineOptions.vue"
 import Lines from "../Lines.vue"
 import { useUniqueComponentsStore } from "@/app/globalStores/uniqueComponents"
@@ -12,12 +12,16 @@ import { useOptionsOpenerStore } from "@/models/stores/utils/optionsOpenerStore"
 import { storeToRefs } from "pinia"
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore"
 
-export function useSideListShared(lineType:LineType){
+export function useSideListShared(
+    lineType: LineType,
+    sidebar: Ref<InstanceType<typeof SideBar>|null>,
+    lineOptions: Ref<InstanceType<typeof LineOptions>|null>,
+    childrenLines?: Ref<InstanceType<typeof Lines>|null>
+){
     const saveStore = useSaveStore()
     const lineStateStore = useLineStateStore()
     const envStore = useEnvStore()
     const mainCvsDispatcher = useMainCvsDispatcher()
-    const sidebar = ref<InstanceType<typeof SideBar>>()
     const { showPop } = useUniqueComponentsStore()
     const showingLineGroup = ref<number>()
     const showingChildrenOf = ref<number>()
@@ -47,7 +51,6 @@ export function useSideListShared(lineType:LineType){
             && filterParent(x)
         ) || []
     })
-    const lineOptions = ref<InstanceType<typeof LineOptions>>()
     const lineGroupsSelectable = computed(()=>{
         return saveStore.save?.lineGroups?.filter(x=>x.lineType===lineType) || [] 
     })
@@ -141,12 +144,11 @@ export function useSideListShared(lineType:LineType){
     }
 
     const showingBtns = ref<'children'|'arrange'>('arrange')
-    const childrenLines = ref<InstanceType<typeof Lines>>()
     function showChildrenOf(line?:Line){
         if(!line)
-            childrenLines.value?.fold()
+            childrenLines?.value?.fold()
         else
-            childrenLines.value?.comeOut(line.id)
+            childrenLines?.value?.comeOut(line.id)
     }
     function leaveParent(line:Line){
         if(window.confirm(`确认拆分<${line.name||'无名支线'}>为单独线路`)){
@@ -162,7 +164,7 @@ export function useSideListShared(lineType:LineType){
         sidebar.value?.extend()
     }
     function hideListSidebar(){
-        childrenLines.value?.fold()
+        childrenLines?.value?.fold()
         sidebar.value?.fold()
         lineOptions.value?.fold()
     }
@@ -183,14 +185,14 @@ export function useSideListShared(lineType:LineType){
     }
 
     return {
-        sidebar, lineOptions, lines, envStore, saveStore,
+        lines, envStore, saveStore,
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
         arrangingId, editingInfoLine, editInfoOfLine,
         createLine, 
         wantDelLine, delLineStart, delLineAbort, delLineExe,
         showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
         showingBtns, showingChildrenOfInfo,
-        showChildrenOf, leaveParent, childrenLines,
+        showChildrenOf, leaveParent,
         showListSidebar, hideListSidebar
     }
 }

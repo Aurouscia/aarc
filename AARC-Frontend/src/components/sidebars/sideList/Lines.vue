@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SideBar from '../../common/SideBar.vue';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import { useSideListShared } from './shared/useSideListShared';
 import { Line, LineType } from '@/models/save';
 import LineOptions from '../options/LineOptions.vue';
@@ -15,20 +15,23 @@ import boxIcon from '@/assets/ui/box.svg'
 
 defineProps<{isChildrenList?:boolean}>()
 const { showPop } = useUniqueComponentsStore()
+const sidebar = useTemplateRef('sidebar')
+const lineOptions = useTemplateRef('lineOptions')
+const childrenLines = useTemplateRef('childrenLines')
 
 const { 
-    sidebar, lineOptions, lines,
+    lines,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
     arrangingId, editingInfoLine, editInfoOfLine,
     createLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe,
     showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
     showingBtns, showingChildrenOfInfo,
-    showChildrenOf, leaveParent, childrenLines,
+    showChildrenOf, leaveParent,
     showListSidebar, hideListSidebar
-} = useSideListShared(LineType.common)
+} = useSideListShared(LineType.common, sidebar, lineOptions, childrenLines)
 
-const colorPalette = ref<InstanceType<typeof ColorPalette>>()
+const colorPalette = useTemplateRef('colorPalette')
 const editingColorByPaletteLine = ref<Line>()
 function editColorByPalette(line:Line){
     editingColorByPaletteLine.value = line
@@ -37,9 +40,9 @@ function editColorByPalette(line:Line){
     }, 1)
 }
 
-const pickers = ref<InstanceType<typeof ColorPickerForLine>[]>([])
+const pickers = useTemplateRef('pickers')
 function clickContainer(){
-    pickers.value.forEach(cp=>cp.close())
+    pickers.value?.forEach(cp => cp?.close())
 }
 
 defineExpose({

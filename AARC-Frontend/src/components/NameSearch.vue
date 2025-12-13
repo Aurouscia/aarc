@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, useTemplateRef } from 'vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { ControlPoint,Line } from '@/models/save';
@@ -15,8 +15,9 @@ const envStore = useEnvStore();
 const staClusterStore = useStaClusterStore()
 const cvs = useCvsFrameStore();
 
+const searchInput = useTemplateRef('searchInput')
 const nameSearchStore = useNameSearchStore()
-const { show, searchText, showResults, searchInput } = storeToRefs(nameSearchStore)
+const { show, searchText, showResults } = storeToRefs(nameSearchStore)
 
 // 匹配逻辑：name 或 nameS 包含搜索串（不区分大小写）
 const results = computed(()=>{
@@ -53,6 +54,12 @@ function getPtLines(pt:ControlPoint){
     color: lineStateStore.getLineActualColorById(l.id) || l.color || '#000',
   })).slice(0,10);
 }
+
+onMounted(()=>{
+  if(!searchInput.value)
+    throw new Error('searchInput 获取失败')
+  nameSearchStore.init(searchInput.value)
+})
 </script>
 
 <template>

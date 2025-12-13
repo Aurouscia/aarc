@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SideBar from '../../common/SideBar.vue';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, useTemplateRef } from 'vue';
 import { LineType } from '@/models/save';
 import { useSideListShared } from './shared/useSideListShared';
 import LineOptions from '../options/LineOptions.vue';
@@ -9,18 +9,20 @@ import LineItemBtns from './shared/LineItemBtns.vue';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 import ColorPickerForTerrain from '../shared/ColorPickerForTerrain.vue';
 
+const sidebar = useTemplateRef('sidebar')
+const lineOptions = useTemplateRef('lineOptions')
 const { 
-    sidebar, lineOptions, lines: terrains,
+    lines: terrains,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
     createLine, editingInfoLine, editInfoOfLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe,
     showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
     showListSidebar, hideListSidebar
-} = useSideListShared(LineType.terrain)
+} = useSideListShared(LineType.terrain, sidebar, lineOptions)
 
-const pickers = ref<InstanceType<typeof ColorPickerForTerrain>[]>([])
+const pickers = useTemplateRef('pickers')
 function clickContainer(){
-    pickers.value.forEach(cp=>cp.close())
+    pickers.value?.forEach(cp => cp?.close())
 }
 
 defineExpose({

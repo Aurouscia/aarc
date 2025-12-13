@@ -7,7 +7,7 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import { moveUpInArray } from '@/utils/lang/moveUpInArray';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
 import { storeToRefs } from 'pinia';
-import { CSSProperties, onMounted, onUnmounted, ref } from 'vue';
+import { CSSProperties, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import convert from 'color-convert'
 import { timestampMS } from '@/utils/timeUtils/timestamp';
 import ConfigSection from '../configs/shared/ConfigSection.vue';
@@ -16,10 +16,10 @@ const saveStore = useSaveStore()
 const { save } = storeToRefs(saveStore)
 const envStore = useEnvStore()
 const showDetail = ref<Record<number, boolean|undefined>>({})
-const colorPicker = ref<InstanceType<typeof AuColorPicker>[]>([])
+const colorPicker = useTemplateRef('colorPicker')
 function clickContainer(){
     //点击“其他地方”关闭颜色选择器
-    colorPicker.value.forEach(cp=>cp.closePanel())
+    colorPicker.value?.forEach(cp=>cp?.closePanel())
 }
 function delLayer(lineStyle:LineStyle, layerIdx:number){
     if(window.confirm('确认删除该层级')){

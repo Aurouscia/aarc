@@ -2,11 +2,11 @@
 import { Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { AuColorPickerPresetsNested } from '@aurouscia/au-color-picker';
-import { CSSProperties, ref, watch } from 'vue';
+import { CSSProperties, ref, useTemplateRef, watch } from 'vue';
 import { useColorPresetNames } from '../sideList/shared/useColorPresetNames';
 
 const envStore = useEnvStore()
-const picker = ref<InstanceType<typeof AuColorPickerPresetsNested>>()
+const picker = useTemplateRef('picker')
 const props = defineProps<{
     line:Line,
     zIndex?:number,

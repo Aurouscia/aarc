@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { GitInfo } from '@/utils/gitInfo/gitInfo';
 import { getGitInfo } from '@/utils/gitInfo/gitInfoGet';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, useTemplateRef } from 'vue';
 
 const widgeturl = "https://gitee.com/au114514/aarc/widget_preview"
-const scriptContainer = ref<HTMLDivElement>()
-const gitWidget = ref<HTMLDivElement>()
+const scriptContainer = useTemplateRef("scriptContainer")
+const gitWidget = useTemplateRef("gitWidget")
 const gitInfo = ref<GitInfo>()
 
 onMounted(()=>{

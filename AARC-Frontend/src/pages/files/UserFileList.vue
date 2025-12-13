@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, useTemplateRef } from 'vue';
 import { UserFileDto } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import Loading from '@/components/common/Loading.vue';
@@ -25,7 +25,7 @@ async function loadFileList(){
     }
 }
 
-const sidebar = ref<InstanceType<typeof SideBar>>()
+const sidebar = useTemplateRef('sidebar')
 const isCreating = ref(false)
 const editingId = ref(0)
 const editingName = ref('')

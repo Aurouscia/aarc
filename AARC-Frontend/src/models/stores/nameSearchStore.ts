@@ -6,10 +6,14 @@ export const useNameSearchStore = defineStore('nameSearch', ()=>{
     const showPrivate = ref(false)
     const show = computed(()=>showPrivate.value)
     const searchText = ref<string>()
-    const searchInput = ref<HTMLInputElement>();
+    const searchInput = ref<HTMLInputElement>()
     const showResults = computed(()=>{
         return show.value && !!searchText.value?.trim()
     })
+
+    function init(searchInputElement:HTMLInputElement){
+        searchInput.value = searchInputElement
+    }
     function toggleShow(force?:boolean|string){
         if(force === undefined){
             force = !showPrivate.value
@@ -31,5 +35,5 @@ export const useNameSearchStore = defineStore('nameSearch', ()=>{
         }
         showPrivate.value = newValueOfShow
     }
-    return { show, searchText, searchInput, showResults, toggleShow }
+    return { show, searchText, searchInput, showResults, toggleShow, init }
 })

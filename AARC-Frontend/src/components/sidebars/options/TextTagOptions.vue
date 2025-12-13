@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TextTag } from '@/models/save';
-import { ref, watch } from 'vue';
+import { ref, useTemplateRef, watch } from 'vue';
 import SideBar from '../../common/SideBar.vue';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
 import { useConfigStore } from '@/models/stores/configStore';
@@ -11,9 +11,9 @@ const cs = useConfigStore()
 const iconStore = useIconStore()
 const { prefixSelected } = storeToRefs(iconStore)
 
-const sidebar = ref<InstanceType<typeof SideBar>>()
-const picker1 = ref<InstanceType<typeof AuColorPicker>>()
-const picker2 = ref<InstanceType<typeof AuColorPicker>>()
+const sidebar = useTemplateRef('sidebar')
+const picker1 = useTemplateRef('picker1')
+const picker2 = useTemplateRef('picker2')
 
 const editing = ref<TextTag>()
 function startEditing(tag: TextTag) {

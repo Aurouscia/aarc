@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, CSSProperties, computed, watch, nextTick } from 'vue';
+import { ref, CSSProperties, computed, watch, nextTick, useTemplateRef } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { Line } from '@/models/save';
 import Switch from '@/components/common/Switch.vue';
@@ -13,7 +13,7 @@ import { keepOrderSort } from '@/utils/lang/keepOrderSort';
 
 const envStore = useEnvStore()
 const colorProcStore = useColorProcStore()
-const sidebar = ref<InstanceType<typeof SideBar>>()
+const sidebar = useTemplateRef('sidebar')
 const props = defineProps<{
     editingLine: Line
 }>()
@@ -142,7 +142,7 @@ function ensureSetsOrdered(){
     })
 }
 
-const picker = ref<InstanceType<typeof ColorPickerForLine>>()
+const picker = useTemplateRef('picker')
 const showPicker = ref(true)
 function closePickers() {
     picker.value?.close()

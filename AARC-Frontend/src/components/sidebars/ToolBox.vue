@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { useTemplateRef } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
@@ -14,7 +14,7 @@ function fd(){
     sidebar.value?.fold()
 }
 
-const sidebar = ref<InstanceType<typeof SideBar>>()
+const sidebar = useTemplateRef('sidebar')
 defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
     fold: ()=>{sidebar.value?.fold()}

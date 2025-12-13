@@ -165,7 +165,6 @@ function setLeavingPreventing(){
     //将“主画布重新渲染”当成“存档信息变化”，当主画布重新渲染时，阻止用户离开/刷新页面/关闭页面
     mainCvsDispatcher.afterMainCvsRendered = preventLeaving
 }
-const cvsComponent = ref<InstanceType<typeof Cvs>>()
 watch(props, async()=>{
     window.location.reload()
 })
@@ -213,7 +212,7 @@ onUnmounted(()=>{
 </script>
 
 <template>
-    <Cvs v-if="loadComplete" ref="cvsComponent"></Cvs>
+    <Cvs v-if="loadComplete"></Cvs>
     <Menu v-if="loadComplete" @save-data="saveData"></Menu>
     <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving"
         :save="saveData" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>

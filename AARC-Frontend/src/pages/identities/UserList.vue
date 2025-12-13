@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { useApiStore } from '@/app/com/apiStore';
 import { userTypeReadable } from './models/utils';
 import SideBar from '@/components/common/SideBar.vue';
@@ -34,8 +34,8 @@ async function loadList() {
 }
 
 const { showPop } = useUniqueComponentsStore()
-const infoSidebar = ref<InstanceType<typeof SideBar>>()
-const authGrantSidebar = ref<InstanceType<typeof SideBar>>()
+const infoSidebar = useTemplateRef('infoSidebar')
+const authGrantSidebar = useTemplateRef('authGrantSidebar')
 
 const editingUser = ref<UserDto>()
 const pwdRepeat = ref<string>()

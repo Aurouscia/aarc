@@ -2,10 +2,10 @@
 import { Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
-import { CSSProperties, ref } from 'vue';
+import { CSSProperties, useTemplateRef } from 'vue';
 
 const envStore = useEnvStore()
-const picker = ref<InstanceType<typeof AuColorPicker>>()
+const picker = useTemplateRef('picker')
 defineProps<{
     line:Line,
     zIndex?:number,
