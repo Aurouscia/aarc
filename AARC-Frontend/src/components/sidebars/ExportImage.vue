@@ -314,12 +314,12 @@ onMounted(()=>{
                                 <td>16000</td>
                             </tr>
                             <tr>
-                                <td>iOS系统上<br />任意浏览器</td>
-                                <td>4000</td>
+                                <td>Firefox</td>
+                                <td>16000</td>
                             </tr>
                             <tr>
-                                <td>FireFox(PC版)</td>
-                                <td>暂未发现限制</td>
+                                <td>iOS系统上<br />任意浏览器</td>
+                                <td>4000</td>
                             </tr>
                             <tr>
                                 <td colspan="2" class="smallNote">欢迎向我们反馈更多</td>
