@@ -18,6 +18,7 @@ import { AdsRenderType } from "@/app/localConfig/exportLocalConfig";
 import { usePointLinkStore } from "@/models/stores/pointLinkStore";
 import { usePointLinkCvsWorker } from "../workers/pointLinkCvsWorker";
 import { useWatermarkCvsWorker } from "../workers/watermarkCvsWorker";
+import { useRenderOptionsStore } from "@/models/stores/renderOptionsStore";
 
 export interface MainCvsRenderingOptions{
     /** 这次渲染前哪些线路形状变动了？不提供即为所有 */
@@ -26,8 +27,6 @@ export interface MainCvsRenderingOptions{
     movedStaNames?:number[],
     /** 阻止“渲染后”钩子触发 */
     suppressRenderedCallback?:boolean
-    /** 导出式渲染 */
-    forExport?:boolean
     /** 指定画布上下文 */
     ctx?: CvsContext
     /** 广告水印 (no/less/more) */
@@ -37,6 +36,7 @@ export interface MainCvsRenderingOptions{
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const envStore = useEnvStore()
     const cs = useConfigStore()
+    const renderOptionsStore = useRenderOptionsStore()
     const canvasIdPrefix = 'main'
     const { getCtx: getCtx } = useCvs(canvasIdPrefix)
     const cvsBlocksControlStore = useCvsBlocksControlStore()
@@ -59,7 +59,8 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         const tStart = logRendering ? timestampMS():0
         isRendering.value = true
         const ctx = options.ctx || getCtx();
-        const { changedLines, movedStaNames, suppressRenderedCallback, forExport } = options
+        const { changedLines, movedStaNames, suppressRenderedCallback } = options
+        const forExport = renderOptionsStore.exporting
         if(forExport){
             ctx.fillStyle = cs.config.bgColor
             ctx.fillTotal()

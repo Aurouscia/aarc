@@ -192,9 +192,6 @@ button {
     display: block;
     margin: 10px auto;
 }
-button:last-child{
-    margin-bottom: 100px;
-}
 .disabled, .disabled *{
     color: #aaa
 }

@@ -9,7 +9,7 @@ import { useColorProcStore } from "../../utils/colorProcStore";
 export const useLineStateStore = defineStore('lineState', () => {
     const saveStore = useSaveStore()
     const { save } = storeToRefs(saveStore)
-    const { accentuationLineIds, accentuationEnabled, accentuationConfig } = storeToRefs(useRenderOptionsStore())
+    const { accentuationLineIds, accentuationEnabled, accentuationConfig, exporting } = storeToRefs(useRenderOptionsStore())
     const configStore = useConfigStore()
     const colorProc = useColorProcStore()
 
@@ -28,7 +28,8 @@ export const useLineStateStore = defineStore('lineState', () => {
         }
         
         // 根据“强调”设置，对该黑白化的线路进行黑白化
-        if(accentuationEnabled.value){
+        const runDownplay = accentuationEnabled.value && (exporting.value || accentuationConfig.value.enabledPreview)
+        if(runDownplay){
             const acc = accentuationConfig.value
             const accIds = accentuationLineIds.value
             let accentuatedColors:Set<string>|undefined

@@ -19,6 +19,7 @@ import ExportInfo from './etc/ExportInfo.vue'
 import { storeToRefs } from 'pinia';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import ExportAccentuationConfig from './configs/ExportAccentuationConfig.vue';
+import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
 
 const sidebar = useTemplateRef('sidebar')
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -32,6 +33,7 @@ const exported = ref<boolean>(false)
 const exporting = ref<boolean>(false)
 const exportFailedMsg = ref<false|string>(false)
 
+const renderOptionsStore = useRenderOptionsStore()
 const exportLocalConfig = useExportLocalConfigStore()
 const { fileNameStyle, fileFormat, fileQuality, pixelRestrict, pixelRestrictMode, ads } = storeToRefs(exportLocalConfig)
 
@@ -52,10 +54,10 @@ async function downloadMainCvsAsImage() {
             changedLines:[],
             movedStaNames:[],
             suppressRenderedCallback:true,
-            forExport:true,
             ctx,
             withAds: ads.value
         }
+        renderOptionsStore.exporting = true; // 启用导出模式
         mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
 
         let imageDataUrl
@@ -81,8 +83,7 @@ async function downloadMainCvsAsImage() {
             link.click();
         }
 
-        mainRenderingOptions.forExport = false
-        mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
+        renderOptionsStore.exporting = false; // 复位导出模式
     }
     exporting.value = false
 }
@@ -400,5 +401,9 @@ onMounted(()=>{
     font-size: 12px;
     color: #999;
     text-align: center;
+}
+
+.exportConfigs{
+    padding: 20px 0px 100px;
 }
 </style>

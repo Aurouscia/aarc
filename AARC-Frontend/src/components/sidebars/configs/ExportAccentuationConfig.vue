@@ -31,13 +31,18 @@ function removeLine(line: Line){
 
 watch(()=>({ 
     enabled: accentuationEnabled.value, 
-    ids:accentuationLineIds.value,
+    ids: accentuationLineIds.value,
     cfg: accentuationConfig.value
 }), ()=>{
     if(accentuationConfig.value.enabledPreview){
         envStore.rerender([], [])
     }
 }, { deep: true })
+watch(()=>accentuationConfig.value.enabledPreview, (newVal, oldVal)=>{
+    if(!newVal && oldVal){
+        envStore.rerender([], [])
+    }
+})
 
 const linesForSelect = computed(()=>{
     if(!saveStore.save?.lines)
@@ -66,7 +71,7 @@ onMounted(()=>{
 </script>
 
 <template>
-<ConfigSection :title="'线路突出强调（新）'">
+<ConfigSection :title="'线路突出强调✨'">
     <table class="fullWidth"><tbody>
         <tr>
             <td colspan="2">
@@ -105,7 +110,7 @@ onMounted(()=>{
             </td>
         </tr>
         <tr>
-            <td>同色扩展目标</td>
+            <td>扩展同色目标</td>
             <td>
                 <input v-model="accentuationConfig.spread" type="checkbox"/>
             </td>
