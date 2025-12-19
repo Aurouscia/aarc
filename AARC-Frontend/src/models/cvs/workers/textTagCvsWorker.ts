@@ -49,7 +49,13 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         const commonLineBuiltinRatio = 1.2
         const mainRatio = getFontSize(t.textOp, cs.config.textTagForLine.fontSize??1) * commonLineBuiltinRatio
         const subRatio = getFontSize(t.textSOp, cs.config.textTagForLine.subFontSize??1) * commonLineBuiltinRatio
-        const textColor = lineInfo.tagTextColor ?? colorProcStore.colorProcInvBinary.convert(lineInfo.color)
+        const color = lineStateStore.getLineActualColor(lineInfo)
+        const downplayed = lineStateStore.isLineDownplayed(lineInfo.id)
+        let textColor:string = ''
+        if(downplayed)
+            textColor = 'white'
+        else
+            textColor = lineInfo.tagTextColor ?? colorProcStore.colorProcInvBinary.convert(color)
         const mainEmpty = !t.text?.trim()
         const subEmpty = mainEmpty && !t.textS?.trim()
         const optMain:DrawTextBodyOption = {
@@ -80,10 +86,10 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             const rect = drawLineNameRes.rect
             const lu = rect[0]
             const wh = coordSub(rect[1], rect[0])
-            ctx.fillStyle = lineInfo.color
+            ctx.fillStyle = color
             ctx.fillRect(...lu, ...wh)
             ctx.lineJoin = 'round'
-            ctx.strokeStyle = lineInfo.color
+            ctx.strokeStyle = color
             if(paddingValue>0){
                 ctx.lineWidth = paddingLineWidth
                 ctx.strokeRect(...lu, ...wh)

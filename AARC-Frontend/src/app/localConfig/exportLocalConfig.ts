@@ -16,10 +16,10 @@ export interface ExportWatermarkLocalConfig{
     xOffset?:number|string
     rotate?:number|string
 }
-// export interface ExportEmphasisLocalConfig{
-//     othersOpacity?:number|string
-//     othersSaturationRatio?:number|string
-// }
+export interface AccentuationConfig{
+    spread?: boolean,
+    terrain?: boolean
+}
 
 export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
     const fileNameStyle = ref<ExportFileNameStyle>('lineCount')
@@ -43,6 +43,10 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
         return defaultVal
     }
 
+    const accentuation = ref<AccentuationConfig>({
+        spread: true, terrain: true
+    })
+
     return {
         fileNameStyle,
         fileFormat,
@@ -52,7 +56,8 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
         ads,
         watermark,
         watermarkReset,
-        waterMarkDefault
+        waterMarkDefault,
+        accentuation
     }
 },
 {

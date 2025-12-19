@@ -32,13 +32,6 @@ export interface MainCvsRenderingOptions{
     ctx?: CvsContext
     /** 广告水印 (no/less/more) */
     withAds?: AdsRenderType
-    /** 导出强调 */
-    // emphasis?: {
-    //     /** 目标线路或线路组id */
-    //     ids:number[]
-    //     othersOpacity:number
-    //     othersMutate:'asis'|''
-    // }
 }
 
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
