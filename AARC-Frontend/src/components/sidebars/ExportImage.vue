@@ -18,6 +18,7 @@ import ConfigSection from './configs/shared/ConfigSection.vue';
 import ExportInfo from './etc/ExportInfo.vue'
 import { storeToRefs } from 'pinia';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
+import ExportAccentuationConfig from './configs/ExportAccentuationConfig.vue';
 
 const sidebar = useTemplateRef('sidebar')
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -225,7 +226,6 @@ onMounted(()=>{
 
 <template>
     <SideBar ref="sidebar" @extend="enableContextMenu()" @fold="disableContextMenu();exported=false;exportFailedMsg=false">
-        <h1>导出作品</h1>
         <div class="exportOps">
             <div class="configItem">
                 <div class="itemName">文件名</div>
@@ -294,6 +294,7 @@ onMounted(()=>{
                 若导出失败或长时间无响应<br />请查看本页下方“浏览器限制”部分
             </div>
             <div class="exportConfigs">
+                <ExportAccentuationConfig></ExportAccentuationConfig>
                 <ExportWatermarkConfig></ExportWatermarkConfig>
                 <ConfigSection :title="'已知的浏览器限制'">
                     <table class="fullWidth browserLimit">

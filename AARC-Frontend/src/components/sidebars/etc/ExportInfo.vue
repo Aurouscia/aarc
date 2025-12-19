@@ -113,7 +113,7 @@ function copyText(txt: string) {
 </script>
 
 <template>
-    <ConfigSection :title="'导出作品信息（试验）'">
+    <ConfigSection :title="'导出作品信息'">
         <table class="fullWidth">
             <tbody>
                 <tr>

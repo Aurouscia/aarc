@@ -17,7 +17,8 @@ export interface ExportWatermarkLocalConfig{
     rotate?:number|string
 }
 export interface AccentuationConfig{
-    spread?: boolean,
+    enabledPreview?:boolean
+    spread?: boolean
     terrain?: boolean
 }
 
@@ -44,7 +45,7 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
     }
 
     const accentuation = ref<AccentuationConfig>({
-        spread: true, terrain: true
+        enabledPreview: true, spread: true, terrain: true
     })
 
     return {
