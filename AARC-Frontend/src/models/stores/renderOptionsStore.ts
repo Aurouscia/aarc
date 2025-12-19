@@ -6,7 +6,7 @@ export const useRenderOptionsStore = defineStore('renderOptions', ()=>{
     const exporting = ref<boolean>(false)
 
     const accentuationLineIds = ref<number[]>([])
-    const accentuationEnabled = ref<boolean>(false)
+    const accentuationEnabled = ref<boolean>(true)
     const { accentuation: accentuationConfig } = storeToRefs(useExportLocalConfigStore())
     return { 
         exporting,
