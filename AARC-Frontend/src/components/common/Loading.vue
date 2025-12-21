@@ -38,6 +38,9 @@ onUnmounted(()=>{
     <div class="loading">
         <div :style="contentStyle" class="loadingContent"></div>
     </div>
+    <div class="loading">
+        <div :style="contentStyle" class="loadingContent"></div>
+    </div>
     <div class="retry" v-show="showRetryBtn">
         <button class="minor" @click="retry">尝试重新加载</button>
     </div>
