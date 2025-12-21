@@ -17,6 +17,7 @@ import FaqAsConfig from './configs/FaqAsConfig.vue';
 import TextTagIconConfig from './configs/TextTagIconConfig.vue';
 import PinyinConvertConfig from './configs/PinyinConvertConfig.vue';
 import { useNameEditStore } from '@/models/stores/nameEditStore';
+import SaveConfigReuse from './configs/SaveConfigReuse.vue';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
@@ -228,6 +229,8 @@ defineExpose({
 </tbody>
 </table>
 </div>
+
+<SaveConfigReuse></SaveConfigReuse>
 
 <FaqAsConfig></FaqAsConfig>
 

@@ -1,12 +1,13 @@
 import { sqrt2 } from "@/utils/consts"
 import { defineStore } from "pinia"
 import { computed, ref } from "vue"
-import { Config } from "../config"
+import { Config, ConfigInSave } from "../config"
 import { useSaveStore } from "./saveStore"
 import { ColorPreset, Line, LineType } from "../save"
 import { WayRel } from "@/utils/rayUtils/rayParallel"
 import rfdc from "rfdc"
 import { removeKeyIfSame } from "@/utils/lang/removeKeyIfSame"
+import { isKeyOf } from "@/utils/type/IsKeyOf"
 
 export const configDefault:Config = {
     bgColor: '#ffffff',
@@ -91,6 +92,20 @@ export const useConfigStore = defineStore('config', ()=>{
         if(saveStore.save)
             saveStore.save.config = configNow
     }
+    function getConfigForExporting(){
+        const configNow = deepClone(config.value)
+        removeKeyIfSame(configNow, deepClone(configDefault))
+        return configNow
+    }
+    function importConfig(c:ConfigInSave){
+        Object.assign(config.value, c)
+        const validKeys = Object.keys(configDefault)
+        for(const k in config.value){
+            if(!validKeys.includes(k) && isKeyOf(k, config.value)){
+                delete config.value[k]
+            }
+        }
+    }
 
     const staNameFontStr = computed<string>(()=>
         `${config.value.staNameFontSize}px ${config.value.staNameFont}`)
@@ -148,6 +163,7 @@ export const useConfigStore = defineStore('config', ()=>{
 
     return { 
         config, readConfigFromSave, writeConfigToSave,
+        getConfigForExporting, importConfig,
         staNameFontStr, staNameFontSubStr,
         clickPtThrsSq, clickLineThrsSq, clickLineThrs_sqrt2_sq, 
         snapOctaClingPtPtThrsSq, snapOctaClingPtNameThrsSq,
