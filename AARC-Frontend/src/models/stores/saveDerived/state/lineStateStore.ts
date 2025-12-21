@@ -35,22 +35,23 @@ export const useLineStateStore = defineStore('lineState', () => {
         if(runDownplay){
             const acc = accentuationConfig.value
             const accIds = accentuationLineIds.value
-            let accentuatedColors:Set<string>|undefined
-            if(acc.spread){
-                accentuatedColors = new Set()
-                for (const [lineId, {color}] of res.entries()){
-                    if(accIds.includes(lineId) && color){
-                        accentuatedColors.add(color)
-                    }
+            let accentuatedColors = acc.spread ? new Set<string>() : undefined
+            let accentuatedLineIds = new Set<number>()
+            for (const [lineId, { color }] of res.entries()) {
+                if (accIds.includes(lineId) && color) {
+                    accentuatedColors?.add(color)
+                    accentuatedLineIds.add(lineId)
                 }
             }
             for (const [lineId, {color}] of res.entries()){
                 if(!color) continue
-                const isTerrain = saveStore.getLineById(lineId)?.type
+                const line = saveStore.getLineById(lineId)
+                const isTerrain = line?.type
                 const inAccIds = accIds.includes(lineId)
                 const accBySpread = accentuatedColors?.has(color)
                 const accByTerrain = acc.terrain && isTerrain
-                const downplay = !inAccIds && !accBySpread && !accByTerrain
+                const accByParent = line?.parent && accentuatedLineIds?.has(line?.parent)
+                const downplay = !inAccIds && !accBySpread && !accByTerrain && !accByParent
                 if(downplay){
                     const newColor = colorProc.colorProcDownplay.convert(color)
                     res.set(lineId, {color:newColor, downplayed:true})
