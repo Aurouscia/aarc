@@ -236,6 +236,12 @@ button.lite{
             background-color: transparent;
         }
     }
+    &.cancel{
+        color:plum;
+        &:hover{
+            background-color: transparent;
+        }
+    }
 }
 
 hr{

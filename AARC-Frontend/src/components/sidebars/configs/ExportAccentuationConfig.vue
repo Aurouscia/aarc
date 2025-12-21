@@ -23,9 +23,23 @@ function handleSelectChange(){
         }
         addingLineId.value = -1
     }
+    else if(addingLineId.value == -2){
+        // 选项中，-2表示添加整个组
+        for(const line of linesForSelect.value){
+            if(selectedLines.value.indexOf(line) < 0){
+                selectedLines.value.push(line)
+            }
+        }
+        syncToAccIds()
+        addingLineId.value = -1
+    }
 }
 function removeLine(line: Line){
     selectedLines.value = selectedLines.value.filter(l => l !== line)
+    syncToAccIds()
+}
+function removeAll(){
+    selectedLines.value = []
     syncToAccIds()
 }
 
@@ -44,10 +58,19 @@ watch(()=>accentuationConfig.value.enabledPreview, (newVal, oldVal)=>{
     }
 })
 
+const addingLineGroupId = ref<number>(-1)
+const lineGroupsForSelect = computed(()=>{
+    if(!saveStore.save?.lineGroups)
+        return []
+    return saveStore.save.lineGroups.filter(l => l.lineType == LineType.common)
+})
 const linesForSelect = computed(()=>{
     if(!saveStore.save?.lines)
         return []
-    const lines = saveStore.save.lines.filter(l => l.type == LineType.common && !l.parent && !accentuationLineIds.value.includes(l.id))
+    let lines = saveStore.save.lines.filter(l => l.type == LineType.common && !l.parent && !accentuationLineIds.value.includes(l.id))
+    if(addingLineGroupId.value > -1){
+        lines = lines.filter(l => (l.group ?? 0) == addingLineGroupId.value)
+    }
     // 按名称排序（如果以数字开头，则按其数字升序排序，有数字的排在没数字的前面）
     sortLinesByName(lines)
     return lines
@@ -82,8 +105,14 @@ onMounted(()=>{
         </tr> -->
         <tr>
             <td colspan="2">
+                <select v-model="addingLineGroupId">
+                    <option :value="-1">所有线路组</option>
+                    <option :value="0">默认分组</option>
+                    <option v-for="g in lineGroupsForSelect" :value="g.id">{{ g.name }}</option>
+                </select><br/>
                 <select @change="handleSelectChange" v-model="addingLineId">
-                    <option :value="-1">点击添加目标</option>
+                    <option :value="-1">点击添加目标线路</option>
+                    <option v-if="addingLineGroupId > -1 && linesForSelect.length > 1" :value="-2">&lt;添加整个组&gt;</option>
                     <option v-for="l in linesForSelect" :value="l.id">{{ l.name }}</option>
                 </select>
                 <div class="acc-lines-selected">
@@ -94,6 +123,8 @@ onMounted(()=>{
                         <button class="lite" @click="removeLine(line)">×</button>
                     </div>
                 </div>
+                <button v-if="selectedLines.length>0" class="lite cancel" style="margin-top: 10px;"
+                    @click="removeAll">清空所有</button>
             </td>
         </tr>
         <tr>

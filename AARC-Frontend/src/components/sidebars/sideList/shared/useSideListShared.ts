@@ -52,6 +52,7 @@ export function useSideListShared(
         ) || []
     })
     const lineGroupsSelectable = computed(()=>{
+        // 设置中有调整线路组顺序的设置项，这里就是用户想要的顺序
         return saveStore.save?.lineGroups?.filter(x=>x.lineType===lineType) || [] 
     })
     const {
