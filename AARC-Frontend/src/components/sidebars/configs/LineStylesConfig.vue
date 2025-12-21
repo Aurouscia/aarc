@@ -91,7 +91,12 @@ function renderPreviewCvsOf(lineStyle:LineStyle, dynaColor:string){
     ctx.beginPath()
     ctx.moveTo(...cvsLeftCoord)
     ctx.lineTo(...cvsRightCoord)
-    strokeStyledLine(ctx, lineStyle, cvsLineWidthBase, dynaColor)
+    strokeStyledLine(ctx, {
+        lineStyle: lineStyle,
+        lineWidthBase: cvsLineWidthBase,
+        dynaColor: dynaColor,
+        fixedColorConverter: (c)=>c
+    })
 }
 
 const styleNameMaxLength = 8

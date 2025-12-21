@@ -20,6 +20,7 @@ import { strokeStyledLine } from "../common/strokeStyledLine";
 import { rayToCoordDist } from "@/utils/rayUtils/rayToCoordDist";
 import { numberCmpEpsilon } from "@/utils/consts";
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
+import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill:number}
 type LineRenderType = 'both'|'body'|'carpet'
@@ -30,6 +31,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     const envStore = useEnvStore();
     const formalizedLineStore = useFormalizedLineStore()
     const cs = useConfigStore();
+    const colorProc = useColorProcStore()
     function renderAllLines(ctx:CvsContext, needReportFormalPtsLines?:number[], ltype?:LineType, rtype?:LineRenderType){
         if(!saveStore.save){
             return
@@ -420,9 +422,19 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
             if(drawBody){
                 const lineColor = lineStateStore.getLineActualColor(lineInfo)
+                const lineDownplayed = lineStateStore.isLineDownplayed(lineInfo.id)
                 const itsStyle = saveStore.save?.lineStyles?.find(x=>x.id===lineInfo.style)
                 if(itsStyle){
-                    strokeStyledLine(ctx, itsStyle, lineWidth, lineColor)
+                    strokeStyledLine(ctx, {
+                        lineStyle: itsStyle,
+                        lineWidthBase: lineWidth,
+                        dynaColor: lineColor,
+                        fixedColorConverter: (c)=>{
+                            if(lineDownplayed)
+                                return colorProc.colorProcDownplay.convert(c)
+                            return c
+                        }
+                    })
                 }else{
                     ctx.lineWidth = lineWidth
                     ctx.strokeStyle = lineColor

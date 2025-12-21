@@ -2,11 +2,14 @@ import { LineStyle } from "@/models/save"
 import { CvsContext } from "./cvsContext"
 
 export function strokeStyledLine(
-        ctx:CanvasRenderingContext2D|CvsContext,
+    ctx: CanvasRenderingContext2D|CvsContext,
+    options: {        
         lineStyle:LineStyle,
         lineWidthBase:number,
         dynaColor:string,
-    ){
+        fixedColorConverter:(c:string)=>string
+    }){
+    const { lineWidthBase, lineStyle, dynaColor, fixedColorConverter } = options
     ctx.lineWidth = lineWidthBase
     ctx.globalAlpha = 1
     ctx.strokeStyle = dynaColor
@@ -26,8 +29,13 @@ export function strokeStyledLine(
         ctx.globalAlpha = layer.opacity
         if(layer.colorMode==='line')
             ctx.strokeStyle = dynaColor
-        else
-            ctx.strokeStyle = layer.color || 'white'
+        else {
+            if(layer.color){
+                ctx.strokeStyle = fixedColorConverter(layer.color)
+            } else {
+                ctx.strokeStyle = 'white'
+            }
+        }
         const dashNums = parseDash(layer.dash)
         for(let i=0;i<dashNums.length;i++){
             dashNums[i] = dashNums[i]*lineWidthBase
