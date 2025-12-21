@@ -6,10 +6,10 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { Line, LineType } from '@/models/save';
 import { useSaveStore } from '@/models/stores/saveStore';
 import sortLinesByName from '@/utils/lineUtils/sortLinesByName';
-import { useEnvStore } from '@/models/stores/envStore';
+import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 
 const saveStore = useSaveStore()
-const envStore = useEnvStore()
+const mainCvsDispatcher = useMainCvsDispatcher()
 const { accentuationEnabled, accentuationLineIds, accentuationConfig } = storeToRefs(useRenderOptionsStore())
 
 const addingLineId = ref<number>(-1)
@@ -35,12 +35,12 @@ watch(()=>({
     cfg: accentuationConfig.value
 }), ()=>{
     if(accentuationConfig.value.enabledPreview){
-        envStore.rerender([], [])
+        mainCvsDispatcher.renderMainCvs({suppressRenderedCallback:true})
     }
 }, { deep: true })
 watch(()=>accentuationConfig.value.enabledPreview, (newVal, oldVal)=>{
     if(!newVal && oldVal){
-        envStore.rerender([], [])
+        mainCvsDispatcher.renderMainCvs({suppressRenderedCallback:true})
     }
 })
 
