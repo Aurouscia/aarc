@@ -149,6 +149,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 rerenderParamLineIds.push(...changedLines)
                 rerenderParamPtIds.push(...movedStaNames)
                 mergeKept = tryMergeRes.keptPt //如果成功合并了，记录下合并中保留了哪一个
+                pointlessLineScan()
             }
         }
         if(nameEditStore.edited && activePt.value?.id){
@@ -512,7 +513,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 cb:()=>{
                     saveStore.removePtFromLine(pt.id, l.id);
                     rerender.value([l.id, ...relatedLineIds], [])
-                    pointlessLineScan()
+                    pointlessLineScan('rerenderIfNeeded')
                     setOpsForPt()
                     activeLine.value = undefined
                 },
@@ -662,7 +663,7 @@ export const useEnvStore = defineStore('env', ()=>{
         activePt.value = undefined
         activeLine.value = undefined
         cursorPos.value = undefined
-        pointlessLineScan()
+        pointlessLineScan('rerenderIfNeeded')
         if(rerenderAfterDone){
             rerender.value()
         }
@@ -860,9 +861,9 @@ export const useEnvStore = defineStore('env', ()=>{
         cursorPos.value = [...newPt.pos]
     }
 
-    function pointlessLineScan(){
+    function pointlessLineScan(rerenderIfNeeded?:'rerenderIfNeeded'):boolean{
         if(!saveStore.save)
-            return
+            return false
         const needRemoveIds:number[] = []
         saveStore.save.lines.forEach(l=>{
             if(l.pts.length<2){
@@ -870,8 +871,12 @@ export const useEnvStore = defineStore('env', ()=>{
             }
         })
         needRemoveIds.forEach(lineId=>delLine(lineId, true))
-        if(needRemoveIds.length>0)
-            rerender.value([],[])
+        if(needRemoveIds.length>0){
+            if(rerenderIfNeeded)
+                rerender.value([],[])
+            return true
+        }
+        return false
     }
     function ensureSpaceForNewPt(coord:Coord){
         const original:Coord = [...coord]
