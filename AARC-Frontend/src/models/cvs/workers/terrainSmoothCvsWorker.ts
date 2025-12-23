@@ -20,7 +20,7 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
     const lineStateStore = useLineStateStore()
     const cs = useConfigStore()
     const formalizedLineStore = useFormalizedLineStore()
-    function renderAllTerrainSmooth(ctx:CvsContext){
+    function renderAllTerrainSmooth(ctx:CvsContext, renderType: 'body'|'carpet'){
         const transitionGroups = findTerrainTransitions()
         const lineWidthBase = cs.config.lineWidth
         transitionGroups.forEach(transGroup=>{
@@ -29,7 +29,6 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
             let smallestAdditionalBack:Record<WayRel, number> 
                 = {'45':1e10, '90':1e10, '135':1e10, 'parallel':0}
             ctx.beginPath()
-            ctx.fillStyle = transGroup.color
             let isFirstT = true
             transGroup.trans.forEach(t=>{
                 const rel = wayRel(t.linkA.way, t.linkB.way, true)
@@ -71,7 +70,15 @@ export const useTerrainSmoothCvsWorker = defineStore('terrainSmoothCvsWorker', (
                 drawArcByThreePoints(ctx, a, c.mid, b)
             })
             ctx.closePath()
-            ctx.fill()
+            if(renderType=='carpet'){
+                ctx.strokeStyle = cs.config.bgColor
+                ctx.lineWidth = cs.config.lineCarpetWiden
+                ctx.stroke()
+            }
+            else if(renderType=='body'){
+                ctx.fillStyle = transGroup.color
+                ctx.fill()
+            }
         })
     }
     function findTerrainTransitions(){
