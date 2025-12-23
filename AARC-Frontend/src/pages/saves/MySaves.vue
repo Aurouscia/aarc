@@ -255,7 +255,7 @@ onMounted(async()=>{
     </tbody></table>
     <table v-if="!isCreatingSave"><tbody>
         <tr><td>
-        <button class="minor dangerZoneBtn" @click="dangerZone = !dangerZone">危险区</button>
+        <button class="minor dangerZoneBtn" @click="dangerZone = !dangerZone">删除/导入</button>
         <div v-show="dangerZone" class="dangerZone">
             <div class="dangerOpName">
                 替换存档数据
