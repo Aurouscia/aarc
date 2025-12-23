@@ -6,6 +6,7 @@ export interface Config{
     bgRefImage: BgRefImageConfig,
 
     lineWidth: number,
+    lineCarpetWiden: number,
     lineTurnAreaRadius: number,
     lineWidthMapped: LineWidthMappedConfig
     lineExtensionHandleLengthVert: string,

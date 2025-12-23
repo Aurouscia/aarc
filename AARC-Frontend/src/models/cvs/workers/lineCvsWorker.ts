@@ -415,7 +415,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             ctx.lineJoin = 'round'
             ctx.lineCap = 'round'
             if(drawCarpet){
-                const carpetWiden = cs.config.lineWidth * 0.5
+                const carpetWiden = cs.config.lineCarpetWiden
                 ctx.lineWidth = lineWidth+carpetWiden
                 ctx.strokeStyle = cs.config.bgColor
                 ctx.stroke()

@@ -14,6 +14,7 @@ export const configDefault:Config = {
     bgRefImage: {},
 
     lineWidth: 14,
+    lineCarpetWiden: 7,
     lineTurnAreaRadius: 30,
     lineWidthMapped: {},
     lineExtensionHandleLengthVert: '',
