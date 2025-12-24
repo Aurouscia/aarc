@@ -6,7 +6,6 @@ import { useEnvStore } from '@/models/stores/envStore';
 import { useConfigStore } from '@/models/stores/configStore';
 import { storeToRefs } from 'pinia';
 import { clamp } from '@/utils/lang/clamp';
-import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { enableContextMenu, disableContextMenu } from '@/utils/eventUtils/contextMenu';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import TextTagConfig from './configs/TextTagConfig.vue';
@@ -18,12 +17,12 @@ import TextTagIconConfig from './configs/TextTagIconConfig.vue';
 import PinyinConvertConfig from './configs/PinyinConvertConfig.vue';
 import { useNameEditStore } from '@/models/stores/nameEditStore';
 import SaveConfigReuse from './configs/SaveConfigReuse.vue';
+import BgRefImageConfig from './configs/BgRefImageConfig.vue';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
 const configStore = useConfigStore()
 const { config } = storeToRefs(configStore)
-const { preventLeaving } = usePreventLeavingUnsavedStore() //无需rerender的地方需要手动调用“阻止未保存离开”
 const nameEditStore = useNameEditStore()
 
 const showLineWidthMapped = ref(false)
@@ -39,30 +38,6 @@ function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', val
     else
         lwm[width][setItem] = undefined
     envStore.rerender([], undefined)
-}
-
-const showBgRefImage = ref(false)
-const bgRefImageOpacityDefault = 50
-function applyBgImage(type:'url'|'opacity'|'left'|'top'|'right'|'bottom'|'width'|'height', value?:string){
-    if(!config.value.bgRefImage)
-        return
-    const bri = config.value.bgRefImage
-    if(type == 'url'){
-        bri.url = value
-        preventLeaving()
-    }else{
-        if(!value?.trim()){
-            bri[type] = undefined
-            return
-        }
-        let valueNum = value ? parseFloat(value) : NaN
-        if(isNaN(valueNum))
-            return
-        if(type == 'opacity')
-            valueNum = clamp(valueNum, 0, 100)
-        bri[type] = valueNum
-        preventLeaving()
-    }
 }
 
 const showOthers = ref(false)
@@ -89,13 +64,6 @@ function visibilityChangedHandler(){
 onMounted(()=>{
     if(!config.value.lineWidthMapped){
         config.value.lineWidthMapped = {}
-    }
-    if(Object.keys(config.value.bgRefImage).length===0){
-        config.value.bgRefImage = {
-            left: 0,
-            right: 0,
-            opacity: bgRefImageOpacityDefault
-        }
     }
     document.addEventListener('visibilitychange', visibilityChangedHandler)
 })
@@ -162,73 +130,7 @@ defineExpose({
 
 <PinyinConvertConfig></PinyinConvertConfig>
 
-<div class="configSection">
-<h2 :class="{sectorShown:showBgRefImage}" @click="showBgRefImage =!showBgRefImage">
-    <div class="shownStatusIcon">{{ showBgRefImage? '×':'+' }}</div>
-    <div>背景参考图</div>
-</h2>
-<table v-show="showBgRefImage" class="fullWidth bgRefImage">
-    <tbody>
-    <tr>
-        <td class="explain" colspan="2">
-            用于参考的底图，仅在编辑器内显示<br/>
-            需要先上传图片到互联网<br/>
-            再复制链接到此处
-        </td>
-    </tr>
-    <tr>
-        <td colspan="2">
-            <b>图片链接</b>
-            <input v-model="config.bgRefImage.url" @blur="e=>applyBgImage('url', (e.target as HTMLInputElement).value)"/>
-            <div class="explain">
-                复杂svg图片将导致缩放卡顿<br/>
-                建议使用png/jpg格式
-            </div>
-        </td>
-    </tr>
-    <tr>
-        <td>不透<br/>明度</td>
-        <td>
-            <input v-model="config.bgRefImage.opacity" type="range" :min="0" :max="100" :step="5"
-                @blur="e=>applyBgImage('opacity', (e.target as HTMLInputElement).value)"/><br/>
-            {{ config.bgRefImage.opacity || bgRefImageOpacityDefault }}%
-        </td>
-    </tr>
-    <tr>
-        <td>位置<br/>偏移</td>
-        <td>
-            <div class="bgRefImageOffsets">
-                <div>
-                    左<input v-model="config.bgRefImage.left" type="number" @blur="e=>applyBgImage('left', (e.target as HTMLInputElement).value)"/>
-                </div>
-                <div>
-                    右<input v-model="config.bgRefImage.right" type="number" @blur="e=>applyBgImage('right', (e.target as HTMLInputElement).value)"/>
-                </div>
-                <div>
-                    上<input v-model="config.bgRefImage.top" type="number" @blur="e=>applyBgImage('top', (e.target as HTMLInputElement).value)"/>
-                </div>
-                <div>
-                    下<input v-model="config.bgRefImage.bottom" type="number" @blur="e=>applyBgImage('bottom', (e.target as HTMLInputElement).value)"/>
-                </div>
-                <div>
-                    宽<input v-model="config.bgRefImage.width" type="number" @blur="e=>applyBgImage('width', (e.target as HTMLInputElement).value)"/>
-                </div>
-                <div>
-                    高<input v-model="config.bgRefImage.height" type="number" @blur="e=>applyBgImage('height', (e.target as HTMLInputElement).value)"/>
-                </div>
-            </div>
-            <div class="explain">
-                “上下左右”为<br/>
-                底图相对画布边缘偏移像素数<br/>
-                正数表示向内，负数表示向外<br/>
-                （若显示异常，请填写更多<br/>
-                位置参数以修复）
-            </div>
-        </td>
-    </tr>
-</tbody>
-</table>
-</div>
+<BgRefImageConfig></BgRefImageConfig>
 
 <SaveConfigReuse></SaveConfigReuse>
 
@@ -337,19 +239,6 @@ defineExpose({
         width: 80px;
         &::placeholder {
             color: #aaa;
-        }
-    }
-}
-.bgRefImage{
-    .bgRefImageOffsets{
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        input{
-            width: 80px;
-            &::placeholder {
-                color: #aaa;
-            }
         }
     }
 }
