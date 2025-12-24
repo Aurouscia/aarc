@@ -130,23 +130,18 @@ namespace AARC.Repos.Saves
                 .ToList();
             return res;
         }
-        public bool Create(SaveDto saveDto, out string? errmsg)
+        public void Create(SaveDto saveDto)
         {
-            errmsg = ValidateDto(saveDto);
-            if (errmsg is { })
-                return false;
+            ValidateDto(saveDto);
             var uid = httpUserIdProvider.RequireUserId();
             Save save = mapper.Map<Save>(saveDto);
             save.OwnerUserId = uid;
             base.Add(save);
-            return true;
         }
-        public bool UpdateInfo(SaveDto saveDto, out string? errmsg)
+        public void UpdateInfo(SaveDto saveDto)
         {
-            errmsg = ValidateDto(saveDto);
-            if (errmsg is { }) return false;
-            errmsg = ValidateAccess(saveDto.Id);
-            if (errmsg is { }) return false;
+            ValidateDto(saveDto);
+            ValidateAccess(saveDto.Id);
             var updated = Existing
                 .Where(x => x.Id == saveDto.Id)
                 .ExecuteUpdate(spc => spc
@@ -154,18 +149,12 @@ namespace AARC.Repos.Saves
                     .SetProperty(x => x.Version, saveDto.Version)
                     .SetProperty(x => x.Intro, saveDto.Intro));
             if (updated == 0)
-            {
-                errmsg = "找不到该存档";
-                return false;
-            }
-            return true;
+                throw new RqEx("找不到该存档");
         }
-        public bool UpdateData(
-            int id, string data,
-            int staCount, int lineCount, out string? errmsg)
+        public void UpdateData(
+            int id, string data, int staCount, int lineCount)
         {
-            errmsg = ValidateAccess(id);
-            if (errmsg is { }) return false;
+            ValidateAccess(id);
             var originalLength = Existing
                 .Where(x => x.Id == id && x.Data != null)
                 .Select(x => x.Data!.Length)
@@ -174,8 +163,7 @@ namespace AARC.Repos.Saves
             {
                 if(data.Length < originalLength / 4)
                 {
-                    errmsg = "内容显著减少，拒绝保存";
-                    return false;
+                    throw new RqEx("内容显著减少，拒绝保存");
                 }
             }
 
@@ -187,12 +175,7 @@ namespace AARC.Repos.Saves
                     .SetProperty(x => x.StaCount, staCount)
                     .SetProperty(x => x.LineCount, lineCount));
             if (updated == 0)
-            {
-                errmsg = "找不到该存档";
-                return false;
-            }
-            errmsg = null;
-            return true;
+                throw new RqEx("找不到该存档");
         }
         public SaveDto? LoadInfo(int id, out string? errmsg)
         {
@@ -222,36 +205,31 @@ namespace AARC.Repos.Saves
             errmsg = null;
             return res.Data;
         }
-        public bool Remove(int id, out string? errmsg)
+        public void Remove(int id)
         {
-            errmsg = ValidateAccess(id);
-            if (errmsg is { }) return false;
+            ValidateAccess(id);
             base.FakeRemove(id);
-            errmsg = null;
-            return true;
         }
 
-        private static string? ValidateDto(SaveDto saveDto)
+        private static void ValidateDto(SaveDto saveDto)
         {
             if (string.IsNullOrWhiteSpace(saveDto.Name))
-                return "名称不能为空";
-            if (saveDto.Name.Length < 1 || saveDto.Name.Length > Save.nameMaxLength)
-                return $"名称长度必须在2-{Save.nameMaxLength}字符";
+                throw new RqEx("名称不能为空");
+            if (saveDto.Name is null || saveDto.Name.Length <= 1 || saveDto.Name.Length > Save.nameMaxLength)
+                throw new RqEx($"名称长度必须在2-{Save.nameMaxLength}字符");
             if (saveDto.Version?.Length > Save.versionMaxLength)
-                return $"版本长度必须小于{Save.versionMaxLength}字符";
+                throw new RqEx($"版本长度必须小于{Save.versionMaxLength}字符");
             if (saveDto.Intro?.Length > Save.introMaxLength)
-                return $"简介长度必须小于{Save.introMaxLength}字符";
-            return null;
+                throw new RqEx($"简介长度必须小于{Save.introMaxLength}字符");
         }
-        private string? ValidateAccess(int saveId)
+        private void ValidateAccess(int saveId)
         {
             var ownerId = base.WithId(saveId).Select(x => x.OwnerUserId).FirstOrDefault();
             var uinfo = httpUserInfoService.UserInfo.Value;
-            if (uinfo is null)
-                return "请登录";
+            if (uinfo.Id == 0)
+                throw new RqEx("请登录");
             if (uinfo.Id != ownerId && !uinfo.IsAdmin)
-                return "无权编辑本存档";
-            return null;
+                throw new RqEx("无权编辑本存档");
         }
     }
 

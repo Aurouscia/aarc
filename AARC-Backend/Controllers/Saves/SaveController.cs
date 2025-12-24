@@ -66,21 +66,17 @@ namespace AARC.Controllers.Saves
         [UserCheck]
         public bool Add([FromBody]SaveDto saveDto)
         {
-            var success = saveRepo.Create(saveDto, out var errmsg);
+            saveRepo.Create(saveDto);
             userRepo.UpdateCurrentUserLastActive();
-            if(success)
-                return true;
-            throw new RqEx(errmsg);
+            return true;
         }
         [HttpPost]
         [UserCheck]
         public bool UpdateInfo([FromBody]SaveDto saveDto)
         {
-            var success = saveRepo.UpdateInfo(saveDto, out var errmsg);
+            saveRepo.UpdateInfo(saveDto);
             userRepo.UpdateCurrentUserLastActive();
-            if (success)
-                return true;
-            throw new RqEx(errmsg);
+            return true;
         }
         [HttpPost]
         [UserCheck]
@@ -137,11 +133,9 @@ namespace AARC.Controllers.Saves
         [HttpDelete]
         public bool Remove(int id)
         {
-            var success = saveRepo.Remove(id, out string? errmsg);
+            saveRepo.Remove(id);
             userRepo.UpdateCurrentUserLastActive();
-            if (success)
-                return true;
-            throw new RqEx(errmsg);
+            return true;
         }
 
         [NonAction]
@@ -170,21 +164,16 @@ namespace AARC.Controllers.Saves
         [NonAction]
         private bool SaveDataToDbAndBackup(int id, string data, int staCount, int lineCount)
         {
-            var success = saveRepo.UpdateData(id, data, staCount, lineCount, out var errmsg);
+            saveRepo.UpdateData(id, data, staCount, lineCount);
             userRepo.UpdateCurrentUserLastActive();
-            if (success)
-            {
-                try
-                {
-                    saveBackupFileService.Write(data, id);
-                }
-                catch(Exception ex)
-                {
-                    logger.LogError(ex, "{id}号画布备份失败，长度{length}", id, data.Length);
-                }
-                return true;
+            try {
+                saveBackupFileService.Write(data, id);
             }
-            throw new RqEx(errmsg);
+            catch(Exception ex)
+            { 
+                logger.LogError(ex, "{id}号画布备份失败，长度{length}", id, data.Length);
+            } 
+            return true;
         }
     }
 }
