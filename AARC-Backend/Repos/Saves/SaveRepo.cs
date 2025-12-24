@@ -155,6 +155,7 @@ namespace AARC.Repos.Saves
             int id, string data, int staCount, int lineCount)
         {
             ValidateAccess(id);
+            Heartbeat(id, HeartbeatType.Renewal);
             var originalLength = Existing
                 .Where(x => x.Id == id && x.Data != null)
                 .Select(x => x.Data!.Length)
@@ -177,38 +178,93 @@ namespace AARC.Repos.Saves
             if (updated == 0)
                 throw new RqEx("找不到该存档");
         }
-        public SaveDto? LoadInfo(int id, out string? errmsg)
+        public SaveDto? LoadInfo(int id)
         {
             var res = Viewable
                 .Where(x => x.Id == id)
                 .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
                 .FirstOrDefault();
             if (res is null)
-            {
-                errmsg = "无法加载存档信息";
-                return null;
-            }
-            errmsg = null;
+                throw new RqEx("无法加载存档信息");
             return res;
         }
-        public string? LoadData(int id, out string? errmsg)
+        public string? LoadData(int id)
         {
+            Heartbeat(id, HeartbeatType.Initialization);
             var res = Viewable
                 .Where(x => x.Id == id)
                 .Select(x => new { x.Id, x.Data })
                 .FirstOrDefault();
             if (res is null)
-            {
-                errmsg = "无法加载存档数据";
-                return null;
-            }
-            errmsg = null;
+                throw new RqEx("无法加载存档数据");
             return res.Data;
         }
         public void Remove(int id)
         {
             ValidateAccess(id);
             base.FakeRemove(id);
+        }
+
+        private static TimeSpan HeartbeatValidSpan => TimeSpan.FromMinutes(5);
+        private static Lock HeartbeatLock => new();
+        public void Heartbeat(int id, HeartbeatType type)
+        {
+            lock (HeartbeatLock)
+            {
+                var lastBeat = Existing
+                    .Where(x => x.Id == id)
+                    .Select(x => new { x.HeartbeatAt, x.HeartbeatUserId })
+                    .FirstOrDefault();
+                if (lastBeat is null)
+                    throw new RqEx("找不到当前存档");
+                var uid = httpUserIdProvider.RequireUserId();
+                if (uid != lastBeat.HeartbeatUserId)
+                {
+                    // 若上次心跳的人与此次不同
+                    if (type == HeartbeatType.Initialization)
+                    {
+                        // 初始心跳：检查前一个人的心跳是否超时（是否已经离开很久了）
+                        var passedTime = DateTime.Now - lastBeat.HeartbeatAt;
+                        if (passedTime < HeartbeatValidSpan)
+                        {
+                            // 如果时间未到，还不能进，给出当前编辑用户的用户名
+                            var editingUserName = base.Context.Users
+                                .Where(x => x.Id == lastBeat.HeartbeatUserId)
+                                .Select(x => x.Name)
+                                .FirstOrDefault() ?? "???";
+                            throw new RqEx($"该画布正在被人编辑：[{editingUserName}]");
+                        }
+                    }
+                    else if (type == HeartbeatType.Renewal)
+                    {
+                        // 续约心跳：前一次心跳的人不是自己，说明中间离开太久，他人已经进来过
+                        // 此时不能再保存，只能丢弃更改，否则会覆盖其他人（错的人是当前用户，上一个用户没有做错什么）
+                        throw new RqEx("您离开时，画布已被他人编辑，请重新进入");
+                    }
+                }
+                // 到这里说明没有问题，可以心跳
+                Existing.Where(x => x.Id == id)
+                    .ExecuteUpdate(spc => spc
+                        .SetProperty(x => x.HeartbeatAt, DateTime.Now)
+                        .SetProperty(x => x.HeartbeatUserId, uid)
+                    );
+            }
+        }
+
+        public void HeartbeatRelease(int id)
+        {
+            lock (HeartbeatLock){
+                var lastBeatUser = Existing
+                    .Where(x => x.Id == id)
+                    .Select(x => x.HeartbeatUserId)
+                    .FirstOrDefault();
+                var uid = httpUserIdProvider.RequireUserId();
+                if (uid == lastBeatUser)
+                {
+                    Existing.Where(x => x.Id == id)
+                        .ExecuteUpdate(spc => spc.SetProperty(x => x.HeartbeatAt, DateTime.MinValue));
+                }
+            }
         }
 
         private static void ValidateDto(SaveDto saveDto)
@@ -259,5 +315,11 @@ namespace AARC.Repos.Saves
                     destinationMember: x => x.LastActive,
                     memberOptions: mem => mem.MapFrom(source => source.LastActive.ToString("yyyy-MM-dd HH:mm")));
         }
+    }
+    
+    public enum HeartbeatType : byte
+    {
+        Initialization = 0,
+        Renewal = 1
     }
 }

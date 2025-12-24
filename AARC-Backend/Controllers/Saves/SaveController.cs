@@ -115,9 +115,7 @@ namespace AARC.Controllers.Saves
         public SaveDto? LoadInfo(int id)
         {
             authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.View, true);
-            var data = saveRepo.LoadInfo(id, out var errmsg);
-            if (errmsg is not null)
-                throw new RqEx(errmsg);
+            var data = saveRepo.LoadInfo(id);
             return data;
         }
         [AllowAnonymous]
@@ -125,9 +123,7 @@ namespace AARC.Controllers.Saves
         public string? LoadData(int id)
         {
             authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.View, true);
-            var data = saveRepo.LoadData(id, out var errmsg);
-            if (errmsg is not null)
-                throw new RqEx(errmsg);
+            var data = saveRepo.LoadData(id);
             return data;
         }
         [HttpDelete]
@@ -135,6 +131,19 @@ namespace AARC.Controllers.Saves
         {
             saveRepo.Remove(id);
             userRepo.UpdateCurrentUserLastActive();
+            return true;
+        }
+        [HttpGet]
+        public bool HeartbeatRenewal(int id)
+        {
+            authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.Edit, false);
+            saveRepo.Heartbeat(id, HeartbeatType.Renewal);
+            return true;
+        }
+        [HttpGet]
+        public bool HeartbeatRelease(int id)
+        {
+            saveRepo.HeartbeatRelease(id);
             return true;
         }
 
