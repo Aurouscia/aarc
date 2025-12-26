@@ -26,8 +26,11 @@ import { compressObjectToGzip } from '@/utils/dataUtils/compressObjectToGzip';
 import { useLoadedSave } from '@/models/stores/utils/loadedSave';
 import { HttpUserInfo } from '@/app/com/apiGenerated';
 import DontUseWeirdBrowser from './components/DontUseWeirdBrowser.vue';
+import { useRoute } from 'vue-router';
+import { editorParamViewOnly } from './routes/routesNames';
 
 const props = defineProps<{saveId:string}>()
+const route = useRoute()
 const uniq = useUniqueComponentsStore()
 const { showPop } = uniq
 const { topbarShow } = storeToRefs(uniq)
@@ -51,9 +54,11 @@ async function load() {
     if(!isNaN(saveIdNum.value)){
         const userInfo = await userInfoStore.getIdentityInfo(true)
         await checkLoginLeftTime(userInfo)
+        const viewOnly = route.query[editorParamViewOnly]
+        const loadForEdit = !viewOnly
         let resp
         try{
-            resp = await api.save.loadData(saveIdNum.value)
+            resp = await api.save.loadData(saveIdNum.value, loadForEdit)
         }
         catch{
             return // http失败：中止加载，避免cvs出现

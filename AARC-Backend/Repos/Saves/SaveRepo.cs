@@ -188,9 +188,10 @@ namespace AARC.Repos.Saves
                 throw new RqEx("无法加载存档信息");
             return res;
         }
-        public string? LoadData(int id)
+        public string? LoadData(int id, bool forEdit)
         {
-            Heartbeat(id, HeartbeatType.Initialization);
+            if(forEdit)
+                Heartbeat(id, HeartbeatType.Initialization);
             var res = Viewable
                 .Where(x => x.Id == id)
                 .Select(x => new { x.Id, x.Data })

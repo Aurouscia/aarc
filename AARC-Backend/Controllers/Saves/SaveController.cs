@@ -120,10 +120,12 @@ namespace AARC.Controllers.Saves
         }
         [AllowAnonymous]
         [HttpPost]
-        public string? LoadData(int id)
+        public string? LoadData(int id, bool forEdit)
         {
             authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.View, true);
-            var data = saveRepo.LoadData(id);
+            if(forEdit)
+                authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.Edit, false);
+            var data = saveRepo.LoadData(id, forEdit);
             return data;
         }
         [HttpDelete]

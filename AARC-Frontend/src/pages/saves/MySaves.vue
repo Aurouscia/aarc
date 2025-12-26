@@ -152,7 +152,7 @@ function resetDangerZone(){
 async function downloadJson(){
     if(!editingSave.value)
         return
-    const json = await api.save.loadData(editingSave.value.id)
+    const json = await api.save.loadData(editingSave.value.id, false)
     if(json)
         fileDownload(json, `${editingSave.value.name}.aarc.json`)
 }
