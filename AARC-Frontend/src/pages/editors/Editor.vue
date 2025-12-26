@@ -6,7 +6,7 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { storeToRefs } from 'pinia';
-import { computed, onBeforeMount, onUnmounted, ref, watch } from 'vue';
+import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { devSave } from '@/data/dev/devSave';
 import { useApiStore } from '@/app/com/apiStore';
 import { normalizeSave } from '@/models/save/saveNormalize';
@@ -75,6 +75,9 @@ async function load() {
             savingDisabledWarning.value = '非存档所有者，仅供浏览，不能保存'
             preventLeavingDisabled.value = true //登录了但不是所有者，不阻止未保存退出
         }
+        else{
+            startHeartbeat()
+        }
     }
     else if(isDemo.value){
         saveStore.save = normalizeSave(deepClone(devSave))
@@ -142,6 +145,10 @@ async function saveData(){
         const miniCvs = miniatureCvsDispatcher.renderMiniatureCvs(256, 2)
         const miniBlob = await miniCvs.convertToBlob()
         await api.save.updateMiniature(saveIdNum.value, {data:miniBlob, fileName:'mini.png'})
+
+        //重新初始化心跳定时器周期，因为“保存”本身会触发一次心跳续约
+        endHeartbeat()
+        startHeartbeat()
     }
 }
 async function checkLoginLeftTime(userInfo:HttpUserInfo){
@@ -165,9 +172,25 @@ function setLeavingPreventing(){
     //将“主画布重新渲染”当成“存档信息变化”，当主画布重新渲染时，阻止用户离开/刷新页面/关闭页面
     mainCvsDispatcher.afterMainCvsRendered = preventLeaving
 }
+
+let heartbeatTimer = 0
+const heartbeatIntervalSecs = 3 * 60 // 每3分钟心跳一次
+function startHeartbeat(){
+    // 开始心跳续约周期（不需要立即执行一次，因为loadData相当于已经执行过一次）
+    heartbeatTimer = window.setInterval(async()=>{
+        await api.save.heartbeatRenewal(saveIdNum.value)
+    }, heartbeatIntervalSecs * 1000)
+}
+function endHeartbeat(){
+    // 结束心跳续约周期
+    window.clearInterval(heartbeatTimer)
+}
+
 watch(props, async()=>{
+    // 一旦画布id发生变化，刷新浏览器（否则无法保证状态清理干净）
     window.location.reload()
 })
+
 const saveShortcutListener = new ShortcutListener(()=>{ saveData() }, {code:'KeyS', ctrl:true})
 const deleteShortcutListener = new ShortcutListener(()=>{
     const ael = document.activeElement
@@ -190,6 +213,7 @@ const hiddenLongWatcher = new DocumentHiddenLongWatcher(30*1000, ()=>{
         showHiddenLongWarn.value = true
 }) 
 onBeforeMount(async()=>{
+    // 一旦发现之前加载过其他画布，刷新浏览器（否则无法保证状态清理干净）
     if(loadedSave.value){
         window.location.reload()
     }
@@ -201,7 +225,11 @@ onBeforeMount(async()=>{
     cachePreventStart()
     hiddenLongWatcher.startWatching()
 })
-onUnmounted(()=>{
+onBeforeUnmount(()=>{
+    endHeartbeat()
+    api.save.heartbeatRelease(saveIdNum.value)
+        .then(()=>{console.log('心跳释放成功')})
+        .catch((e)=>{console.error('心跳释放失败', e)})
     mainCvsDispatcher.afterMainCvsRendered = undefined
     topbarShow.value = true
     saveShortcutListener.dispose()

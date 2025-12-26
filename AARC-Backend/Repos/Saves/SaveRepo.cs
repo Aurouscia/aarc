@@ -205,7 +205,8 @@ namespace AARC.Repos.Saves
             base.FakeRemove(id);
         }
 
-        private static TimeSpan HeartbeatValidSpan => TimeSpan.FromMinutes(5);
+        // 心跳有效期10分钟，超过10分钟允许其他人进来
+        private static TimeSpan HeartbeatValidSpan => TimeSpan.FromMinutes(10);
         private static Lock HeartbeatLock => new();
         public void Heartbeat(int id, HeartbeatType type)
         {
