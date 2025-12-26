@@ -278,8 +278,9 @@ onMounted(async()=>{
 <SideBar ref="authGrantSb">
     <h1>授权管理</h1>
     <template v-if="editingSave?.id">
-        <SwitchingTabs :texts="['存档查看']">
+        <SwitchingTabs :texts="['存档查看', '存档编辑']">
             <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="editingSave.id" :type="AuthGrantTypeOfSave.View"/>
+            <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="editingSave.id" :type="AuthGrantTypeOfSave.Edit"/>
         </SwitchingTabs>
         <div class="smallNote globalAgNote">
             注：可以在“顶部栏-用户-个人授权管理“中配置自己的全局默认设置，此处的设置仅对当前存档有效（判断时优先于全局设置）
