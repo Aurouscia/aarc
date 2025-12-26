@@ -14,16 +14,20 @@ const { accentuationEnabled, accentuationLineIds, accentuationConfig } = storeTo
 
 const addingLineId = ref<number>(-1)
 const selectedLines = ref<Line[]>([])
-function handleSelectChange(){
-    if(addingLineId.value > 0){
-        const line = saveStore.getLineById(addingLineId.value)
+async function handleSelectChange(){
+    let adding = addingLineId.value // 存储选中值
+    if(adding == -1)
+        return
+    addingLineId.value = -1; // 复位
+    await new Promise(r=>window.setTimeout(r, 100))
+    if(adding > 0){
+        const line = saveStore.getLineById(adding)
         if(line && selectedLines.value.indexOf(line) < 0){
             selectedLines.value.push(line)
             syncToAccIds()
         }
-        addingLineId.value = -1
     }
-    else if(addingLineId.value == -2){
+    else if(adding == -2){
         // 选项中，-2表示添加整个组
         for(const line of linesForSelect.value){
             if(selectedLines.value.indexOf(line) < 0){
@@ -31,7 +35,6 @@ function handleSelectChange(){
             }
         }
         syncToAccIds()
-        addingLineId.value = -1
     }
 }
 function removeLine(line: Line){
