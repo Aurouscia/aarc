@@ -216,6 +216,7 @@ onBeforeMount(async()=>{
     // 一旦发现之前加载过其他画布，刷新浏览器（否则无法保证状态清理干净）
     if(loadedSave.value){
         window.location.reload()
+        return
     }
     setLeavingPreventing()
     topbarShow.value = false
