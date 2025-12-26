@@ -212,9 +212,14 @@ onMounted(async()=>{
 </SideBar>
 <SideBar ref="authGrantSidebar">
     <h1>授权管理</h1>
-    <SwitchingTabs :texts="['存档查看']">
+    <SwitchingTabs :texts="['存档查看', '存档编辑']">
         <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="0" :type="AuthGrantTypeOfSave.View"/>
+        <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="0" :type="AuthGrantTypeOfSave.Edit"/>
     </SwitchingTabs>
+    <div class="smallNote">
+        注：这里是全局设置，对所有存档有效，如有需要可另外为单个存档添加专用授权设置<br/>
+        例如：在全局设置中添加“允许某用户”，再在某存档设置中添加“拒绝该用户”，相当于该用户仅能编辑除某存档外，你的其他存档
+    </div>
 </SideBar>
 </template>
 
@@ -228,5 +233,8 @@ onMounted(async()=>{
 .userName{
     margin: auto;
     max-width: 180px;
+}
+.smallNote{
+    margin-top: 10px;
 }
 </style>

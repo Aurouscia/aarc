@@ -237,7 +237,7 @@ onMounted(async()=>{
         <tr>
             <td>权限</td>
             <td>
-                <button class="lite" @click="authGrantSb?.extend">打开设置栏</button>
+                <button class="lite confirm" @click="authGrantSb?.extend">打开设置栏</button>
             </td>
         </tr>
         <tr>
@@ -281,7 +281,7 @@ onMounted(async()=>{
         <SwitchingTabs :texts="['存档查看']">
             <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="editingSave.id" :type="AuthGrantTypeOfSave.View"/>
         </SwitchingTabs>
-        <div class="smallNote">
+        <div class="smallNote globalAgNote">
             注：可以在“顶部栏-用户-个人授权管理“中配置自己的全局默认设置，此处的设置仅对当前存档有效（判断时优先于全局设置）
         </div>
     </template>
@@ -325,5 +325,8 @@ onMounted(async()=>{
         text-align: center;
         color: red;
     }
+}
+.globalAgNote{
+    margin-top: 10px;
 }
 </style>

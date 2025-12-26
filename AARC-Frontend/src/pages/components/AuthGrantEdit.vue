@@ -55,8 +55,9 @@ async function moveUp(ag:AuthGrant){
     await apiStore.authGrant.setPriorities(props.on, props.onId, props.type, ids)
     showPop('已调整顺序','success')
 }
-async function del(ag:AuthGrant){
-    if(!window.confirm('确认删除？'))
+async function del(ag:AuthGrantDisplay){
+    let msg = `要取消“${ag.flagText}${ag.toName || ag.toText}”吗？`
+    if(!window.confirm(msg))
         return
     const success = await apiStore.authGrant.remove(ag)
     if(success){
@@ -129,7 +130,9 @@ onMounted(async() => {
 <template>
 <table class="fullWidth"><tbody>
     <tr v-for="ag,idx in listDisplay">
-        <td :style="{color: ag.flagColor}">{{ ag.flagText }}</td>
+        <td style="width: 90px;" :style="{color: ag.flagColor}">
+            {{ ag.flagText }}
+        </td>
         <td>
             {{ ag.toText }}
             <div v-if="ag.toName" class="ag-to-name">
@@ -166,7 +169,7 @@ onMounted(async() => {
             <UserSelect v-if="userSelectShow" @select="userSelectSelected"></UserSelect>
         </td>
         <td>
-            <button class="lite" @click="add">新增</button>
+            <button class="lite confirm" @click="add">新增</button>
         </td>
     </tr>
     <tr>
@@ -174,7 +177,11 @@ onMounted(async() => {
             <button class="lite confirm" @click="wantAdd=true">新增授权设置</button>
         </td>
         <td colspan="3" v-else>
-            <div class="smallNote">下方的会覆盖上方的</div>
+            <div class="smallNote">
+                下方的会覆盖上方的，例如：<br/>
+                允许会员，再拒绝某用户，相当于仅拒绝某用户<br/>
+                拒绝某用户，再允许会员，对某用户的拒绝无效
+            </div>
         </td>
     </tr>
 </tbody></table>
