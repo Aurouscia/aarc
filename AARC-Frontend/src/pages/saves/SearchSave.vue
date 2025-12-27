@@ -2,19 +2,17 @@
 import { SaveDto } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import { onMounted, ref } from 'vue';
-import defaultMini from '@/assets/defaultMini.svg';
 import Loading from '@/components/common/Loading.vue';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
 import { useSavesRoutesJump } from './routes/routesJump';
 import { useRouter } from 'vue-router';
-import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 import { SaveListOrderBy, useSaveListLocalConfigStore } from '@/app/localConfig/saveListLocalConfig';
 import { storeToRefs } from 'pinia';
+import SaveAvatar from '../components/SaveAvatar.vue';
 
 const api = useApiStore()
 const { someonesSavesRoute, searchSaveRoute } = useSavesRoutesJump()
-const { editorRoute } = useEditorsRoutesJump()
 const router = useRouter()
 const searchInit = router.currentRoute.value.query["s"] as string|undefined
 const orderbyInit = router.currentRoute.value.query["o"] as string|undefined
@@ -92,9 +90,7 @@ onMounted(()=>{
     </tr>
     <tr v-for="s in searchRes">
         <td>
-            <RouterLink :to="editorRoute(s.id??0)">
-                <img :src="s.miniUrl || defaultMini" class="mini" loading="lazy"/>
-            </RouterLink>
+            <SaveAvatar :s="s"></SaveAvatar>
         </td>
         <td>
             {{ s.name }}

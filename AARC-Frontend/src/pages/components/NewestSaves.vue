@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { useApiStore } from '@/app/com/apiStore';
 import { onMounted, ref } from 'vue';
-import defaultMini from '@/assets/defaultMini.svg';
-import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { SaveDto } from '@/app/com/apiGenerated';
+import SaveAvatar from './SaveAvatar.vue';
 
 const props = defineProps<{
     forAuditor?: boolean
 }>()
 const api = useApiStore()
-const { editorRoute } = useEditorsRoutesJump()
 const { someonesSavesRoute } = useSavesRoutesJump()
 const list = ref<SaveDto[]>([])
 async function load(){
@@ -58,9 +56,7 @@ onMounted(async()=>{
 <template>
 <div class="newestSaves">
     <div v-for="s in list" :key="s.id">
-        <RouterLink :to="editorRoute(s.id??0)">
-            <img :src="s.miniUrl || defaultMini" loading="lazy"/>
-        </RouterLink>
+        <SaveAvatar :s="s" :size="120"></SaveAvatar>
         <div class="cvsName">{{ s.name }}</div>
         <div class="cvsData">{{ s.lineCount }}线 {{ s.staCount }}站</div>
         <RouterLink :to="someonesSavesRoute(s.ownerUserId||0)" class="cvsOwner">
@@ -81,27 +77,14 @@ onMounted(async()=>{
     justify-content: flex-start;
     padding: 15px;
     gap: 15px;
-    $blockWidthMobile: 128px;
-    $blockWidthPC: 256px;
     &>div{
-        width: $blockWidthMobile;
+        width: 120px;
         flex-shrink: 0;
         flex-grow: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 5px;
-        & img{
-            width: $blockWidthMobile;
-            height: $blockWidthMobile;
-            border-radius: 15px;
-            object-fit: contain;
-            box-shadow: 0px 0px 0px 0px black;
-            &:hover{
-                transform: scale(1.03);
-                box-shadow: 0px 0px 10px 0px black;
-            }
-        }
         .cvsName, .cvsOwner, .cvsData{
             max-width: 90%;
             white-space: nowrap;
@@ -121,13 +104,6 @@ onMounted(async()=>{
             min-width: 80px;
             text-align: center;
             font-weight: bold;
-        }
-        @media screen and (min-width: 1000px) {
-            width: $blockWidthPC;
-            & img{
-                width: $blockWidthPC;
-                height: $blockWidthPC;
-            }
         }
     }
 }

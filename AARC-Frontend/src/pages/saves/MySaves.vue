@@ -2,7 +2,6 @@
 import { onMounted, ref, nextTick, computed, watch, useTemplateRef } from 'vue';
 import { useApiStore } from '@/app/com/apiStore';
 import SideBar from '@/components/common/SideBar.vue';
-import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { appVersionCheck } from '@/app/appVersionCheck';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import fileDownload from 'js-file-download';
@@ -17,10 +16,10 @@ import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom'
 import AuthGrantEdit from '../components/AuthGrantEdit.vue';
 import { AuthGrantOn, AuthGrantTypeOfSave } from '@/app/com/apiGenerated';
 import SwitchingTabs from '@/components/common/SwitchingTabs.vue';
+import SaveAvatar from '../components/SaveAvatar.vue';
 
 const saveList = ref<WithIntroShow<SaveDto>[]>()
 const api = useApiStore();
-const { editorRoute } = useEditorsRoutesJump()
 const { showPop } = useUniqueComponentsStore()
 const userInfoStore = useUserInfoStore()
 const props = defineProps<{
@@ -187,9 +186,7 @@ onMounted(async()=>{
     </tr>
     <tr v-for="s in saveList">
         <td>
-            <RouterLink :to="editorRoute(s.id??0)">
-                <img :src="s.miniUrl || defaultMini" class="mini" loading="lazy"/>
-            </RouterLink>
+            <SaveAvatar :s="s" :definitely-editable="true"></SaveAvatar>
         </td>
         <td>
             {{ s.name }}
