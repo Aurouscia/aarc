@@ -12,12 +12,24 @@ public class AuthGrantCheckService(
 {
     public void CheckFor(AuthGrantOn on, int onId, byte type, bool defaultAllow)
     {
-        var res = CalculateFor(on, [onId], type, false).FirstOrDefault();
+        var res = CalculateFor(on, [onId], type).FirstOrDefault();
         if (res == AuthGrantCheckResult.Reject
             || (!defaultAllow && res == AuthGrantCheckResult.Default))
             throw new RqEx("拒绝访问");
     }
-    public List<AuthGrantCheckResult> CalculateFor(AuthGrantOn on, List<int> onIds, byte type, bool isForGallery)
+    public List<bool> CalculateFor(AuthGrantOn on, List<int> onIds, byte type, bool defaultAllow)
+    {
+        return CalculateFor(on, onIds, type)
+            .ConvertAll(x =>
+            {
+                if (x == AuthGrantCheckResult.Allow)
+                    return true;
+                if (x == AuthGrantCheckResult.Reject)
+                    return false;
+                return defaultAllow;
+            });
+    }
+    public List<AuthGrantCheckResult> CalculateFor(AuthGrantOn on, List<int> onIds, byte type)
     {
         // 如果是管理员，直接allow所有
         bool isAdmin = userInfoService.IsAdmin;
@@ -51,7 +63,6 @@ public class AuthGrantCheckService(
                     bool match =
                         ag.To == AuthGrantTo.All
                         || ag.To == AuthGrantTo.AllMembers && isMember
-                        || ag.To == AuthGrantTo.Gallery && isForGallery
                         || ag.To == AuthGrantTo.User && uid == ag.ToId;
                     if (match)
                         result = ag.Flag ? AuthGrantCheckResult.Allow : AuthGrantCheckResult.Reject;

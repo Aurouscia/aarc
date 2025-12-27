@@ -31,7 +31,8 @@ namespace AARC.Controllers.Saves
         {
             var list = saveRepo.GetNewestSaves(forAuditor: false);
             EnrichSaveMini(list);
-            EnrichSaveOwner(list);
+            EnrichUserName(list);
+            EnrichPrivilege(list);
             return list;
         }
         [HttpGet]
@@ -40,7 +41,8 @@ namespace AARC.Controllers.Saves
         {
             var list = saveRepo.GetNewestSaves(forAuditor: true);
             EnrichSaveMini(list);
-            EnrichSaveOwner(list);
+            EnrichUserName(list);
+            EnrichPrivilege(list);
             return list;
         }
         [AllowAnonymous]
@@ -49,6 +51,7 @@ namespace AARC.Controllers.Saves
         {
             var list = saveRepo.GetMySaves(uid);
             EnrichSaveMini(list);
+            EnrichPrivilege(list);
             return list;
         }
         [AllowAnonymous]
@@ -59,7 +62,8 @@ namespace AARC.Controllers.Saves
                 return [];
             var list = saveRepo.Search(search, orderBy, pageIdx);
             EnrichSaveMini(list);
-            EnrichSaveOwner(list);
+            EnrichUserName(list);
+            EnrichPrivilege(list);
             return list;
         }
         [HttpPost]
@@ -159,17 +163,42 @@ namespace AARC.Controllers.Saves
             }
         }
         [NonAction]
-        private void EnrichSaveOwner(List<SaveDto> saves)
+        private void EnrichUserName(List<SaveDto> saves)
         {
-            var userIds = saves.ConvertAll(x => x.OwnerUserId);
+            var userIds = new HashSet<int>();
+            saves.ForEach(s =>
+            {
+                userIds.Add(s.OwnerUserId);
+                userIds.Add(s.EditingByUserId);
+            });
+            userIds.Remove(0);
             var users = userRepo.Existing
                 .Where(x => userIds.Contains(x.Id))
                 .Select(x => new { x.Id, x.Name })
                 .ToList();
             foreach (var s in saves)
             {
-                var uname = users.Find(u => u.Id == s.OwnerUserId)?.Name;
-                s.OwnerName = uname;
+                var ownerName = users.Find(u => u.Id == s.OwnerUserId)?.Name;
+                s.OwnerName = ownerName;
+                if (s.EditingByUserId > 0)
+                {
+                    var editingName = users.Find(u => u.Id == s.EditingByUserId)?.Name;
+                    s.EditingByUserName = editingName;
+                }
+            }
+        }
+        [NonAction]
+        private void EnrichPrivilege(List<SaveDto> saves)
+        {
+            var ids = saves.ConvertAll(x => x.Id);
+            var allowEdit = authGrantCheckService
+                .CalculateFor(AuthGrantOn.Save, ids, (byte)AuthGrantTypeOfSave.Edit, false);
+            var allowView = authGrantCheckService
+                .CalculateFor(AuthGrantOn.Save, ids, (byte)AuthGrantTypeOfSave.View, true);
+            for (int i = 0; i < saves.Count; i++)
+            {
+                saves[i].AllowRequesterEdit = allowEdit.ElementAtOrDefault(i);
+                saves[i].AllowRequesterView = allowView.ElementAtOrDefault(i);
             }
         }
         [NonAction]

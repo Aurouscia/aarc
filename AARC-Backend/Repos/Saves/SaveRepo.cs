@@ -8,6 +8,7 @@ using AARC.Services.App.Mapping;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace AARC.Repos.Saves
 {
@@ -58,6 +59,7 @@ namespace AARC.Repos.Saves
                 .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
                 .Take(10)
                 .ToList();
+            EnrichEditingBy(res);
             return res;
         }
         public List<SaveDto> GetMySaves(int uid = 0)
@@ -87,10 +89,10 @@ namespace AARC.Repos.Saves
                 .OrderByDescending(x => x.LastActive)
                 .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
                 .ToList();
+            EnrichEditingBy(res);
             return res;
         }
-        public List<SaveDto> Search(
-            string search, string orderby, int pageIdx)
+        public List<SaveDto> Search(string search, string orderby, int pageIdx)
         {
             var q = Viewable;
 
@@ -128,6 +130,7 @@ namespace AARC.Repos.Saves
                 .Skip(skip)
                 .Take(take)
                 .ToList();
+            EnrichEditingBy(res);
             return res;
         }
         public void Create(SaveDto saveDto)
@@ -289,6 +292,15 @@ namespace AARC.Repos.Saves
             if (uinfo.Id != ownerId && !uinfo.IsAdmin)
                 throw new RqEx("无权编辑本存档");
         }
+        private static void EnrichEditingBy(List<SaveDto> saveDtoList)
+        {
+            foreach(var d in saveDtoList)
+            {
+                var stillValid = (DateTime.Now - d.HeartbeatAt) < HeartbeatValidSpan;
+                if (stillValid)
+                    d.EditingByUserId = d.HeartbeatUserId;
+            }
+        }
     }
 
     public class SaveDto
@@ -304,6 +316,14 @@ namespace AARC.Repos.Saves
         public int LineCount { get; set; }
         public byte Priority { get; set; }
         public string? LastActive { get; set; }
+        public bool AllowRequesterView { get; set; }
+        public bool AllowRequesterEdit { get; set; }
+        public int EditingByUserId { get; set; }
+        public string? EditingByUserName { get; set; }
+        [JsonIgnore]
+        public DateTime HeartbeatAt { get; set; }
+        [JsonIgnore]
+        public int HeartbeatUserId { get; set; }
     }
 
     public class SaveDtoProfile : Profile
