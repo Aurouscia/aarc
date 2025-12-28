@@ -20,6 +20,7 @@ import { storeToRefs } from 'pinia';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import ExportAccentuationConfig from './configs/ExportAccentuationConfig.vue';
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
+import ExportEtcConfig from './configs/ExportEtcConfig.vue';
 
 const sidebar = useTemplateRef('sidebar')
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -297,6 +298,7 @@ onMounted(()=>{
             <div class="exportConfigs">
                 <ExportAccentuationConfig></ExportAccentuationConfig>
                 <ExportWatermarkConfig></ExportWatermarkConfig>
+                <ExportEtcConfig></ExportEtcConfig>
                 <ConfigSection :title="'已知的浏览器限制'">
                     <table class="fullWidth browserLimit">
                         <tbody>

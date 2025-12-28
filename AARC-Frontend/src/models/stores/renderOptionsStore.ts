@@ -5,11 +5,13 @@ import { ref } from "vue";
 export const useRenderOptionsStore = defineStore('renderOptions', ()=>{
     const exporting = ref<boolean>(false)
 
+    const bgOpacity = ref<number>(1)
+
     const accentuationLineIds = ref<number[]>([])
     const accentuationEnabled = ref<boolean>(true)
     const { accentuation: accentuationConfig } = storeToRefs(useExportLocalConfigStore())
     return { 
-        exporting,
+        exporting, bgOpacity,
         accentuationLineIds, accentuationEnabled, accentuationConfig
     }
 })

@@ -62,8 +62,10 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         const { changedLines, movedStaNames, suppressRenderedCallback } = options
         const forExport = renderOptionsStore.exporting
         if(forExport){
+            ctx.globalAlpha = renderOptionsStore.bgOpacity ?? 1
             ctx.fillStyle = cs.config.bgColor
             ctx.fillTotal()
+            ctx.globalAlpha = 1
         }
         if(!visitorMode.value)
             renderWatermark(ctx, 'beforeMain', forExport)
