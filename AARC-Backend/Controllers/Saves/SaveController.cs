@@ -130,6 +130,15 @@ namespace AARC.Controllers.Saves
         }
         [AllowAnonymous]
         [HttpPost]
+        [RateLimit(5, 5)]
+        public SaveDto? LoadStatus(int id)
+        {
+            var data = saveRepo.LoadStatus(id);
+            EnrichPrivilege([data]);
+            return data;
+        }
+        [AllowAnonymous]
+        [HttpPost]
         public string? LoadData(int id, bool forEdit)
         {
             authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.View, true);

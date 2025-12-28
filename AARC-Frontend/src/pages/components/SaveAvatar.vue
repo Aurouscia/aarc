@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, CSSProperties } from 'vue';
+import { computed, CSSProperties, ref } from 'vue';
 import { SaveDto } from '@/app/com/apiGenerated';
 import defaultMini from '@/assets/defaultMini.svg'
 import iconLock from '@/assets/ui/lock.svg';
@@ -9,7 +9,9 @@ import { useRouter } from 'vue-router';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { storeToRefs } from 'pinia';
+import { useApiStore } from '@/app/com/apiStore';
 
+const api = useApiStore()
 const props = defineProps<{
     s: SaveDto,
     size?: number,
@@ -31,17 +33,22 @@ interface SaveAvatarStatus{
     clickBehavior: 'refuse'|'wait'|'edit'
 }
 const status = computed<SaveAvatarStatus|undefined>(()=>{
-    const s = props.s
+    const s = sDisplay.value
+    let res:SaveAvatarStatus|undefined = undefined
     if(!s.allowRequesterView){
         // 拒绝当前用户查看
-        return { icon: iconLock, text: '无权限', color: 'rgb(192, 57, 43)', clickBehavior: 'refuse' }
+        res = { icon: iconLock, text: '无权限', color: 'rgb(192, 57, 43)', clickBehavior: 'refuse' }
     }
     if(s.allowRequesterEdit){
         // 允许当前用户编辑（但实际让不让编辑由“是否他人在编辑”决定）
         if(s.editingByUserId && s.editingByUserId != userInfo.value.id)
-            return { icon: iconPen, text: '占用中', color: 'rgb(212, 160, 23)', clickBehavior: 'wait'}
-        return { icon: iconPen, text: '可编辑', color: 'rgb(39, 174, 96)', clickBehavior: 'edit' }
+            res = { icon: iconPen, text: '占用中', color: 'rgb(212, 160, 23)', clickBehavior: 'wait'}
+        else
+            res = { icon: iconPen, text: '可编辑', color: 'rgb(39, 174, 96)', clickBehavior: 'edit' }
     }
+    if(res && loadingStatus.value)
+        res.text = '刷新中'
+    return res
 })
 const hideStatus = computed(()=>{
     // 如果本组件用于“确定可编辑”的情况，那么就不显示“可编辑”状态，因为这是废话
@@ -51,27 +58,49 @@ const hideStatus = computed(()=>{
 const router = useRouter()
 const { editorRoute } = useEditorsRoutesJump()
 function openEditor(){
-    if(!props.s.id) return
+    const s = sDisplay.value
+    if(!s.id) return
     if(status.value) {
         const behave = status.value.clickBehavior
         if(behave === 'edit') // 进入编辑界面
-            router.push(editorRoute(props.s.id))
+            router.push(editorRoute(s.id))
         else if(behave === 'wait') // 提示用户等待
-            showPop(`请等待他人完成编辑：\n${props.s.editingByUserName}`, 'failed')
+            showPop(`请等待他人完成编辑：\n${s.editingByUserName}`, 'failed')
         else if(behave === 'refuse') // 提示用户权限不足
             showPop('根据权限设置\n无法查看该存档', 'failed')
     }
     else {
         // 如果无status，则是默认情况：只读模式进入
-        router.push(editorRoute(props.s.id, {viewOnly: true}))
+        router.push(editorRoute(s.id, {viewOnly: true}))
     }
 }
+
+const loadedStatus = ref<SaveDto>()
+const loadingStatus = ref<boolean>(false)
+async function handleStatusClick(){
+    if(status.value?.clickBehavior != 'wait') return
+    if(loadingStatus.value) return
+    loadingStatus.value = true
+    const res = await api.save.loadStatus(props.s.id)
+    if(res){
+        showPop('状态已刷新', 'success')
+        loadedStatus.value = res
+    }
+    loadingStatus.value = false
+}
+const sDisplay = computed(()=>{
+    // 如果有新加载的状态，则将其合并进props的值里（不修改props）
+    const res = {...props.s}
+    const source = loadedStatus.value ?? {}
+    Object.assign(res, source)
+    return res
+})
 </script>
 
 <template>
 <div class="save-avatar" :style="style" @click="openEditor">
     <img class="save-avatar-bg" :src="props.s.miniUrl ?? defaultMini"/>
-    <div v-if="status && !hideStatus" class="save-avatar-status" :style="{backgroundColor: status.color}" @click.stop="()=>{}">
+    <div v-if="status && !hideStatus" class="save-avatar-status" :style="{backgroundColor: status.color}" @click.stop="handleStatusClick">
         <img :src="status.icon"/>
         <div>{{ status.text }}</div>
     </div>

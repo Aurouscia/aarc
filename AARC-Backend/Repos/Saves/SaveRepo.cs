@@ -19,6 +19,8 @@ namespace AARC.Repos.Saves
         IMapper mapper
         ) : Repo<Save>(context)
     {
+        // 心跳有效期10分钟，超过10分钟允许其他人进来
+        private static TimeSpan HeartbeatValidSpan => TimeSpan.FromMinutes(10);
         private IQueryable<Save> GetOwnerTypedSaves(bool isTourist = false)
         {
             var userQ = base.Context.Users.Existing();
@@ -179,7 +181,7 @@ namespace AARC.Repos.Saves
             if (updated == 0)
                 throw new RqEx("找不到该存档");
         }
-        public SaveDto? LoadInfo(int id)
+        public SaveDto LoadInfo(int id)
         {
             var res = Viewable
                 .Where(x => x.Id == id)
@@ -187,6 +189,21 @@ namespace AARC.Repos.Saves
                 .FirstOrDefault();
             if (res is null)
                 throw new RqEx("无法加载存档信息");
+            return res;
+        }
+        public SaveDto LoadStatus(int id)
+        {
+            var res = Viewable
+                .Where(x => x.Id == id)
+                .Select(x => new SaveDto()
+                {
+                    Id = x.Id,
+                    HeartbeatAt = x.HeartbeatAt,
+                    HeartbeatUserId = x.HeartbeatUserId
+                }).FirstOrDefault();
+            if (res is null)
+                throw new RqEx("无法加载存档信息");
+            EnrichEditingBy([res]);
             return res;
         }
         public string? LoadData(int id, bool forEdit)
@@ -205,9 +222,7 @@ namespace AARC.Repos.Saves
         {
             base.FakeRemove(id);
         }
-
-        // 心跳有效期10分钟，超过10分钟允许其他人进来
-        private static TimeSpan HeartbeatValidSpan => TimeSpan.FromMinutes(10);
+        
         private static Lock HeartbeatLock => new();
         public void Heartbeat(int id, HeartbeatType type)
         {
