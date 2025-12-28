@@ -53,6 +53,7 @@ namespace AARC.Controllers.Saves
         {
             var list = saveRepo.GetMySaves(uid);
             EnrichSaveMini(list);
+            EnrichUserName(list, isForMySaves: true);
             EnrichPrivilege(list);
             return list;
         }
@@ -178,7 +179,7 @@ namespace AARC.Controllers.Saves
             }
         }
         [NonAction]
-        private void EnrichUserName(List<SaveDto> saves)
+        private void EnrichUserName(List<SaveDto> saves, bool isForMySaves = false)
         {
             var userIds = new HashSet<int>();
             saves.ForEach(s =>
@@ -187,6 +188,13 @@ namespace AARC.Controllers.Saves
                 userIds.Add(s.EditingByUserId);
             });
             userIds.Remove(0);
+            if (isForMySaves)
+            {
+                var uid = httpUserInfoService.UserInfo.Value.Id;
+                userIds.Remove(uid);
+            }
+            if (userIds.Count == 0)
+                return;
             var users = userRepo.Existing
                 .Where(x => userIds.Contains(x.Id))
                 .Select(x => new { x.Id, x.Name })
