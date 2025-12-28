@@ -9,6 +9,7 @@ using System.IO.Compression;
 using AARC.Models.DbModels.Enums;
 using AARC.Models.DbModels.Enums.AuthGrantTypes;
 using AARC.Services.App.AuthGrants;
+using AARC.Services.App.HttpAuthInfo;
 using AARC.Utils;
 
 namespace AARC.Controllers.Saves
@@ -22,6 +23,7 @@ namespace AARC.Controllers.Saves
         SaveMiniatureFileService saveMiniatureFileService,
         SaveBackupFileService saveBackupFileService,
         AuthGrantCheckService authGrantCheckService,
+        HttpUserInfoService httpUserInfoService,
         ILogger<SaveController> logger
         ) : Controller
     {
@@ -78,6 +80,7 @@ namespace AARC.Controllers.Saves
         [UserCheck]
         public bool UpdateInfo([FromBody]SaveDto saveDto)
         {
+            EnsureOwner(saveDto.Id); // 仅所有者能编辑信息
             saveRepo.UpdateInfo(saveDto);
             userRepo.UpdateCurrentUserLastActive();
             return true;
@@ -90,6 +93,7 @@ namespace AARC.Controllers.Saves
             [FromForm]int staCount,
             [FromForm]int lineCount)
         {
+            authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.Edit, false);
             return SaveDataToDbAndBackup(id, data, staCount, lineCount);
         }
         [HttpPost]
@@ -100,6 +104,7 @@ namespace AARC.Controllers.Saves
             [FromForm]int staCount,
             [FromForm]int lineCount)
         {
+            authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.Edit, false);
             using var dataStream = dataCompressed.OpenReadStream();
             using var gzipStream = new GZipStream(dataStream, CompressionMode.Decompress);
             using var streamReader = new StreamReader(gzipStream);
@@ -135,6 +140,7 @@ namespace AARC.Controllers.Saves
         [HttpDelete]
         public bool Remove(int id)
         {
+            EnsureOwner(id);
             saveRepo.Remove(id);
             userRepo.UpdateCurrentUserLastActive();
             return true;
@@ -142,7 +148,6 @@ namespace AARC.Controllers.Saves
         [HttpGet]
         public bool HeartbeatRenewal(int id)
         {
-            authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.Edit, false);
             saveRepo.Heartbeat(id, HeartbeatType.Renewal);
             return true;
         }
@@ -153,6 +158,16 @@ namespace AARC.Controllers.Saves
             return true;
         }
 
+        [NonAction]
+        private void EnsureOwner(int saveId)
+        {
+            var ownerId = saveRepo.WithId(saveId).Select(x => x.OwnerUserId).FirstOrDefault();
+            var userInfo = httpUserInfoService.UserInfo.Value;
+            if (userInfo.Id == 0)
+                throw new RqEx("请登录");
+            if (userInfo.Id != ownerId && !userInfo.IsAdmin)
+                throw new RqEx("非本存档所有者");
+        }
         [NonAction]
         private void EnrichSaveMini(List<SaveDto> saves)
         {

@@ -144,7 +144,6 @@ namespace AARC.Repos.Saves
         public void UpdateInfo(SaveDto saveDto)
         {
             ValidateDto(saveDto);
-            ValidateAccess(saveDto.Id);
             var updated = Existing
                 .Where(x => x.Id == saveDto.Id)
                 .ExecuteUpdate(spc => spc
@@ -157,7 +156,6 @@ namespace AARC.Repos.Saves
         public void UpdateData(
             int id, string data, int staCount, int lineCount)
         {
-            ValidateAccess(id);
             Heartbeat(id, HeartbeatType.Renewal);
             var originalLength = Existing
                 .Where(x => x.Id == id && x.Data != null)
@@ -205,7 +203,6 @@ namespace AARC.Repos.Saves
         }
         public void Remove(int id)
         {
-            ValidateAccess(id);
             base.FakeRemove(id);
         }
 
@@ -237,7 +234,7 @@ namespace AARC.Repos.Saves
                                 .Where(x => x.Id == lastBeat.HeartbeatUserId)
                                 .Select(x => x.Name)
                                 .FirstOrDefault() ?? "???";
-                            throw new RqEx($"该画布正在被人编辑：[{editingUserName}]");
+                            throw new RqEx($"该画布正在被人编辑：\n{editingUserName}");
                         }
                     }
                     else if (type == HeartbeatType.Renewal)
@@ -282,15 +279,6 @@ namespace AARC.Repos.Saves
                 throw new RqEx($"版本长度必须小于{Save.versionMaxLength}字符");
             if (saveDto.Intro?.Length > Save.introMaxLength)
                 throw new RqEx($"简介长度必须小于{Save.introMaxLength}字符");
-        }
-        private void ValidateAccess(int saveId)
-        {
-            var ownerId = base.WithId(saveId).Select(x => x.OwnerUserId).FirstOrDefault();
-            var uinfo = httpUserInfoService.UserInfo.Value;
-            if (uinfo.Id == 0)
-                throw new RqEx("请登录");
-            if (uinfo.Id != ownerId && !uinfo.IsAdmin)
-                throw new RqEx("无权编辑本存档");
         }
         private static void EnrichEditingBy(List<SaveDto> saveDtoList)
         {
