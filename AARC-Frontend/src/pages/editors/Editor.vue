@@ -47,25 +47,23 @@ const loadComplete = ref(false)
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const isDemo = computed(()=>props.saveId.toLowerCase() == 'demo')
-const isOwner = ref(true) //悲观估计：是owner
+const viewOnly = ref(true)
 const savingDisabledWarning = ref<string>()
 async function load() {
     loadedSave.value = true
     if(!isNaN(saveIdNum.value)){
         const userInfo = await userInfoStore.getIdentityInfo(true)
         await checkLoginLeftTime(userInfo)
-        const viewOnly = route.query[editorParamViewOnly]
-        const loadForEdit = !viewOnly
+        viewOnly.value = !!route.query[editorParamViewOnly]
+        mainCvsDispatcher.visitorMode = viewOnly.value
         let resp
         try{
+            const loadForEdit = !viewOnly.value
             resp = await api.save.loadData(saveIdNum.value, loadForEdit)
         }
         catch{
             return // http失败：中止加载，避免cvs出现
         }
-        const ownerId = (await api.save.loadInfo(saveIdNum.value))?.ownerUserId || -1
-        isOwner.value = !!ownerId && ownerId === userInfo.id // 写入是否isOwner
-        mainCvsDispatcher.visitorMode = !isOwner.value
         try{
             const obj = resp ? JSON.parse(resp) : undefined
             saveStore.save = normalizeSave(obj)
@@ -76,9 +74,9 @@ async function load() {
         }catch{
             showPop('存档损坏，请联系管理员', 'failed')
         }
-        if(userInfo.id && !isOwner.value){
-            savingDisabledWarning.value = '非存档所有者，仅供浏览，不能保存'
-            preventLeavingDisabled.value = true //登录了但不是所有者，不阻止未保存退出
+        if(viewOnly.value){
+            savingDisabledWarning.value = '当前为仅浏览模式，不能保存'
+            preventLeavingDisabled.value = true //浏览模式，不阻止未保存退出
         }
         else{
             startHeartbeat()
@@ -214,7 +212,7 @@ const cachePreventerInputId = 'cachePreventerInput'
 const { cachePreventStart, cachePreventStop } = useCachePreventer(cachePreventerInputId)
 const showHiddenLongWarn = ref(false)
 const hiddenLongWatcher = new DocumentHiddenLongWatcher(30*1000, ()=>{
-    if(!isDemo.value && isOwner.value)
+    if(!isDemo.value && !viewOnly.value)
         showHiddenLongWarn.value = true
 }) 
 onBeforeMount(async()=>{
