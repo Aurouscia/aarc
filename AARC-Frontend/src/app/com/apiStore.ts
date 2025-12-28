@@ -72,18 +72,27 @@ export const useApiStore = defineStore('api', () => {
     })
 
     const baseUrl = import.meta.env.VITE_ApiUrlBase;
-    function wrapClientWithHandling<T extends object>(client:T, throwOnErrorForActions?:Array<keyof T>){
+    function wrapClientWithHandling<T extends object>(
+        client:T,
+        options?:{
+            throwOnErrorForActions?:Array<keyof T>,
+            noShowWaitForActions?:Array<keyof T>,
+        }
+    ){
+        const { throwOnErrorForActions, noShowWaitForActions } = options ?? {}
         const clientName = tn(client)?.replace('Client', '')
         return new Proxy<T>(client, {
             get(target, prop, receiver) {
                 const originalMethod = Reflect.get(target, prop, receiver);
                 if (typeof originalMethod === 'function') {
                     const action = prop.toString()
+                    const noShowWait = noShowWaitForActions?.includes(action as keyof T)
                     const path = `${clientName}/${action}`
                     const waitKey = apiWaitKeyPrefix+path
                     return async function (...args: any[]) {
                         try {
-                            showWait(waitKey, true)
+                            if(!noShowWait)
+                                showWait(waitKey, true)
                             console.log(`[http]开始：${path}\n`,args)
                             const methodRes = await originalMethod.apply(client, args);
                             let methodResLog = methodRes
@@ -140,8 +149,9 @@ export const useApiStore = defineStore('api', () => {
                             //外部调用代码应该通过判断返回值的truthiness来判断是否发生了错误
                             return undefined
                         }
-                        finally{
-                            showWait(waitKey, false)
+                        finally {
+                            if(!noShowWait)
+                                showWait(waitKey, false)
                         }
                     }
                 }
@@ -154,7 +164,10 @@ export const useApiStore = defineStore('api', () => {
     const auth = w(new api.AuthClient(baseUrl, instance))
     const user = w(new api.UserClient(baseUrl, instance))
     const authGrant = w(new api.AuthGrantClient(baseUrl, instance))
-    const save = w(new api.SaveClient(baseUrl, instance), ['loadData'])
+    const save = w(new api.SaveClient(baseUrl, instance), {
+        throwOnErrorForActions: ['loadData'],
+        noShowWaitForActions: ['heartbeatRenewal', 'heartbeatRelease']
+    })
     const userFile = w(new api.UserFileClient(baseUrl, instance))
     const saveUtils = w(new api.SaveUtilsClient(baseUrl, instance))
 

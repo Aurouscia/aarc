@@ -29,6 +29,8 @@ import DontUseWeirdBrowser from './components/DontUseWeirdBrowser.vue';
 import { useRoute } from 'vue-router';
 import { editorParamViewOnly } from './routes/routesNames';
 
+const heartbeatIntervalSecs = 3 * 60 // 每3分钟心跳一次
+
 const props = defineProps<{saveId:string}>()
 const route = useRoute()
 const uniq = useUniqueComponentsStore()
@@ -177,7 +179,6 @@ function setLeavingPreventing(){
 }
 
 let heartbeatTimer = 0
-const heartbeatIntervalSecs = 3 * 60 // 每3分钟心跳一次
 function startHeartbeat(){
     // 开始心跳续约周期（不需要立即执行一次，因为loadData相当于已经执行过一次）
     heartbeatTimer = window.setInterval(async()=>{
