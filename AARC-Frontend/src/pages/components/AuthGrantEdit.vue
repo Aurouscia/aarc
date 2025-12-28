@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AuthGrant, AuthGrantOn, AuthGrantTo, UserDtoSimple } from '@/app/com/apiGenerated';
+import { AuthGrant, AuthGrantOn, AuthGrantTo, AuthGrantTypeOfSave, UserDtoSimple } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import { useNameMapStore } from '@/app/globalStores/nameMap';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
@@ -122,6 +122,10 @@ async function load() {
     }
 }
 
+const isSaveEdit = computed(()=>{
+    return props.on == AuthGrantOn.Save && props.type == AuthGrantTypeOfSave.Edit
+})
+
 onMounted(async() => {
     await load()
 })
@@ -168,13 +172,22 @@ onMounted(async() => {
             </div>
             <UserSelect v-if="userSelectShow" @select="userSelectSelected"></UserSelect>
         </td>
-        <td>
+        <td style="width: 45px;">
             <button class="lite confirm" @click="add">新增</button>
         </td>
     </tr>
     <tr>
         <td colspan="3" v-if="!wantAdd">
             <button class="lite confirm" @click="wantAdd=true">新增授权设置</button>
+        </td>
+        <td colspan="3" v-else-if="isSaveEdit">
+            <div class="smallNoteVital about-save-edit">
+                <p>允许他人编辑存档：</p>
+                <p>1. 本功能为新功能，未经过大量使用检验，如不放心请暂时不要使用</p>
+                <p>2. 看到绿色的“可编辑”标识才能进入，如果添加授权设置后，被授权者依然未看到标识，请告诉他刷新页面</p>
+                <p>3. 请告诉你的协作者：<b>务必在离开页面前保存并退出编辑器</b>，把浏览器切到后台挂机时间太久（数分钟），会允许他人进入，导致先进入的人无法保存</p>
+                <p>4. 请告诉你的协作者：黄色的“占用中”状态时，点击“占用中”标识，可以刷新状态（检查他人是否退出）</p>
+            </div>
         </td>
         <td colspan="3" v-else>
             <div class="smallNote">
@@ -202,5 +215,17 @@ onMounted(async() => {
     overflow: hidden;
     text-overflow: ellipsis;
     color: #666;
+}
+.about-save-edit{
+    padding: 3px;
+    background-color: white;
+    text-align: left;
+    p{
+        padding: 0.4em 0;
+        text-indent: 2em;
+    }
+    b{
+        color:red;
+    }
 }
 </style>
