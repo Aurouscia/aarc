@@ -232,9 +232,12 @@ onBeforeMount(async()=>{
 })
 onBeforeUnmount(()=>{
     endHeartbeat()
-    api.save.heartbeatRelease(saveIdNum.value)
-        .then(()=>{console.log('心跳释放成功')})
-        .catch((e)=>{console.error('心跳释放失败', e)})
+    if(!isDemo.value && !viewOnly.value){
+        // 仅在“非浏览模式”下，才释放心跳
+        api.save.heartbeatRelease(saveIdNum.value)
+           .then(()=>{console.log('心跳释放成功')})
+           .catch((e)=>{console.error('心跳释放失败', e)})
+    }
     mainCvsDispatcher.afterMainCvsRendered = undefined
     topbarShow.value = true
     saveShortcutListener.dispose()
