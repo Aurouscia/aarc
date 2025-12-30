@@ -11,7 +11,6 @@ const password = ref<string>("");
 const passwordRepeat = ref<string>("");
 const turnstileToken = ref<string>();
 const { loginRouteJump } = useIdentitiesRoutesJump()
-const noticeRead = ref(false)
 
 const turnstileConfigured = !! import.meta.env.VITE_TurnstileSiteKey
 const turnstileHidden = ref<boolean>(false)
@@ -52,6 +51,16 @@ const buttonAllowClick = computed(()=>{
 const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
 const contact = import.meta.env.VITE_GuideMemberApply
+
+const noticeRead = ref(false)
+const waitLong = ref(false)
+function noticeKnown(){
+    noticeRead.value = true
+    window.setTimeout(()=>{
+        waitLong.value = true
+    }, 8000)
+}
+
 onMounted(async()=>{
 })
 </script>
@@ -69,7 +78,7 @@ onMounted(async()=>{
                 <li>管理员可以在首页看到“游客”的最新作品，如果管理员认为作品质量高，就会为账号转正</li>
                 <li>{{ contact || '暂不接收主动申请转正' }}</li>
             </ol>
-            <button @click="noticeRead=true" style="display: block; margin: 6px auto;">
+            <button @click="noticeKnown" style="display: block; margin: 6px auto;">
                 我知道了
             </button>
         </Notice>
@@ -87,7 +96,7 @@ onMounted(async()=>{
                 </td>
             </tr>
             <tr>
-                <td>重复密码</td>
+                <td>重复<br/>密码</td>
                 <td>
                     <input v-model="passwordRepeat" type="password" autocomplete="new-password"/>
                 </td>
@@ -95,8 +104,14 @@ onMounted(async()=>{
             <tr v-if="turnstileConfigured && !turnstileHidden">
                 <td colspan="2">
                     <Turnstile @verify="handleTurnstileVerify"/>
-                    <div class="smallNote" style="text-align: center;">
+                    <div v-if="!waitLong" class="smallNote">
                         人机验证中
+                    </div>
+                    <div v-else class="smallNote" style="color: red">
+                        如果失败，请尝试：<br/>
+                        1. 连接wifi后刷新重试<br/>
+                        2. 手指/鼠标在屏幕上随便划划<br/>
+                        3. 使用电脑注册
                     </div>
                 </td>
             </tr>
@@ -140,5 +155,9 @@ input{
         font-weight: bold;
         color: white;
     }
+}
+.smallNote{
+    text-align: center;
+    margin-top: 12px;
 }
 </style>
