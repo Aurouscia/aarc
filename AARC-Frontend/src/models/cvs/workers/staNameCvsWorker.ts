@@ -77,8 +77,15 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
         const ptSizeRatio = staClusterStore.getMaxSizePtWithinCluster(pt.id, 'ptSize')
         const ptRadius = ptSizeRatio * cs.config.ptStaSize
 
-        const dist = Math.sqrt(pt.nameP[0] ** 2 + pt.nameP[1] ** 2)
-        if(dist > ptRadius*3){
+        let drawLeader:boolean
+        if(typeof pt.noLeader == 'boolean'){
+            drawLeader = !pt.noLeader
+        } else {
+            const dist = Math.sqrt(pt.nameP[0] ** 2 + pt.nameP[1] ** 2)
+            drawLeader = dist > ptRadius*3
+        }
+         
+        if(drawLeader){
             ctx.beginPath()
             ctx.lineWidth = 2*fontSizeRatio
             ctx.strokeStyle = "#999"

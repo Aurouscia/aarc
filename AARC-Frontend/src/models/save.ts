@@ -35,6 +35,7 @@ export interface ControlPoint{
     nameSize?:number
     anchorX?:SgnNumber
     anchorY?:SgnNumber
+    noLeader?:boolean
 }
 
 export enum ControlPointLinkType{

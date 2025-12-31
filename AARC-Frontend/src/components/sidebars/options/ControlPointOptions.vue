@@ -209,6 +209,18 @@ defineExpose({
                             </select> 
                         </td>
                     </tr>
+                    <tr>
+                        <td>
+                            引导线
+                        </td>
+                        <td>
+                            <select v-model="editing.noLeader">
+                                <option :value="undefined">自动判断</option>
+                                <option :value="true">无</option>
+                                <option :value="false">有</option>
+                            </select> 
+                        </td>
+                    </tr>
                 </tbody></table>
             </div>
             <h2>拆分线路</h2>
