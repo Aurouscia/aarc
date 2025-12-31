@@ -89,13 +89,12 @@ namespace AARC.Controllers.Saves
         [HttpPost]
         [UserCheck]
         public bool UpdateData(
-            int id,
+            int id, bool enforce,
             [FromForm]string data,
             [FromForm]int staCount,
             [FromForm]int lineCount)
         {
-            authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.Edit, false);
-            return SaveDataToDbAndBackup(id, data, staCount, lineCount);
+            return SaveDataToDbAndBackup(id, data, staCount, lineCount, enforce);
         }
         [HttpPost]
         [UserCheck]
@@ -105,12 +104,11 @@ namespace AARC.Controllers.Saves
             [FromForm]int staCount,
             [FromForm]int lineCount)
         {
-            authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.Edit, false);
             using var dataStream = dataCompressed.OpenReadStream();
             using var gzipStream = new GZipStream(dataStream, CompressionMode.Decompress);
             using var streamReader = new StreamReader(gzipStream);
             var data = streamReader.ReadToEnd();
-            return SaveDataToDbAndBackup(id, data, staCount, lineCount);
+            return SaveDataToDbAndBackup(id, data, staCount, lineCount, false);
         }
         [HttpPost]
         [UserCheck]
@@ -234,9 +232,13 @@ namespace AARC.Controllers.Saves
             }
         }
         [NonAction]
-        private bool SaveDataToDbAndBackup(int id, string data, int staCount, int lineCount)
+        private bool SaveDataToDbAndBackup(int id, string data, int staCount, int lineCount, bool enforce)
         {
-            saveRepo.UpdateData(id, data, staCount, lineCount);
+            if(enforce) // 强制：只有所有者能进行
+                EnsureOwner(id); 
+            else // 不是强制：需要有当前画布的编辑权限
+                authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.Edit, false);
+            saveRepo.UpdateData(id, data, staCount, lineCount, enforce);
             userRepo.UpdateCurrentUserLastActive();
             try {
                 saveBackupFileService.Write(data, id);

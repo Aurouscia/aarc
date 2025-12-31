@@ -155,10 +155,12 @@ namespace AARC.Repos.Saves
             if (updated == 0)
                 throw new RqEx("找不到该存档");
         }
-        public void UpdateData(
-            int id, string data, int staCount, int lineCount)
+        public void UpdateData(int id, string data, int staCount, int lineCount, bool enforce)
         {
-            Heartbeat(id, HeartbeatType.Renewal);
+            if(enforce) // 强制：使用初始化心跳，只需要“当前没有人在编辑”即可（用于导入工程文件）
+                Heartbeat(id, HeartbeatType.Initialization, true); 
+            else // 非强制：使用续约心跳，需要“上次心跳用户是自己”才行（用于编辑器内保存）
+                Heartbeat(id, HeartbeatType.Renewal);
             var originalLength = Existing
                 .Where(x => x.Id == id && x.Data != null)
                 .Select(x => x.Data!.Length)
@@ -224,7 +226,7 @@ namespace AARC.Repos.Saves
         }
         
         private static Lock HeartbeatLock => new();
-        public void Heartbeat(int id, HeartbeatType type)
+        public void Heartbeat(int id, HeartbeatType type, bool checkOnly = false)
         {
             lock (HeartbeatLock)
             {
@@ -260,6 +262,8 @@ namespace AARC.Repos.Saves
                     }
                 }
                 // 到这里说明没有问题，可以心跳
+                if (checkOnly)
+                    return;
                 Existing.Where(x => x.Id == id)
                     .ExecuteUpdate(spc => spc
                         .SetProperty(x => x.HeartbeatAt, DateTime.Now)

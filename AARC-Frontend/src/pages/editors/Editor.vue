@@ -140,7 +140,7 @@ async function saveData(){
     else{
         //若blob不是Blob（浏览器不支持压缩或出了问题）则直接明文保存
         const data = JSON.stringify(saveStore.save??{})
-        resp = await api.save.updateData(saveIdNum.value, data, staCount, lineCount)
+        resp = await api.save.updateData(saveIdNum.value, false, data, staCount, lineCount)
     }
     if(resp){
         releasePreventLeaving()
