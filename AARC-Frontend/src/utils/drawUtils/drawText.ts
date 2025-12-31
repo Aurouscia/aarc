@@ -241,8 +241,13 @@ function getYTop(y:number, ySgn:SgnNumber, totalHeight:number, mainRowMargin:num
     return yTop
 }
 function getRect(x:number, y:number, xSgn:SgnNumber, ySgn:number, biggestWidth:number, totalHeight:number){
-    let leftMost = x;
-    let rightMost = x;
+    let leftMost = Number(x);
+    let rightMost = Number(x); // 有些时候（可能是老存档）这里的x是字符串，造成字符串加法计算
+    if(Number.isNaN(leftMost))
+        leftMost = 0
+    if(Number.isNaN(rightMost))
+        rightMost = 0
+    // 以上的部分会被js引擎优化，开销忽略不计
     if(xSgn == -1){
         leftMost -= biggestWidth
     }
