@@ -135,6 +135,10 @@ async function commitReplaceJson(){
     if(resp){
         showPop('替换成功\n下次保存更新略缩图', 'success')
         resetDangerZone()
+        // 清空文件输入框
+        if(jsonFileInput.value){
+            jsonFileInput.value.value = ''
+        }
     }
 }
 function resetReplaceJson(){
