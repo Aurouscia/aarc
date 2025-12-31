@@ -85,6 +85,7 @@ const jsonFileInput = useTemplateRef('jsonFileInput')
 const jsonContent = ref<string>()
 const jsonSaveStaCount = ref<number>()
 const jsonSaveLineCount = ref<number>()
+const jsonLastModified = ref<string>()
 async function removeCurrentCvs(){
     if(repeatCvsName.value !== editingSave.value?.name){
         showPop('请一字不差输入画布名称', 'failed')
@@ -117,6 +118,7 @@ function selectReplaceJson(){
             jsonSaveStaCount.value = saveStaCount(obj)
             jsonSaveLineCount.value = saveLineCount(obj)
             jsonContent.value = JSON.stringify(obj)
+            jsonLastModified.value = new Date(f.lastModified).toLocaleString() || ''
         }catch{
             showPop('文件格式异常', 'failed')
             resetReplaceJson()
@@ -263,8 +265,10 @@ onMounted(async()=>{
             </div>
             <input type="file" ref="jsonFileInput" accept=".json" @change="selectReplaceJson"/>
             <div v-show="jsonContent" class="replaceJsonInfo">
-                [{{ jsonSaveLineCount }}线 {{ jsonSaveStaCount }}站]
-                <div>存档数据将被覆盖<br/>注意核对名称</div>
+                <b>—{{ jsonSaveLineCount }}线 {{ jsonSaveStaCount }}站—</b><br/>
+                <b>更新于 {{ jsonLastModified }}</b><br/>
+                存档数据将被覆盖<br/>
+                注意核对
             </div>
             <button v-show="jsonContent" class="danger" @click="commitReplaceJson">替换数据</button>
         </div>
