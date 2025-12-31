@@ -41,6 +41,10 @@ const { fileNameStyle, fileFormat, fileQuality, pixelRestrict, pixelRestrictMode
 async function downloadMainCvsAsImage() {
     if(exporting.value)
         return
+    if(fileFormat.value == 'jpeg' && renderOptionsStore.bgOpacity < 1){
+        showPop('jpg不支持背景透明\n请改用其他格式', 'failed')
+        return
+    }
     exported.value = false
     exporting.value = true
     exportFailedMsg.value = false

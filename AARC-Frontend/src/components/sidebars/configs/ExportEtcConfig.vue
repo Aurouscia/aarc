@@ -16,6 +16,11 @@ const { bgOpacity } = storeToRefs(useRenderOptionsStore())
             <div>{{ bgOpacity }}</div>
         </td>
     </tr>
+    <tr>
+        <td colspan="2" class="smallNote">
+            jpg不支持透明背景，请使用png或webp
+        </td>
+    </tr>
 </tbody></table>
 </ConfigSection>
 </template>
