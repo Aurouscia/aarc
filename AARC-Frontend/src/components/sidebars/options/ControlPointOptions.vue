@@ -174,7 +174,7 @@ defineExpose({
                 </div>
                 <div class="smallNote" style="text-align: center;">
                     设为0使用默认大小<br/>
-                    （即车站团内最大的“线路设置站名尺寸”）<br/><br/>
+                    （即车站团内最大的“线路设置站名尺寸”）<br/>
                     此处的设置仅影响本点，若站名被拖入<br/>车站团内其他点，则需要重新设置
                 </div>
             </div>
@@ -186,6 +186,27 @@ defineExpose({
                         <td class="coord">
                             <input type="number" v-model.number="editing.nameP[0]"/><br/>
                             <input type="number" v-model.number="editing.nameP[1]"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td rowspan="2">对齐</td>
+                        <td>
+                            <select v-model="editing.anchorX">
+                                <option :value="undefined">自动左右</option>
+                                <option :value="1">靠左</option>
+                                <option :value="0">居中</option>
+                                <option :value="-1">靠右</option>
+                            </select> 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select v-model="editing.anchorY">
+                                <option :value="undefined">自动上下</option>
+                                <option :value="1">靠上</option>
+                                <option :value="0">居中</option>
+                                <option :value="-1">靠下</option>
+                            </select> 
                         </td>
                     </tr>
                 </tbody></table>

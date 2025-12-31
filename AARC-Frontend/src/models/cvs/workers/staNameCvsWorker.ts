@@ -4,11 +4,11 @@ import { useStaNameMainRectStore, useStaNameRectStore } from "@/models/stores/sa
 import { useSaveStore } from "@/models/stores/saveStore";
 import { coordAdd, coordTwinShrink } from "@/utils/coordUtils/coordMath";
 import { drawText } from "@/utils/drawUtils/drawText";
-import { sgnCoord } from "@/utils/sgn";
+import { sgn } from "@/utils/sgn";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { useCvsBlocksControlStore } from "../common/cvs";
-import { Coord } from "@/models/coord";
+import { Coord, SgnCoord } from "@/models/coord";
 import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
 import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
 import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
@@ -71,7 +71,9 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
                 }
             }
         }
-        const align = sgnCoord(pt.nameP)
+        const alignX = pt.anchorX ?? sgn(pt.nameP[0])
+        const alignY = pt.anchorY ?? sgn(pt.nameP[1])
+        const align:SgnCoord = [alignX, alignY]
         const ptSizeRatio = staClusterStore.getMaxSizePtWithinCluster(pt.id, 'ptSize')
         const ptRadius = ptSizeRatio * cs.config.ptStaSize
 
