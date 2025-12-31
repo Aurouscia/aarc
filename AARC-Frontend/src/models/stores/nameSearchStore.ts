@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { computed, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 import { useEnvStore } from "./envStore";
 
 export const useNameSearchStore = defineStore('nameSearch', ()=>{
@@ -20,7 +20,9 @@ export const useNameSearchStore = defineStore('nameSearch', ()=>{
         }
         if(force){
             if(typeof force === 'string'){
-                searchText.value = force
+                nextTick(()=>{
+                    searchText.value = force
+                })
             }
         }
         else{
