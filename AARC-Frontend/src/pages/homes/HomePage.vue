@@ -30,7 +30,7 @@ onMounted(()=>{
         </b>
     </p>
     <p v-if="guideInfo.findHelp">{{ guideInfo.findHelp }}</p>
-    <p v-if="guideInfo.extra">{{ guideInfo.extra }}</p>
+    <p v-if="guideInfo.extra" style="font-size: 14px;">{{ guideInfo.extra }}</p>
     <p>本项目正在持续完善改进中，想提出建议请qq私聊我或<a href="https://gitee.com/au114514/aarc/issues" target="_blank">点击此处</a></p>
 </div>
 <div class="marginedSection">
@@ -149,6 +149,7 @@ onMounted(()=>{
         text-align: center;
         color: #999;
         margin-bottom: 0.5em;
+        white-space: pre-wrap;
     }
     h1{
         font-size: 30px;
