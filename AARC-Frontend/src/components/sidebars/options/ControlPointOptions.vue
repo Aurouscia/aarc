@@ -4,11 +4,13 @@ import { ControlPoint } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useNameEditStore } from '@/models/stores/nameEditStore';
 import { useSaveStore } from '@/models/stores/saveStore';
-import { computed, ref, useTemplateRef } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import { Line } from '@/models/save';
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { indicesInArrayByPred } from '@/utils/lang/indicesInArray';
 import { isRing } from '@/utils/lineUtils/isRing';
+import { isSameCoord } from '@/utils/sgn';
+import { Coord } from '@/models/coord';
 
 const sidebar = useTemplateRef('sidebar')
 const nameEditStore = useNameEditStore()
@@ -126,6 +128,22 @@ const isLineTypeWithoutSta = computed<boolean>(()=>{
 const emit = defineEmits<{
     (e:'changed'):void
 }>()
+let posCache:Coord|undefined = undefined
+watch(() => editing.value,
+  (newVal, oldVal) => {
+    // 过滤掉“整个对象被替换”导致的触发
+    if (newVal === oldVal && newVal){
+        emit('changed')
+        if(posCache && !isSameCoord(posCache, newVal.pos)){
+            envStore.movedPoint = true
+        }
+    }
+    if(newVal){
+        posCache = [...newVal.pos]
+    }
+  },
+  { deep: true }
+)
 
 defineExpose({
     startEditing
@@ -141,10 +159,8 @@ defineExpose({
                 <tr>
                     <td>坐标</td>
                     <td class="coord">
-                        <input type="number" v-model.number="editing.pos[0]"
-                            @change="emit('changed');envStore.movedPoint=true"/><br/>
-                        <input type="number" v-model.number="editing.pos[1]"
-                            @change="emit('changed');envStore.movedPoint=true"/>
+                        <input type="number" v-model.number="editing.pos[0]"/><br/>
+                        <input type="number" v-model.number="editing.pos[1]"/>
                     </td>
                 </tr>
             </tbody></table>
@@ -153,8 +169,8 @@ defineExpose({
             <h2>站名尺寸</h2>
             <div class="optionSection">
                 <div class="viewableRange" v-if="editing.nameSize!==undefined">
-                    <input type="range" v-model.number="editing.nameSize" :min="0" :max="3" :step="0.25" @change="emit('changed')"/>
-                    <input type="number" v-model.number="editing.nameSize" :min="0" :max="3" @change="emit('changed')"/>
+                    <input type="range" v-model.number="editing.nameSize" :min="0" :max="3" :step="0.25"/>
+                    <input type="number" v-model.number="editing.nameSize" :min="0" :max="3"/>
                 </div>
                 <div class="smallNote" style="text-align: center;">
                     设为0使用默认大小<br/>
@@ -168,8 +184,8 @@ defineExpose({
                     <tr>
                         <td>坐标</td>
                         <td class="coord">
-                            <input type="number" v-model.number="editing.nameP[0]" @change="emit('changed')"/><br/>
-                            <input type="number" v-model.number="editing.nameP[1]" @change="emit('changed')"/>
+                            <input type="number" v-model.number="editing.nameP[0]"/><br/>
+                            <input type="number" v-model.number="editing.nameP[1]"/>
                         </td>
                     </tr>
                 </tbody></table>
