@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import SideBar from '@/components/common/SideBar.vue';
+import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { Line } from '@/models/save';
+import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
 import { fromYMD, toYMD } from '@/utils/timeUtils/timeStr';
+import { storeToRefs } from 'pinia';
 import { ref, useTemplateRef, watch } from 'vue';
 
 const sidebar = useTemplateRef('sidebar')
-defineExpose({
-    open: ()=>{sidebar.value?.extend()}, 
-    fold: ()=>{sidebar.value?.fold()}
-})
+const { timeConfig, timeMoment } = storeToRefs(useRenderOptionsStore())
+const mainCvsDispatcher = useMainCvsDispatcher()
 const { showPop } = useUniqueComponentsStore()
 const props = defineProps<{
     line: Line
 }>()
+defineExpose({
+    open: ()=>{sidebar.value?.extend()}, 
+    fold: ()=>{sidebar.value?.fold()}
+})
 
 const translated = ref<{
     open?: string
@@ -26,14 +31,18 @@ function syncFrom(){
         open: toYMD(t.open)
     }
 }
-
 function syncTo(prop: 'open'){
     props.line.time ??= {}
     const t = props.line.time
     if(prop == 'open')
         t.open = fromYMD(translated.value?.open, x=>showPop(x, 'failed'))
-    console.log(props.line.time)
 }
+
+watch(()=>props.line.time, ()=>{
+    if(timeConfig.value.enabledPreview && typeof timeMoment.value == 'number'){
+        mainCvsDispatcher.renderMainCvs({suppressRenderedCallback:true})
+    }
+}, {deep: true})
 
 watch(()=>props.line, ()=>{
     syncFrom()
@@ -57,7 +66,7 @@ watch(()=>props.line, ()=>{
     <tr>
         <th>建成</th>
         <td>
-            <input v-model="translated.open" placeholder="YYYY-MM-DD" @blur="syncTo('open')"/>
+            <input v-model.lazy="translated.open" placeholder="YYYY-MM-DD" @blur="syncTo('open')"/>
         </td>
     </tr>
     <tr>

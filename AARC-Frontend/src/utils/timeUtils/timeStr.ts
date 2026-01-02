@@ -39,7 +39,6 @@ export function fromYMD(val:string|undefined, showErr?:(msg:string)=>void){
     let date
     try{
         date = new Date(year, month-1, day)
-        console.log(date)
     }
     catch(e){
         if(showErr)
