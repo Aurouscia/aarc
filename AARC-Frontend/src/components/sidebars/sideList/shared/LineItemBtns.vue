@@ -2,6 +2,7 @@
 import { Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { computed } from 'vue';
+import settingsIcon from '@/assets/ui/settings.svg';
 import branchIcon from '@/assets/ui/editor/branch.svg';
 import branchSeperateIcon from '@/assets/ui/editor/branchSeperate.svg';
 
@@ -34,12 +35,14 @@ const mode = computed<'A'|'B'>(()=>{
         <input v-model="l.name" :placeholder="`输入${lineTypeCalled}名`" @blur="envStore.lineInfoChanged(l)" />
         <input v-model="l.nameSub" :placeholder="`输入${lineTypeCalled}副名`" @blur="envStore.lineInfoChanged(l)" />
     </div>
-    <div class="sqrBtn" @click="editInfoOfLine(l)">...</div>
+    <div class="sqrBtn" @click="editInfoOfLine(l)">
+        <img class="btn-icon btn-icon-bigger" :src="settingsIcon"/>
+    </div>
     <div v-if="mode==='A' && !isInChildrenList" class="sqrBtn" @click="showChildrenOf(l)">
-        <img class="btnIcon" :src="branchIcon"/>
+        <img class="btn-icon" :src="branchIcon"/>
     </div>
     <div v-if="mode==='A' && isInChildrenList" class="sqrBtn" @click="leaveParent(l)">
-        <img class="btnIcon" :src="branchSeperateIcon"/>
+        <img class="btn-icon" :src="branchSeperateIcon"/>
     </div>
     <div v-if="mode==='A'" class="sqrBtn" @click="editTimeOfLine(l)">
         ||||
@@ -54,8 +57,16 @@ const mode = computed<'A'|'B'>(()=>{
 </template>
 
 <style scoped lang="scss">
-.btnIcon{
+.btn-icon{
+    width: 20px;
+    height: 20px;
     margin: 5px;
     border-radius: 5px;
+    filter: brightness(0) contrast(1000%); // 变纯黑
+    &.btn-icon-bigger{
+        width: 22px;
+        height: 22px;
+        margin: 4px;
+    }
 }
 </style>
