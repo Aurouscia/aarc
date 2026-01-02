@@ -25,7 +25,7 @@ onMounted(()=>{
     <p>
         <b>
             <a style="color:green" href="/#/Editor/demo">点击此处立即试用</a>&nbsp;
-            <a style="color:blueviolet" href="http://aarc.jowei19.com/#/Editor/188">使用说明</a>&nbsp;
+            <a style="color:blueviolet" href="http://aarc.jowei19.com/#/Editor/188?viewOnly=1">使用说明</a>&nbsp;
             <a style="color:#cc88cc" href="/#/FAQ">常见问题</a>
         </b>
     </p>
