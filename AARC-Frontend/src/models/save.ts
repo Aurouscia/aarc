@@ -80,6 +80,14 @@ export interface Line{
     parent?:number
     isFake?:boolean
     removeCarpet?:boolean
+    time?: LineTimeInfo
+}
+export interface LineTimeInfo{
+    propose?: number
+    construct?: number
+    open?: number
+    suspend?: [number, number][]
+    abandon?: number
 }
 export interface LineStyle{
     id:number

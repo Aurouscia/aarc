@@ -12,6 +12,7 @@ import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contex
 import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
 import ColorPalette from '../ColorPalette.vue';
 import boxIcon from '@/assets/ui/box.svg'
+import LineTimeOptions from '../options/LineTimeOptions.vue';
 
 defineProps<{isChildrenList?:boolean}>()
 const { showPop } = useUniqueComponentsStore()
@@ -37,6 +38,15 @@ function editColorByPalette(line:Line){
     editingColorByPaletteLine.value = line
     window.setTimeout(()=>{
         colorPalette.value?.open()
+    }, 1)
+}
+
+const lineTimeOptions = useTemplateRef('lineTimeOptions')
+const editingTimeLine = ref<Line>()
+function editTimeOfLine(line:Line){
+    editingTimeLine.value = line
+    window.setTimeout(()=>{
+        lineTimeOptions.value?.open()
     }, 1)
 }
 
@@ -91,10 +101,18 @@ onUnmounted(()=>{
                 <div v-else class="sqrBtn" :style="{backgroundColor: l.color, cursor:'default'}"
                     @click="showPop('支线颜色跟随主线，不可单独调整', 'info')">
                 </div>
-                <LineItemBtns :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"
-                    :edit-info-of-line="editInfoOfLine" :show-children-of="showChildrenOf"
-                    :is-in-children-list="isChildrenList" :leave-parent="leaveParent"
-                    :showing-btns="showingBtns" :arranging-id="arrangingId" :l="l" :line-type-called="'线路'"></LineItemBtns>
+                <LineItemBtns
+                    :mouse-down-line-arrange="mouseDownLineArrange"
+                    :del-line-start="delLineStart"
+                    :edit-info-of-line="editInfoOfLine"
+                    :edit-time-of-line="editTimeOfLine"
+                    :show-children-of="showChildrenOf"
+                    :is-in-children-list="isChildrenList"
+                    :leave-parent="leaveParent"
+                    :showing-btns="showingBtns"
+                    :arranging-id="arrangingId"
+                    :l="l"
+                    :line-type-called="'线路'"></LineItemBtns>
             </div>
             <div class="newLine" @click="createLine">
                 {{ isChildrenList ? '+新支线' : '+新线路'}}
@@ -107,6 +125,8 @@ onUnmounted(()=>{
         :line-type-called="'线路'" :line-width-range="{min:0.5, max:2, step:0.25}"></LineOptions>
     <ColorPalette ref="colorPalette" v-if="editingColorByPaletteLine"
         :editing-line="editingColorByPaletteLine"></ColorPalette>
+    <LineTimeOptions ref="lineTimeOptions" v-if="editingTimeLine"
+        :line="editingTimeLine"></LineTimeOptions>
     <Lines v-if="!isChildrenList" ref="childrenLines" :is-children-list="true"></Lines>
 </template>
 

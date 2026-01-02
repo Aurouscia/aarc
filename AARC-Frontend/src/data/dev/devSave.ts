@@ -220,7 +220,10 @@ export const devSave:Save = {
             name: "1号线",
             nameSub: "Line 1",
             color: "#44cef6",
-            type: LineType.common
+            type: LineType.common,
+            time:{
+                open: 1735660800000
+            }
         },
         {
             id: 102,
