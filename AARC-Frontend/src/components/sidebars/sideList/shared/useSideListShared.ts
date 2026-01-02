@@ -11,12 +11,14 @@ import { useUniqueComponentsStore } from "@/app/globalStores/uniqueComponents"
 import { useOptionsOpenerStore } from "@/models/stores/utils/optionsOpenerStore"
 import { storeToRefs } from "pinia"
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore"
+import LineTimeOptions from "../../options/LineTimeOptions.vue"
 
 export function useSideListShared(
     lineType: LineType,
     sidebar: Ref<InstanceType<typeof SideBar>|null>,
     lineOptions: Ref<InstanceType<typeof LineOptions>|null>,
-    childrenLines?: Ref<InstanceType<typeof Lines>|null>
+    childrenLines?: Ref<InstanceType<typeof Lines>|null>,
+    timeOptions?: Ref<InstanceType<typeof LineTimeOptions>|null>
 ){
     const saveStore = useSaveStore()
     const lineStateStore = useLineStateStore()
@@ -168,6 +170,7 @@ export function useSideListShared(
         childrenLines?.value?.fold()
         sidebar.value?.fold()
         lineOptions.value?.fold()
+        timeOptions?.value?.fold()
     }
 
     const optionsOpener = storeToRefs(useOptionsOpenerStore())

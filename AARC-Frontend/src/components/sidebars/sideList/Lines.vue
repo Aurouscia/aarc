@@ -19,6 +19,7 @@ const { showPop } = useUniqueComponentsStore()
 const sidebar = useTemplateRef('sidebar')
 const lineOptions = useTemplateRef('lineOptions')
 const childrenLines = useTemplateRef('childrenLines')
+const lineTimeOptions = useTemplateRef('lineTimeOptions')
 
 const { 
     lines,
@@ -30,7 +31,7 @@ const {
     showingBtns, showingChildrenOfInfo,
     showChildrenOf, leaveParent,
     showListSidebar, hideListSidebar
-} = useSideListShared(LineType.common, sidebar, lineOptions, childrenLines)
+} = useSideListShared(LineType.common, sidebar, lineOptions, childrenLines, lineTimeOptions)
 
 const colorPalette = useTemplateRef('colorPalette')
 const editingColorByPaletteLine = ref<Line>()
@@ -41,7 +42,6 @@ function editColorByPalette(line:Line){
     }, 1)
 }
 
-const lineTimeOptions = useTemplateRef('lineTimeOptions')
 const editingTimeLine = ref<Line>()
 function editTimeOfLine(line:Line){
     if(props.isChildrenList){
