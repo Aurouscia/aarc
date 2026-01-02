@@ -17,11 +17,17 @@ function pad(num:number){
 
 export function toYMD(val:number|undefined){
     if(!val) return ''
-    const d = new Date(val)
-    const year = d.getFullYear()
-    const month = d.getMonth() + 1
-    const date = d.getDate()
-    return `${year}-${month}-${date}`
+    try{
+        const d = new Date(val)
+        const year = d.getFullYear()
+        const month = d.getMonth() + 1
+        const date = d.getDate()
+        return `${year}-${month}-${date}`
+    }
+    catch(e){
+        console.error(e)
+        return ''
+    }
 }
 
 export function fromYMD(val:string|undefined, showErr?:(msg:string)=>void){
@@ -41,6 +47,7 @@ export function fromYMD(val:string|undefined, showErr?:(msg:string)=>void){
         date = new Date(year, month-1, day)
     }
     catch(e){
+        console.error(e)
         if(showErr)
             showErr('日期格式异常')
         return undefined

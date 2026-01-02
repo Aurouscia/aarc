@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { watch } from 'vue';
 import ConfigSection from './shared/ConfigSection.vue';
 import { storeToRefs } from 'pinia';
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
@@ -9,8 +9,7 @@ import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher
 
 const { showPop } = useUniqueComponentsStore()
 const mainCvsDispatcher = useMainCvsDispatcher()
-const { timeMoment, timeConfig } = storeToRefs(useRenderOptionsStore())
-const momentStr = ref<string>()
+const { timeMoment, timeMomentStr, timeConfig } = storeToRefs(useRenderOptionsStore())
 
 watch(()=>({  
     time: timeMoment.value,
@@ -25,8 +24,7 @@ watch(()=>timeConfig.value.enabledPreview, (newVal, oldVal)=>{
         mainCvsDispatcher.renderMainCvs({suppressRenderedCallback:true})
     }
 })
-
-watch(()=>momentStr.value, (newVal)=>{
+watch(()=>timeMomentStr.value, (newVal)=>{
     timeMoment.value = fromYMD(newVal, x=>showPop(x, 'failed'))
 })
 </script>
@@ -44,7 +42,7 @@ watch(()=>momentStr.value, (newVal)=>{
     </tr>
     <tr>
         <td colspan="2">
-            <input v-model.lazy="momentStr" placeholder="YYYY-MM-DD"/>
+            <input v-model.lazy="timeMomentStr" placeholder="YYYY-MM-DD"/>
         </td>
     </tr>
     <tr>
