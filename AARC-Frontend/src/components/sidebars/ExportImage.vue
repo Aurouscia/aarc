@@ -21,6 +21,7 @@ import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import ExportAccentuationConfig from './configs/ExportAccentuationConfig.vue';
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
 import ExportEtcConfig from './configs/ExportEtcConfig.vue';
+import ExportTimeConfig from './configs/ExportTimeConfig.vue';
 
 const sidebar = useTemplateRef('sidebar')
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -300,6 +301,7 @@ onMounted(()=>{
                 若导出失败或长时间无响应<br />请查看本页下方“浏览器限制”部分
             </div>
             <div class="exportConfigs">
+                <ExportTimeConfig></ExportTimeConfig>
                 <ExportAccentuationConfig></ExportAccentuationConfig>
                 <ExportWatermarkConfig></ExportWatermarkConfig>
                 <ExportEtcConfig></ExportEtcConfig>

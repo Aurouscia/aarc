@@ -16,10 +16,13 @@ export interface ExportWatermarkLocalConfig{
     xOffset?:number|string
     rotate?:number|string
 }
-export interface AccentuationConfig{
+export interface ExportAccentuationConfig{
     enabledPreview?:boolean
     spread?: boolean
     terrain?: boolean
+}
+export interface ExportTimeConfig{
+    enabledPreview?:boolean
 }
 
 export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
@@ -44,8 +47,11 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
         return defaultVal
     }
 
-    const accentuation = ref<AccentuationConfig>({
+    const accentuation = ref<ExportAccentuationConfig>({
         enabledPreview: true, spread: true, terrain: true
+    })
+    const time = ref<ExportTimeConfig>({
+        enabledPreview: true
     })
 
     return {
@@ -58,7 +64,8 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
         watermark,
         watermarkReset,
         waterMarkDefault,
-        accentuation
+        accentuation,
+        time
     }
 },
 {

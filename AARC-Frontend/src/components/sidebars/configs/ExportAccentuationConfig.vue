@@ -97,7 +97,7 @@ onMounted(()=>{
 </script>
 
 <template>
-<ConfigSection :title="'线路突出强调✨'">
+<ConfigSection :title="'线路突出强调'">
     <table class="fullWidth"><tbody>
         <!-- <tr> 目前没什么用，也许以后有了更细粒度的持久化（每个画布）再加回来
             <td colspan="2">

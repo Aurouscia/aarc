@@ -10,8 +10,13 @@ export const useRenderOptionsStore = defineStore('renderOptions', ()=>{
     const accentuationLineIds = ref<number[]>([])
     const accentuationEnabled = ref<boolean>(true)
     const { accentuation: accentuationConfig } = storeToRefs(useExportLocalConfigStore())
+
+    const timeMoment = ref<number>()
+    const { time: timeConfig } = storeToRefs(useExportLocalConfigStore())
+
     return { 
         exporting, bgOpacity,
-        accentuationLineIds, accentuationEnabled, accentuationConfig
+        accentuationLineIds, accentuationEnabled, accentuationConfig,
+        timeMoment, timeConfig
     }
 })

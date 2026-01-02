@@ -222,7 +222,7 @@ export const devSave:Save = {
             color: "#44cef6",
             type: LineType.common,
             time:{
-                open: 1735660800000
+                open: new Date(2015, 6 - 1, 15).getTime()
             }
         },
         {
@@ -240,7 +240,10 @@ export const devSave:Save = {
             nameSub: "DevZone Line",
             color: "#ff8800",
             type: LineType.common,
-            style: 100000
+            style: 100000,
+            time: {
+                open: new Date(2024, 12 - 1, 28).getTime()
+            }
         },
         {
             id: 104,
