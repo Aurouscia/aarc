@@ -2,6 +2,7 @@
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import SideBar from '@/components/common/SideBar.vue';
 import { Line } from '@/models/save';
+import { fromYMD, toYMD } from '@/utils/timeUtils/timeStr';
 import { ref, useTemplateRef, watch } from 'vue';
 
 const sidebar = useTemplateRef('sidebar')
@@ -22,45 +23,16 @@ function syncFrom(){
     props.line.time ??= {}
     const t = props.line.time
     translated.value = {
-        open: translateFrom(t.open)
+        open: toYMD(t.open)
     }
 }
-function translateFrom(val?:number){
-    if(!val) return ''
-    const d = new Date(val)
-    const year = d.getFullYear()
-    const month = d.getMonth() + 1
-    const date = d.getDate()
-    return `${year}-${month}-${date}`
-}
+
 function syncTo(prop: 'open'){
     props.line.time ??= {}
     const t = props.line.time
     if(prop == 'open')
-        t.open = translateTo(translated.value?.open)
+        t.open = fromYMD(translated.value?.open, x=>showPop(x, 'failed'))
     console.log(props.line.time)
-}
-function translateTo(val?:string){
-    if(!val) return undefined
-    let [year, month, day] = val
-        .split('-')
-        .map(v => parseInt(v))
-    month ??= 1
-    day ??= 1
-    if(isNaN(year) || isNaN(month) || isNaN(day)){
-        showPop('时间格式异常', 'failed')
-        return undefined
-    }
-    let date
-    try{
-        date = new Date(year, month-1, day)
-        console.log(date)
-    }
-    catch(e){
-        showPop('时间格式异常', 'failed')
-        return undefined
-    }
-    return date.getTime()
 }
 
 watch(()=>props.line, ()=>{
