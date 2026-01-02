@@ -55,16 +55,30 @@ watch(()=>props.line, ()=>{
         <td><input disabled value="后续添加"/></td>
     </tr>
     <tr>
-        <td>建成</td>
+        <th>建成</th>
         <td>
             <input v-model="translated.open" placeholder="YYYY-MM-DD" @blur="syncTo('open')"/>
         </td>
     </tr>
     <tr>
+        <td>停运</td>
+        <td><input disabled value="后续添加" style="opacity: 0;"/></td>
+    </tr>
+    <tr>
+        <td>废弃</td>
+        <td><input disabled value="后续添加"/></td>
+    </tr>
+    <tr>
         <td colspan="2" class="smallNote" style="text-align: left;">
-            可填写：2015（仅年份）<br/>
+            时间可填写：2015（仅年份）<br/>
             或：2015-3（年-月）<br/>
             或：2015-3-15（年-月-日）
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="smallNote">
+            为了更好收集使用需求<br/>
+            先推出功能有限的初步版本，敬请谅解
         </td>
     </tr>
 </tbody></table>

@@ -41,7 +41,9 @@ const mode = computed<'A'|'B'>(()=>{
     <div v-if="mode==='A' && isInChildrenList" class="sqrBtn" @click="leaveParent(l)">
         <img class="btnIcon" :src="branchSeperateIcon"/>
     </div>
-    <div v-if="mode==='A'" class="sqrBtn" @click="editTimeOfLine(l)"></div>
+    <div v-if="mode==='A'" class="sqrBtn" @click="editTimeOfLine(l)">
+        ||||
+    </div>
     <div v-if="mode==='B'" class="sqrBtn moveBtn" :class="{ sqrActive: arrangingId === l.id }" @mousedown="e => mouseDownLineArrange(e, l.id)"
         @touchstart="e => mouseDownLineArrange(e, l.id)">
         ⇅

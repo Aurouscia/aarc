@@ -14,7 +14,7 @@ import ColorPalette from '../ColorPalette.vue';
 import boxIcon from '@/assets/ui/box.svg'
 import LineTimeOptions from '../options/LineTimeOptions.vue';
 
-defineProps<{isChildrenList?:boolean}>()
+const props = defineProps<{isChildrenList?:boolean}>()
 const { showPop } = useUniqueComponentsStore()
 const sidebar = useTemplateRef('sidebar')
 const lineOptions = useTemplateRef('lineOptions')
@@ -44,6 +44,10 @@ function editColorByPalette(line:Line){
 const lineTimeOptions = useTemplateRef('lineTimeOptions')
 const editingTimeLine = ref<Line>()
 function editTimeOfLine(line:Line){
+    if(props.isChildrenList){
+        showPop('暂不支持支线设置', 'failed')
+        return
+    }
     editingTimeLine.value = line
     window.setTimeout(()=>{
         lineTimeOptions.value?.open()
