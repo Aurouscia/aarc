@@ -55,6 +55,7 @@ const loadError = ref<string>()
 const ownerUserInfo = ref<{userId: number, userName: string}>()
 const editingUserInfo = ref<{userId: number, userName: string}>()
 const savingDisabledWarning = ref<string>()
+const savingDisabledWarningHide = ref<boolean>()
 
 async function load() {
     loadedSave.value = true
@@ -287,8 +288,12 @@ onBeforeUnmount(()=>{
     <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving"
         :save="saveData" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
     <HiddenLongWarnPrompt v-if="showHiddenLongWarn" @ok="showHiddenLongWarn=false"></HiddenLongWarnPrompt>
-    <div v-if="savingDisabledWarning" class="statusDisplay savingDisabledWarning">{{ savingDisabledWarning }}</div>
-    <div class="cachePreventer"><input :id="cachePreventerInputId"/></div>
+    <div v-if="savingDisabledWarning" class="statusDisplay saving-disabled-warning" :class="{'warning-hidden': savingDisabledWarningHide}">
+        {{ savingDisabledWarning }}
+        <RouterLink v-if="editingUserInfo?.userId" :to="someonesSavesRoute(editingUserInfo.userId)">看看TA的作品</RouterLink>
+        <button @click="savingDisabledWarningHide=true">知道了</button>
+    </div>
+    <div class="cache-preventer"><input :id="cachePreventerInputId"/></div>
     <DontUseWeirdBrowser></DontUseWeirdBrowser>
 </template>
 
@@ -308,15 +313,36 @@ onBeforeUnmount(()=>{
     a { color: inherit }
     a, button { font-size: 16px; }
 }
-.cachePreventer{
+.cache-preventer{
     position: fixed;
     z-index: -1;
     top: -100px; //藏起来
 }
-.savingDisabledWarning{
+.saving-disabled-warning{
     color:white;
     animation: colorBlink 1s ease-out infinite;
     white-space: pre-wrap;
+    line-height: 24x;
+    a {
+        margin-left: 16px;
+        vertical-align: middle;
+        font-size: 12px;
+        color: white;
+        line-height: inherit;
+    }
+    button {
+        display: block;
+        background-color: white;
+        margin: 6px auto 0px;
+        padding: 3px 20px;
+        color: red;
+        font-weight: bold;
+    }
+    &.warning-hidden {
+        transform: translateY(140%);
+        background-color: red;
+        animation: none;
+    }
 }
 @keyframes colorBlink {
     0% {
