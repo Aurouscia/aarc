@@ -4,6 +4,7 @@ import SideBar from '@/components/common/SideBar.vue';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { Line } from '@/models/save';
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
+import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { fromYMD, toYMD } from '@/utils/timeUtils/timeStr';
 import { storeToRefs } from 'pinia';
 import { ref, useTemplateRef, watch } from 'vue';
@@ -11,6 +12,7 @@ import { ref, useTemplateRef, watch } from 'vue';
 const sidebar = useTemplateRef('sidebar')
 const { timeConfig, timeMoment } = storeToRefs(useRenderOptionsStore())
 const mainCvsDispatcher = useMainCvsDispatcher()
+const { preventLeaving } = usePreventLeavingUnsavedStore()
 const { showPop } = useUniqueComponentsStore()
 const props = defineProps<{
     line: Line
@@ -32,6 +34,7 @@ function syncFrom(){
     }
 }
 function syncTo(prop: 'open'){
+    preventLeaving()
     props.line.time ??= {}
     const t = props.line.time
     if(prop == 'open')
