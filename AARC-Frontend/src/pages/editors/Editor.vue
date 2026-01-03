@@ -24,15 +24,16 @@ import HiddenLongWarnPrompt from './components/HiddenLongWarnPrompt.vue';
 import { useIconStore } from '@/models/stores/iconStore';
 import { compressObjectToGzip } from '@/utils/dataUtils/compressObjectToGzip';
 import { useLoadedSave } from '@/models/stores/utils/loadedSave';
-import { HttpUserInfo } from '@/app/com/apiGenerated';
+import { HttpUserInfo, SavePreflightStatus } from '@/app/com/apiGenerated';
 import DontUseWeirdBrowser from './components/DontUseWeirdBrowser.vue';
-import { useRoute } from 'vue-router';
-import { editorParamViewOnly } from './routes/routesNames';
+import { useSavesRoutesJump } from '../saves/routes/routesJump';
+import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 
 const heartbeatIntervalSecs = 3 * 60 // 每3分钟心跳一次
 
 const props = defineProps<{saveId:string}>()
-const route = useRoute()
+const { someonesSavesRoute } = useSavesRoutesJump()
+const { goBackToWhereWeEntered } = useEnteredCanvasFromStore()
 const uniq = useUniqueComponentsStore()
 const { showPop } = uniq
 const { topbarShow } = storeToRefs(uniq)
@@ -49,14 +50,43 @@ const loadComplete = ref(false)
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const isDemo = computed(()=>props.saveId.toLowerCase() == 'demo')
-const viewOnly = ref(true)
+const viewOnly = ref(false)
+const loadError = ref<string>()
+const ownerUserInfo = ref<{userId: number, userName: string}>()
+const editingUserInfo = ref<{userId: number, userName: string}>()
 const savingDisabledWarning = ref<string>()
+
 async function load() {
     loadedSave.value = true
     if(!isNaN(saveIdNum.value)){
         const userInfo = await userInfoStore.getIdentityInfo(true)
+        const preRes = await api.save.preflight(saveIdNum.value)
+        if(!preRes)
+            return
+        if(preRes.status == SavePreflightStatus.NotFound){
+            loadError.value = '未找到指定存档，请核对链接是否正确'
+            return
+        }
+        if(preRes.status == SavePreflightStatus.ViewBlocked){
+            loadError.value = '根据权限设置，无法查看本存档'
+            ownerUserInfo.value = { userId: preRes.ownerUserId ?? 0, userName: preRes.ownerUserName ?? ''}
+            return
+        }
+        if(preRes.status == SavePreflightStatus.ViewOnly || preRes.status == SavePreflightStatus.Occupied){
+            if(!viewOnly.value){
+                console.log('根据preflight结果，已设为viewOnly模式')
+                viewOnly.value = true
+            }
+            if(preRes.status == SavePreflightStatus.ViewOnly)
+                savingDisabledWarning.value = '当前为仅浏览模式，无法保存更改'
+            else if(preRes.status == SavePreflightStatus.Occupied){
+                savingDisabledWarning.value = `当前有其他用户在编辑，无法保存更改\n占用者：${preRes.editingByUserName ?? '??'}`
+                editingUserInfo.value = { userId: preRes.editingByUserId ?? 0, userName: preRes.editingByUserName ?? '' }
+            }
+        }
+
         await checkLoginLeftTime(userInfo)
-        viewOnly.value = !!route.query[editorParamViewOnly]
+        
         mainCvsDispatcher.visitorMode = viewOnly.value
         let resp
         try{
@@ -77,7 +107,6 @@ async function load() {
             showPop('存档损坏，请联系管理员', 'failed')
         }
         if(viewOnly.value){
-            savingDisabledWarning.value = '当前为仅浏览模式，不能保存'
             preventLeavingDisabled.value = true //浏览模式，不阻止未保存退出
         }
         else{
@@ -160,7 +189,6 @@ async function checkLoginLeftTime(userInfo:HttpUserInfo){
     const nearExpireMsg = '登录即将过期\n尽快重新登录'
     const noLoginMsg = '当前没有登录\n不能保存'
     if(!userInfo.leftHours){
-        showPop(noLoginMsg, 'warning')
         savingDisabledWarning.value = noLoginMsg
         preventLeavingDisabled.value = true //未登录：不阻止未保存退出（也没法保存）
     }
@@ -248,6 +276,12 @@ onBeforeUnmount(()=>{
 </script>
 
 <template>
+    <div v-if="loadError" class="load-error">
+        {{ loadError }}
+        <RouterLink v-if="ownerUserInfo?.userId" :to="someonesSavesRoute(ownerUserInfo.userId)">
+            看看作者 {{ ownerUserInfo.userName }} 的其他作品</RouterLink>
+        <button class="minor" @click="goBackToWhereWeEntered">点击返回</button>
+    </div>
     <Cvs v-if="loadComplete"></Cvs>
     <Menu v-if="loadComplete" @save-data="saveData"></Menu>
     <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving"
@@ -259,6 +293,21 @@ onBeforeUnmount(()=>{
 </template>
 
 <style scoped lang="scss">
+.load-error{
+    background-color: white;
+    position: fixed;
+    left: 0px; top: 0px;
+    width: 100vw; height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+    color: #999;
+    gap: 20px;
+    a { color: inherit }
+    a, button { font-size: 16px; }
+}
 .cachePreventer{
     position: fixed;
     z-index: -1;
@@ -266,7 +315,8 @@ onBeforeUnmount(()=>{
 }
 .savingDisabledWarning{
     color:white;
-    animation: colorBlink 0.5s ease-out infinite alternate;
+    animation: colorBlink 1s ease-out infinite;
+    white-space: pre-wrap;
 }
 @keyframes colorBlink {
     0% {

@@ -60,19 +60,11 @@ const { editorRoute } = useEditorsRoutesJump()
 function openEditor(){
     const s = sDisplay.value
     if(!s.id) return
-    if(status.value) {
-        const behave = status.value.clickBehavior
-        if(behave === 'edit') // 进入编辑界面
-            router.push(editorRoute(s.id))
-        else if(behave === 'wait') // 提示用户等待
-            showPop(`请等待他人完成编辑：\n${s.editingByUserName}`, 'failed')
-        else if(behave === 'refuse') // 提示用户权限不足
-            showPop('根据权限设置\n无法查看该存档', 'failed')
-    }
-    else {
-        // 如果无status，则是默认情况：只读模式进入
-        router.push(editorRoute(s.id, {viewOnly: true}))
-    }
+    const behave = status.value?.clickBehavior
+    if(behave === 'refuse') // 提示用户权限不足
+        showPop('根据权限设置\n无法查看该存档', 'failed')
+    else // 进入编辑页面
+        router.push(editorRoute(s.id))
 }
 
 const loadedStatus = ref<SaveDto>()

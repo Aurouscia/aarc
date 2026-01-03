@@ -166,6 +166,52 @@ namespace AARC.Controllers.Saves
             return true;
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public SavePreflightResponse Preflight(int id)
+        {
+            var uid = httpUserInfoService.UserInfo.Value.Id;
+            var res = new SavePreflightResponse();
+            var owner = (
+                from s in saveRepo.Existing
+                join u in userRepo.Existing on s.OwnerUserId equals u.Id
+                where s.Id == id
+                select new { u.Id, u.Name }
+            ).FirstOrDefault();
+            if (owner is null)
+            {
+                res.Status = SavePreflightStatus.NotFound;
+                return res;
+            }
+            res.OwnerUserId = owner.Id; 
+            res.OwnerUserName = owner.Name;
+            var viewable = authGrantCheckService.CalculateFor(
+                AuthGrantOn.Save, [id], (byte)AuthGrantTypeOfSave.View, true).FirstOrDefault();
+            if (!viewable)
+            {
+                res.Status = SavePreflightStatus.ViewBlocked;
+                return res;
+            }
+            var editable = authGrantCheckService.CalculateFor(
+                AuthGrantOn.Save, [id], (byte)AuthGrantTypeOfSave.Edit, false).FirstOrDefault();
+            if (!editable)
+            {
+                res.Status = SavePreflightStatus.ViewOnly;
+                return res;
+            }
+            var status = saveRepo.LoadStatus(id);
+            if (status.EditingByUserId > 0 && status.EditingByUserId != uid)
+            {
+                EnrichUserName([status]);
+                res.Status = SavePreflightStatus.Occupied;
+                res.EditingByUserId = status.EditingByUserId;
+                res.EditingByUserName = status.EditingByUserName;
+                return res;
+            }
+            res.Status = SavePreflightStatus.Editable;
+            return res;
+        }
+
         [NonAction]
         private void EnsureOwner(int saveId)
         {
@@ -249,5 +295,22 @@ namespace AARC.Controllers.Saves
             } 
             return true;
         }
+    }
+
+    public class SavePreflightResponse()
+    {
+        public SavePreflightStatus Status { get; set; }
+        public int OwnerUserId { get; set; }
+        public string? OwnerUserName { get; set; }
+        public int EditingByUserId { get; set; }
+        public string? EditingByUserName { get; set; }
+    }
+    public enum SavePreflightStatus
+    {
+        NotFound = 0,
+        ViewBlocked = 1,
+        ViewOnly = 2,
+        Occupied = 3,
+        Editable = 4
     }
 }
