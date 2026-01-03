@@ -237,7 +237,7 @@ onMounted(async()=>{
                 <textarea v-model="editingSave.intro" placeholder="最多256字符" rows="5"></textarea>
             </td>
         </tr>
-        <tr>
+        <tr v-if="!isCreatingSave">
             <td>权限</td>
             <td>
                 <button class="lite confirm" @click="authGrantSb?.extend">打开设置栏</button>
