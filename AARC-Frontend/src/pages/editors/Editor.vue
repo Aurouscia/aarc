@@ -28,11 +28,13 @@ import { HttpUserInfo, SavePreflightStatus } from '@/app/com/apiGenerated';
 import DontUseWeirdBrowser from './components/DontUseWeirdBrowser.vue';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
+import { useIdentitiesRoutesJump } from '../identities/routes/routesJump';
 
 const heartbeatIntervalSecs = 3 * 60 // 每3分钟心跳一次
 
 const props = defineProps<{saveId:string}>()
 const { someonesSavesRoute } = useSavesRoutesJump()
+const { loginRoute } = useIdentitiesRoutesJump()
 const { goBackToWhereWeEntered } = useEnteredCanvasFromStore()
 const uniq = useUniqueComponentsStore()
 const { showPop } = uniq
@@ -186,12 +188,17 @@ async function saveData(){
         startHeartbeat()
     }
 }
+
+const notLogin = ref<boolean>()
+const notLoginFirstWarned = ref<boolean>()
 async function checkLoginLeftTime(userInfo:HttpUserInfo){
     const nearExpireMsg = '登录即将过期\n尽快重新登录'
     const noLoginMsg = '当前没有登录\n不能保存'
     if(!userInfo.leftHours){
+        notLogin.value = true
         savingDisabledWarning.value = noLoginMsg
         preventLeavingDisabled.value = true //未登录：不阻止未保存退出（也没法保存）
+        savingDisabledWarningHide.value = true //暂时隐藏，等第一次编辑后再出现
     }
     else if(userInfo.leftHours <= 6){
         showPop(nearExpireMsg, 'warning')
@@ -204,7 +211,13 @@ async function checkLoginLeftTime(userInfo:HttpUserInfo){
 
 function setLeavingPreventing(){
     //将“主画布重新渲染”当成“存档信息变化”，当主画布重新渲染时，阻止用户离开/刷新页面/关闭页面
-    mainCvsDispatcher.afterMainCvsRendered = preventLeaving
+    mainCvsDispatcher.afterMainCvsRendered = () =>{ 
+        if(!notLoginFirstWarned.value){
+            savingDisabledWarningHide.value = false
+            notLoginFirstWarned.value = true
+        }
+        preventLeaving()
+    }
 }
 
 let heartbeatTimer = 0
@@ -290,7 +303,8 @@ onBeforeUnmount(()=>{
     <HiddenLongWarnPrompt v-if="showHiddenLongWarn" @ok="showHiddenLongWarn=false"></HiddenLongWarnPrompt>
     <div v-if="savingDisabledWarning" class="statusDisplay saving-disabled-warning" :class="{'warning-hidden': savingDisabledWarningHide}">
         {{ savingDisabledWarning }}
-        <RouterLink v-if="editingUserInfo?.userId" :to="someonesSavesRoute(editingUserInfo.userId)">看看TA的作品</RouterLink>
+        <RouterLink v-if="notLogin" :to="loginRoute(true)">去登录</RouterLink>
+        <RouterLink v-else-if="editingUserInfo?.userId" :to="someonesSavesRoute(editingUserInfo.userId)">看看TA的作品</RouterLink>
         <button @click="savingDisabledWarningHide=true">知道了</button>
     </div>
     <div class="cache-preventer"><input :id="cachePreventerInputId"/></div>
@@ -322,18 +336,16 @@ onBeforeUnmount(()=>{
     color:white;
     animation: colorBlink 1s ease-out infinite;
     white-space: pre-wrap;
-    line-height: 24x;
+    line-height: 22px;
     a {
         margin-left: 16px;
-        vertical-align: middle;
-        font-size: 12px;
         color: white;
-        line-height: inherit;
+        text-decoration: underline;
     }
     button {
         display: block;
         background-color: white;
-        margin: 6px auto 0px;
+        margin: 6px auto 3px;
         padding: 3px 20px;
         color: red;
         font-weight: bold;

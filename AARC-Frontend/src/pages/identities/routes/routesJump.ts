@@ -7,7 +7,7 @@ export const useIdentitiesRoutesJump = ()=>{
         return {
             name:loginName,
             params:{
-                backAfterSuccess: backAfterSuccess ? 'y' : undefined
+                backAfterSuccess: backAfterSuccess ? 'backAfterSuccess' : undefined
             }
         }
     }
