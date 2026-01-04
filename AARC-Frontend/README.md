@@ -8,15 +8,16 @@
 #### 自己启动后端
 3. 启动**后端调试**，并在浏览器地址栏进入`<调试域名>/dev/GenApiTsClient`
 4. 接着`apiGenerated.ts`文件就会自动出现在它应该在的位置
-#### 不自己启动后端（无需安装dotnet）
-3. 访问 http://aarc.jowei19.com/apiGenerated.ts 下载最新的`apiGenerated.ts`
-4. 搜索`apiStore.ts`的位置，并将上一步下载的文件放到其同一目录下
 5. 在`env`目录中新建`.env.development.local`，填写如下内容：
 
     ```env
-    VITE_ApiUrlBase = "http://aarc.jowei19.com"
+    VITE_ApiUrlBase = "http://localhost:5250"
     ```
-    可填任意aarc服务实例，注意结尾不要斜杠
+    这样可以改为访问自己的后端服务
+
+#### 不自己启动后端（无需安装dotnet）
+3. 访问 http://aarc.jowei19.com/apiGenerated.ts 下载最新的`apiGenerated.ts`
+4. 搜索`apiStore.ts`的位置，并将上一步下载的文件放到其同一目录下
 
 ### 注意
 如果拉取了代码更新，且：
