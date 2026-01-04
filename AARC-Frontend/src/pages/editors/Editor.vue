@@ -126,12 +126,6 @@ async function load() {
         savingDisabledWarning.value = '此处为体验环境，不能保存\n如需创作，请注册账户并新建存档'
         savingDisabledWarningHide.value = true //暂时隐藏，等第一次编辑后再出现
         preventLeavingDisabled.value = true //demo环境，不阻止未保存退出
-        if(import.meta.env.PROD){
-            showPop('此处为体验环境，不能保存', 'warning')
-            window.setTimeout(()=>{
-                showPop('如需创作，请注册账户并新建存档', 'warning')
-            }, 3000)
-        }
     }
 }
 
