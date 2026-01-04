@@ -14,6 +14,19 @@
     VITE_ApiUrlBase = "http://localhost:5250"
     ```
     这样可以改为访问自己的后端服务
+6. 在后端项目根目录新建`appsettings.Development.json`文件（在`appsettings.json`旁边），填写如下内容
+    
+    ```json
+    {
+        "Cors": {
+            "Origins": [
+                "http://127.0.0.1:5173",
+                "http://localhost:5173"
+            ]
+        }
+    }
+    ```
+    这样会让后端允许前端跨域（注意：不要把这个写到生产环境里）
 
 #### 不自己启动后端（无需安装dotnet）
 3. 访问 http://aarc.jowei19.com/apiGenerated.ts 下载最新的`apiGenerated.ts`
