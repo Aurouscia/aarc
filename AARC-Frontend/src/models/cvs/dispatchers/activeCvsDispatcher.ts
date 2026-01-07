@@ -18,6 +18,8 @@ import { coordAngle, coordSub } from "@/utils/coordUtils/coordMath";
 import { numberCmpEpsilon } from "@/utils/consts";
 import { ControlPointDir, Line } from "@/models/save";
 import { usePointLinkStore } from "@/models/stores/pointLinkStore";
+import { useSelectionCvsWorker } from "../workers/selectionCvsWorker";
+import { useSelectionStore } from "@/models/stores/selectionStore";
 
 export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const saveStore = useSaveStore()
@@ -25,6 +27,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const snapStore = useSnapStore()
     const lineExtendStore = useLineExtendStore()
     const pointLinkStore = usePointLinkStore()
+    const selectionStore = useSelectionStore()
     const canvasIdPrefix = 'active'
     const { getCtx } = useCvs(canvasIdPrefix)
     const { renderSegsAroundActivePt, renderLine } = useLineCvsWorker()
@@ -36,6 +39,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const { renderEmphasizesForRingLines } = useEmphasizeCvsWorker()
     const { renderOneTextTag } = useTextTagCvsWorker()
     const { renderDiscardArea } = useDiscardAreaCvsWorker()
+    const { renderSelection } = useSelectionCvsWorker()
 
     const { getActivePtOpsAvoidance } = storeToRefs(envStore)
     getActivePtOpsAvoidance.value = renderActiveCvs
@@ -43,11 +47,10 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
 
     function renderActiveCvs(){
         //该函数应被设置为每x毫秒执行一次
-        if(!(envStore.somethingActive || pointLinkStore.isCreating)){
+        if(!(envStore.somethingActive || pointLinkStore.isCreating || selectionStore.working)){
             if(!cvsCleared){
                 getCtx()
                 cvsCleared = true
-                //console.log('清空activeCvs')
             }
             return []
         }
@@ -120,6 +123,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
         }
         renderCursor(ctx)
         renderDiscardArea(ctx)
+        renderSelection(ctx)
         return lineExtendWays
     }
     

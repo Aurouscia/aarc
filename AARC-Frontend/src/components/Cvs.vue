@@ -16,6 +16,7 @@ import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 import { usePointLinkStore } from '@/models/stores/pointLinkStore';
+import { useSelectionStore } from '@/models/stores/selectionStore';
 
 const envStore = useEnvStore();
 const { somethingActive } = storeToRefs(envStore)
@@ -28,6 +29,7 @@ const activeCvsDispatcher = useActiveCvsDispatcher()
 const { showWait } = useUniqueComponentsStore()
 const cvsBlocksControlStore = useCvsBlocksControlStore()
 const pointLinkStore = usePointLinkStore()
+const selectionStore = useSelectionStore()
 
 let activeCvsRenderTimer = 0
 const waitKey = 'cvsInit'
@@ -83,6 +85,9 @@ const bgRefImageStyle = computed<CSSProperties>(()=>{
     
     return res
 })
+const activeCvsInvisible = computed(()=>{
+    return !envStore.somethingActive && !pointLinkStore.creatingLink && !selectionStore.working
+})
 
 onMounted(async()=>{
     await init()
@@ -110,7 +115,7 @@ defineExpose({init})
             <CvsBlocks :canvas-id-prefix="mainCvsDispatcher.canvasIdPrefix"
                 :cvs-class-name="'mainCvs'" :insnif="envStore.somethingActive"></CvsBlocks>
             <CvsBlocks :canvas-id-prefix="activeCvsDispatcher.canvasIdPrefix"
-                :cvs-class-name="'activeCvs'" :invisible="!envStore.somethingActive && !pointLinkStore.creatingLink"></CvsBlocks>
+                :cvs-class-name="'activeCvs'" :invisible="activeCvsInvisible"></CvsBlocks>
         </div>
     </div>
     <Ops></Ops>

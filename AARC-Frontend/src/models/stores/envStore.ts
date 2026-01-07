@@ -21,6 +21,7 @@ import { useTextTagEditStore } from "./textTagEditStore";
 import rfdc from "rfdc";
 import { coordRound } from "@/utils/coordUtils/coordRound";
 import { usePointLinkStore } from "./pointLinkStore";
+import { useSelectionStore } from "./selectionStore";
 import { assignAllProps, removeNonexistentKeys } from "@/utils/lang/assignAllProps";
 import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
 import { useOptionsOpenerStore } from "./utils/optionsOpenerStore";
@@ -47,7 +48,9 @@ export const useEnvStore = defineStore('env', ()=>{
     const movingTextTag = ref<boolean>(false)
     const movedTextTag = ref<boolean>(false)
     const activeTextTagGrabbedAt = ref<Coord>([0,0])
-    const viewMoveLocked = computed<boolean>(()=>movingPoint.value || movingTextTag.value)
+    const viewMoveLocked = computed<boolean>(()=>{
+        return movingPoint.value || movingTextTag.value || selectionStore.working
+    })
     const cursorPos = ref<Coord>()
     const cursorDir = ref<ControlPointDir>(ControlPointDir.vertical)
     const cursorOnLineAfterPtIdx = ref<number>(-1)
@@ -66,6 +69,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const { removeLineExtendBtn } = useLineExtendStore()
     const discardAreaStore = useDiscardAreaStore()
     const pointLinkStore = usePointLinkStore()
+    const selectionStore = useSelectionStore()
     const optionsOpenerStore = useOptionsOpenerStore()
     const deepClone = rfdc()
     function init(){
@@ -129,6 +133,8 @@ export const useEnvStore = defineStore('env', ()=>{
     function pureClickHandler(clientCord:Coord, clickType?:PureClickType, noDetect=false){
         const coord = translateFromClient(clientCord);
         if(!coord)
+            return
+        if(selectionStore.working)
             return
 
         const isRightBtnOnly = clickType === 'right' 
@@ -434,6 +440,10 @@ export const useEnvStore = defineStore('env', ()=>{
             coordRound(setToGlobalPos)
             activeTextTag.value.pos = setToGlobalPos
             movedTextTag.value = true
+        }
+        else if(selectionStore.working){
+            const clientCoord = eventClientCoord(e)
+            cursorPos.value = translateFromClient(clientCoord)
         }
     }
     function moveEndHandler(){
