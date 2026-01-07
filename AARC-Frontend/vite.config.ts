@@ -25,6 +25,10 @@ export default defineConfig({
       'localhost'
     ],
     proxy: {
+      '/proxy': {
+        target: 'http://aarc.jowei19.com',
+        changeOrigin: true,
+      },
       '/api': {
         target: 'http://aarc.jowei19.com',
         changeOrigin: true,
