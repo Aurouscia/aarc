@@ -5,35 +5,23 @@
 ## 准备
 1. 确保本地安装了`node.js`尽可能新的稳定版本
 2. 在本目录打开命令行，运行`npm install`，npm会自动使用国内镜像源
-#### 自己启动后端
+
+### 不自己启动后端（无需安装dotnet）
+3. 访问 http://aarc.jowei19.com/apiGenerated.ts 下载最新的`apiGenerated.ts`
+4. 搜索`apiStore.ts`的位置，并将上一步下载的文件放到其同一目录下
+
+### 自己启动后端
 3. 启动**后端调试**，并在浏览器地址栏进入`<调试域名>/dev/GenApiTsClient`
 4. 接着`apiGenerated.ts`文件就会自动出现在它应该在的位置
 5. 在`env`目录中新建`.env.development.local`，填写如下内容：
 
     ```env
-    VITE_ApiUrlBase = "http://localhost:5250"
+    VITE_DevProxyTarget = "http://localhost:5250"
     ```
     这样可以改为访问自己的后端服务
-6. 在后端项目根目录新建`appsettings.Development.json`文件（在`appsettings.json`旁边），填写如下内容
-    
-    ```json
-    {
-        "Cors": {
-            "Origins": [
-                "http://127.0.0.1:5173",
-                "http://localhost:5173"
-            ]
-        }
-    }
-    ```
-    这样会让后端允许前端跨域（注意：不要把这个写到生产环境里）
-
-#### 不自己启动后端（无需安装dotnet）
-3. 访问 http://aarc.jowei19.com/apiGenerated.ts 下载最新的`apiGenerated.ts`
-4. 搜索`apiStore.ts`的位置，并将上一步下载的文件放到其同一目录下
 
 ### 注意
-如果拉取了代码更新，且：
+如果拉取了代码更新，且运行时发现问题，大概率是因为：
 - npm依赖项有更新：需要重新`npm install`
 - api有更新：需要按上述“准备”步骤重新获取`apiGenerated.ts`文件
 
