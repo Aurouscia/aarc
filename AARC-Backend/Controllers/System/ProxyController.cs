@@ -29,11 +29,6 @@ namespace AARC.Controllers.System
                 hrm.Headers.Remove("Proxy-Authorization");
                 return Task.CompletedTask;
             })
-            .WithAfterReceive((c, hrm) =>
-            {
-                hrm.Headers.Add("Access-Control-Allow-Origin", "http://localhost:5173");
-                return Task.CompletedTask;
-            })
             .WithHandleFailure((c, e) =>
             {
                 c.Response.StatusCode = 403;
