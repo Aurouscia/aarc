@@ -339,7 +339,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 activeTextTagGrabbedAt.value = coordSub(coord, tagGlobalPos)
             }
         }
-        //判断是否在线路延长按钮上
+        // 判断是否在线路延长按钮上
         const lineExtend = onLineExtendBtn(coord)
         if (lineExtend && activePt.value) {
             removeLineExtendBtn(lineExtend)
@@ -370,6 +370,11 @@ export const useEnvStore = defineStore('env', ()=>{
             }
         }else{
             movingExtendedPointOriginated.value = undefined
+        }
+        // 多选
+        selectionStore.setBrushStatus('down')
+        if(selectionStore.working){
+            cursorPos.value = coord
         }
     }
     function movingHandler(e:MouseEvent|TouchEvent){
@@ -441,9 +446,11 @@ export const useEnvStore = defineStore('env', ()=>{
             activeTextTag.value.pos = setToGlobalPos
             movedTextTag.value = true
         }
-        else if(selectionStore.working){
+        // 多选
+        if(selectionStore.working){
             const clientCoord = eventClientCoord(e)
             cursorPos.value = translateFromClient(clientCoord)
+            selectionStore.brush(cursorPos.value)
         }
     }
     function moveEndHandler(){
@@ -481,6 +488,12 @@ export const useEnvStore = defineStore('env', ()=>{
             rerender.value()
         }
         discardAreaStore.resetDiscarding()
+        // 多选
+        let selWorking = selectionStore.working
+        selectionStore.setBrushStatus('up')
+        if(selWorking){
+            cursorPos.value = undefined
+        }
     }
 
     function setOpsPos(coord:Coord|false){

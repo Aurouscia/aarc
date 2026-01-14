@@ -9,14 +9,16 @@ import { useTextTagRectStore } from "./saveDerived/textTagRectStore";
 
 export const useSelectionStore = defineStore('selection', ()=>{
     const selected = ref<Set<ControlPoint|TextTag>>(new Set())
-    const mode = ref<'add'|'sub'|'drag'|undefined>('add')
-    const working = computed(() => mode.value != 'drag')
+    const mode = ref<'add'|'sub'|'idle'>('idle')
+    const brushStatus = ref<'up'|'down'>('up')
+    const working = computed(() => mode.value != 'idle' && brushStatus.value == 'down')
     const saveStore = useSaveStore()
     const { save } = storeToRefs(saveStore)
     const { enumerateTextTagRects } = useTextTagRectStore()
     
     const brushRadius = computed<number>(()=>100)
-    function brush(coord:Coord){
+    function brush(coord?:Coord){
+        if(!coord) return
         let radius = brushRadius.value
         const radiusSq = radius ** 2
         for(const p of save.value?.points ?? []){
@@ -38,11 +40,30 @@ export const useSelectionStore = defineStore('selection', ()=>{
             }
         })
     }
+    function setBrushStatus(status:'up'|'down'){
+        brushStatus.value = status
+    }
+
+    // pinia单例，该语句仅执行一次
+    document.addEventListener('keydown', e => {
+        if(e.shiftKey){
+            if (e.ctrlKey || e.metaKey) 
+                mode.value = 'sub'
+            else 
+                mode.value = 'add'
+        }
+    });
+    document.addEventListener('keyup', e => {
+        if (!e.shiftKey){
+            mode.value = 'idle'
+        }
+    });
 
     return {
         mode,
         working,
         brushRadius,
-        brush
+        brush,
+        setBrushStatus
     }
 })
