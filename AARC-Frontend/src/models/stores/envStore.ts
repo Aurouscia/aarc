@@ -129,6 +129,8 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         nameEditStore.edited = false
         textTagEditStore.edited = false
+        pointLinkStore.abortCreatingPtLink()
+        selectionStore.disableForTouchScreen()
     }
     function pureClickHandler(clientCord:Coord, clickType?:PureClickType, noDetect=false){
         const coord = translateFromClient(clientCord);

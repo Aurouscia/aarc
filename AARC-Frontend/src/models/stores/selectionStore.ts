@@ -11,7 +11,9 @@ export const useSelectionStore = defineStore('selection', ()=>{
     const selected = ref<Set<ControlPoint|TextTag>>(new Set())
     const mode = ref<'add'|'sub'|'idle'>('idle')
     const brushStatus = ref<'up'|'down'>('up')
+    const enabled = computed(() => mode.value != 'idle')
     const working = computed(() => mode.value != 'idle' && brushStatus.value == 'down')
+    const showControl = ref(false)
     const saveStore = useSaveStore()
     const { save } = storeToRefs(saveStore)
     const { enumerateTextTagRects } = useTextTagRectStore()
@@ -44,6 +46,15 @@ export const useSelectionStore = defineStore('selection', ()=>{
         brushStatus.value = status
     }
 
+    function enableForTouchScreen(){
+        mode.value = 'add'
+        showControl.value = true
+    }
+    function disableForTouchScreen(){
+        mode.value = 'idle'
+        showControl.value = false
+    }
+
     // pinia单例，该语句仅执行一次
     document.addEventListener('keydown', e => {
         if(e.shiftKey){
@@ -62,8 +73,12 @@ export const useSelectionStore = defineStore('selection', ()=>{
     return {
         mode,
         working,
+        enabled,
         brushRadius,
         brush,
-        setBrushStatus
+        setBrushStatus,
+        showControl,
+        enableForTouchScreen,
+        disableForTouchScreen
     }
 })

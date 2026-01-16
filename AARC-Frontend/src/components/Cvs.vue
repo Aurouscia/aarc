@@ -125,6 +125,14 @@ defineExpose({init})
         正在创建连接，请点击第<b>{{ pointLinkStore.helpTextNumber }}</b>个点<br/>
         <button class="lite" @click="pointLinkStore.abortCreatingPtLink">取消创建</button>
     </div>
+    <div v-if="selectionStore.showControl" class="statusDisplay selectionWorkingStatus">
+        <button v-if="selectionStore.mode=='add'" @click="selectionStore.mode='sub'" class="selAddMode">
+            添选模式</button>
+        <button v-if="selectionStore.mode=='sub'" @click="selectionStore.mode='add'" class="selSubMode">
+            减选模式</button>
+        <span class="smallNote">移动视角请双指操作</span><br/>
+        <button class="lite" @click="selectionStore.disableForTouchScreen">退出多选</button>
+    </div>
 </template>
 
 <style scoped lang="scss">
@@ -146,26 +154,51 @@ defineExpose({init})
         height: 100%;
     }
 }
-.pointLinkCreatingStatus{
+.pointLinkCreatingStatus, .selectionWorkingStatus{
     z-index: 1001;
     color: white;
     background-color: olivedrab;
     animation: greenBackgroundblink 1s infinite;
     $some-green: rgb(0, 80, 0);
     $lighter-green: rgb(0, 150, 0);
+    will-change: background-color;
     @keyframes greenBackgroundblink {
         0% { background-color: $some-green; box-shadow: 0px 0px 10px 3px $some-green; }
         50% { background-color: $lighter-green; box-shadow: 0px 0px 10px 3px green;}
         100% { background-color: $some-green; box-shadow: 0px 0px 10px 3px $some-green; }
     }
-    button{
-        color:white;
-        font-size: 14px;
-        margin-top: 5px;
-    }
     b{
         font-size: 26px;
         margin: 0px 2px 0px 2px;
+    }
+    button.lite{
+        color:white;
+        font-size: 14px;
+        margin-top: 5px;
+        border-bottom: 1px solid white;
+        line-height: 16px;
+        padding-bottom: 0px;
+        margin-bottom: 2px;
+        border-radius: 0px;
+        &:hover{
+            text-decoration: none;
+        }
+    }
+}
+.selectionWorkingStatus{
+    .smallNote{
+        margin-left: 5px;
+        color: white;
+    }
+    button.selAddMode, button.selSubMode{
+        background-color: white;
+        color:rgb(0, 150, 0);
+        padding: 2px;
+        margin-bottom: 4px;
+        font-weight: bold;
+    }
+    button.selSubMode{
+        color: palevioletred;
     }
 }
 </style>
