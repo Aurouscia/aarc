@@ -104,15 +104,6 @@ onMounted(async()=>{
             <tr v-if="turnstileConfigured && !turnstileHidden">
                 <td colspan="2">
                     <Turnstile @verify="handleTurnstileVerify"/>
-                    <div v-if="!waitLong" class="smallNote">
-                        人机验证中
-                    </div>
-                    <div v-else class="smallNote" style="color: red">
-                        如果失败，请尝试：<br/>
-                        1. 连接wifi后刷新重试<br/>
-                        2. 手指/鼠标在屏幕上随便划划<br/>
-                        3. 使用电脑注册
-                    </div>
                 </td>
             </tr>
             <tr>
