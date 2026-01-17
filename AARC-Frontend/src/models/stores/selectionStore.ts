@@ -60,18 +60,21 @@ export const useSelectionStore = defineStore('selection', ()=>{
 
     // pinia单例，该语句仅执行一次
     document.addEventListener('keydown', e => {
-        if(e.shiftKey){
+        setMode(e)
+    });
+    document.addEventListener('keyup', e => {
+        setMode(e)
+    });
+    function setMode(e: KeyboardEvent){
+        if(e.shiftKey) {
             if (e.ctrlKey || e.metaKey) 
                 mode.value = 'sub'
             else 
                 mode.value = 'add'
-        }
-    });
-    document.addEventListener('keyup', e => {
-        if (!e.shiftKey){
+        } else {
             mode.value = 'idle'
         }
-    });
+    }
 
     return {
         selected,
