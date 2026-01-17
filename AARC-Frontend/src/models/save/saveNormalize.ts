@@ -59,6 +59,14 @@ export function normalizeSave(obj:any){
     upgradeLineStyles(obj, getNewId)
     upgradeConfig(obj)
     upgradeTextTagIcons(obj, getNewId)
+
+    // 一些存档不知道哪来的point.key，给它删掉
+    // 这里可以确定obj.points肯定是数组
+    for(const p of obj.points){
+        if(p && typeof p == 'object')
+            delete p.key
+    }
+    
     return obj as Save
 }
 
