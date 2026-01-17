@@ -36,7 +36,7 @@ const cvsHeightPreview = computed(()=>{
     return w
 })
 const tooBigWarnThrs = 20000
-const tooBigRefuseThrs = 60000
+const tooBigRefuseThrs = 100000
 const cvsPreviewTooBig = computed<boolean>(()=>{
     return cvsWidthPreview.value > tooBigWarnThrs || cvsHeightPreview.value > tooBigWarnThrs 
 })
@@ -44,6 +44,12 @@ const pendingLeftOrUpCantDivideBy100 = computed<boolean>(()=>{
     return pendingChanges.value[0] % 100 !== 0 || pendingChanges.value[3] % 100 !== 0
 })
 const anyChangeExist = computed(()=>pendingChanges.value.some(x=>x!==0))
+const everythingWillGoOut = computed(()=>{
+    const w = cvsWidth.value
+    const h = cvsHeight.value
+    const [up, right, down, left] = pendingChanges.value
+    return -up >= h || -right >= w || -down >= h || -left >= w
+}) 
 function changeStyleOf(idx:number):CSSProperties{
     const val = pendingChanges.value[idx]
     if(val>0)
@@ -106,15 +112,19 @@ function applyChange(){
     const newW = cvsWidthPreview.value
     const newH = cvsHeightPreview.value
     if(newW > tooBigRefuseThrs || newH > tooBigRefuseThrs){
-        showPop(`边长限制${tooBigRefuseThrs}`, 'failed')
+        showPop(`边长最大${tooBigRefuseThrs}`, 'failed')
+        return
+    }
+    if(newW < minCvsSide || newH < minCvsSide){
+        showPop(`边长最小${minCvsSide}`, 'failed')
+        return
+    }
+    if(everythingWillGoOut.value){
+        showPop('所有内容都将超出画布\n不允许这样更改', 'failed')
         return
     }
     let moveDownward = pc[0]
     let moveRightward = pc[3]
-    if(newH < minCvsSide)
-        moveDownward = 0
-    if(newW < minCvsSide)
-        moveRightward = 0
     staNameMainRectStore.clearItems()
     saveStore.moveEverything([moveRightward, moveDownward])
     saveStore.setCvsSize([newW, newH])
@@ -216,6 +226,9 @@ defineExpose({
     </Notice>
     <Notice v-if="cvsPreviewTooBig" :type="'info'">
         过大的画布会导致<br/>导出的图片难以分享
+    </Notice>
+    <Notice v-if="everythingWillGoOut" :type="'danger'">
+        这样调整后<br/>所有内容都会被移出画布范围
     </Notice>
 </SideBar>
 </template>
