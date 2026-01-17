@@ -1,17 +1,17 @@
 import { useSelectionStore } from "@/models/stores/selectionStore";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
-import { useEnvStore } from "@/models/stores/envStore";
 import { buildConnectedGraph } from "@/utils/coordUtils/coordGraph";
 import { Coord } from "@/models/coord";
 
 export const useSelectionCvsWorker = defineStore('selectionCvsWorker', ()=>{
     const selStore = useSelectionStore()
-    const envStore = useEnvStore()
     function renderSelection(ctx:CvsContext){
-        const cursor = envStore.cursorPos
-        if(selStore.working && cursor){
-            const brushColor = selStore.mode == 'add' ? 'green' : 'palevioletred'
+        const cursor = selStore.selCursor
+        if(selStore.enabled && cursor){
+            let brushColor = 'gray'
+            if(selStore.working)
+                brushColor = selStore.mode == 'add' ? 'green' : 'palevioletred'
             const r = selStore.brushRadius
             ctx.beginPath()
             ctx.globalAlpha = 1

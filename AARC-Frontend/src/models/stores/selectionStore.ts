@@ -14,6 +14,7 @@ export const useSelectionStore = defineStore('selection', ()=>{
     const enabled = computed(() => mode.value != 'idle')
     const working = computed(() => mode.value != 'idle' && brushStatus.value == 'down')
     const showControl = ref(false)
+    const selCursor = ref<Coord>()
     const saveStore = useSaveStore()
     const { save } = storeToRefs(saveStore)
     const { enumerateTextTagRects } = useTextTagRectStore()
@@ -75,10 +76,11 @@ export const useSelectionStore = defineStore('selection', ()=>{
         mode,
         working,
         enabled,
+        showControl,
+        selCursor,
         brushRadius,
         brush,
         setBrushStatus,
-        showControl,
         enableForTouchScreen,
         disableForTouchScreen
     }

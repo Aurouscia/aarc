@@ -47,7 +47,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     let cvsCleared = true
 
     const noNeedActiveCvs = computed(()=>{
-        const sel = selectionStore.working || selectionStore.selected.size > 0
+        const sel = selectionStore.enabled || selectionStore.selected.size > 0
         return !sel && !envStore.somethingActive && !pointLinkStore.isCreating
     })
 

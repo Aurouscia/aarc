@@ -375,21 +375,19 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         // 多选
         selectionStore.setBrushStatus('down')
-        if(selectionStore.working){
-            cursorPos.value = coord
-        }
+        selectionStore.selCursor = coord
     }
     function movingHandler(e:MouseEvent|TouchEvent){
+        const clientCoord = eventClientCoord(e)
+        if(!clientCoord) return
+        const coord = translateFromClient(clientCoord);
+        if(!coord) return
         if(movingPoint.value){
             setOpsPos(false)
-            const clientCoord = eventClientCoord(e)
-            if(!clientCoord)
-                return;
             const nameEditorHeight = nameEditStore.getEditorDivEffectiveHeight()
             if(clientCoord[1] < nameEditorHeight+10){
                 nameEditStore.endEditing()
             }
-            const coord = translateFromClient(clientCoord);
             let pt = activePt.value
             if(pt && coord){
                 if(activePtType.value=='body'){
@@ -428,16 +426,10 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         else if(movingTextTag.value && activeTextTag.value){
             setOpsPos(false)
-            const clientCoord = eventClientCoord(e)
-            if(!clientCoord)
-                return;
             const textTagEditorHeight = textTagEditStore.getEditorDivEffectiveHeight()
             if(clientCoord[1] < textTagEditorHeight+20){
                 textTagEditStore.endEditing()
             }
-            const coord = translateFromClient(clientCoord)
-            if(!coord || !clientCoord)
-                return;
             discardAreaStore.discardStatus(clientCoord)
             let setToGlobalPos = coordSub(coord, activeTextTagGrabbedAt.value)
             const snapGridRes = snapGrid(setToGlobalPos, undefined, true)
@@ -449,10 +441,9 @@ export const useEnvStore = defineStore('env', ()=>{
             movedTextTag.value = true
         }
         // 多选
+        selectionStore.selCursor = coord
         if(selectionStore.working){
-            const clientCoord = eventClientCoord(e)
-            cursorPos.value = translateFromClient(clientCoord)
-            selectionStore.brush(cursorPos.value)
+            selectionStore.brush(coord)
         }
     }
     function moveEndHandler(){
@@ -491,11 +482,7 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         discardAreaStore.resetDiscarding()
         // 多选
-        let selWorking = selectionStore.working
         selectionStore.setBrushStatus('up')
-        if(selWorking){
-            cursorPos.value = undefined
-        }
     }
 
     function setOpsPos(coord:Coord|false){
