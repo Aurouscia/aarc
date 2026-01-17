@@ -71,6 +71,7 @@ export const useSelectionStore = defineStore('selection', ()=>{
     });
 
     return {
+        selected,
         mode,
         working,
         enabled,

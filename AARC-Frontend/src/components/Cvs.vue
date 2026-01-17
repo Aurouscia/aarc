@@ -85,9 +85,7 @@ const bgRefImageStyle = computed<CSSProperties>(()=>{
     
     return res
 })
-const activeCvsInvisible = computed(()=>{
-    return !envStore.somethingActive && !pointLinkStore.creatingLink && !selectionStore.working
-})
+const activeCvsInvisible = computed(()=> activeCvsDispatcher.noNeedActiveCvs)
 
 onMounted(async()=>{
     await init()

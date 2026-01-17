@@ -20,6 +20,7 @@ import { ControlPointDir, Line } from "@/models/save";
 import { usePointLinkStore } from "@/models/stores/pointLinkStore";
 import { useSelectionCvsWorker } from "../workers/selectionCvsWorker";
 import { useSelectionStore } from "@/models/stores/selectionStore";
+import { computed } from "vue";
 
 export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const saveStore = useSaveStore()
@@ -45,9 +46,14 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     getActivePtOpsAvoidance.value = renderActiveCvs
     let cvsCleared = true
 
+    const noNeedActiveCvs = computed(()=>{
+        const sel = selectionStore.working || selectionStore.selected.size > 0
+        return !sel && !envStore.somethingActive && !pointLinkStore.isCreating
+    })
+
     function renderActiveCvs(){
         //该函数应被设置为每x毫秒执行一次
-        if(!(envStore.somethingActive || pointLinkStore.isCreating || selectionStore.working)){
+        if(noNeedActiveCvs.value){
             if(!cvsCleared){
                 getCtx()
                 cvsCleared = true
@@ -157,5 +163,5 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
                 envStore.activePt.dir = ControlPointDir.vertical
         }
     }
-    return { renderActiveCvs, canvasIdPrefix }
+    return { renderActiveCvs, canvasIdPrefix, noNeedActiveCvs }
 })
