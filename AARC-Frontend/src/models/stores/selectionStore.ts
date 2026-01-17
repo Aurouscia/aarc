@@ -21,7 +21,8 @@ export const useSelectionStore = defineStore('selection', ()=>{
     
     const brushRadius = computed<number>(()=>100)
     function brush(coord?:Coord){
-        if(!coord) return
+        selCursor.value = coord
+        if(!coord || !working.value) return
         let radius = brushRadius.value
         const radiusSq = radius ** 2
         for(const p of save.value?.points ?? []){
@@ -54,6 +55,7 @@ export const useSelectionStore = defineStore('selection', ()=>{
     function disableForTouchScreen(){
         mode.value = 'idle'
         showControl.value = false
+        selCursor.value = undefined
     }
 
     // pinia单例，该语句仅执行一次

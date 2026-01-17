@@ -375,7 +375,7 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         // 多选
         selectionStore.setBrushStatus('down')
-        selectionStore.selCursor = coord
+        selectionStore.brush(coord)
     }
     function movingHandler(e:MouseEvent|TouchEvent){
         const clientCoord = eventClientCoord(e)
@@ -441,10 +441,7 @@ export const useEnvStore = defineStore('env', ()=>{
             movedTextTag.value = true
         }
         // 多选
-        selectionStore.selCursor = coord
-        if(selectionStore.working){
-            selectionStore.brush(coord)
-        }
+        selectionStore.brush(coord)
     }
     function moveEndHandler(){
         //手指离开屏幕时，touches为空数组，无法获取位置
