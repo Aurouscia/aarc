@@ -19,6 +19,9 @@ export function coordTo0Dist(a:Coord):number{
 export function coordMut(a:Coord, c:number):Coord{
     return [a[0]*c, a[1]*c]
 }
+export function coordAvg(a:Coord, b:Coord):Coord{
+    return coordMut(coordAdd(a, b), 0.5)
+}
 export function coordCrossProduct(a:Coord, b:Coord):number{
     return a[0]*b[1] - a[1]*b[0]
 }

@@ -7,7 +7,7 @@ import { eventClientCoord } from "@/utils/eventUtils/eventClientCoord";
 import { OpsBtn, useOpsStore } from "./opsStore";
 import { ColorPreset, ControlPoint, ControlPointDir, ControlPointSta, Line, LineType, TextTag } from "../save";
 import { useSnapStore } from "./snapStore";
-import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
+import { coordAdd, coordAvg, coordSub } from "@/utils/coordUtils/coordMath";
 import { useNameEditStore } from "./nameEditStore";
 import { useNameSearchStore } from "./nameSearchStore";
 import { useFormalizedLineStore } from "./saveDerived/formalizedLineStore";
@@ -763,6 +763,8 @@ export const useEnvStore = defineStore('env', ()=>{
                 ensureChildrenOptionsSame(parent)
             }
             rerender.value([newLine.id], [pt1.id, pt2.id])
+            activeLine.value = newLine
+            cursorPos.value = coordAvg(pt1.pos, pt2.pos)
         }
     }
     function lineInfoChanged(line:Line, staSizeChanged?:boolean){
