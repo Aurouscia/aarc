@@ -235,7 +235,7 @@ export const useSnapStore = defineStore('snap',()=>{
         }
         return matched
     }
-    function snapGrid(ptPos:Coord, freeAxis?:SgnCoord, clearSnapLines?:boolean):Coord|undefined{
+    function snapGrid(ptPos:Coord, freeAxis?:SgnCoord, clearSnapLines?:boolean, ensureSnap?:boolean):Coord|undefined{
         if(clearSnapLines)
             snapLines.value = []
         if(!snapGridEnabled.value)
@@ -249,16 +249,22 @@ export const useSnapStore = defineStore('snap',()=>{
         let yMatched = false;//是否距离横线足够近
         const freeWay = collapseWay(freeAxis)
 
+        const a = Math.abs
+        const thrs = ensureSnap ? 1000000 : cs.config.snapGridThrs
+
         //寻找是否有足够近的竖线，如果自由度只有上下就不找
         if(freeWay !== 'vert'){
             let cursor = intv;
             while(cursor < cvsWidth.value){
                 const xDiffHere = ptPos[0] - cursor
-                const xDiffHereAbs = Math.abs(xDiffHere)
-                if(xDiffHereAbs < cs.config.snapGridThrs){
-                    xDiff = xDiffHere
+                const xDiffHereAbs = a(xDiffHere)
+                if(xDiffHereAbs < thrs){
                     xMatched = true
-                    break;
+                    if(xDiff && xDiffHereAbs > a(xDiff)){
+                        break
+                    } else {
+                        xDiff = xDiffHere
+                    }
                 }
                 cursor += intv
             }
@@ -268,11 +274,14 @@ export const useSnapStore = defineStore('snap',()=>{
             let cursor = intv;
             while(cursor < cvsHeight.value){
                 const yDiffHere = ptPos[1] - cursor
-                const yDiffHereAbs = Math.abs(yDiffHere)
-                if(yDiffHereAbs < cs.config.snapGridThrs){
-                    yDiff = yDiffHere
+                const yDiffHereAbs = a(yDiffHere)
+                if(yDiffHereAbs < thrs){
                     yMatched = true
-                    break
+                    if(yDiff && yDiffHereAbs > a(yDiff)){    
+                        break
+                    } else {
+                        yDiff = yDiffHere
+                    }
                 }
                 cursor += intv
             }

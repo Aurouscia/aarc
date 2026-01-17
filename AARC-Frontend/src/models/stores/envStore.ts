@@ -715,19 +715,19 @@ export const useEnvStore = defineStore('env', ()=>{
         ensureCoordInCanvas(viewCenterCoord)
         const pt1Pos:Coord = [...viewCenterCoord]
         const pt2Pos:Coord = [...viewCenterCoord]
-        pt1Pos[0] -= 50
-        pt2Pos[0] += 50
+        pt1Pos[0] -= 75
+        pt2Pos[0] += 75
         ensureSpaceForNewPt(pt1Pos)
         ensureSpaceForNewPt(pt2Pos)
         const pt1:ControlPoint = {
             id: saveStore.getNewId(),
-            pos: pt1Pos,
+            pos: snapGrid(pt1Pos, undefined, undefined, true) ?? pt1Pos,
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta
         }
         const pt2:ControlPoint = {
             id: saveStore.getNewId(),
-            pos: pt2Pos,
+            pos: snapGrid(pt2Pos, undefined, undefined, true) ?? pt2Pos,
             dir: ControlPointDir.vertical,
             sta: ControlPointSta.sta
         }
