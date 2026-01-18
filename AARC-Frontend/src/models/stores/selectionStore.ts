@@ -65,8 +65,8 @@ export const useSelectionStore = defineStore('selection', ()=>{
     const draggingOriginal = ref<Coord>()
     const draggingDelta = ref<Coord>()
     function draggingStart(c:Coord){
-        if(draggingDelta.value) return // 如果有delta，说明目前拖到一半，在接着继续拖，不是真正的start
         draggingOriginal.value = c
+        draggingDelta.value = undefined
     }
     function draggingDrag(c:Coord){
         if(!draggingOriginal.value) return
@@ -74,6 +74,7 @@ export const useSelectionStore = defineStore('selection', ()=>{
     }
     function draggingCommit(draggedItem:SelectionTarget){
         if(selected.value.size == 0 || !draggingDelta.value){
+            draggingDelta.value = undefined
             return false
         }
         selected.value.forEach(s=>{

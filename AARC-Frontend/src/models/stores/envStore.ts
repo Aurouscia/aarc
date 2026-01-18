@@ -497,6 +497,8 @@ export const useEnvStore = defineStore('env', ()=>{
         discardAreaStore.resetDiscarding()
         // 多选
         selectionStore.setBrushStatus('up')
+        const activeItem = activePt.value ?? activeTextTag.value
+        activeItem && selectionStore.draggingCommit(activeItem)
     }
 
     function setOpsPos(coord:Coord|false){
