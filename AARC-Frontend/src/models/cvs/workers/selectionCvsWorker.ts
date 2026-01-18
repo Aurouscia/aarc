@@ -46,7 +46,8 @@ export const useSelectionCvsWorker = defineStore('selectionCvsWorker', ()=>{
             })
             
             const now = Date.now()
-            let strong = now % 1000 <= 800
+            let phase = now % 1000
+            let strong = phase <= 100 || (phase > 200 && phase <= 300)
             ctx.globalAlpha = strong ? 0.6 : 0.2
             const edges = buildConnectedGraph(coords, 0, 0.4)
             ctx.lineWidth = 6

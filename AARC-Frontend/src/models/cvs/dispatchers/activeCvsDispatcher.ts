@@ -128,9 +128,10 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
         else if(envStore.activeTextTag){
             renderOneTextTag(ctx, envStore.activeTextTag, true)
         }
-        renderCursor(ctx)
         renderDiscardArea(ctx)
         renderSelection(ctx)
+        const cursorStronger = envStore.activePt && selectionStore.selected.has(envStore.activePt)
+        renderCursor(ctx, cursorStronger)
         return lineExtendWays
     }
     
