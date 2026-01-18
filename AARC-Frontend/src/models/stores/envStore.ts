@@ -82,8 +82,8 @@ export const useEnvStore = defineStore('env', ()=>{
         cvsCont.value.addEventListener('touchstart', moveStartHandler)
         cvsCont.value.addEventListener('mousemove', movingHandler)
         cvsCont.value.addEventListener('touchmove', movingHandler)
-        cvsCont.value.addEventListener('mouseup', moveEndHandler)
-        cvsCont.value.addEventListener('touchend', moveEndHandler)
+        cvsCont.value.addEventListener('mouseup', ()=>moveEndHandler())
+        cvsCont.value.addEventListener('touchend', ()=>moveEndHandler('fromTouch'))
         ensureChildrenOptionsSameForAll()
     }
     let rescaleSteppedLastCall = 0
@@ -322,6 +322,9 @@ export const useEnvStore = defineStore('env', ()=>{
         activePtNameSnapped.value = 'no'
         endEveryEditing()
     }
+    let oneFingerForSureTimer = 0
+    let oneFingerBrushed = false
+    const oneFingerForSureThrs = 90
     function moveStartHandler(e:MouseEvent|TouchEvent){
         const clientCoord = eventClientCoord(e)
         if(!clientCoord)
@@ -388,79 +391,97 @@ export const useEnvStore = defineStore('env', ()=>{
         }else{
             movingExtendedPointOriginated.value = undefined
         }
-        // 多选
+        // 多选（仅鼠标在按下时立即开始，触屏的要等待确认是单指操作）
         selectionStore.setBrushStatus('down')
-        selectionStore.brush(coord)
+        if(e instanceof MouseEvent){
+            selectionStore.brush(coord)
+        } else {
+            if(e.touches.length == 1){
+                oneFingerForSureTimer = window.setTimeout(()=>{
+                    selectionStore.brush(coord)
+                    oneFingerBrushed = true
+                }, oneFingerForSureThrs)
+            }
+        }
     }
     function movingHandler(e:MouseEvent|TouchEvent){
         const clientCoord = eventClientCoord(e)
-        if(!clientCoord) return
         const coord = translateFromClient(clientCoord);
-        if(!coord) return
-        if(movingPoint.value){
-            setOpsPos(false)
-            const nameEditorHeight = nameEditStore.getEditorDivEffectiveHeight()
-            if(clientCoord[1] < nameEditorHeight+10){
-                nameEditStore.endEditing()
-            }
-            let pt = activePt.value
-            if(pt && coord){
-                if(activePtType.value=='body'){
-                    discardAreaStore.discardStatus(clientCoord)
-                    pt.pos = coord;
-                    const snapRes = snap(pt)
-                    if(snapRes)
-                        pt.pos = snapRes
-                    coordRound(pt.pos)
-                    cursorPos.value = coord
-                    selectionStore.draggingDrag(pt, pt.pos)
-                }else if(activePtType.value=='name'){
-                    discardAreaStore.discardStatus(clientCoord)
-                    const transferRes = staClusterStore.tryTransferStaNameWithinCluster(pt)
-                    if(transferRes){
-                        pt.name = undefined
-                        pt.nameS = undefined 
-                        pt.nameP = undefined
-                        setStaNameRect(pt.id, undefined)
-                        nameEditStore.targetPtId = transferRes.id
-                        activePt.value = transferRes
-                        pt = transferRes
-                    }
-                    const nameGlobalPos = coordSub(coord, activePtNameGrabbedAt.value)
-                    pt.nameP = coordSub(nameGlobalPos, pt.pos)
-                    const snapRes = snapName(pt)
-                    if(snapRes){
-                        pt.nameP = snapRes.to
-                        activePtNameSnapped.value = snapRes.type
-                    }else{
-                        activePtNameSnapped.value = 'no'
-                    }
-                    coordRound(pt.nameP)
+        if(clientCoord && coord){
+            if(movingPoint.value){
+                setOpsPos(false)
+                const nameEditorHeight = nameEditStore.getEditorDivEffectiveHeight()
+                if(clientCoord[1] < nameEditorHeight+10){
+                    nameEditStore.endEditing()
                 }
-                movedPoint.value = true
+                let pt = activePt.value
+                if(pt && coord){
+                    if(activePtType.value=='body'){
+                        discardAreaStore.discardStatus(clientCoord)
+                        pt.pos = coord;
+                        const snapRes = snap(pt)
+                        if(snapRes)
+                            pt.pos = snapRes
+                        coordRound(pt.pos)
+                        cursorPos.value = coord
+                        selectionStore.draggingDrag(pt, pt.pos)
+                    }else if(activePtType.value=='name'){
+                        discardAreaStore.discardStatus(clientCoord)
+                        const transferRes = staClusterStore.tryTransferStaNameWithinCluster(pt)
+                        if(transferRes){
+                            pt.name = undefined
+                            pt.nameS = undefined 
+                            pt.nameP = undefined
+                            setStaNameRect(pt.id, undefined)
+                            nameEditStore.targetPtId = transferRes.id
+                            activePt.value = transferRes
+                            pt = transferRes
+                        }
+                        const nameGlobalPos = coordSub(coord, activePtNameGrabbedAt.value)
+                        pt.nameP = coordSub(nameGlobalPos, pt.pos)
+                        const snapRes = snapName(pt)
+                        if(snapRes){
+                            pt.nameP = snapRes.to
+                            activePtNameSnapped.value = snapRes.type
+                        }else{
+                            activePtNameSnapped.value = 'no'
+                        }
+                        coordRound(pt.nameP)
+                    }
+                    movedPoint.value = true
+                }
             }
-        }
-        else if(movingTextTag.value && activeTextTag.value){
-            setOpsPos(false)
-            const textTagEditorHeight = textTagEditStore.getEditorDivEffectiveHeight()
-            if(clientCoord[1] < textTagEditorHeight+20){
-                textTagEditStore.endEditing()
+            else if(movingTextTag.value && activeTextTag.value){
+                setOpsPos(false)
+                const textTagEditorHeight = textTagEditStore.getEditorDivEffectiveHeight()
+                if(clientCoord[1] < textTagEditorHeight+20){
+                    textTagEditStore.endEditing()
+                }
+                discardAreaStore.discardStatus(clientCoord)
+                let setToGlobalPos = coordSub(coord, activeTextTagGrabbedAt.value)
+                const snapGridRes = snapGrid(setToGlobalPos, undefined, true)
+                if(snapGridRes){
+                    setToGlobalPos = snapGridRes
+                }
+                coordRound(setToGlobalPos)
+                activeTextTag.value.pos = setToGlobalPos
+                movedTextTag.value = true
+                selectionStore.draggingDrag(activeTextTag.value, setToGlobalPos)
             }
-            discardAreaStore.discardStatus(clientCoord)
-            let setToGlobalPos = coordSub(coord, activeTextTagGrabbedAt.value)
-            const snapGridRes = snapGrid(setToGlobalPos, undefined, true)
-            if(snapGridRes){
-                setToGlobalPos = snapGridRes
-            }
-            coordRound(setToGlobalPos)
-            activeTextTag.value.pos = setToGlobalPos
-            movedTextTag.value = true
-            selectionStore.draggingDrag(activeTextTag.value, setToGlobalPos)
         }
         // 多选
-        selectionStore.brush(coord)
+        if(e instanceof MouseEvent)
+            selectionStore.brush(coord)
+        else{
+            if(e.touches.length == 1){
+                if(oneFingerBrushed)
+                    selectionStore.brush(coord)
+            } else {
+                window.clearTimeout(oneFingerForSureTimer)
+            }
+        }
     }
-    function moveEndHandler(){
+    function moveEndHandler(fromTouch?:'fromTouch'){
         //手指离开屏幕时，touches为空数组，无法获取位置
         movingPoint.value = false
         activePtNameGrabbedAt.value = [0,0]
@@ -497,6 +518,12 @@ export const useEnvStore = defineStore('env', ()=>{
         discardAreaStore.resetDiscarding()
         // 多选
         selectionStore.setBrushStatus('up')
+        if(fromTouch) {
+            selectionStore.selCursor = undefined
+            oneFingerBrushed = false
+            window.clearTimeout(oneFingerForSureTimer)
+            oneFingerForSureTimer = 0
+        }
         const activeItem = activePt.value ?? activeTextTag.value
         activeItem && selectionStore.draggingCommit(activeItem)
     }
