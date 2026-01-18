@@ -66,13 +66,13 @@ async function load() {
         const preRes = await api.save.preflight(saveIdNum.value)
         if(!preRes)
             return
+        ownerUserInfo.value = { userId: preRes.ownerUserId ?? 0, userName: preRes.ownerUserName ?? ''}
         if(preRes.status == SavePreflightStatus.NotFound){
             loadError.value = '未找到指定存档，请核对链接是否正确'
             return
         }
         if(preRes.status == SavePreflightStatus.ViewBlocked){
             loadError.value = '根据权限设置，无法查看本存档'
-            ownerUserInfo.value = { userId: preRes.ownerUserId ?? 0, userName: preRes.ownerUserName ?? ''}
             return
         }
         if(preRes.status == SavePreflightStatus.ViewOnly || preRes.status == SavePreflightStatus.Occupied){
@@ -90,7 +90,8 @@ async function load() {
 
         await checkLoginLeftTime(userInfo)
         
-        mainCvsDispatcher.visitorMode = viewOnly.value
+        const notOwner = !userInfo.id || userInfo.id !== ownerUserInfo.value?.userId
+        mainCvsDispatcher.visitorMode = viewOnly.value || notOwner
         let resp
         try{
             const loadForEdit = !viewOnly.value

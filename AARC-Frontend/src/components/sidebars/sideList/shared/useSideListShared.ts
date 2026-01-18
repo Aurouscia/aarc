@@ -94,6 +94,10 @@ export function useSideListShared(
             showPop('先删除或移出其所有支线', 'failed')
             return
         }
+        if(mainCvsDispatcher.visitorMode){
+            showPop('画布拥有者才能删除线路', 'failed')
+            return
+        }
         wantDelLine.value = l
     }
     function delLineAbort(){
