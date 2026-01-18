@@ -325,7 +325,14 @@ export const useEnvStore = defineStore('env', ()=>{
     let oneFingerForSureTimer = 0
     let oneFingerBrushed = false
     const oneFingerForSureThrs = 90
+    let touchStartedAt = 0
     function moveStartHandler(e:MouseEvent|TouchEvent){
+        if(e instanceof TouchEvent){
+            touchStartedAt = Date.now()
+        }
+        else if(Date.now() - touchStartedAt < 300){
+            return // 说明这个鼠标事件是紧跟在触屏事件后的（被补上的），应该忽略
+        }
         const clientCoord = eventClientCoord(e)
         if(!clientCoord)
             return;
