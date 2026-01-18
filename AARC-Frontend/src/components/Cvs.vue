@@ -137,7 +137,8 @@ defineExpose({init})
             @click="selectionStore.enableForTouchScreen('add')">加选</button>
         <button v-if="selectionStore.showedControl" class="lite"
             @click="selectionStore.enableForTouchScreen('sub')">减选</button>
-        <button class="lite" @click="selectionStore.selected.clear()">退出多选模式</button>
+        <button class="lite" @click="selectionStore.selected.clear()"
+            >退出多选模式{{ selectionStore.showedControl ? '' : '(Esc)' }}</button>
     </div>
 </template>
 

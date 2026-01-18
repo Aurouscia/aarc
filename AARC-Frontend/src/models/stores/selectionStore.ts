@@ -93,6 +93,7 @@ export const useSelectionStore = defineStore('selection', ()=>{
     // pinia单例，该语句仅执行一次
     document.addEventListener('keydown', e => {
         setMode(e)
+        clearIfEsc(e)
     });
     document.addEventListener('keyup', e => {
         setMode(e)
@@ -105,6 +106,12 @@ export const useSelectionStore = defineStore('selection', ()=>{
                 mode.value = 'add'
         } else {
             mode.value = 'idle'
+        }
+    }
+    function clearIfEsc(e: KeyboardEvent){
+        if(e.key == 'Escape'){
+            disableForTouchScreen()
+            selected.value.clear()
         }
     }
 
