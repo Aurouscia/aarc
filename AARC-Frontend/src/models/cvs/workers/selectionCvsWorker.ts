@@ -49,7 +49,8 @@ export const useSelectionCvsWorker = defineStore('selectionCvsWorker', ()=>{
             let phase = now % 1000
             let strong = phase <= 100 || (phase > 200 && phase <= 300)
             ctx.globalAlpha = strong ? 0.6 : 0.2
-            const edges = buildConnectedGraph(coords, 0, 0.4)
+            const density = 0.4 * Math.exp(-0.05 * coords.length)
+            const edges = buildConnectedGraph(coords, 0, density)
             ctx.lineWidth = 6
             ctx.strokeStyle = 'black'
             ctx.beginPath()
