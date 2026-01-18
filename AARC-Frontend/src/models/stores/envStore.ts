@@ -21,6 +21,7 @@ import { useTextTagEditStore } from "./textTagEditStore";
 import rfdc from "rfdc";
 import { coordRound } from "@/utils/coordUtils/coordRound";
 import { usePointLinkStore } from "./pointLinkStore";
+import { useSelectionStore } from "./selectionStore";
 import { assignAllProps, removeNonexistentKeys } from "@/utils/lang/assignAllProps";
 import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
 import { useOptionsOpenerStore } from "./utils/optionsOpenerStore";
@@ -47,7 +48,9 @@ export const useEnvStore = defineStore('env', ()=>{
     const movingTextTag = ref<boolean>(false)
     const movedTextTag = ref<boolean>(false)
     const activeTextTagGrabbedAt = ref<Coord>([0,0])
-    const viewMoveLocked = computed<boolean>(()=>movingPoint.value || movingTextTag.value)
+    const viewMoveLocked = computed<boolean>(()=>{
+        return movingPoint.value || movingTextTag.value || selectionStore.working
+    })
     const cursorPos = ref<Coord>()
     const cursorDir = ref<ControlPointDir>(ControlPointDir.vertical)
     const cursorOnLineAfterPtIdx = ref<number>(-1)
@@ -66,6 +69,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const { removeLineExtendBtn } = useLineExtendStore()
     const discardAreaStore = useDiscardAreaStore()
     const pointLinkStore = usePointLinkStore()
+    const selectionStore = useSelectionStore()
     const optionsOpenerStore = useOptionsOpenerStore()
     const deepClone = rfdc()
     function init(){
@@ -125,10 +129,14 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         nameEditStore.edited = false
         textTagEditStore.edited = false
+        pointLinkStore.abortCreatingPtLink()
+        selectionStore.disableForTouchScreen()
     }
     function pureClickHandler(clientCord:Coord, clickType?:PureClickType, noDetect=false){
         const coord = translateFromClient(clientCord);
         if(!coord)
+            return
+        if(selectionStore.working)
             return
 
         const isRightBtnOnly = clickType === 'right' 
@@ -165,6 +173,19 @@ export const useEnvStore = defineStore('env', ()=>{
             staClusterStore.updateClustersBecauseOf(mergeKept)
         }else if(movedPoint.value && activePt.value){
             staClusterStore.updateClustersBecauseOf(activePt.value)
+        }
+        //结束多选状态下的拖动
+        let activeItem = activePt.value || activeTextTag.value
+        if(activeItem){
+            if(selectionStore.dragged){
+                selectionStore.dragged = false // 复位“是否拖动过”的标记
+                rerenderParamLineIds = saveStore.save?.lines.map(x=>x.id) ?? []
+                selectionStore.selected.forEach(s=>{
+                    if('dir' in s){
+                        rerenderParamPtIds.push(s.id)
+                    }
+                })
+            }
         }
         //如果有需要重新渲染的线/点、或移动过文本标签，那么重新渲染
         if(rerenderParamLineIds.length > 0 || rerenderParamPtIds.length > 0
@@ -322,6 +343,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 if(pt && pt === activePt.value){
                     activePtType.value = 'body'
                     movingPoint.value = true
+                    selectionStore.draggingStart(pt, pt.pos)
                 }
             }
         }
@@ -331,9 +353,10 @@ export const useEnvStore = defineStore('env', ()=>{
                 movingTextTag.value = true
                 const tagGlobalPos = activeTextTag.value.pos
                 activeTextTagGrabbedAt.value = coordSub(coord, tagGlobalPos)
+                selectionStore.draggingStart(tag, tagGlobalPos)
             }
         }
-        //判断是否在线路延长按钮上
+        // 判断是否在线路延长按钮上
         const lineExtend = onLineExtendBtn(coord)
         if (lineExtend && activePt.value) {
             removeLineExtendBtn(lineExtend)
@@ -365,18 +388,21 @@ export const useEnvStore = defineStore('env', ()=>{
         }else{
             movingExtendedPointOriginated.value = undefined
         }
+        // 多选
+        selectionStore.setBrushStatus('down')
+        selectionStore.brush(coord)
     }
     function movingHandler(e:MouseEvent|TouchEvent){
+        const clientCoord = eventClientCoord(e)
+        if(!clientCoord) return
+        const coord = translateFromClient(clientCoord);
+        if(!coord) return
         if(movingPoint.value){
             setOpsPos(false)
-            const clientCoord = eventClientCoord(e)
-            if(!clientCoord)
-                return;
             const nameEditorHeight = nameEditStore.getEditorDivEffectiveHeight()
             if(clientCoord[1] < nameEditorHeight+10){
                 nameEditStore.endEditing()
             }
-            const coord = translateFromClient(clientCoord);
             let pt = activePt.value
             if(pt && coord){
                 if(activePtType.value=='body'){
@@ -387,6 +413,7 @@ export const useEnvStore = defineStore('env', ()=>{
                         pt.pos = snapRes
                     coordRound(pt.pos)
                     cursorPos.value = coord
+                    selectionStore.draggingDrag(pt, pt.pos)
                 }else if(activePtType.value=='name'){
                     discardAreaStore.discardStatus(clientCoord)
                     const transferRes = staClusterStore.tryTransferStaNameWithinCluster(pt)
@@ -415,16 +442,10 @@ export const useEnvStore = defineStore('env', ()=>{
         }
         else if(movingTextTag.value && activeTextTag.value){
             setOpsPos(false)
-            const clientCoord = eventClientCoord(e)
-            if(!clientCoord)
-                return;
             const textTagEditorHeight = textTagEditStore.getEditorDivEffectiveHeight()
             if(clientCoord[1] < textTagEditorHeight+20){
                 textTagEditStore.endEditing()
             }
-            const coord = translateFromClient(clientCoord)
-            if(!coord || !clientCoord)
-                return;
             discardAreaStore.discardStatus(clientCoord)
             let setToGlobalPos = coordSub(coord, activeTextTagGrabbedAt.value)
             const snapGridRes = snapGrid(setToGlobalPos, undefined, true)
@@ -434,7 +455,10 @@ export const useEnvStore = defineStore('env', ()=>{
             coordRound(setToGlobalPos)
             activeTextTag.value.pos = setToGlobalPos
             movedTextTag.value = true
+            selectionStore.draggingDrag(activeTextTag.value, setToGlobalPos)
         }
+        // 多选
+        selectionStore.brush(coord)
     }
     function moveEndHandler(){
         //手指离开屏幕时，touches为空数组，无法获取位置
@@ -471,6 +495,10 @@ export const useEnvStore = defineStore('env', ()=>{
             rerender.value()
         }
         discardAreaStore.resetDiscarding()
+        // 多选
+        selectionStore.setBrushStatus('up')
+        const activeItem = activePt.value ?? activeTextTag.value
+        activeItem && selectionStore.draggingCommit(activeItem)
     }
 
     function setOpsPos(coord:Coord|false){

@@ -1,19 +1,44 @@
 <script setup lang="ts">
-import { useTemplateRef } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import SideBar from '../common/SideBar.vue';
 import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
 import { usePointLinkStore } from '@/models/stores/pointLinkStore';
+import { useSelectionStore } from '@/models/stores/selectionStore';
 import { ControlPointLinkType } from '@/models/save';
 import { useStashStore } from '@/models/stores/utils/stashStore';
+import Prompt from '../common/Prompt.vue';
 
 const envStore = useEnvStore()
 const pointLinkStore = usePointLinkStore()
+const selectionStore = useSelectionStore()
 const { creatingLinkType } = storeToRefs(pointLinkStore)
 const stashStore = useStashStore()
 
 function fd(){
     sidebar.value?.fold()
+}
+function end(){
+    envStore.endEveryEditing()
+}
+
+const showPcSelectionGuide = ref(false)
+const openSelectionLocked = ref(false)
+function openSelection(type:'mouse'|'touch'){
+    if(openSelectionLocked.value) return // 避免一些触屏设备两者都触发
+    openSelectionLocked.value = true
+    window.setTimeout(()=>{
+        openSelectionLocked.value = false
+    }, 100)
+
+    end()
+    if(type == 'mouse'){
+        showPcSelectionGuide.value = true
+    }
+    else{
+        selectionStore.enableForTouchScreen()
+        fd()
+    }
 }
 
 const sidebar = useTemplateRef('sidebar')
@@ -28,7 +53,7 @@ defineExpose({
     <div class="toolItem">
         <div class="smallNote">用于添加标题/作者等信息，请勿用于标注站名</div>
         <div class="smallNote">需要线路/地形名称标签，请点击线路/地形创建</div>
-        <button @click="envStore.createTextTag();fd()">创建文本标签</button>
+        <button @click="end();envStore.createTextTag();fd()">创建文本标签</button>
     </div>
     <div class="toolItem">
         <div v-if="creatingLinkType===ControlPointLinkType.cluster" class="smallNote">
@@ -41,13 +66,24 @@ defineExpose({
             <option :value="ControlPointLinkType.dotCover">虚线(覆盖)</option>
             <option :value="ControlPointLinkType.cluster">车站团</option>
         </select>
-        <button @click="pointLinkStore.startCreatingPtLink();fd()">创建车站间连线</button>
+        <button @click="end();pointLinkStore.startCreatingPtLink();fd()">创建车站间连线</button>
     </div>
     <div class="toolItem">
         <div class="smallNote">可用于创建带折角/分叉的车站间连线</div>
-        <button @click="envStore.createPlainPt();fd()">创建控制点</button>
+        <button @click="end();envStore.createPlainPt();fd()">创建控制点</button>
     </div>
     <div class="toolItem">
+        <div class="smallNote">目前仅支持批量选中后移动</div>
+        <button @mouseup="openSelection('mouse')" @touchstart="openSelection('touch')">
+            批量选中元素
+        </button>
+        <Prompt v-if="showPcSelectionGuide" :close-btn="true" @close="showPcSelectionGuide=false">
+            PC用户您好：<br/>
+            按住<code>shift</code>并拖动鼠标左键以添加选中<br/>
+            按住<code>shift</code>+<code>ctrl</code>并拖动鼠标左键以减少选中
+        </Prompt>
+    </div>
+    <div>
         <div class="smallNote">
             当“不确定会不会改坏”时，可以暂存当前画布的样子，如果修改后后悔了，可一键还原<br/>
             请注意：刷新/退出后，暂存就会丢失！

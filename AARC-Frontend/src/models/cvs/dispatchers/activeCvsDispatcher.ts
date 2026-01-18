@@ -18,6 +18,9 @@ import { coordAngle, coordSub } from "@/utils/coordUtils/coordMath";
 import { numberCmpEpsilon } from "@/utils/consts";
 import { ControlPointDir, Line } from "@/models/save";
 import { usePointLinkStore } from "@/models/stores/pointLinkStore";
+import { useSelectionCvsWorker } from "../workers/selectionCvsWorker";
+import { useSelectionStore } from "@/models/stores/selectionStore";
+import { computed } from "vue";
 
 export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const saveStore = useSaveStore()
@@ -25,6 +28,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const snapStore = useSnapStore()
     const lineExtendStore = useLineExtendStore()
     const pointLinkStore = usePointLinkStore()
+    const selectionStore = useSelectionStore()
     const canvasIdPrefix = 'active'
     const { getCtx } = useCvs(canvasIdPrefix)
     const { renderSegsAroundActivePt, renderLine } = useLineCvsWorker()
@@ -36,18 +40,23 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const { renderEmphasizesForRingLines } = useEmphasizeCvsWorker()
     const { renderOneTextTag } = useTextTagCvsWorker()
     const { renderDiscardArea } = useDiscardAreaCvsWorker()
+    const { renderSelection } = useSelectionCvsWorker()
 
     const { getActivePtOpsAvoidance } = storeToRefs(envStore)
     getActivePtOpsAvoidance.value = renderActiveCvs
     let cvsCleared = true
 
+    const noNeedActiveCvs = computed(()=>{
+        const sel = selectionStore.enabled || selectionStore.selected.size > 0
+        return !sel && !envStore.somethingActive && !pointLinkStore.isCreating
+    })
+
     function renderActiveCvs(){
         //该函数应被设置为每x毫秒执行一次
-        if(!(envStore.somethingActive || pointLinkStore.isCreating)){
+        if(noNeedActiveCvs.value){
             if(!cvsCleared){
                 getCtx()
                 cvsCleared = true
-                //console.log('清空activeCvs')
             }
             return []
         }
@@ -68,10 +77,11 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
         let lineExtendWays:SgnCoord[] = []
         lineExtendStore.clearLineExtendBtns()
         const activePtId = envStore.activePt?.id
-        if(activePtId){
+        if(activePtId && envStore.activePt){
             autoDirForNewExtended()
             const activePtBelongLines = saveStore.getLinesByPt(activePtId)
-            if(activePtBelongLines.length>0){
+            const activePtInSelection = selectionStore.selected.has(envStore.activePt)
+            if(activePtBelongLines.length>0 && !activePtInSelection){
                 const segRenderRes = renderSegsAroundActivePt(ctx)
                 lineExtendStore.refreshLineExtend(activePtId, segRenderRes.formalizedSegs)
                 lineExtendWays = lineExtendStore.getLineExtendWays()
@@ -118,8 +128,10 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
         else if(envStore.activeTextTag){
             renderOneTextTag(ctx, envStore.activeTextTag, true)
         }
-        renderCursor(ctx)
         renderDiscardArea(ctx)
+        renderSelection(ctx)
+        const cursorStronger = envStore.activePt && selectionStore.selected.has(envStore.activePt)
+        renderCursor(ctx, cursorStronger)
         return lineExtendWays
     }
     
@@ -153,5 +165,5 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
                 envStore.activePt.dir = ControlPointDir.vertical
         }
     }
-    return { renderActiveCvs, canvasIdPrefix }
+    return { renderActiveCvs, canvasIdPrefix, noNeedActiveCvs }
 })

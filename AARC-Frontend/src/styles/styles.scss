@@ -298,3 +298,11 @@ hr{
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+code{
+    font-family: monospace;
+    background-color: #eee;
+    padding: 3px;
+    margin: 0px 1px;
+    border-radius: 5px;
+}
