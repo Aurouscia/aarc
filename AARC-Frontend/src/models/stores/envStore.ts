@@ -177,8 +177,8 @@ export const useEnvStore = defineStore('env', ()=>{
         //结束多选状态下的拖动
         let activeItem = activePt.value || activeTextTag.value
         if(activeItem){
-            const dragged = selectionStore.draggingCommit(activeItem)
-            if(dragged){
+            if(selectionStore.dragged){
+                selectionStore.dragged = false // 复位“是否拖动过”的标记
                 rerenderParamLineIds = saveStore.save?.lines.map(x=>x.id) ?? []
                 selectionStore.selected.forEach(s=>{
                     if('dir' in s){

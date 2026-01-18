@@ -64,6 +64,7 @@ export const useSelectionStore = defineStore('selection', ()=>{
 
     const draggingOriginal = ref<Coord>()
     const draggingDelta = ref<Coord>()
+    const dragged = ref(false)
     function draggingStart(c:Coord){
         draggingOriginal.value = c
         draggingDelta.value = undefined
@@ -75,7 +76,7 @@ export const useSelectionStore = defineStore('selection', ()=>{
     function draggingCommit(draggedItem:SelectionTarget){
         if(selected.value.size == 0 || !draggingDelta.value){
             draggingDelta.value = undefined
-            return false
+            return
         }
         selected.value.forEach(s=>{
             if(draggedItem === s) return
@@ -83,7 +84,7 @@ export const useSelectionStore = defineStore('selection', ()=>{
         })
         draggingOriginal.value = undefined
         draggingDelta.value = undefined
-        return true
+        dragged.value = true
     }
 
     // pinia单例，该语句仅执行一次
@@ -120,6 +121,7 @@ export const useSelectionStore = defineStore('selection', ()=>{
         draggingDelta,
         draggingStart,
         draggingDrag,
-        draggingCommit
+        draggingCommit,
+        dragged
     }
 })
