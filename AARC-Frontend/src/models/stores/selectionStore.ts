@@ -65,15 +65,18 @@ export const useSelectionStore = defineStore('selection', ()=>{
     const draggingOriginal = ref<Coord>()
     const draggingDelta = ref<Coord>()
     const dragged = ref(false)
-    function draggingStart(c:Coord){
+    function draggingStart(tar:SelectionTarget, c:Coord){
+        if(!selected.value.has(tar)) return
         draggingOriginal.value = c
         draggingDelta.value = undefined
     }
-    function draggingDrag(c:Coord){
+    function draggingDrag(tar:SelectionTarget, c:Coord){
+        if(!selected.value.has(tar)) return
         if(!draggingOriginal.value) return
         draggingDelta.value = coordSub(c, draggingOriginal.value)
     }
     function draggingCommit(draggedItem:SelectionTarget){
+        if(!selected.value.has(draggedItem)) return
         if(selected.value.size == 0 || !draggingDelta.value){
             draggingDelta.value = undefined
             return

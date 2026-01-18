@@ -343,7 +343,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 if(pt && pt === activePt.value){
                     activePtType.value = 'body'
                     movingPoint.value = true
-                    selectionStore.draggingStart(pt.pos)
+                    selectionStore.draggingStart(pt, pt.pos)
                 }
             }
         }
@@ -353,7 +353,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 movingTextTag.value = true
                 const tagGlobalPos = activeTextTag.value.pos
                 activeTextTagGrabbedAt.value = coordSub(coord, tagGlobalPos)
-                selectionStore.draggingStart(tagGlobalPos)
+                selectionStore.draggingStart(tag, tagGlobalPos)
             }
         }
         // 判断是否在线路延长按钮上
@@ -413,7 +413,7 @@ export const useEnvStore = defineStore('env', ()=>{
                         pt.pos = snapRes
                     coordRound(pt.pos)
                     cursorPos.value = coord
-                    selectionStore.draggingDrag(pt.pos)
+                    selectionStore.draggingDrag(pt, pt.pos)
                 }else if(activePtType.value=='name'){
                     discardAreaStore.discardStatus(clientCoord)
                     const transferRes = staClusterStore.tryTransferStaNameWithinCluster(pt)
@@ -455,7 +455,7 @@ export const useEnvStore = defineStore('env', ()=>{
             coordRound(setToGlobalPos)
             activeTextTag.value.pos = setToGlobalPos
             movedTextTag.value = true
-            selectionStore.draggingDrag(setToGlobalPos)
+            selectionStore.draggingDrag(activeTextTag.value, setToGlobalPos)
         }
         // 多选
         selectionStore.brush(coord)
