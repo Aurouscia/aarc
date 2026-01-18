@@ -129,7 +129,15 @@ defineExpose({init})
         <button v-if="selectionStore.mode=='sub'" @click="selectionStore.mode='add'" class="selSubMode">
             减选模式</button>
         <span class="smallNote">移动视角请双指操作</span><br/>
-        <button class="lite" @click="selectionStore.disableForTouchScreen">退出多选</button>
+        <button class="lite" @click="selectionStore.disableForTouchScreen">选择完成</button>
+    </div>
+    <div v-else-if="selectionStore.selected.size>0" class="statusDisplay selectionWorkingStatus">
+        当前选中<b>{{ selectionStore.selected.size }}</b>个元素，可以拖拽<br/>
+        <button v-if="selectionStore.showedControl" class="lite"
+            @click="selectionStore.enableForTouchScreen('add')">加选</button>
+        <button v-if="selectionStore.showedControl" class="lite"
+            @click="selectionStore.enableForTouchScreen('sub')">减选</button>
+        <button class="lite" @click="selectionStore.selected.clear()">退出多选模式</button>
     </div>
 </template>
 
@@ -197,6 +205,9 @@ defineExpose({init})
     }
     button.selSubMode{
         color: palevioletred;
+    }
+    button+button{
+        margin-left: 1em;
     }
 }
 </style>

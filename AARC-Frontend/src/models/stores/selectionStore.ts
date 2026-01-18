@@ -16,6 +16,7 @@ export const useSelectionStore = defineStore('selection', ()=>{
     const enabled = computed(() => mode.value != 'idle')
     const working = computed(() => mode.value != 'idle' && brushStatus.value == 'down')
     const showControl = ref(false)
+    const showedControl = ref(false)
     const selCursor = ref<Coord>()
     const saveStore = useSaveStore()
     const { save } = storeToRefs(saveStore)
@@ -50,9 +51,10 @@ export const useSelectionStore = defineStore('selection', ()=>{
         brushStatus.value = status
     }
 
-    function enableForTouchScreen(){
-        mode.value = 'add'
+    function enableForTouchScreen(setMode?:'add'|'sub'){
+        mode.value = setMode ?? 'add'
         showControl.value = true
+        showedControl.value = true
     }
     function disableForTouchScreen(){
         mode.value = 'idle'
@@ -107,6 +109,7 @@ export const useSelectionStore = defineStore('selection', ()=>{
         working,
         enabled,
         showControl,
+        showedControl,
         selCursor,
         brushRadius,
         brush,
