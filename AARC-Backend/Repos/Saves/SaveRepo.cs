@@ -139,6 +139,13 @@ namespace AARC.Repos.Saves
         {
             ValidateDto(saveDto);
             var uid = httpUserIdProvider.RequireUserId();
+            
+            // 检查用户是否有过多的空存档
+            var emptySavesCount = Existing
+                .Count(x => x.OwnerUserId == uid && (x.Data == null || x.Data.Length == 0));
+            if (emptySavesCount >= 5)
+                throw new RqEx("空存档不得超过5个");
+            
             Save save = mapper.Map<Save>(saveDto);
             save.OwnerUserId = uid;
             base.Add(save);
