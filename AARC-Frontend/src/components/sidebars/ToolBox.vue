@@ -5,10 +5,12 @@ import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
 import { usePointLinkStore } from '@/models/stores/pointLinkStore';
 import { ControlPointLinkType } from '@/models/save';
+import { useStashStore } from '@/models/stores/utils/stashStore';
 
 const envStore = useEnvStore()
 const pointLinkStore = usePointLinkStore()
 const { creatingLinkType } = storeToRefs(pointLinkStore)
+const stashStore = useStashStore()
 
 function fd(){
     sidebar.value?.fold()
@@ -46,8 +48,13 @@ defineExpose({
         <button @click="envStore.createPlainPt();fd()">创建控制点</button>
     </div>
     <div class="toolItem">
-        <button class="off">创建区间类型标记</button>
-        <div class="smallNote">后续更新，敬请期待</div>
+        <div class="smallNote">
+            当“不确定会不会改坏”时，可以暂存当前画布的样子，如果修改后后悔了，可一键还原<br/>
+            请注意：刷新/退出后，暂存就会丢失！
+        </div>
+        <div class="smallNoteVital">未经检验的新功能，请谨慎使用</div>
+        <button :class="{minor: stashStore.thawable}" @click="stashStore.freeze()">暂存当前画布状态</button>
+        <button v-if="stashStore.thawable" @click="stashStore.thaw()">还原为暂存的状态</button>
     </div>
 </SideBar>
 </template>

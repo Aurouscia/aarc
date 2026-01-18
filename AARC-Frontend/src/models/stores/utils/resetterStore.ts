@@ -43,5 +43,11 @@ export const useResetterStore = defineStore('resetter', ()=>{
         envStore.cancelActive()
         envStore.closeOps()
     }
-    return { resetDerivedStores }
+
+    async function relaunchDerivedStores(){
+        await useIconStore().ensureAllLoaded()
+        useCvsBlocksControlStore().refreshBlocks()
+    }
+
+    return { resetDerivedStores, relaunchDerivedStores }
 })
