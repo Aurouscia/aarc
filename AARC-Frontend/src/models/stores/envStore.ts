@@ -174,6 +174,19 @@ export const useEnvStore = defineStore('env', ()=>{
         }else if(movedPoint.value && activePt.value){
             staClusterStore.updateClustersBecauseOf(activePt.value)
         }
+        //结束多选状态下的拖动
+        let activeItem = activePt.value || activeTextTag.value
+        if(activeItem){
+            const dragged = selectionStore.draggingCommit(activeItem)
+            if(dragged){
+                rerenderParamLineIds = saveStore.save?.lines.map(x=>x.id) ?? []
+                selectionStore.selected.forEach(s=>{
+                    if('dir' in s){
+                        rerenderParamPtIds.push(s.id)
+                    }
+                })
+            }
+        }
         //如果有需要重新渲染的线/点、或移动过文本标签，那么重新渲染
         if(rerenderParamLineIds.length > 0 || rerenderParamPtIds.length > 0
             || movedTextTag.value || textTagEditStore.edited) {
@@ -330,6 +343,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 if(pt && pt === activePt.value){
                     activePtType.value = 'body'
                     movingPoint.value = true
+                    selectionStore.draggingStart(pt.pos)
                 }
             }
         }
@@ -339,6 +353,7 @@ export const useEnvStore = defineStore('env', ()=>{
                 movingTextTag.value = true
                 const tagGlobalPos = activeTextTag.value.pos
                 activeTextTagGrabbedAt.value = coordSub(coord, tagGlobalPos)
+                selectionStore.draggingStart(tagGlobalPos)
             }
         }
         // 判断是否在线路延长按钮上
@@ -398,6 +413,7 @@ export const useEnvStore = defineStore('env', ()=>{
                         pt.pos = snapRes
                     coordRound(pt.pos)
                     cursorPos.value = coord
+                    selectionStore.draggingDrag(pt.pos)
                 }else if(activePtType.value=='name'){
                     discardAreaStore.discardStatus(clientCoord)
                     const transferRes = staClusterStore.tryTransferStaNameWithinCluster(pt)
@@ -439,6 +455,7 @@ export const useEnvStore = defineStore('env', ()=>{
             coordRound(setToGlobalPos)
             activeTextTag.value.pos = setToGlobalPos
             movedTextTag.value = true
+            selectionStore.draggingDrag(setToGlobalPos)
         }
         // 多选
         selectionStore.brush(coord)

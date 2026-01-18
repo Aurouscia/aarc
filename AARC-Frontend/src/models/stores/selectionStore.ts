@@ -6,9 +6,11 @@ import { useSaveStore } from "./saveStore";
 import { coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { rectCoordDistSqLessThan } from "@/utils/coordUtils/coordRect";
 import { useTextTagRectStore } from "./saveDerived/textTagRectStore";
+import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
 
+type SelectionTarget = ControlPoint|TextTag
 export const useSelectionStore = defineStore('selection', ()=>{
-    const selected = ref<Set<ControlPoint|TextTag>>(new Set())
+    const selected = ref<Set<SelectionTarget>>(new Set())
     const mode = ref<'add'|'sub'|'idle'>('idle')
     const brushStatus = ref<'up'|'down'>('up')
     const enabled = computed(() => mode.value != 'idle')
@@ -58,6 +60,29 @@ export const useSelectionStore = defineStore('selection', ()=>{
         selCursor.value = undefined
     }
 
+    const draggingOriginal = ref<Coord>()
+    const draggingDelta = ref<Coord>()
+    function draggingStart(c:Coord){
+        draggingOriginal.value = c
+        draggingDelta.value = undefined
+    }
+    function draggingDrag(c:Coord){
+        if(!draggingOriginal.value) return
+        draggingDelta.value = coordSub(c, draggingOriginal.value)
+    }
+    function draggingCommit(draggedItem:SelectionTarget){
+        if(selected.value.size == 0 || !draggingDelta.value){
+            return false
+        }
+        selected.value.forEach(s=>{
+            if(draggedItem === s) return
+            s.pos = coordAdd(s.pos, draggingDelta.value ?? [0, 0])
+        })
+        draggingOriginal.value = undefined
+        draggingDelta.value = undefined
+        return true
+    }
+
     // pinia单例，该语句仅执行一次
     document.addEventListener('keydown', e => {
         setMode(e)
@@ -87,6 +112,10 @@ export const useSelectionStore = defineStore('selection', ()=>{
         brush,
         setBrushStatus,
         enableForTouchScreen,
-        disableForTouchScreen
+        disableForTouchScreen,
+        draggingDelta,
+        draggingStart,
+        draggingDrag,
+        draggingCommit
     }
 })

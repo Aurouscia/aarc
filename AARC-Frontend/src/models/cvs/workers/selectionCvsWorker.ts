@@ -1,13 +1,18 @@
 import { useSelectionStore } from "@/models/stores/selectionStore";
+import { useEnvStore } from "@/models/stores/envStore";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
 import { buildConnectedGraph } from "@/utils/coordUtils/coordGraph";
 import { Coord } from "@/models/coord";
+import { coordAdd } from "@/utils/coordUtils/coordMath";
 
 export const useSelectionCvsWorker = defineStore('selectionCvsWorker', ()=>{
     const selStore = useSelectionStore()
+    const envStore = useEnvStore()
     function renderSelection(ctx:CvsContext){
         const cursor = selStore.selCursor
+
+        // 画涂抹范围
         if(selStore.enabled && cursor){
             let brushColor = 'gray'
             if(selStore.working)
@@ -24,10 +29,17 @@ export const useSelectionCvsWorker = defineStore('selectionCvsWorker', ()=>{
             ctx.fill()
             ctx.globalAlpha = 1
         }
+
+        // 画选中项目标记
         if(selStore.selected.size > 0){
             const coords: Coord[] = []
             selStore.selected.forEach(x=>{
-                coords.push(x.pos)
+                let isActive = x===envStore.activePt || x===envStore.activeTextTag
+                let c = x.pos
+                if(!isActive && selStore.draggingDelta){
+                    c = coordAdd(x.pos, selStore.draggingDelta)
+                }
+                coords.push(c)
             })
             const edges = buildConnectedGraph(coords, 0, 0.4)
             ctx.lineWidth = 6
