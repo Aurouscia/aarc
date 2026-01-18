@@ -83,7 +83,7 @@ defineExpose({
             按住<code>shift</code>+<code>ctrl</code>并拖动鼠标左键以减少选中
         </Prompt>
     </div>
-    <div>
+    <div class="toolItem">
         <div class="smallNote">
             当“不确定会不会改坏”时，可以暂存当前画布的样子，如果修改后后悔了，可一键还原<br/>
             请注意：刷新/退出后，暂存就会丢失！
@@ -100,8 +100,11 @@ defineExpose({
     display: flex;
     flex-direction: column;
     gap: 8px;
-    border-bottom: 1px solid #aaa;
+    border-bottom: 1px solid #ddd;
     align-items: center;
     padding: 12px;
+    &:last-of-type{
+        border-bottom: 0px;
+    }
 }
 </style>
