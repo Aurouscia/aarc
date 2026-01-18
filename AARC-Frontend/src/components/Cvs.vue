@@ -111,7 +111,7 @@ defineExpose({init})
             </div>
             <CvsBlocks :canvas-id-prefix="baseCvsDispatcher.canvasIdPrefix"></CvsBlocks>
             <CvsBlocks :canvas-id-prefix="mainCvsDispatcher.canvasIdPrefix"
-                :cvs-class-name="'mainCvs'" :insnif="envStore.somethingActive"></CvsBlocks>
+                :cvs-class-name="'mainCvs'" :insnif="envStore.somethingActive || selectionStore.selected.size>0"></CvsBlocks>
             <CvsBlocks :canvas-id-prefix="activeCvsDispatcher.canvasIdPrefix"
                 :cvs-class-name="'activeCvs'" :invisible="activeCvsInvisible"></CvsBlocks>
         </div>
