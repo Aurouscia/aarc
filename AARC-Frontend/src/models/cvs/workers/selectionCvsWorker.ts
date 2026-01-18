@@ -5,10 +5,13 @@ import { CvsContext } from "../common/cvsContext";
 import { buildConnectedGraph } from "@/utils/coordUtils/coordGraph";
 import { Coord } from "@/models/coord";
 import { coordAdd } from "@/utils/coordUtils/coordMath";
+import { drawCross } from "@/utils/drawUtils/drawCross";
+import { useConfigStore } from "@/models/stores/configStore";
 
 export const useSelectionCvsWorker = defineStore('selectionCvsWorker', ()=>{
     const selStore = useSelectionStore()
     const envStore = useEnvStore()
+    const cs = useConfigStore()
     function renderSelection(ctx:CvsContext){
         const cursor = selStore.selCursor
 
@@ -41,6 +44,10 @@ export const useSelectionCvsWorker = defineStore('selectionCvsWorker', ()=>{
                 }
                 coords.push(c)
             })
+            
+            const now = Date.now()
+            let strong = now % 1000 <= 800
+            ctx.globalAlpha = strong ? 0.6 : 0.2
             const edges = buildConnectedGraph(coords, 0, 0.4)
             ctx.lineWidth = 6
             ctx.strokeStyle = 'black'
@@ -49,10 +56,24 @@ export const useSelectionCvsWorker = defineStore('selectionCvsWorker', ()=>{
                 ctx.moveTo(...e[0])
                 ctx.lineTo(...e[1])
             }
-            const now = Date.now()
-            let strong = now % 1000 <= 800
-            ctx.globalAlpha = strong ? 0.6 : 0.2
             ctx.stroke()
+            for(const c of coords){
+                drawCross(ctx, {
+                    pos: c,
+                    dir: 'vertical',
+                    armLength: cs.config.ptBareSize * 1.6,
+                    repetitions:[
+                        {
+                            armWidth: cs.config.ptBareLineWidth * 5,
+                            color: 'white'
+                        },
+                        {
+                            armWidth: cs.config.ptBareLineWidth * 2,
+                            color: 'black'
+                        }
+                    ]
+                })
+            }
             ctx.globalAlpha = 1
         }
     }

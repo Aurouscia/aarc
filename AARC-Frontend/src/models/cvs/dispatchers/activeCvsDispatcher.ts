@@ -77,10 +77,11 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
         let lineExtendWays:SgnCoord[] = []
         lineExtendStore.clearLineExtendBtns()
         const activePtId = envStore.activePt?.id
-        if(activePtId){
+        if(activePtId && envStore.activePt){
             autoDirForNewExtended()
             const activePtBelongLines = saveStore.getLinesByPt(activePtId)
-            if(activePtBelongLines.length>0){
+            const activePtInSelection = selectionStore.selected.has(envStore.activePt)
+            if(activePtBelongLines.length>0 && !activePtInSelection){
                 const segRenderRes = renderSegsAroundActivePt(ctx)
                 lineExtendStore.refreshLineExtend(activePtId, segRenderRes.formalizedSegs)
                 lineExtendWays = lineExtendStore.getLineExtendWays()
