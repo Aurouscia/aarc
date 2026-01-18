@@ -1,4 +1,5 @@
 using AARC.Models.Db.Context;
+using AARC.Models.DbModels.Enums.AuthGrantTypes;
 using AARC.Models.DbModels.Identities;
 using AARC.Repos;
 using AARC.Services.App.HttpAuthInfo;
@@ -31,11 +32,17 @@ public class AuthGrantCheckService(
     }
     public List<AuthGrantCheckResult> CalculateFor(AuthGrantOn on, List<int> onIds, byte type)
     {
-        // 如果是管理员，直接allow所有
+        // 如果是管理员，且不是“存档编辑”，直接allow所有
         bool isAdmin = userInfoService.IsAdmin;
         if (isAdmin)
-            return Enumerable.Repeat(AuthGrantCheckResult.Allow, onIds.Count).ToList();
-        
+        {
+            var isSaveEditing = 
+                on == AuthGrantOn.Save 
+                && type == (byte)AuthGrantTypeOfSave.Edit;
+            if(!isSaveEditing)
+                return Enumerable.Repeat(AuthGrantCheckResult.Allow, onIds.Count).ToList();
+        }
+
         // 加载每个onId的所有者，以及所有相关的authGrant对象
         var owners = authGrantOwnerService.GetOwnerOf(on, onIds);
         var allGrants = Existing
