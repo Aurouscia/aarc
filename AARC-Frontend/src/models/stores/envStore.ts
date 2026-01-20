@@ -327,7 +327,8 @@ export const useEnvStore = defineStore('env', ()=>{
     const oneFingerForSureThrs = 90
     let touchStartedAt = 0
     function moveStartHandler(e:MouseEvent|TouchEvent){
-        if(e instanceof TouchEvent){
+        if(!(e instanceof MouseEvent)){
+            // firefox pc版没有TouchEvent, instanceof TouchEvent会出错
             touchStartedAt = Date.now()
         }
         else if(Date.now() - touchStartedAt < 300){
