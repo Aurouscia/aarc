@@ -11,6 +11,9 @@
     padding: 0px;
     transition: globalValues.$default-transition-time;
 }
+html, body{
+    touch-action: pan-y pan-x;   /* 允许滑动，但禁止 pinch-zoom */
+}
 body{
     background-color: white;
 }

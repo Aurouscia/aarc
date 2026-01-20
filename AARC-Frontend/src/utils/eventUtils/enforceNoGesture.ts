@@ -1,6 +1,11 @@
 export function enforceNoGesture(){
-    document.addEventListener('gesturestart', (event)=>{
-        event.preventDefault()
-        console.log('阻止手势')
+    window.addEventListener('gesturestart', (e) => {
+        e.preventDefault();
+    });
+    window.addEventListener('gesturechange', (e) => {
+        e.preventDefault();
+    })
+    window.addEventListener('gestureend', (e) => {
+        e.preventDefault();
     })
 }
