@@ -11,6 +11,7 @@
     "dev": "vite",
     "build": "tsx build.ts",
     "build-here": "tsx build.ts --here",
+    "type-check": "tsx build.ts --check-only",
     "toggleEnvLocal": "tsx env/toggleLocalEnvFile.ts",
     "gitInfoGen": "tsx src/utils/gitInfo/gitInfoGen.ts",
     "colorSetsGen": "tsx src/data/palette/colorSetsGen.ts"
