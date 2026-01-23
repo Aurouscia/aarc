@@ -2,6 +2,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { useSaveStore } from "./saveStore";
 import { computed, ref } from "vue";
 import { TextTagIcon } from "../save";
+import { convertToProxyUrlIfNeeded } from "@/utils/urlUtils/proxyUrl";
 
 export interface TextTagIconData{
     img?:HTMLImageElement
@@ -35,7 +36,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
             if(icUrlFull?.startsWith('/'))
                 icUrlFull = window.location.origin + icUrlFull
             else
-                icUrlFull = convertToProxyUrlIfNeeded(icUrlFull)
+                icUrlFull = convertToProxyUrlIfNeeded(icUrlFull, 'icon')
             if(!imgData?.img || !ic.url || imgData?.img.src !== icUrlFull){
                 triedIds.push(ic.id)
                 proms.push(new Promise((res)=>{
@@ -46,7 +47,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
                         res()
                         return
                     }
-                    checkUrlValid(ic.url)
+                    checkUrlValid(icUrlFull)
                         .then(checkErr=>{
                             if(checkErr){
                                 imgData.status = 'failed'
@@ -56,7 +57,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
                             }else{
                                 const img = new Image()
                                 imgData.img = img
-                                img.src = convertToProxyUrlIfNeeded(ic.url ?? '')
+                                img.src = icUrlFull
                                 let timer = window.setTimeout(()=>{
                                     imgData.status = 'failed'
                                     imgData.errmsg = '加载超时'
@@ -100,7 +101,6 @@ export const useIconStore = defineStore('iconStore', ()=>{
     }
     async function checkUrlValid(url:string):Promise<string|undefined>{
         try{
-            url = convertToProxyUrlIfNeeded(url)
             const res = await fetch(url, {method:'HEAD'})
             if(!res.ok)
                 return "加载失败"
@@ -118,17 +118,6 @@ export const useIconStore = defineStore('iconStore', ()=>{
         catch(error){
             return "加载失败"
         }
-    }
-    function convertToProxyUrlIfNeeded(url:string){
-        if(url.startsWith('/'))
-            return url
-        const origin = window.location.origin
-        if(url.startsWith(origin)){
-            return url
-        }
-        const encoded = encodeURIComponent(url)
-        const baseUrl = import.meta.env.VITE_ApiUrlBase
-        return `${baseUrl}/proxy/icon/${encoded}`
     }
 
     const sep = '-'
