@@ -71,6 +71,12 @@ watch(() => config.value.bgRefImage.url, (newVal, oldVal)=>{
         </td>
     </tr>
     <tr>
+        <td>用于<br/>导出</td>
+        <td>
+            <input v-model="config.bgRefImage.export" type="checkbox"/>
+        </td>
+    </tr>
+    <tr>
         <td>位置<br/>偏移</td>
         <td>
             <div class="bgRefImageOffsets">

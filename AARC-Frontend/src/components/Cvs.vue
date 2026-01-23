@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
-import { onMounted, nextTick, watch, onBeforeUnmount, computed, CSSProperties, useTemplateRef } from 'vue';
+import { onMounted, nextTick, watch, onBeforeUnmount, computed, useTemplateRef } from 'vue';
 import Ops from './Ops.vue';
 import NameEdit from './NameEdit.vue';
 import TextTagEdit from './TextTagEdit.vue';
@@ -13,14 +13,14 @@ import { useConfigStore } from '@/models/stores/configStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
-import { useSaveStore } from '@/models/stores/saveStore';
+import { useBgRefImageStore } from '@/models/stores/saveDerived/bgRefImgStore';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 import { usePointLinkStore } from '@/models/stores/pointLinkStore';
 import { useSelectionStore } from '@/models/stores/selectionStore';
 
 const envStore = useEnvStore();
 const { somethingActive } = storeToRefs(envStore)
-const { cvsWidth, cvsHeight } = storeToRefs(useSaveStore())
+const bgRefImageStore = useBgRefImageStore()
 const configStore = useConfigStore();
 const cvsFrameStore = useCvsFrameStore()
 const baseCvsDispatcher = useBaseCvsDispatcher()
@@ -57,34 +57,7 @@ async function init(){
     disableContextMenu()
     showWait(waitKey, false)
 }
-const bgRefImageStyle = computed<CSSProperties>(()=>{
-    const bgRefImage = configStore.config.bgRefImage
-    const opacityNum = bgRefImage.opacity ? parseInt(bgRefImage.opacity.toString()) : NaN
-    const res:CSSProperties = {
-        position: 'absolute',
-        opacity: !isNaN(opacityNum) ? `${opacityNum/100}` : undefined,
-    }
-    if(typeof bgRefImage.left === 'number'){
-        res.left = `${bgRefImage.left/cvsWidth.value*100}%`
-    }
-    if(typeof bgRefImage.right === 'number'){
-        res.right = `${bgRefImage.right/cvsWidth.value*100}%`
-    }
-    if(typeof bgRefImage.top === 'number'){
-        res.top = `${bgRefImage.top/cvsHeight.value*100}%`
-    }
-    if(typeof bgRefImage.bottom === 'number'){
-        res.bottom = `${bgRefImage.bottom/cvsHeight.value*100}%`
-    }
-    if(typeof bgRefImage.width === 'number'){
-        res.width = `${bgRefImage.width/cvsWidth.value*100}%`
-    }
-    if(typeof bgRefImage.height === 'number'){
-        res.height = `${bgRefImage.height/cvsHeight.value*100}%`
-    }
-    
-    return res
-})
+
 const activeCvsInvisible = computed(()=> activeCvsDispatcher.noNeedActiveCvs)
 
 onMounted(async()=>{
@@ -106,8 +79,8 @@ defineExpose({init})
 <template>
     <div class="cvsFrame" ref="cvsFrame">
         <div class="cvsCont" ref="cvsCont" :style="{backgroundColor: configStore.config.bgColor}">
-            <div v-if="configStore.config.bgRefImage.url" class="bgRefImageDiv" :style="bgRefImageStyle">
-                <img :src="configStore.config.bgRefImage.url"/>
+            <div v-if="bgRefImageStore.bgRefImageDisplayUrl" class="bgRefImageDiv" :style="bgRefImageStore.bgRefImageStyle">
+                <img :src="bgRefImageStore.bgRefImageDisplayUrl"/>
             </div>
             <CvsBlocks :canvas-id-prefix="baseCvsDispatcher.canvasIdPrefix"></CvsBlocks>
             <CvsBlocks :canvas-id-prefix="mainCvsDispatcher.canvasIdPrefix"
