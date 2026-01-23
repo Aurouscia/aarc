@@ -1,4 +1,3 @@
-import { AllKeysOptional } from "@/utils/type/AllKeysOptional"
 import { SgnNumber } from "./coord"
 
 export interface Config{
@@ -99,4 +98,4 @@ export type PinyinConvertConfig = {
     spaceBetweenChars?:boolean
 }
 
-export type ConfigInSave = AllKeysOptional<Config>
+export type ConfigInSave = Partial<Config>

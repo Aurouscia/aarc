@@ -1,7 +1,6 @@
 import { Save } from "@/models/save"
-import { AllKeysOptional } from "@/utils/type/AllKeysOptional"
 
-export function ensureValidIdIncre(save:AllKeysOptional<Save>){
+export function ensureValidIdIncre(save:Partial<Save>){
     const idIncre = save.idIncre ?? 0
     const shouldBe = recaculateIdIncre(save)
     if(shouldBe > idIncre){
