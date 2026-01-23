@@ -26,7 +26,6 @@ onMounted(()=>{
                 </div>
                 <div class="explain">
                     <p>当两个站的距离小于该值时，不会对“站名重复”作出警告，允许“靠近的地铁站与电车站同名”这种设计。</p>
-                    <p style="color:cornflowerblue">本设置暂未生效</p>
                 </div>
             </td>
         </tr>
