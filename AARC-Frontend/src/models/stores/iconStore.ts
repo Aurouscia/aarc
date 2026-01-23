@@ -3,6 +3,8 @@ import { useSaveStore } from "./saveStore";
 import { computed, ref } from "vue";
 import { TextTagIcon } from "../save";
 import { convertToProxyUrlIfNeeded } from "@/utils/urlUtils/proxyUrl";
+import { checkUrlIsImage } from "@/utils/urlUtils/checkUrl";
+import { bytesFromMB } from "@/utils/dataUtils/fileSizeConvert";
 
 export interface TextTagIconData{
     img?:HTMLImageElement
@@ -17,8 +19,7 @@ export interface TextTagIconDisplayItem{
 } 
 
 const maxLoadWaitMs = 8000
-const maxIconSizeMb = 1
-const maxIconSize = maxIconSizeMb*1024*1024
+const maxIconSize = bytesFromMB(1)
 export const useIconStore = defineStore('iconStore', ()=>{
     const { save } = storeToRefs(useSaveStore())
     const data = ref(new Map<number, TextTagIconData>())
@@ -47,7 +48,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
                         res()
                         return
                     }
-                    checkUrlValid(icUrlFull)
+                    checkUrlIsImage(icUrlFull, maxIconSize)
                         .then(checkErr=>{
                             if(checkErr){
                                 imgData.status = 'failed'
@@ -98,26 +99,6 @@ export const useIconStore = defineStore('iconStore', ()=>{
     }
     function clearItems(){
         data.value.clear()
-    }
-    async function checkUrlValid(url:string):Promise<string|undefined>{
-        try{
-            const res = await fetch(url, {method:'HEAD'})
-            if(!res.ok)
-                return "加载失败"
-            const type = res.headers.get("Content-Type")
-            if(!type)
-                return "链接异常"
-            if(!type.startsWith("image"))
-                return "链接非图片"
-            const length = parseInt(res.headers.get("Content-Length")??'')
-            if(isNaN(length))
-                return "链接异常"
-            if(length>maxIconSize)
-                return `不可大于${maxIconSizeMb}MB`
-        }
-        catch(error){
-            return "加载失败"
-        }
     }
 
     const sep = '-'
