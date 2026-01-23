@@ -2,13 +2,18 @@
 import { useConfigStore } from '@/models/stores/configStore';
 import { storeToRefs } from 'pinia';
 import ConfigSection from './shared/ConfigSection.vue';
-import { watch } from 'vue';
+import { ref, watch } from 'vue';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { useSaveStore } from '@/models/stores/saveStore';
+import { checkUrlIsImage } from '@/utils/urlUtils/checkUrl';
+import { bytesFromMB } from '@/utils/dataUtils/fileSizeConvert';
+import { convertToProxyUrlIfNeeded } from '@/utils/urlUtils/proxyUrl';
 
 const { config } = storeToRefs(useConfigStore())
 const { cvsWidth } = storeToRefs(useSaveStore())
 const { preventLeaving } = usePreventLeavingUnsavedStore()
+
+const urlWarn = ref<string>()
 
 watch(() => config.value.bgRefImage, () => {
     preventLeaving()
@@ -26,6 +31,14 @@ watch(() => config.value.bgRefImage.url, (newVal, oldVal)=>{
             c.opacity = 30
         }
     }
+    if(newVal){
+        let urlProxied = convertToProxyUrlIfNeeded(newVal, 'icon')
+        checkUrlIsImage(urlProxied, bytesFromMB(30)).then(res=>{
+            urlWarn.value = res
+        })
+    }
+    else
+        urlWarn.value = undefined
 })
 </script>
 
@@ -42,11 +55,12 @@ watch(() => config.value.bgRefImage.url, (newVal, oldVal)=>{
     <tr>
         <td colspan="2">
             <b>图片链接</b>
-            <input v-model.lazy.trim="config.bgRefImage.url"/>
-            <div class="smallNote">
+            <textarea v-model.lazy.trim="config.bgRefImage.url" class="urlInput" rows="3"></textarea>
+            <div v-if="!config.bgRefImage.url" class="smallNote">
                 复杂svg图片将导致缩放卡顿<br/>
                 建议使用png/webp/jpg格式
             </div>
+            <div v-else-if="urlWarn" class="smallNoteVital">链接可能存在异常：{{ urlWarn }}</div>
         </td>
     </tr>
     <tr>
@@ -100,6 +114,12 @@ watch(() => config.value.bgRefImage.url, (newVal, oldVal)=>{
 
 <style lang="scss" scoped>
 .bgRefImage{
+    .urlInput{
+        width: 240px;
+        font-size: 12px;
+        resize: none;
+        word-break: break-all;
+    }
     .bgRefImageOffsets{
         display: flex;
         flex-direction: column;
