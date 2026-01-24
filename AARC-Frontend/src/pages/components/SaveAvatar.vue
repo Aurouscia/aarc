@@ -39,7 +39,7 @@ const status = computed<SaveAvatarStatus|undefined>(()=>{
         // 拒绝当前用户查看
         res = { icon: iconLock, text: '无权限', color: 'rgb(192, 57, 43)', clickBehavior: 'refuse' }
     }
-    if(s.allowRequesterEdit){
+    else if(s.allowRequesterEdit){
         // 允许当前用户编辑（但实际让不让编辑由“是否他人在编辑”决定）
         if(s.editingByUserId && s.editingByUserId != userInfo.value.id)
             res = { icon: iconPen, text: '占用中', color: 'rgb(212, 160, 23)', clickBehavior: 'wait'}
