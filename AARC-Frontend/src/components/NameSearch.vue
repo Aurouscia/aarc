@@ -113,7 +113,7 @@ function getPtLines(pt:ControlPoint){
     id: l.id,
     name: l.name || '',
     color: lineStateStore.getLineActualColorById(l.id) || l.color || '#000',
-  })).slice(0,10);
+  }))
 }
 
 onMounted(()=>{
@@ -207,8 +207,15 @@ onMounted(()=>{
         background: #ddd;
       }
       .resMain{
+        flex-shrink: 0;
+        max-width: 140px;
         display:flex;
         flex-direction:column;
+        .resName, .resNameS{
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
         .resName{
           font-weight:600;
           font-size:14px;
@@ -220,13 +227,16 @@ onMounted(()=>{
         }
       }
       .resLines{
+        min-width: 0px;
+        flex-shrink: 1;
+        overflow-x: auto;
         display:flex;
-        gap:6px;
+        gap:4px;
         align-items:center;
         .lineBadge{
           width:14px;
           height:14px;
-          border-radius:50%;
+          border-radius:1000px;
           display:inline-block;
           box-shadow: 0 0 0 1px rgba(0,0,0,0.06) inset;
         }
