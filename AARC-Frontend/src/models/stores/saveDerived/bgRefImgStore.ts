@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from "pinia";
-import { computed, CSSProperties, ref } from "vue";
+import { computed, CSSProperties, ref, watch } from "vue";
 import { useConfigStore } from "../configStore";
 import { useSaveStore } from "../saveStore";
 import { convertToProxyUrlIfNeeded } from "@/utils/urlUtils/proxyUrl";
@@ -35,9 +35,22 @@ export const useBgRefImageStore = defineStore('bgRefImage', ()=>{
         return res
     })
 
+    const preDisplayUrl = ref<string>()
+    let urlAssignTimer = 0
+    watch(()=>({
+        url: configStore.config.bgRefImage.url,
+        export: configStore.config.bgRefImage.export
+    }), (newVal)=>{
+        window.clearTimeout(urlAssignTimer)
+        preDisplayUrl.value = undefined // 强制让图片消失并重新出现
+        urlAssignTimer = window.setTimeout(()=>{
+            preDisplayUrl.value = newVal.url
+        }, 100)
+    }, { immediate: true })
+
     const bgRefImageDisplayUrl = computed<string|undefined>(()=>{
         const cfg = configStore.config.bgRefImage
-        const url = cfg.url
+        const url = preDisplayUrl.value
         if(!url) return undefined
         if(!cfg.export)
             return url

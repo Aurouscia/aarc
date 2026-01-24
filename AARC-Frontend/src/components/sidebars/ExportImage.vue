@@ -268,9 +268,9 @@ onMounted(()=>{
                     <div class="questionMark" @click="explainFileFormat">?</div>
                 </div>
                 <select v-model="fileFormat">
-                    <option :value="'png'">PNG</option>
+                    <option :value="'png'">PNG(不推荐)</option>
                     <option :value="'webp'">WEBP</option>
-                    <option :value="'jpeg'">JPG</option>
+                    <option :value="'jpeg'">JPG(不推荐)</option>
                 </select>
             </div>
             <div class="configItem" v-if="fileFormat!='png'">

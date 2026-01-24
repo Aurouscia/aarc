@@ -74,6 +74,7 @@ watch(() => config.value.bgRefImage.url, (newVal, oldVal)=>{
         <td>用于<br/>导出</td>
         <td>
             <input v-model="config.bgRefImage.export" type="checkbox"/>
+            <div class="smallNote">勾选时，图片需要时间重新加载</div>
         </td>
     </tr>
     <tr>

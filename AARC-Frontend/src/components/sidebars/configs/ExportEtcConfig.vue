@@ -22,7 +22,7 @@ const { bgRefImage } = storeToRefs(useExportLocalConfigStore())
         <td colspan="2" class="smallNote">jpg不支持透明背景，请使用其他格式</td>
     </tr>
     <tr>
-        <td>包括<br/>参考图</td>
+        <td>导出<br/>参考图</td>
         <td>
             <input v-model="bgRefImage" type="checkbox"/>
         </td>
@@ -30,7 +30,10 @@ const { bgRefImage } = storeToRefs(useExportLocalConfigStore())
     <tr>
         <td colspan="2" class="smallNote">
             请确保勾选“背景参考图”中的“用于导出”<br/>
-            如果导出效果异常，请检查“位置偏移”中的设置是否将图片位置完全约束
+            如果导出效果异常，请检查“位置偏移”中的设置是否将图片位置完全约束<br/>
+            <div v-if="bgRefImage" class="smallNoteVital">
+                警告：会显著增大导出文件尺寸
+            </div>
         </td>
     </tr>
 </tbody></table>

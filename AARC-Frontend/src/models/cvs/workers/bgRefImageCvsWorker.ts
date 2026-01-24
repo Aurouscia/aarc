@@ -12,6 +12,7 @@ export const useBgRefImageCvsWorker = defineStore('bgRefImageCvsWorker', () => {
     function renderBgRefImage(ctx: CvsContext) {
         const cfg = cs.config.bgRefImage
         const img = document.getElementById(bgRefImageStore.bgRefImageElementId)
+        // 如果未设置“用于导出”，则不绘制背景图（否则未代理，是tainted）
         if (!cfg.export || !img || !(img instanceof HTMLImageElement))
             return
         const whRatio = img.naturalWidth / img.naturalHeight
