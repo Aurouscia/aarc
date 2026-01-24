@@ -186,13 +186,14 @@ async function saveData(){
 }
 
 const notLogin = ref<boolean>()
-const notLoginFirstWarned = ref<boolean>()
+const notLoginNeedToWarn = ref<boolean>()
 async function checkLoginLeftTime(userInfo:HttpUserInfo){
     const nearExpireMsg = '登录即将过期\n尽快重新登录'
     const noLoginMsg = '当前没有登录\n不能保存'
     if(!userInfo.leftHours){
         notLogin.value = true
         savingDisabledWarning.value = noLoginMsg
+        notLoginNeedToWarn.value = true
         preventLeavingDisabled.value = true //未登录：不阻止未保存退出（也没法保存）
         savingDisabledWarningHide.value = true //暂时隐藏，等第一次编辑后再出现
     }
@@ -208,9 +209,9 @@ async function checkLoginLeftTime(userInfo:HttpUserInfo){
 function setLeavingPreventing(){
     //将“主画布重新渲染”当成“存档信息变化”，当主画布重新渲染时，阻止用户离开/刷新页面/关闭页面
     mainCvsDispatcher.afterMainCvsRendered = () =>{ 
-        if(!notLoginFirstWarned.value){
+        if(notLoginNeedToWarn.value){
             savingDisabledWarningHide.value = false
-            notLoginFirstWarned.value = true
+            notLoginNeedToWarn.value = false
         }
         preventLeaving()
     }
