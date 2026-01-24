@@ -47,7 +47,7 @@ watch(() => config.value.bgRefImage.url, (newVal, oldVal)=>{
 <table class="fullWidth bgRefImage"><tbody>
     <tr>
         <td class="smallNote" colspan="2">
-            用于参考的底图，仅在编辑器内显示<br/>
+            用于参考的底图<br/>
             需要先上传图片到aarc资源库<br/>
             或图床，再复制链接到此处
         </td>

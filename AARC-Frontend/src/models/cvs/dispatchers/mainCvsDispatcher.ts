@@ -19,18 +19,21 @@ import { usePointLinkStore } from "@/models/stores/pointLinkStore";
 import { usePointLinkCvsWorker } from "../workers/pointLinkCvsWorker";
 import { useWatermarkCvsWorker } from "../workers/watermarkCvsWorker";
 import { useRenderOptionsStore } from "@/models/stores/renderOptionsStore";
+import { useBgRefImageCvsWorker } from "../workers/bgRefImageCvsWorker";
 
 export interface MainCvsRenderingOptions{
     /** 这次渲染前哪些线路形状变动了？不提供即为所有 */
-    changedLines?:number[],
+    changedLines?: number[],
     /** 这次渲染前哪些站名位置移动了？不提供即为所有 */
-    movedStaNames?:number[],
+    movedStaNames?: number[],
     /** 阻止“渲染后”钩子触发 */
-    suppressRenderedCallback?:boolean
+    suppressRenderedCallback?: boolean
     /** 指定画布上下文 */
     ctx?: CvsContext
     /** 广告水印 (no/less/more) */
     withAds?: AdsRenderType
+    /** 背景参考图 */
+    withBgRefImage?: boolean
 }
 
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
@@ -50,6 +53,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const { renderAllLinks } = usePointLinkCvsWorker()
     const { renderAds } = useAdsCvsWorker()
     const { renderWatermark } = useWatermarkCvsWorker()
+    const { renderBgRefImage } = useBgRefImageCvsWorker()
     const afterMainCvsRendered = shallowRef<()=>void>()
     const isRendering = ref(false)
     const logRendering = import.meta.env.VITE_LogMainCvsRendering === 'true'
@@ -66,6 +70,9 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
             ctx.fillStyle = cs.config.bgColor
             ctx.fillTotal()
             ctx.globalAlpha = 1
+            if(options.withBgRefImage){
+                renderBgRefImage(ctx)
+            }
         }
         if(!visitorMode.value)
             renderWatermark(ctx, 'beforeMain', forExport)

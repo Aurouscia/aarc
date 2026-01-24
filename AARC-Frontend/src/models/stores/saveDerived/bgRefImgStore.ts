@@ -1,5 +1,5 @@
 import { defineStore, storeToRefs } from "pinia";
-import { computed, CSSProperties } from "vue";
+import { computed, CSSProperties, ref } from "vue";
 import { useConfigStore } from "../configStore";
 import { useSaveStore } from "../saveStore";
 import { convertToProxyUrlIfNeeded } from "@/utils/urlUtils/proxyUrl";
@@ -44,8 +44,11 @@ export const useBgRefImageStore = defineStore('bgRefImage', ()=>{
         return convertToProxyUrlIfNeeded(url, 'icon')
     })
 
+    const bgRefImageElementId = ref('bgRefImage')
+
     return {
         bgRefImageStyle,
-        bgRefImageDisplayUrl
+        bgRefImageDisplayUrl,
+        bgRefImageElementId
     }
 })

@@ -80,7 +80,7 @@ defineExpose({init})
     <div class="cvsFrame" ref="cvsFrame">
         <div class="cvsCont" ref="cvsCont" :style="{backgroundColor: configStore.config.bgColor}">
             <div v-if="bgRefImageStore.bgRefImageDisplayUrl" class="bgRefImageDiv" :style="bgRefImageStore.bgRefImageStyle">
-                <img :src="bgRefImageStore.bgRefImageDisplayUrl"/>
+                <img :src="bgRefImageStore.bgRefImageDisplayUrl" :id="bgRefImageStore.bgRefImageElementId"/>
             </div>
             <CvsBlocks :canvas-id-prefix="baseCvsDispatcher.canvasIdPrefix"></CvsBlocks>
             <CvsBlocks :canvas-id-prefix="mainCvsDispatcher.canvasIdPrefix"

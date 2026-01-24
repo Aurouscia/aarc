@@ -54,6 +54,8 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
         enabledPreview: true
     })
 
+    const bgRefImage = ref<boolean>(true)
+
     return {
         fileNameStyle,
         fileFormat,
@@ -65,7 +67,8 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
         watermarkReset,
         waterMarkDefault,
         accentuation,
-        time
+        time,
+        bgRefImage
     }
 },
 {

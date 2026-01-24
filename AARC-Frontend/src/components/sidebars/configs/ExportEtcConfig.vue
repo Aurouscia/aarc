@@ -2,8 +2,10 @@
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
 import { storeToRefs } from 'pinia';
 import ConfigSection from './shared/ConfigSection.vue';
+import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
 
 const { bgOpacity } = storeToRefs(useRenderOptionsStore())
+const { bgRefImage } = storeToRefs(useExportLocalConfigStore())
 </script>
 
 <template>
@@ -17,8 +19,18 @@ const { bgOpacity } = storeToRefs(useRenderOptionsStore())
         </td>
     </tr>
     <tr>
+        <td colspan="2" class="smallNote">jpg不支持透明背景，请使用其他格式</td>
+    </tr>
+    <tr>
+        <td>包括<br/>参考图</td>
+        <td>
+            <input v-model="bgRefImage" type="checkbox"/>
+        </td>
+    </tr>
+    <tr>
         <td colspan="2" class="smallNote">
-            jpg不支持透明背景，请使用png或webp
+            请确保勾选“背景参考图”中的“用于导出”<br/>
+            如果导出效果异常，请检查“位置偏移”中的设置是否将图片位置完全约束
         </td>
     </tr>
 </tbody></table>

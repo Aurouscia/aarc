@@ -37,7 +37,9 @@ const exportFailedMsg = ref<false|string>(false)
 
 const renderOptionsStore = useRenderOptionsStore()
 const exportLocalConfig = useExportLocalConfigStore()
-const { fileNameStyle, fileFormat, fileQuality, pixelRestrict, pixelRestrictMode, ads } = storeToRefs(exportLocalConfig)
+const { 
+    fileNameStyle, fileFormat, fileQuality, pixelRestrict, pixelRestrictMode, ads, bgRefImage
+} = storeToRefs(exportLocalConfig)
 
 async function downloadMainCvsAsImage() {
     if(exporting.value)
@@ -61,7 +63,8 @@ async function downloadMainCvsAsImage() {
             movedStaNames:[],
             suppressRenderedCallback:true,
             ctx,
-            withAds: ads.value
+            withAds: ads.value,
+            withBgRefImage: bgRefImage.value
         }
         renderOptionsStore.exporting = true; // 启用导出模式
         mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
