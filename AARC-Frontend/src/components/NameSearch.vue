@@ -19,8 +19,10 @@ const searchInput = useTemplateRef('searchInput')
 const nameSearchStore = useNameSearchStore()
 const { show, searchText, showResults } = storeToRefs(nameSearchStore)
 
+const maxResultCount = 50
+
 // 匹配逻辑：name 或 nameS 包含搜索串（不区分大小写）
-const results = computed(()=>{
+const resultsRaw = computed(()=>{
   const q = searchText.value?.trim();
   if(!q) return [];
   const s = q.toLowerCase();
@@ -30,9 +32,13 @@ const results = computed(()=>{
     const name = (pt.name ?? '').toString();
     const nameS = (pt.nameS ?? '').toString();
     return name.toLowerCase().includes(s) || nameS.toLowerCase().includes(s);
-  }).slice(0, 80).filter(x=>getPtLines(x).length>0);
+  })
   return matched;
 });
+
+const results = computed(()=>{
+    return resultsRaw.value.slice(0, maxResultCount).filter(x=>getPtLines(x).length>0);
+})
 
 function centerOnPt(pt:ControlPoint){
   cvs.focusViewToPos(pt.pos)
@@ -74,6 +80,11 @@ onMounted(()=>{
     <div v-if="showResults" class="resultsPanel">
       <div v-if="results.length === 0" class="noRes">未找到相关站点</div>
       <div v-else class="resList">
+        <div v-if="results.length > 5" class="resItemCount">
+          共{{ resultsRaw.length }}个结果{{ 
+            resultsRaw.length > maxResultCount ? `，仅显示前${maxResultCount}个` : '' 
+          }}
+        </div>
         <div v-for="pt in results" :key="pt.id" class="resItem" @click="centerOnPt(pt)">
           <div class="resMain">
             <div class="resName">{{ pt.name ?? '—' }}</div>
@@ -123,7 +134,7 @@ onMounted(()=>{
       padding:8px 10px;
       cursor: pointer;
       gap:10px;
-      border-bottom: 1px solid #f3f3f3;
+      border-top: 1px solid #f3f3f3;
       &:hover{
         background: #f6f8ff;
       }
@@ -152,6 +163,12 @@ onMounted(()=>{
           box-shadow: 0 0 0 1px rgba(0,0,0,0.06) inset;
         }
       }
+    }
+    .resItemCount{
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+      padding: 4px 0px;
     }
   }
 }
