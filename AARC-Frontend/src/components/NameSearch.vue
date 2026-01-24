@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, useTemplateRef } from 'vue';
+import { computed, onMounted, useTemplateRef, ref, watch } from 'vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { ControlPoint,Line } from '@/models/save';
@@ -18,6 +18,9 @@ const cvs = useCvsFrameStore();
 const searchInput = useTemplateRef('searchInput')
 const nameSearchStore = useNameSearchStore()
 const { show, searchText, showResults } = storeToRefs(nameSearchStore)
+
+// 当前选中的结果索引
+const selectedIndex = ref(-1)
 
 const maxResultCount = 50
 
@@ -40,11 +43,63 @@ const results = computed(()=>{
     return resultsRaw.value.slice(0, maxResultCount).filter(x=>getPtLines(x).length>0);
 })
 
+// 监听搜索结果变化，重置选中索引
+watch(results, () => {
+  selectedIndex.value = -1
+})
+
+function resultElId(ptid:number){
+  return `resultElId_${ptid}`
+}
+
+// 监听选中索引变化，确保选中元素在视图内
+watch(selectedIndex, (newIndex) => {
+  if (newIndex >= 0 && newIndex < results.value.length) {
+    const selectedPt = results.value[newIndex]
+    const elementId = resultElId(selectedPt.id)
+    const selectedElement = document.getElementById(elementId)
+    if (selectedElement) {
+      selectedElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
+      })
+    }
+  }
+})
+
 function centerOnPt(pt:ControlPoint){
   cvs.focusViewToPos(pt.pos)
   envStore.activePt = pt;
   envStore.cursorPos = [...pt.pos]
   nameSearchStore.toggleShow(false)
+}
+
+const keyboardInCharge = ref(false)
+
+// 处理键盘导航
+function handleKeyDown(event: KeyboardEvent) {
+  if (!showResults.value || results.value.length === 0)
+    return
+  keyboardInCharge.value = true
+  switch (event.key) {
+    case 'ArrowDown':
+      event.preventDefault()
+      selectedIndex.value = (selectedIndex.value + 1) % results.value.length
+      break
+    case 'ArrowUp':
+      event.preventDefault()
+      selectedIndex.value = selectedIndex.value <= 0 ? results.value.length - 1 : selectedIndex.value - 1
+      break
+    case 'Enter':
+      event.preventDefault()
+      if (selectedIndex.value >= 0 && selectedIndex.value < results.value.length) {
+        centerOnPt(results.value[selectedIndex.value])
+      } else if (results.value.length > 0) {
+        // 如果没有选中任何结果，按回车键默认选中第一个结果
+        centerOnPt(results.value[0])
+      }
+      break
+  }
 }
 
 // 辅助：获取该站所属线路信息（name + color）
@@ -65,6 +120,8 @@ onMounted(()=>{
   if(!searchInput.value)
     throw new Error('searchInput 获取失败')
   nameSearchStore.init(searchInput.value)
+  // 添加键盘事件监听
+  searchInput.value.addEventListener('keydown', handleKeyDown)
 })
 </script>
 
@@ -75,17 +132,24 @@ onMounted(()=>{
       v-model="searchText"
       class="searchInput"
       placeholder="搜索站名"
-      @keydown.enter.prevent="() => { if(results.length>0) centerOnPt(results[0]) }"
     />
-    <div v-if="showResults" class="resultsPanel">
+    <div v-if="showResults" class="resultsPanel" @mousemove="keyboardInCharge=false">
       <div v-if="results.length === 0" class="noRes">未找到相关站点</div>
-      <div v-else class="resList">
+      <div class="resList">
         <div v-if="results.length > 5" class="resItemCount">
           共{{ resultsRaw.length }}个结果{{ 
             resultsRaw.length > maxResultCount ? `，仅显示前${maxResultCount}个` : '' 
           }}
         </div>
-        <div v-for="pt in results" :key="pt.id" class="resItem" @click="centerOnPt(pt)">
+        <div 
+          v-for="(pt, index) in results" 
+          :key="pt.id" 
+          :id="resultElId(pt.id)"
+          class="resItem" 
+          :class="{ selected: index === selectedIndex }"
+          @click="centerOnPt(pt)"
+          @mouseenter="()=>{!keyboardInCharge && (selectedIndex=index)}"
+        >
           <div class="resMain">
             <div class="resName">{{ pt.name ?? '—' }}</div>
             <div class="resNameS">{{ pt.nameS ?? '' }}</div>
@@ -96,6 +160,7 @@ onMounted(()=>{
             </template>
           </div>
         </div>
+        <div v-if="results.length > 5" class="resItemCount">提示：PC端可使用键盘上下Enter键导航</div>
       </div>
     </div>
   </div>
@@ -138,6 +203,9 @@ onMounted(()=>{
       &:hover{
         background: #f6f8ff;
       }
+      &.selected{
+        background: #ddd;
+      }
       .resMain{
         display:flex;
         flex-direction:column;
@@ -169,6 +237,10 @@ onMounted(()=>{
       color: #999;
       font-size: 12px;
       padding: 4px 0px;
+      border-top: 1px solid #f3f3f3;
+      &:first-child{
+        border-top: 0px;
+      }
     }
   }
 }
