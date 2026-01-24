@@ -11,15 +11,11 @@ import ControlPointOptions from './sidebars/options/ControlPointOptions.vue';
 import { usePinyinConvert } from './composables/usePinyinConvert';
 import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue';
 import { useNameSearchStore } from '@/models/stores/nameSearchStore';
-import { coordDist } from '@/utils/coordUtils/coordDist';
-import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
-import { numberCmpEpsilon } from '@/utils/consts';
 
 const saveStore = useSaveStore();
 const nameEditStore = useNameEditStore()
 const nameSearchStore = useNameSearchStore()
 const { nameMain, nameSub, editing, edited, targetPtId } = storeToRefs(nameEditStore)
-const { duplicateNameDistThrs } = storeToRefs(useEditorLocalConfigStore())
 const { convertPinyin, pinyinOverriding } = usePinyinConvert(nameMain, nameSub, ()=>nameEditStore.applyName())
 const mainInput = useTemplateRef('nameMainInput')
 const subInput = useTemplateRef('nameSubInput')
@@ -85,13 +81,8 @@ const sameNameAndFarEnough = computed(()=>{
     let targetPt = saveStore.getPtById(targetPtId.value ?? -1)
     if(!targetPt)
         return sameNameStas.value.length > 0
-    let thrs = Number(duplicateNameDistThrs.value)
-    if(isNaN(thrs))
-        thrs = 0
     return !!sameNameStas.value.find(p => {
-        let dist = coordDist(p.pos, targetPt.pos)
-        let farEnough = dist > (thrs + numberCmpEpsilon)
-        return farEnough
+        return nameSearchStore.ptFarEnough(p, targetPt)
     })
 })
 </script>

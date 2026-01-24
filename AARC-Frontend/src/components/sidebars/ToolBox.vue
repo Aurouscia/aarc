@@ -9,6 +9,8 @@ import { ControlPointLinkType } from '@/models/save';
 import { useStashStore } from '@/models/stores/utils/stashStore';
 import Prompt from '../common/Prompt.vue';
 import { searchMarkForEmptyName, useNameSearchStore } from '@/models/stores/nameSearchStore';
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
 
 const envStore = useEnvStore()
 const pointLinkStore = usePointLinkStore()
@@ -16,6 +18,8 @@ const selectionStore = useSelectionStore()
 const { creatingLinkType } = storeToRefs(pointLinkStore)
 const stashStore = useStashStore()
 const nameSearchStore = useNameSearchStore()
+const { showPop } = useUniqueComponentsStore()
+const { duplicateNameDistThrs } = storeToRefs(useEditorLocalConfigStore())
 
 function fd(){
     sidebar.value?.fold()
@@ -41,6 +45,16 @@ function openSelection(type:'mouse'|'touch'){
         selectionStore.enableForTouchScreen()
         fd()
     }
+}
+
+function findDuplicateStas(){
+    const name = nameSearchStore.findDuplicateAndFarEnough()
+    if(!name){
+        showPop(`指定间距(${duplicateNameDistThrs.value})外\n没有重名车站`, 'success')
+        return
+    }
+    nameSearchStore.toggleShow(name)
+    fd()
 }
 
 const sidebar = useTemplateRef('sidebar')
@@ -95,8 +109,12 @@ defineExpose({
         <button v-if="stashStore.thawable" @click="stashStore.thaw()">还原为暂存的状态</button>
     </div>
     <div class="toolItem">
+        <div class="smallNote">站名相关功能</div>
         <button @click="nameSearchStore.toggleShow(searchMarkForEmptyName);fd()">
             查找无名车站
+        </button>
+        <button @click="findDuplicateStas">
+            检测名称重复车站
         </button>
     </div>
 </SideBar>
