@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 interface RecentUpdates{
     updates: Array<{
@@ -33,6 +33,27 @@ async function loadRecentUpdates() {
     }
 }
 
+const msInOneDay = 1000 * 60 * 60 * 24;
+const daysAgo = computed(()=>{
+    const nearest =  data.value?.updates?.at(0)?.date
+    if(nearest){
+        const nearestDate = new Date(nearest)
+        if(isNaN(nearestDate.getTime()))
+            return
+        const days = (Date.now() - nearestDate.getTime()) / msInOneDay
+        if(days > 0)
+            return Math.floor(days)
+    }
+})
+const agoDisplay = computed(()=>{
+    const days = daysAgo.value
+    if(days === undefined)
+        return
+    if(days === 0)
+        return ' (刚刚)'
+    return ` (${days}天前)`
+})
+
 onMounted(async() => {
   await loadRecentUpdates();
 })
@@ -43,7 +64,7 @@ onMounted(async() => {
     <h2 class="updates-title" v-if="data">
         <div>
             <span class="spark-mark">🔧</span>
-            近期主要更新
+            主要更新{{ agoDisplay }}
         </div>
         <a href="https://gitee.com/au114514/aarc/commits/master" target="_blank">查看所有更新</a>
     </h2>
