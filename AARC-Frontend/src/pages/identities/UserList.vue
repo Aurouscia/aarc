@@ -44,6 +44,7 @@ const { userInfo } = storeToRefs(userInfoStore)
 let originalNameAndPwd = ''
 function startEditing(u:UserDto){
     editingUser.value = u
+    pwdRepeat.value = undefined
     originalNameAndPwd = summerizeNameAndPwd()
     infoSidebar.value?.extend()
 }
