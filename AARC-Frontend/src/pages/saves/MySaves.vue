@@ -192,7 +192,7 @@ onMounted(async()=>{
     </tr>
     <tr v-for="s in saveList">
         <td>
-            <SaveAvatar :s="s" :definitely-editable="true"></SaveAvatar>
+            <SaveAvatar :s="s" :definitely-editable="isMine"></SaveAvatar>
         </td>
         <td>
             {{ s.name }}
