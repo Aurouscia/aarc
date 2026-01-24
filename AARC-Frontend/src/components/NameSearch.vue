@@ -21,21 +21,20 @@ const { show, searchText, showResults } = storeToRefs(nameSearchStore)
 
 // 当前选中的结果索引
 const selectedIndex = ref(-1)
-
 const maxResultCount = 50
+const isMatchingEmpty = computed(() => searchText.value === searchMarkForEmptyName)
 
 // 匹配逻辑：name 或 nameS 包含搜索串（不区分大小写）
-const resultsRaw = computed(()=>{
+const resultsRaw = computed(() => {
   const q = searchText.value?.trim();
   if(!q) return [];
   const s = q.toLowerCase();
   const pts = saveStore.save?.points || [];
-  const matchEmpty = q == searchMarkForEmptyName
   const matched = pts.filter(pt=>{
     if(pt.sta !== ControlPointSta.sta) return false
     const name = pt.name ?? ''
     const nameS = pt.nameS ?? ''
-    if(matchEmpty && !name){
+    if(isMatchingEmpty.value && !name){
       const cluster = staClusterStore.getStaClusterById(pt.id)
       return !cluster || cluster.every(p => !p.name)
     }
@@ -139,7 +138,7 @@ onMounted(()=>{
       placeholder="搜索站名"
     />
     <div v-if="showResults" class="resultsPanel" @mousemove="keyboardInCharge=false">
-      <div v-if="results.length === 0" class="noRes">未找到相关站点</div>
+      <div v-if="results.length === 0" class="noRes">未找到{{ isMatchingEmpty?'无名':'相关' }}站点</div>
       <div class="resList">
         <div v-if="results.length > 5" class="resItemCount">
           共{{ resultsRaw.length }}个结果{{ 
