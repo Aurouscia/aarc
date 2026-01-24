@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, CSSProperties, ref } from 'vue';
+import { computed, CSSProperties, nextTick, ref } from 'vue';
 import { SaveDto } from '@/app/com/apiGenerated';
 import defaultMini from '@/assets/defaultMini.svg'
 import iconLock from '@/assets/ui/lock.svg';
@@ -75,8 +75,15 @@ async function handleStatusClick(){
     loadingStatus.value = true
     const res = await api.save.loadStatus(props.s.id)
     if(res){
-        showPop('状态已刷新', 'success')
         loadedStatus.value = res
+        nextTick(()=>{
+            if(status.value?.clickBehavior == 'wait'){
+                showPop('状态已刷新\n请继续等待', 'warning')
+            }
+            else if(status.value?.clickBehavior == 'edit'){
+                showPop('状态已刷新\n现在可以进入', 'success')
+            }
+        })
     }
     loadingStatus.value = false
 }
