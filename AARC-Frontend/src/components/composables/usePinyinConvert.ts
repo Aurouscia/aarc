@@ -39,7 +39,8 @@ export const usePinyinConvert = (source:TargetRef, dest:TargetRef, afterDone:()=
                 options:{
                     rules: rules.value,
                     spaceBetweenChars: c?.spaceBetweenChars,
-                    caseType: c?.caseType
+                    caseType: c?.caseType,
+                    variantType: c?.variantType
                 }
             })
         }

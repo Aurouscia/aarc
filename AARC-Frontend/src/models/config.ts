@@ -96,6 +96,7 @@ export type TextTagPerTypeGlobalConfig = {
 export type PinyinConvertConfig = {
     rules?:string,
     caseType?:number,
+    variantType?:number,
     spaceBetweenChars?:boolean
 }
 

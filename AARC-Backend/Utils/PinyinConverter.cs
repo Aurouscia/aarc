@@ -1,10 +1,19 @@
 ﻿using EzPinyin;
 using System.Text;
+using Pinyin;
 
 namespace AARC.Utils
 {
     public static class PinyinConverter
     {
+        public static List<string> MandarinConvert(string x) => PinyinHelper.GetArray(x).ToList();
+        public static List<string> CantoneseConvert(string x)
+        {
+            return Jyutping.Instance
+                .HanziToPinyin(x, CanTone.Style.NORMAL, Error.Ignore, false)
+                .ConvertAll(y => y.pinyin);
+        }
+        
         public static string Convert(string text, PinyinConvertOptions options)
         {
             var segs = SplitToSegments(text, options.Rules ?? []);
@@ -17,10 +26,15 @@ namespace AARC.Utils
                 else
                 {
                     string segConverted;
-                    var convertedArr = PinyinHelper.GetArray(seg.Value);
+                    Func<string, List<string>> convertFn = options.VariantType switch
+                    {
+                        PinyinVariantType.Cantonese => CantoneseConvert,
+                        _ => MandarinConvert
+                    };
+                    var convertedArr = convertFn(seg.Value);
                     bool pascal = options.CaseType == PinyinCaseType.Pascal;
                     if (pascal)
-                        convertedArr = convertedArr.Select(x => x.ToPascal()).ToArray();
+                        convertedArr = convertedArr.ConvertAll(x => x.ToPascal());
                     if (options.SpaceBetweenChars)
                         segConverted = string.Join(' ', convertedArr);
                     else
@@ -44,6 +58,7 @@ namespace AARC.Utils
             string res = string.Join(" ", segsConverted);
             return res;
         }
+        
         private static List<PinyinSegment> SplitToSegments(string text, Dictionary<string, string> rules)
         {
             List<PinyinSegment> res = [];
@@ -173,6 +188,7 @@ namespace AARC.Utils
     {
         public Dictionary<string, string>? Rules { get; set; }
         public PinyinCaseType CaseType { get; set; }
+        public PinyinVariantType VariantType { get; set; }
         public bool SpaceBetweenChars { get; set; }
     }
     public enum PinyinCaseType
@@ -181,5 +197,10 @@ namespace AARC.Utils
         AllUpper = 1,
         AllLower = 2,
         FirstUpper = 3
+    }
+    public enum PinyinVariantType
+    {
+        Mandarin = 0,
+        Cantonese = 1
     }
 }

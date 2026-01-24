@@ -3,7 +3,7 @@ import { useConfigStore } from '@/models/stores/configStore';
 import { storeToRefs } from 'pinia';
 import ConfigSection from './shared/ConfigSection.vue';
 import { onMounted } from 'vue';
-import { PinyinCaseType } from '@/app/com/apiGenerated';
+import { PinyinCaseType, PinyinVariantType } from '@/app/com/apiGenerated';
 import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
 
 const { config } = storeToRefs(useConfigStore())
@@ -11,6 +11,7 @@ const { tabForPinyinConvert } = storeToRefs(useEditorLocalConfigStore())
 onMounted(()=>{
     config.value.pinyinConvert ??= {
         caseType: 0,
+        variantType: 0,
         rules: "公园:Park\n广场:Square\n路$:Rd.\n街$:St."
     }
 })
@@ -28,6 +29,15 @@ onMounted(()=>{
                     <option :value="PinyinCaseType.FirstUpper">整体首字母大写</option>
                     <option :value="PinyinCaseType.AllUpper">全大写</option>
                     <option :value="PinyinCaseType.AllLower">全小写</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td style="min-width: 50px;">方言</td>
+            <td>
+                <select v-model="config.pinyinConvert.variantType">
+                    <option :value="PinyinVariantType.Mandarin">普通话</option>
+                    <option :value="PinyinVariantType.Cantonese">广东话</option>
                 </select>
             </td>
         </tr>
