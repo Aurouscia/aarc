@@ -2,10 +2,10 @@
 import { computed, onMounted, useTemplateRef, ref, watch } from 'vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
-import { ControlPoint,Line } from '@/models/save';
+import { ControlPoint,ControlPointSta,Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { storeToRefs } from 'pinia';
-import { useNameSearchStore } from '@/models/stores/nameSearchStore';
+import { searchMarkForEmptyName, useNameSearchStore } from '@/models/stores/nameSearchStore';
 import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
 import { useLineStateStore } from '@/models/stores/saveDerived/state/lineStateStore';
 
@@ -30,10 +30,15 @@ const resultsRaw = computed(()=>{
   if(!q) return [];
   const s = q.toLowerCase();
   const pts = saveStore.save?.points || [];
-  // 限制最大返回数量，防止太长下拉
+  const matchEmpty = q == searchMarkForEmptyName
   const matched = pts.filter(pt=>{
-    const name = (pt.name ?? '').toString();
-    const nameS = (pt.nameS ?? '').toString();
+    if(pt.sta !== ControlPointSta.sta) return false
+    const name = pt.name ?? ''
+    const nameS = pt.nameS ?? ''
+    if(matchEmpty && !name){
+      const cluster = staClusterStore.getStaClusterById(pt.id)
+      return !cluster || cluster.every(p => !p.name)
+    }
     return name.toLowerCase().includes(s) || nameS.toLowerCase().includes(s);
   })
   return matched;
@@ -151,7 +156,7 @@ onMounted(()=>{
           @mouseenter="()=>{!keyboardInCharge && (selectedIndex=index)}"
         >
           <div class="resMain">
-            <div class="resName">{{ pt.name ?? '—' }}</div>
+            <div class="resName">{{ pt.name ?? '<未命名>' }}</div>
             <div class="resNameS">{{ pt.nameS ?? '' }}</div>
           </div>
           <div class="resLines">

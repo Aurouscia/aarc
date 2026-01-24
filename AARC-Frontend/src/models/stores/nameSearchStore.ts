@@ -2,6 +2,8 @@ import { defineStore } from "pinia";
 import { computed, nextTick, ref } from "vue";
 import { useEnvStore } from "./envStore";
 
+export const searchMarkForEmptyName = '---'
+
 export const useNameSearchStore = defineStore('nameSearch', ()=>{
     const showPrivate = ref(false)
     const show = computed(()=>showPrivate.value)

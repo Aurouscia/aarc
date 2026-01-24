@@ -8,12 +8,14 @@ import { useSelectionStore } from '@/models/stores/selectionStore';
 import { ControlPointLinkType } from '@/models/save';
 import { useStashStore } from '@/models/stores/utils/stashStore';
 import Prompt from '../common/Prompt.vue';
+import { searchMarkForEmptyName, useNameSearchStore } from '@/models/stores/nameSearchStore';
 
 const envStore = useEnvStore()
 const pointLinkStore = usePointLinkStore()
 const selectionStore = useSelectionStore()
 const { creatingLinkType } = storeToRefs(pointLinkStore)
 const stashStore = useStashStore()
+const nameSearchStore = useNameSearchStore()
 
 function fd(){
     sidebar.value?.fold()
@@ -91,6 +93,11 @@ defineExpose({
         <div class="smallNoteVital">未经检验的新功能，请谨慎使用</div>
         <button :class="{minor: stashStore.thawable}" @click="stashStore.freeze()">暂存当前画布状态</button>
         <button v-if="stashStore.thawable" @click="stashStore.thaw()">还原为暂存的状态</button>
+    </div>
+    <div class="toolItem">
+        <button @click="nameSearchStore.toggleShow(searchMarkForEmptyName);fd()">
+            查找无名车站
+        </button>
     </div>
 </SideBar>
 </template>
