@@ -1,4 +1,4 @@
-import { mySavesName, searchSaveName } from "@/pages/saves/routes/routesNames";
+import { mySavesName, saveToolsName, searchSaveName } from "@/pages/saves/routes/routesNames";
 import { TopbarModel, TopbarModelItem } from "./topbarModel";
 import { aboutName, loginName, userListName } from "@/pages/identities/routes/routesNames";
 import { faq } from "@/pages/homes/routes/routesNames";
@@ -33,6 +33,23 @@ export async function getTopbarData(): Promise<TopbarModel> {
                 {
                     title: "我的资源",
                     link: { name: userFileList }
+                }
+            ]
+        },
+        {
+            title: "工具",
+            children: [
+                {
+                    title: "RMP转AARC",
+                    link: { name: saveToolsName }
+                },
+                {
+                    title: "AARC转FicCloud",
+                    link: { name: saveToolsName }
+                },
+                {
+                    title: "AARC转轨交棋",
+                    link: { name: saveToolsName }
                 }
             ]
         },

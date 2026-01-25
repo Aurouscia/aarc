@@ -155,7 +155,7 @@ $topbar-logo-area-width : 110px;
     display: none;
     margin-left: calc($topbar-logo-area-width + 10px);
 }
-@media screen and (min-width: 500px){
+@media screen and (min-width: 650px){
     .foldBtn{
         display: none;
     }
