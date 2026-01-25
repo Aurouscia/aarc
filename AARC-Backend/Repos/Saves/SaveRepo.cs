@@ -172,13 +172,6 @@ namespace AARC.Repos.Saves
                 .Where(x => x.Id == id && x.Data != null)
                 .Select(x => x.Data!.Length)
                 .FirstOrDefault();
-            if (originalLength > 1000)
-            {
-                if(data.Length < originalLength / 4)
-                {
-                    throw new RqEx("内容显著减少，拒绝保存");
-                }
-            }
 
             var updated = Existing
                 .Where(x => x.Id == id)
