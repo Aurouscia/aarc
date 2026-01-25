@@ -36,7 +36,7 @@ const resultsRaw = computed(() => {
     const nameS = pt.nameS ?? ''
     if(isMatchingEmpty.value && !name){
       const cluster = staClusterStore.getStaClusterById(pt.id)
-      return !cluster || cluster.every(p => !p.name)
+      return cluster.every(p => !p.name)
     }
     return name.toLowerCase().includes(s) || nameS.toLowerCase().includes(s);
   })
@@ -109,7 +109,7 @@ function handleKeyDown(event: KeyboardEvent) {
 // 辅助：获取该站所属线路信息（name + color）
 function getPtLines(pt:ControlPoint){
   const cluster = staClusterStore.getStaClusterById(pt.id)
-  const stationIds = cluster ? cluster.map(sta => sta.id) : [pt.id];
+  const stationIds = cluster.map(sta => sta.id);
   const lines =[...new Set(stationIds.flatMap(id => 
     saveStore.getLinesByPt(id) ?? []
   ))]
