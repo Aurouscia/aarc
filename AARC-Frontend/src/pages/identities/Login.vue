@@ -18,7 +18,7 @@ const props = defineProps<{
 const router = useRouter()
 const configStore = useAuthLocalConfigStore()
 const { loginExpireHrs } = storeToRefs(configStore)
-const { isWebkit } = useBrowserInfoStore()
+const { isIPhoneOrIPad } = useBrowserInfoStore()
 
 const userName = ref<string>("")
 const password = ref<string>("")
@@ -112,17 +112,23 @@ onMounted(async()=>{
         <div v-show="setExpire" style="color:red; text-align: center;">仅在自己的设备上选择较长时间</div>
         <div class="guide" style="color:red" v-if="failedGuide">{{ failedGuide }}</div>
         <div class="guide" style="font-size: 13px;" v-else>
-            <div><b>本应用对系统版本/浏览器版本非常敏感</b></div>
+            <div><b>本应用对浏览器标准性非常敏感</b></div>
             <div>如果遇到异常现象，请先</div>
             <!--苹果设备的浏览器内核是系统的一部分，应该提示检查系统版本-->
-            <div v-if="isWebkit">在设置中确认设备<b>是否有苹果系统更新</b></div>
-            <div v-if="isWebkit"><b>如果苹果设备较旧，即使系统最新也可能出问题</b></div>
-            <!--其他设备提示检查浏览器版本-->
-            <div v-else>确认浏览器<b>是否有版本更新</b></div>
-            <div><b>不要</b>使用IE等已停止更新的旧型浏览器</div>
-            <div><b>不要</b>使用过旧的、无法更新系统的设备</div>
-            <div>否则程序将无法正常工作</div>
-            <div>如果确认版本后问题仍存在，请向管理员报告</div>
+            <template v-if="isIPhoneOrIPad">
+                <div>在设置中确认设备<b>是否有苹果系统更新</b></div>
+                <div><b>如果苹果设备过旧，即使系统最新也可能出问题</b></div>
+            </template>
+            <!--其他设备提示检查浏览器正规性-->
+            <template v-else>
+                <div>确认浏览器<b>是否“正规”</b></div>
+                <div>
+                    <b>不要</b>使用“华为浏览器”、“夸克浏览器”、“百度App”等非正规浏览器（包括一切设备自带浏览器），
+                    请确保使用<b class="good"> Edge、Chrome、Firefox、Safari </b>这四个正规浏览器
+                </div>
+            </template>
+            <div>否则本程序可能无法正常工作</div>
+            <div>如果使用正规浏览器后问题仍存在，请向管理员报告</div>
         </div>
         <div style="height: 15vh;"></div>
     </div>
@@ -141,11 +147,16 @@ onMounted(async()=>{
     text-align: center;
     border-radius: 5px;
     color: #999;
+    background-color: #f7f7f7;
+    padding: 4px;
     div{
         margin-bottom: 6px;
     }
     b{
         color: plum;
+    }
+    .good{
+        color: olivedrab
     }
 }
 table{

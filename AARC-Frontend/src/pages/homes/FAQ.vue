@@ -20,7 +20,7 @@ function recoverFaqToTopbar(){
 <template>
 <h1>
     常见问题
-    <span style="letter-spacing: normal;font-size: 15px;">更新于2025-8-11</span>
+    <span style="letter-spacing: normal;font-size: 15px;">更新于2026-01-25</span>
 </h1>
 <div style="text-align: center;margin-bottom: 10px;">
     <button v-if="common.showFaqOnTopbar" @click="removeFaqFromTopbar">从顶部栏移除本页面</button>

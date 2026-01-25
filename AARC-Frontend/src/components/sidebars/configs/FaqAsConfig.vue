@@ -20,8 +20,14 @@ const showGuideInfos = guideInfo.findHelp || guideInfo.extra
     <div>
         <h3>无法使用</h3>
         <div>
-            <p><b>有目共睹：</b>本项目在正规浏览器上能正常运行</p>
-            <p>如果遇到白屏/拖动不动等完全无法使用的问题，请更换正规浏览器，例如Chrome、Edge、Safari、Firefox（若系统过旧，更换浏览器也不一定有用）</p>
+            <p><b>有目共睹：</b>本项目在<b style="color: olivedrab">正规浏览器</b>上能正常运行</p>
+            <p>
+                如果遇到白屏/拖动不动/无法缩放等完全无法使用的问题：不要使用<b style="color: palevioletred">“华为浏览器”、“夸克浏览器”、“百度App”</b>等非正规浏览器（包括一切设备自带浏览器），
+                请确保使用<b style="color: olivedrab"> Edge、Chrome、Firefox、Safari </b>这四个正规浏览器
+            </p>
+            <p>
+                对于iPhone/iPad用户：请确保你的系统更新到最新版本（26以上）
+            </p>
         </div>
     </div>
     <div>
