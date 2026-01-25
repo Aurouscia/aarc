@@ -8,6 +8,7 @@ import SearchSaveEntrance from '../components/SearchSaveEntrance.vue';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import RecentUpdates from '../components/RecentUpdates.vue';
+import Notice from '@/components/common/Notice.vue';
 
 const { setEnteredFrom } = useEnteredCanvasFromStore()
 const userInfoStore = useUserInfoStore()
@@ -33,6 +34,10 @@ onMounted(()=>{
     <p v-if="guideInfo.extra" style="font-size: 14px;">{{ guideInfo.extra }}</p>
     <p>本项目正在持续完善改进中，想提出建议请qq私聊我或<a href="https://gitee.com/au114514/aarc/issues" target="_blank">点击此处</a></p>
 </div>
+<Notice :type="'info'" :title="'⚠️ 重大变动'">
+    暂时停用“允许所有人”和“允许会员”编辑存档，上述设置将不会生效，恢复时间暂定，造成不便深表歉意。<br/>
+    如果需要多人合作存档，请加群并寻找志同道合的小伙伴，组建自己的团队，并设置允许单个用户。
+</Notice>
 <div class="marginedSection">
     <NewestSaves></NewestSaves>
     <div v-if="userInfoStore.isLoginedTourist" class="userTypeNote">当前账号为游客，作品无法公开展示</div>

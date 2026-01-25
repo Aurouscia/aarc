@@ -32,15 +32,14 @@ public class AuthGrantCheckService(
     }
     public List<AuthGrantCheckResult> CalculateFor(AuthGrantOn on, List<int> onIds, byte type)
     {
+        var isSaveEditing = 
+            on == AuthGrantOn.Save 
+            && type == (byte)AuthGrantTypeOfSave.Edit;
         // 如果是管理员，且不是“存档编辑”，直接allow所有
         bool isAdmin = userInfoService.IsAdmin;
-        if (isAdmin)
-        {
-            var isSaveEditing = 
-                on == AuthGrantOn.Save 
-                && type == (byte)AuthGrantTypeOfSave.Edit;
-            if(!isSaveEditing)
-                return Enumerable.Repeat(AuthGrantCheckResult.Allow, onIds.Count).ToList();
+        if (isAdmin && !isSaveEditing)
+        { 
+            return Enumerable.Repeat(AuthGrantCheckResult.Allow, onIds.Count).ToList();
         }
 
         // 加载每个onId的所有者，以及所有相关的authGrant对象
@@ -67,6 +66,10 @@ public class AuthGrantCheckService(
                 grants = OrderByCascadingRule(grants);
                 foreach (var ag in grants)
                 {
+                    if (isSaveEditing && ag is { Flag: true, To: AuthGrantTo.All or AuthGrantTo.AllMembers })
+                    {
+                        continue; //如果是允许所有人/所有会员编辑存档，则无视
+                    }
                     bool match =
                         ag.To == AuthGrantTo.All
                         || ag.To == AuthGrantTo.AllMembers && isMember
