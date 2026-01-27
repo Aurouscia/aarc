@@ -271,6 +271,7 @@ onMounted(async()=>{
                 注意核对
             </div>
             <button v-show="jsonContent" class="danger" @click="commitReplaceJson">替换数据</button>
+            <a href="http://wiki.jowei19.com/#/w/RMP-zhuan-AARC-zhuan-huan-qi">将rmp存档转换为aarc存档</a>
         </div>
         <div v-show="dangerZone" class="dangerZone">
             <div class="dangerOpName">删除存档</div>

@@ -86,11 +86,14 @@ function userSelectSelected(u?:UserDtoSimple){
     newAg.value.toId = u.id
     nameMapStore.appendToMap('userNameMap', u.id, u.name)
 }
-watch(()=>newAg.value.to, (to) => {
-    if(to == AuthGrantTo.User){
+// 修改 watch 部分
+watch(() => newAg.value.to, (to) => {
+    if (to == AuthGrantTo.User) {
         userSelectShow.value = true
-    }else{
+        newAg.value.toId = 0  // 重置用户ID
+    } else {
         newAg.value.toId = 0
+        userSelectShow.value = false
     }
 })
 const newAgToName = computed(() => {
@@ -100,15 +103,24 @@ const newAgToName = computed(() => {
         return nameMapStore.userNameMap.get(newAg.value.toId)
     }
 })
-async function add(){
-    if(props.onId == 0){
+async function add() {
+    if (props.onId == 0) {
         newAg.value.userId = userInfoStore.userInfo.id
     }
     const success = await apiStore.authGrant.create(newAg.value)
-    if(success){
+    if (success) {
         await load()
-        showPop('新增成功','success')
+        showPop('新增成功', 'success')
         wantAdd.value = false
+        // 重置 newAg 对象
+        newAg.value = {
+            flag: true,
+            to: AuthGrantTo.All,
+            on: props.on,
+            onId: props.onId,
+            type: props.type,
+            toId: 0
+        }
     }
 }
 async function load() {
