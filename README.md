@@ -31,7 +31,7 @@ http://aarc.jowei19.com
 
 ## 部署
 ### 前提条件
-1. （必需）后端开发环境（二选一），确保`dotnet sdk 9.0`可用（ide一般会为你安装）
+1. （必需）后端开发环境（二选一），确保`dotnet sdk 10.0`可用（ide一般会为你安装）
     - [Visual Studio](https://visualstudio.microsoft.com/zh-hans/) 尽可能新版+web应用开发负载
     - [JetBrains Rider](https://www.jetbrains.com/zh-cn/rider/) 尽可能新版
 2. （必需）[node客户端](https://nodejs.org/en) 尽可能新版，并确认命令行中有npm命令可用
@@ -63,7 +63,7 @@ http://aarc.jowei19.com
 7. 停止调试，选择导出位置和方式
     - vs：点击顶部栏`生成-发布`
     - rider：资源管理器-右键AARC项目-发布
-8. windows服务器上安装`.net9.0 hosting bundle`（dotnet官网可以下载到）
+8. windows服务器上安装`.net10.0 hosting bundle`（dotnet官网可以下载到）
 9. 把导出的程序移动到服务器上(建议使用webDeploy，也可以直接用远程桌面的复制粘贴)，并给予Users用户组该文件夹的控制权限，用IIS新建网站并指向该文件夹
     - 第一次移动后需要手动放入`/Data`中的数据库(.db文件)
     - 后续注意不要把数据库覆盖了，定期保存备份
