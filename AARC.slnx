@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="AARC-Backend/AARC.csproj" />
+  <Project Path="AARC.Diff/AARC.Diff.csproj" />
+</Solution>
