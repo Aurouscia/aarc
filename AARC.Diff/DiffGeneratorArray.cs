@@ -30,10 +30,11 @@ internal static class DiffGeneratorArray
         else
         {
             JsonArray oldArrNode = [];
-            JsonArray newArrNode = [];
+            JsonArray newArrNode = []; 
             DiffUtils.EnsureValidShortArray(oldArr, path, oldArrNode);
-            DiffUtils.EnsureValidShortArray(newArr, path, newArrNode);
-            DiffUtils.WriteOldNewNode(oldArrNode, newArrNode, path, writeTo);
+            DiffUtils.EnsureValidShortArray(newArr, path, newArrNode); 
+            if(!DiffUtils.DeepEquals(oldArr, newArr))
+                DiffUtils.WriteOldNewNode(oldArrNode, newArrNode, path, writeTo);
         }
     }
 
