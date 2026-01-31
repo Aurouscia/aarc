@@ -1,8 +1,11 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace AARC.Models.DbModels.Identities;
 
 /// <summary>
 /// 授权
 /// </summary>
+[Index(nameof(OnId))]
 public class AuthGrant : IDbModel, IPrioritizable
 {
     public int Id { get; set; }

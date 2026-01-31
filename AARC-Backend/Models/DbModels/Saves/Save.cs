@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using AARC.Models.DbModels.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace AARC.Models.DbModels.Saves
 {
+    [Index(nameof(OwnerUserId))]
     public class Save : IDbModel, IPrioritizable, IOwnable
     {
         public int Id { get; set; }
