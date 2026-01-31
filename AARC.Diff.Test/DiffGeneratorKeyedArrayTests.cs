@@ -3,10 +3,8 @@ using System.Text.Json.Nodes;
 
 namespace AARC.Diff.Test;
 
-public class DiffGeneratorArrayTests
+public class DiffGeneratorKeyedArrayTests
 {
-    #region KeyedArray Tests
-
     [Fact]
     public void Diff_KeyedArray_ElementAdded_RecordsAdd()
     {
@@ -409,6 +407,4 @@ public class DiffGeneratorArrayTests
         Assert.NotNull(usersDiff["replace"]);
         Assert.NotNull(itemsDiff["replace"]);
     }
-
-    #endregion
 }
