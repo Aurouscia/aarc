@@ -18,6 +18,7 @@ import { AuthGrantOn, AuthGrantTypeOfSave } from '@/app/com/apiGenerated';
 import SwitchingTabs from '@/components/common/SwitchingTabs.vue';
 import SaveAvatar from '../components/SaveAvatar.vue';
 import { useSavesRoutesJump } from './routes/routesJump';
+import SaveBackups from '../components/SaveBackups.vue';
 
 const saveList = ref<WithIntroShow<SaveDto>[]>()
 const api = useApiStore();
@@ -165,6 +166,7 @@ async function downloadJson(){
 }
 
 const authGrantSb = useTemplateRef('authGrantSb')
+const backupSb = useTemplateRef('backupSb')
 const { setEnteredFrom } = useEnteredCanvasFromStore()
 onMounted(async()=>{
     setEnteredFrom()
@@ -248,7 +250,13 @@ onMounted(async()=>{
         <tr v-if="!isCreatingSave">
             <td>记录</td>
             <td>
-                <RouterLink :to="saveDiffsRoute(editingSave.id)" target="_blank" class="confirm">查看访客编辑记录</RouterLink>
+                <RouterLink :to="saveDiffsRoute(editingSave.id)" target="_blank" class="confirm">前往访客编辑记录页</RouterLink>
+            </td>
+        </tr>
+        <tr v-if="!isCreatingSave">
+            <td>备份</td>
+            <td>
+                <button class="lite confirm" @click="backupSb?.extend">打开备份列表</button>
             </td>
         </tr>
         <tr>
@@ -298,6 +306,12 @@ onMounted(async()=>{
         <div class="smallNote globalAgNote">
             注：可以在“顶部栏-用户-个人授权管理“中配置自己的全局默认设置，此处的设置仅对当前存档有效（判断时优先于全局设置）
         </div>
+    </template>
+</SideBar>
+<SideBar ref="backupSb">
+    <h1>备份列表</h1>
+    <template v-if="editingSave?.id">
+        <SaveBackups :save-id="editingSave.id"></SaveBackups>
     </template>
 </SideBar>
 </template>
