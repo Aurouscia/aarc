@@ -167,6 +167,29 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
         }
     }
     //#endregion
+    
+    //#region 转移站名位置（负责人 binshu2233）
+    function transferNameInCluster(deletedPoint:ControlPoint){
+        //转移站名
+        if (!deletedPoint.name){
+            return
+        }
+        //有站名存在于被删掉的点
+        let cluster = staClusterStore.getStaClusterById(deletedPoint.id)
+        if (cluster.length<=1){
+            return
+        }
+        //是真正的车站团
+        let newCluster = cluster.filter(x=>x.id!=deletedPoint.id)
+        if (newCluster.every(x=>!x.name))
+        {
+            //被删除的站是唯一站名
+            newCluster[0].name = deletedPoint.name
+            newCluster[0].nameS = deletedPoint.nameS
+            newCluster[0].nameP = optimizedNamePos(newCluster[0].id)
+        }
+    }
+    //#endregion
 
     function clearItems(){
         targetPtId.value = undefined
@@ -180,6 +203,7 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
         startEditing, endEditing, toggleEditing, applyName,
         nameInputFocusHandler, getEditorDivEffectiveHeight,
         controlPointOptionsPanelOpen,
-        optimizedNamePos, optimizeAllNamePos, clearItems 
+        optimizedNamePos, optimizeAllNamePos, clearItems ,
+        transferNameInCluster
     }
 })

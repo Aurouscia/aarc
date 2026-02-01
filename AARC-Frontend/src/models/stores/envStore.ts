@@ -711,6 +711,7 @@ export const useEnvStore = defineStore('env', ()=>{
 
     function delActivePt(rerenderAfterDone?:boolean, onlyDelNameIfSelectedName?:boolean){
         if(activePt.value){
+            nameEditStore.transferNameInCluster(activePt.value)
             nameEditStore.endEditing()
             setOpsPos(false)
             if(onlyDelNameIfSelectedName && activePtType.value === 'name'){
@@ -745,6 +746,10 @@ export const useEnvStore = defineStore('env', ()=>{
                         if(belongLines.length<=1){
                             const ptIdx = saveStore.save.points.findIndex(x=>x.id == pt)
                             if(ptIdx>=0){
+                                let ptItem=saveStore.getPtById(pt)
+                                if (ptItem){
+                                    nameEditStore.transferNameInCluster(ptItem)
+                                }
                                 saveStore.deletedPoint(pt)
                                 saveStore.save.points.splice(ptIdx, 1)
                             }
