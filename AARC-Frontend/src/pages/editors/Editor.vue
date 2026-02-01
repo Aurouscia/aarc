@@ -29,6 +29,7 @@ import DontUseWeirdBrowser from './components/DontUseWeirdBrowser.vue';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 import { useIdentitiesRoutesJump } from '../identities/routes/routesJump';
+import { coordRound } from '@/utils/coordUtils/coordRound';
 
 const heartbeatIntervalSecs = 3 * 60 // 每3分钟心跳一次
 
@@ -152,6 +153,12 @@ async function saveData(mustBackup?:boolean){
     }
     const staCount = saveStore.getStaCount()
     const lineCount = saveStore.getLineCount()
+
+    // “自动站名位置”添加时未截断小数点，这里亡羊补牢一下，保存前截断所有站名位置
+    saveStore.save?.points.forEach(pt=>{
+        if(pt.nameP)
+            coordRound(pt.nameP)
+    })
 
     let resp:boolean|undefined = false
     let blob:Blob|'notSupported';

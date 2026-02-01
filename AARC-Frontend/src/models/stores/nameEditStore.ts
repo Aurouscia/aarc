@@ -9,6 +9,8 @@ import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import {useFormalizedLineStore} from "./saveDerived/formalizedLineStore.ts";
 import { ControlPoint } from "../save.ts";
 import { sqrt2 } from "@/utils/consts.ts";
+import { coordRound } from "@/utils/coordUtils/coordRound.ts";
+
 export const useNameEditStore = defineStore('nameEdit', ()=>{
     const cs = useConfigStore()
     const saveStore = useSaveStore()
@@ -138,8 +140,13 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
                 })
         return adjacentPtsPos
     }
+    function optimizedNamePos(ptId: number): Coord{
+        const res = optimizedNamePosUnrounded(ptId)
+        coordRound(res)
+        return res
+    }
     //用 pt  dir决定用哪个组
-    function optimizedNamePos(ptId: number): Coord {
+    function optimizedNamePosUnrounded(ptId: number): Coord {
         const pt = saveStore.getPtById(ptId)
         const ptSize = staClusterStore.getMaxSizePtWithinCluster(ptId, 'ptSize')
         const dist = cs.config.snapOctaClingPtNameDist * ptSize
