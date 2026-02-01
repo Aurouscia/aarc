@@ -8,8 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO.Compression;
 using AARC.Models.DbModels.Enums;
 using AARC.Models.DbModels.Enums.AuthGrantTypes;
+using AARC.Models.DbModels.Saves;
 using AARC.Services.App.AuthGrants;
 using AARC.Services.App.HttpAuthInfo;
+using AARC.Services.Saves;
 using AARC.Utils;
 
 namespace AARC.Controllers.Saves
@@ -20,6 +22,7 @@ namespace AARC.Controllers.Saves
     public class SaveController(
         SaveRepo saveRepo,
         UserRepo userRepo,
+        SaveDiffService saveDiffService,
         SaveMiniatureFileService saveMiniatureFileService,
         SaveBackupFileService saveBackupFileService,
         AuthGrantCheckService authGrantCheckService,
@@ -212,14 +215,26 @@ namespace AARC.Controllers.Saves
             return res;
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public List<SaveDiffDto> GetDiffs(int saveId, int userId, int skip, int take)
+        {
+            return saveDiffService.GetDiffs(saveId, userId, skip, take);
+        }
+        
         [NonAction]
-        private void EnsureOwner(int saveId)
+        private bool IsOwner(int saveId)
         {
             var ownerId = saveRepo.WithId(saveId).Select(x => x.OwnerUserId).FirstOrDefault();
             var userInfo = httpUserInfoService.UserInfo.Value;
             if (userInfo.Id == 0)
                 throw new RqEx("请登录");
-            if (userInfo.Id != ownerId && !userInfo.IsAdmin)
+            return ownerId == userInfo.Id;
+        }
+        [NonAction]
+        private void EnsureOwner(int saveId)
+        {
+            if(!IsOwner(saveId))
                 throw new RqEx("非本存档所有者");
         }
         [NonAction]
@@ -280,11 +295,23 @@ namespace AARC.Controllers.Saves
         [NonAction]
         private bool SaveDataToDbAndBackup(int id, string data, int staCount, int lineCount, bool enforce)
         {
-            if(enforce) // 强制：只有所有者能进行
-                EnsureOwner(id); 
-            else // 不是强制：需要有当前画布的编辑权限
+            bool isOwner = IsOwner(id);
+            if (isOwner)
+            {
+                // 是所有者：可自由决定是不是enforce，且更新无需记录Diff
+                saveRepo.UpdateData(id, data, staCount, lineCount, enforce);
+            }
+            else
+            {
+                if(enforce) // 非所有者：enforce抛错
+                    throw new RqEx("非本存档所有者");
+                // 非所有者：需要有当前画布的编辑权限
                 authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.Edit, false);
-            saveRepo.UpdateData(id, data, staCount, lineCount, enforce);
+                // 非所有者：更新的同时记录Diff
+                saveRepo.UpdateDataAndDiff(id, data, staCount, lineCount);
+            }
+            
+            // 更新当前用户的“上次活跃”
             userRepo.UpdateCurrentUserLastActive();
             try {
                 saveBackupFileService.Write(data, id);

@@ -5,6 +5,7 @@ using AARC.Models.DbModels.Identities;
 using AARC.Models.DbModels.Saves;
 using AARC.Services.App.HttpAuthInfo;
 using AARC.Services.App.Mapping;
+using AARC.Services.Saves;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ namespace AARC.Repos.Saves
 {
     public class SaveRepo(
         AarcContext context,
+        SaveDiffService saveDiffService,
         HttpUserIdProvider httpUserIdProvider,
         HttpUserInfoService httpUserInfoService,
         IMapper mapper
@@ -168,11 +170,6 @@ namespace AARC.Repos.Saves
                 Heartbeat(id, HeartbeatType.Initialization, true); 
             else // 非强制：使用续约心跳，需要“上次心跳用户是自己”才行（用于编辑器内保存）
                 Heartbeat(id, HeartbeatType.Renewal);
-            var originalLength = Existing
-                .Where(x => x.Id == id && x.Data != null)
-                .Select(x => x.Data!.Length)
-                .FirstOrDefault();
-
             var updated = Existing
                 .Where(x => x.Id == id)
                 .ExecuteUpdate(spc => spc
@@ -182,6 +179,19 @@ namespace AARC.Repos.Saves
                     .SetProperty(x => x.LineCount, lineCount));
             if (updated == 0)
                 throw new RqEx("找不到该存档");
+        }
+        public void UpdateDataAndDiff(int id, string data, int staCount, int lineCount)
+        {
+            var uid = httpUserIdProvider.RequireUserId();
+            Heartbeat(id, HeartbeatType.Renewal);
+            var model = Get(id) ?? throw new RqEx("找不到指定存档");
+            var dataOriginal = model.Data ?? "{}"; 
+            saveDiffService.CreateDiff(dataOriginal, data, id, uid, false);
+            model.Data = data;
+            model.StaCount = staCount;
+            model.LineCount = lineCount;
+            Update(model, true, false);
+            Context.SaveChanges(); // 最后统一SaveChanges，保证原子性
         }
         public SaveDto LoadInfo(int id)
         {

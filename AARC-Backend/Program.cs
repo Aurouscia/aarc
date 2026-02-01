@@ -4,6 +4,7 @@ using AARC.Repos;
 using AARC.Services.App;
 using AARC.Services.App.Logging;
 using AARC.Services.Files;
+using AARC.Services.Saves;
 using AARC.Utils;
 using Serilog;
 
@@ -22,7 +23,9 @@ try
     builder.Services.AddRepoServices();
     //添加文件存储服务
     builder.Services.AddFilesServices();
-
+    //添加存档处理服务
+    builder.Services.AddSavesServices();
+    
     var app = builder.Build();
     if (app.Environment.IsDevelopment())
     {
