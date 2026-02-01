@@ -136,7 +136,7 @@ async function commitReplaceJson(){
     const data = jsonContent.value
     const staCount = jsonSaveStaCount.value || 0
     const lineCount = jsonSaveLineCount.value || 0
-    const resp = await api.save.updateData(id, true, data, staCount, lineCount)
+    const resp = await api.save.updateData(id, true, data, staCount, lineCount, false)
     if(resp){
         showPop('替换成功\n下次保存更新略缩图', 'success')
         resetDangerZone()
