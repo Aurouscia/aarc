@@ -168,6 +168,24 @@ namespace AARC.Controllers.Saves
             saveRepo.HeartbeatRelease(id);
             return true;
         }
+        [HttpGet]
+        public List<SaveBackupInfo> GetBackupList(int id)
+        {
+            authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.View, true);
+            return saveBackupFileService.GetBackupList(id);
+        }
+
+        [HttpGet]
+        public IActionResult DownloadBackup(int id, string fileName)
+        {
+            authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.View, true);
+            var (stream, actualFileName, fileSize) = saveBackupFileService.GetBackupFile(id, fileName);
+            if (stream is null)
+            {
+                throw new RqEx("文件不存在");
+            }
+            return File(stream, "application/octet-stream", actualFileName);
+        }
 
         [HttpGet]
         [AllowAnonymous]

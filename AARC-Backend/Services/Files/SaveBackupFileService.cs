@@ -72,5 +72,52 @@ namespace AARC.Services.Files
             }
             return deleteCount;
         }
+        public List<SaveBackupInfo> GetBackupList(int cvsId)
+        {
+            var backups = new List<SaveBackupInfo>();
+            var cvsDirPath = Path.Combine(_backupFileBaseDirAbsolute, cvsId.ToString());
+            var cvsDir = new DirectoryInfo(cvsDirPath);
+            
+            if (!cvsDir.Exists)
+                return backups;
+            
+            var zips = cvsDir.GetFiles("*.zip").OrderByDescending(f => f.CreationTime);
+            foreach (var file in zips)
+            {
+                backups.Add(new SaveBackupInfo
+                {
+                    FileName = file.Name,
+                    FileSize = file.Length,
+                    CreateTime = file.CreationTime.ToString("yyyy-MM-dd HH:mm")
+                });
+            }
+
+            return backups;
+        }
+
+        public (Stream? stream, string? fileName, long? fileSize) GetBackupFile(int cvsId, string fileName)
+        {
+            var cvsDirPath = Path.Combine(_backupFileBaseDirAbsolute, cvsId.ToString());
+            var filePath = Path.Combine(cvsDirPath, fileName);
+            
+            // 安全检查：确保文件路径在备份目录内，防止目录遍历攻击
+            var fullPath = Path.GetFullPath(filePath);
+            var fullBaseDir = Path.GetFullPath(cvsDirPath);
+            if (!fullPath.StartsWith(fullBaseDir, StringComparison.OrdinalIgnoreCase) || !File.Exists(filePath))
+            {
+                return (null, null, null);
+            }
+
+            var fileInfo = new FileInfo(filePath);
+            var stream = File.OpenRead(filePath);
+            return (stream, fileInfo.Name, fileInfo.Length);
+        }
+    }
+    
+    public class SaveBackupInfo
+    {
+        public string? FileName { get; set; }
+        public long FileSize { get; set; }
+        public string? CreateTime  { get; set; }
     }
 }
