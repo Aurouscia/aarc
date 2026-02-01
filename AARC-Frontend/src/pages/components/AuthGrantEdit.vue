@@ -67,13 +67,17 @@ async function del(ag:AuthGrantDisplay){
 }
 
 const wantAdd = ref(false)
-const newAg = ref<AuthGrant>({
-    flag: true,
-    to: AuthGrantTo.All,
-    on: props.on,
-    onId: props.onId,
-    type: props.type,
-})
+const newAg = ref<AuthGrant>(createNewAg())
+function createNewAg(): AuthGrant{
+    return {
+        flag: true,
+        to: AuthGrantTo.All,
+        on: props.on,
+        onId: props.onId,
+        type: props.type,
+    }
+}
+
 const userSelectShow = ref(false)
 function userSelectSelected(u?:UserDtoSimple){
     userSelectShow.value = false
@@ -106,6 +110,7 @@ async function add(){
     }
     const success = await apiStore.authGrant.create(newAg.value)
     if(success){
+        newAg.value = createNewAg()
         await load()
         showPop('新增成功','success')
         wantAdd.value = false
