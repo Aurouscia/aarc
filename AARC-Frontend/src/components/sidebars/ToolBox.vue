@@ -11,6 +11,7 @@ import Prompt from '../common/Prompt.vue';
 import { searchMarkForEmptyName, useNameSearchStore } from '@/models/stores/nameSearchStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
+import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 
 const envStore = useEnvStore()
 const pointLinkStore = usePointLinkStore()
@@ -20,6 +21,8 @@ const stashStore = useStashStore()
 const nameSearchStore = useNameSearchStore()
 const { showPop } = useUniqueComponentsStore()
 const { duplicateNameDistThrs } = storeToRefs(useEditorLocalConfigStore())
+const { visitorMode } = storeToRefs(useMainCvsDispatcher())
+const mustBackup = defineModel<boolean>()
 
 function fd(){
     sidebar.value?.fold()
@@ -104,9 +107,17 @@ defineExpose({
             当“不确定会不会改坏”时，可以暂存当前画布的样子，如果修改后后悔了，可一键还原<br/>
             请注意：刷新/退出后，暂存就会丢失！
         </div>
-        <div class="smallNoteVital">未经检验的新功能，请谨慎使用</div>
         <button :class="{minor: stashStore.thawable}" @click="stashStore.freeze()">暂存当前画布状态</button>
         <button v-if="stashStore.thawable" @click="stashStore.thaw()">还原为暂存的状态</button>
+    </div>
+    <div class="toolItem" v-if="!visitorMode">
+        <div class="smallNote">
+            使本次保存强制生成备份<br/>
+            建议在公共存档“即将交给他人”前备份一次
+        </div>
+        <div style="display: flex;align-items: center;color:#999">
+            <input v-model="mustBackup" type="checkbox"/>请勾选
+        </div>
     </div>
     <div class="toolItem">
         <div class="smallNote">站名相关功能</div>

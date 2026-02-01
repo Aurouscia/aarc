@@ -97,9 +97,10 @@ namespace AARC.Controllers.Saves
             int id, bool enforce,
             [FromForm]string data,
             [FromForm]int staCount,
-            [FromForm]int lineCount)
+            [FromForm]int lineCount,
+            [FromForm]bool mustBackup)
         {
-            return SaveDataToDbAndBackup(id, data, staCount, lineCount, enforce);
+            return SaveDataToDbAndBackup(id, data, staCount, lineCount, enforce, mustBackup);
         }
         [HttpPost]
         [UserCheck]
@@ -107,13 +108,14 @@ namespace AARC.Controllers.Saves
             int id,
             IFormFile dataCompressed,
             [FromForm]int staCount,
-            [FromForm]int lineCount)
+            [FromForm]int lineCount,
+            [FromForm]bool mustBackup)
         {
             using var dataStream = dataCompressed.OpenReadStream();
             using var gzipStream = new GZipStream(dataStream, CompressionMode.Decompress);
             using var streamReader = new StreamReader(gzipStream);
             var data = streamReader.ReadToEnd();
-            return SaveDataToDbAndBackup(id, data, staCount, lineCount, false);
+            return SaveDataToDbAndBackup(id, data, staCount, lineCount, false, mustBackup);
         }
         [HttpPost]
         [UserCheck]

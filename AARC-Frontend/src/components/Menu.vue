@@ -83,16 +83,19 @@ function openSidebarOf(name:SidebarNames){
         toolBox.value?.fold()
 }
 
+const mustBackup = ref(false)
 const { goBackToWhereWeEntered } = useEnteredCanvasFromStore()
 function saveData(){
-    if(saveBtnMode.value=='save')
-        emit('saveData')
+    if(saveBtnMode.value=='save'){
+        emit('saveData', mustBackup.value)
+        mustBackup.value = false // 复位
+    }
     else if(saveBtnMode.value=='leave'){
         goBackToWhereWeEntered()
     }
 }
 const emit = defineEmits<{
-    (e:'saveData'):void
+    (e:'saveData', mustBackup:boolean):void
 }>()
 
 const searchShortcut = new AuShortcutListener(nameSearchStore.toggleShow, {code: 'KeyF', ctrl: true})
@@ -119,7 +122,7 @@ onUnmounted(()=>{
     </div>
     <Lines ref="lines"></Lines>
     <Terrains ref="terrains"></Terrains>
-    <ToolBox ref="toolBox"></ToolBox>
+    <ToolBox ref="toolBox" v-model="mustBackup"></ToolBox>
     <SizeEdit ref="sizeEdit"></SizeEdit>
     <ExportImage ref="exportImage"></ExportImage>
     <Configs ref="configs"></Configs>

@@ -135,7 +135,7 @@ const preventLeaveStore = usePreventLeavingUnsavedStore()
 const { preventLeaving, releasePreventLeaving } = preventLeaveStore
 const { showUnsavedWarning, preventLeavingDisabled } = storeToRefs(preventLeaveStore)
 let lastSavedTime = 0
-async function saveData(){
+async function saveData(mustBackup?:boolean){
     if(lastSavedTime + 1000 > Date.now()){
         console.warn('保存过于频繁（1秒内），已忽略本次保存请求')
         return
@@ -163,12 +163,12 @@ async function saveData(){
         console.warn('存档数据压缩失败，使用原版保存机制')
     }
     if(blob instanceof Blob){
-        resp = await api.save.updateDataCompressed(saveIdNum.value, {fileName:'data', data:blob}, staCount, lineCount)
+        resp = await api.save.updateDataCompressed(saveIdNum.value, {fileName:'data', data:blob}, staCount, lineCount, mustBackup)
     }
     else{
         //若blob不是Blob（浏览器不支持压缩或出了问题）则直接明文保存
         const data = JSON.stringify(saveStore.save??{})
-        resp = await api.save.updateData(saveIdNum.value, false, data, staCount, lineCount)
+        resp = await api.save.updateData(saveIdNum.value, false, data, staCount, lineCount, mustBackup)
     }
     if(resp){
         releasePreventLeaving()
