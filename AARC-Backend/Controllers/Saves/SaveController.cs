@@ -6,6 +6,7 @@ using AARC.Services.Files;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IO.Compression;
+using AARC.Models.Db.Context;
 using AARC.Models.DbModels.Enums;
 using AARC.Models.DbModels.Enums.AuthGrantTypes;
 using AARC.Models.DbModels.Saves;
@@ -22,6 +23,7 @@ namespace AARC.Controllers.Saves
     public class SaveController(
         SaveRepo saveRepo,
         UserRepo userRepo,
+        AarcContext context,
         SaveDiffService saveDiffService,
         SaveMiniatureFileService saveMiniatureFileService,
         SaveBackupFileService saveBackupFileService,
@@ -176,15 +178,41 @@ namespace AARC.Controllers.Saves
         }
 
         [HttpGet]
-        public IActionResult DownloadBackup(int id, string fileName)
+        public FileStreamResult DownloadBackup(int id, string fileName)
         {
             authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.View, true);
-            var (stream, actualFileName, fileSize) = saveBackupFileService.GetBackupFile(id, fileName);
+            var (stream, actualFileName, _) = saveBackupFileService.GetBackupFile(id, fileName);
             if (stream is null)
             {
                 throw new RqEx("文件不存在");
             }
             return File(stream, "application/octet-stream", actualFileName);
+        }
+
+        [HttpPost]
+        public bool ApplyBackup(int id, string fileName, bool makeABackupBeforeApply)
+        {
+            EnsureOwner(id);
+            using var t = context.Database.BeginTransaction();
+            try
+            {
+                string? originalData = null;
+                if (makeABackupBeforeApply)
+                {
+                    originalData = saveRepo.LoadData(id, true);
+                }
+                var backupJson = saveBackupFileService.GetBackupFileAndDecompress(id, fileName);
+                saveRepo.UpdateData(id, backupJson, 0, 0, true);
+                if(originalData is not null)
+                    saveBackupFileService.Write(originalData, id, true);
+                t.Commit();
+            }
+            catch
+            {
+                t.Rollback();
+                throw;
+            }
+            return true;
         }
 
         [HttpGet]
@@ -311,7 +339,8 @@ namespace AARC.Controllers.Saves
             }
         }
         [NonAction]
-        private bool SaveDataToDbAndBackup(int id, string data, int staCount, int lineCount, bool enforce)
+        private bool SaveDataToDbAndBackup(
+            int id, string data, int staCount, int lineCount, bool enforce, bool mustBackup = false)
         {
             bool isOwner = IsOwner(id);
             if (isOwner)
@@ -332,7 +361,7 @@ namespace AARC.Controllers.Saves
             // 更新当前用户的“上次活跃”
             userRepo.UpdateCurrentUserLastActive();
             try {
-                saveBackupFileService.Write(data, id);
+                saveBackupFileService.Write(data, id, mustBackup);
             }
             catch(Exception ex)
             { 

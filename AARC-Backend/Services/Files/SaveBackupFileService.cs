@@ -1,15 +1,17 @@
 ﻿using System.IO.Compression;
+using System.Text.Json;
 
 namespace AARC.Services.Files
 {
-    public class SaveBackupFileService(IWebHostEnvironment env)
+    public class SaveBackupFileService(
+        IWebHostEnvironment env, ILogger<SaveBackupFileService> logger)
     {
         public const string backupFileBaseDir = "Data/Backups";
         public const int backupFileMaxCountPerId = 8;
         public const int backupFileCreateThresholdMins = 20;
         private readonly string _backupFileBaseDirAbsolute
             = Path.Combine(env.ContentRootPath, backupFileBaseDir);
-        public void Write(string data, int cvsId)
+        public void Write(string data, int cvsId, bool mustBackup)
         {
             var baseDir = new DirectoryInfo(_backupFileBaseDirAbsolute);
             if (!baseDir.Exists)
@@ -26,9 +28,11 @@ namespace AARC.Services.Files
                 if(f.CreationTime > latestSave)
                     latestSave = f.CreationTime;
             }
-            if (latestSave.AddMinutes(backupFileCreateThresholdMins) > DateTime.Now)
+
+            bool lastBackupVeryClose = latestSave.AddMinutes(backupFileCreateThresholdMins) > DateTime.Now;
+            if (!mustBackup && lastBackupVeryClose)
                 return;
-            string fileNameBase = DateTime.Now.ToString("yyyy-MMdd-HHmm");
+            string fileNameBase = DateTime.Now.ToString("yyyy-MMdd-HHmm-ss-fff");
             string fileNameJson = Path.ChangeExtension(fileNameBase, "json");
             string fileNameZip = Path.ChangeExtension(fileNameBase, "zip");
             string filePathZip = Path.Combine(cvsDirPath, fileNameZip);
@@ -111,6 +115,28 @@ namespace AARC.Services.Files
             var fileInfo = new FileInfo(filePath);
             var stream = File.OpenRead(filePath);
             return (stream, fileInfo.Name, fileInfo.Length);
+        }
+
+        public string GetBackupFileAndDecompress(int cvsId, string fileName)
+        {
+            var (stream, _, _) = GetBackupFile(cvsId, fileName);
+            if (stream == null)
+                throw new RqEx("找不到该备份");
+            try
+            {
+                using ZipArchive zip = new(stream, ZipArchiveMode.Read);
+                var zipEntry = zip.Entries.FirstOrDefault();
+                using var zipEntryStream = zipEntry!.Open();
+                using var reader = new StreamReader(zipEntryStream);
+                var json = reader.ReadToEnd();
+                _ = JsonDocument.Parse(json); // 验证json格式
+                return json;
+            }
+            catch(Exception e)
+            {
+                logger.LogError(e, "解压/验证备份文件失败");
+                throw new RqEx("备份文件疑似损坏");
+            }
         }
     }
     
