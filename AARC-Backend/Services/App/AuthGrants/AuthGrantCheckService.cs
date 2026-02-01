@@ -66,10 +66,6 @@ public class AuthGrantCheckService(
                 grants = OrderByCascadingRule(grants);
                 foreach (var ag in grants)
                 {
-                    if (isSaveEditing && ag is { Flag: true, To: AuthGrantTo.All or AuthGrantTo.AllMembers })
-                    {
-                        continue; //如果是允许所有人/所有会员编辑存档，则无视
-                    }
                     bool match =
                         ag.To == AuthGrantTo.All
                         || ag.To == AuthGrantTo.AllMembers && isMember

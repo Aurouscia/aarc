@@ -1,4 +1,6 @@
 ﻿using AARC.Models.Db.Context;
+using AARC.Models.DbModels.Enums.AuthGrantTypes;
+using AARC.Models.DbModels.Identities;
 using AARC.Repos.Identities;
 using AARC.Services.App.Config;
 using AARC.Services.Files;
@@ -43,6 +45,19 @@ namespace AARC.Controllers.System
             masterKeyChecker.Check(masterKey);
             context.Database.Migrate();
             return "已更新数据库到最新迁移";
+        }
+
+        [HttpPost]
+        public string RemoveAllPublicSaveEditAuthGrants([FromForm] string masterKey)
+        {
+            masterKeyChecker.Check(masterKey);
+            var deleted = context.AuthGrants
+                .Where(x => x.On == AuthGrantOn.Save)
+                .Where(x => x.Type == (byte)AuthGrantTypeOfSave.Edit)
+                .Where(x => x.Flag == true)
+                .Where(x => x.To == AuthGrantTo.All ||  x.To == AuthGrantTo.AllMembers)
+                .ExecuteDelete();
+            return $"已删除 {deleted} 条公共编辑授权";
         }
     }
 }

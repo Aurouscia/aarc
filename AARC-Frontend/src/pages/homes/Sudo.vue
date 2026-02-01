@@ -24,6 +24,12 @@ async function migrateDb() {
     migrateDbResMsg.value = undefined
     migrateDbResMsg.value = await api.sudo.migrateDb(masterKey.value)
 }
+
+const removeAllPublicSaveEditAuthGrantsMsg = ref<string>()
+async function removeAllPublicSaveEditAuthGrants() {
+    removeAllPublicSaveEditAuthGrantsMsg.value = undefined
+    removeAllPublicSaveEditAuthGrantsMsg.value = await api.sudo.removeAllPublicSaveEditAuthGrants(masterKey.value)
+}
 </script>
 
 <template>
@@ -40,6 +46,10 @@ async function migrateDb() {
         <button :class="mode=='migrateDb'?'confirm':'minor'"
             @click="mode='migrateDb';migrateDbResMsg = undefined">
             更新数据库架构
+        </button>
+        <button :class="mode=='removeAllPublicSaveEditAuthGrants'?'confirm':'minor'"
+            @click="mode='removeAllPublicSaveEditAuthGrants';removeAllPublicSaveEditAuthGrantsMsg = undefined">
+            移除所有“存档公共编辑”授权
         </button>
     </div>
     <div class="inputs"> 
@@ -58,6 +68,11 @@ async function migrateDb() {
             <input v-model="masterKey" placeholder="masterKey">
             <button v-if="!migrateDbResMsg" @click="migrateDb" class="ok">更新</button>
             <div v-else>{{ migrateDbResMsg }}</div>
+        </template>
+        <template v-if="mode=='removeAllPublicSaveEditAuthGrants'">
+            <input v-model="masterKey" placeholder="masterKey">
+            <button v-if="!removeAllPublicSaveEditAuthGrantsMsg" @click="removeAllPublicSaveEditAuthGrants" class="ok">执行</button>
+            <div v-else>{{ removeAllPublicSaveEditAuthGrantsMsg }}</div>
         </template>
     </div>
 </div>
