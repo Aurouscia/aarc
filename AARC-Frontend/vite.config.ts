@@ -36,6 +36,10 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: env.VITE_DevProxyTarget,
           changeOrigin: true,
+        },
+        '/sudo': {
+          target: env.VITE_DevProxyTarget,
+          changeOrigin: true,
         }
       }
     },
