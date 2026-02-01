@@ -18,7 +18,8 @@ namespace AARC.Repos.Saves
         SaveDiffService saveDiffService,
         HttpUserIdProvider httpUserIdProvider,
         HttpUserInfoService httpUserInfoService,
-        IMapper mapper
+        IMapper mapper,
+        ILogger<SaveRepo> logger
         ) : Repo<Save>(context)
     {
         // 心跳有效期10分钟，超过10分钟允许其他人进来
@@ -184,14 +185,25 @@ namespace AARC.Repos.Saves
         {
             var uid = httpUserIdProvider.RequireUserId();
             Heartbeat(id, HeartbeatType.Renewal);
-            var model = Get(id) ?? throw new RqEx("找不到指定存档");
-            var dataOriginal = model.Data ?? "{}"; 
-            saveDiffService.CreateDiff(dataOriginal, data, id, uid, false);
-            model.Data = data;
-            model.StaCount = staCount;
-            model.LineCount = lineCount;
-            Update(model, true, false);
-            Context.SaveChanges(); // 最后统一SaveChanges，保证原子性
+            using var t = Context.Database.BeginTransaction();
+            try
+            {
+                var model = Get(id) ?? throw new RqEx("找不到指定存档");
+                var dataOriginal = model.Data ?? "{}";
+                saveDiffService.CreateDiff(dataOriginal, data, id, uid, false);
+                model.Data = data;
+                model.StaCount = staCount;
+                model.LineCount = lineCount;
+                Update(model, true, false);
+                Context.SaveChanges();
+                t.Commit();
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex, "更新存档数据失败");
+                t.Rollback();
+                throw new RqEx("保存失败");
+            }
         }
         public SaveDto LoadInfo(int id)
         {
@@ -235,6 +247,10 @@ namespace AARC.Repos.Saves
             base.FakeRemove(id);
         }
         
+        /// <summary>
+        /// 本应用设计为单实例部署，所以心跳仅使用这里的锁即可，无需数据库锁
+        /// （如果要支持多实例部署，需要使用数据库锁，否则会出现并发问题）
+        /// </summary>
         private static Lock HeartbeatLock => new();
         public void Heartbeat(int id, HeartbeatType type, bool checkOnly = false)
         {
