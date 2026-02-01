@@ -6,6 +6,7 @@ import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { computed, onMounted, ref, watch } from 'vue';
 import UserSelect from './UserSelect.vue';
+import Prompt from '@/components/common/Prompt.vue';
 
 const props = defineProps<{
     on: AuthGrantOn,
@@ -104,7 +105,17 @@ const newAgToName = computed(() => {
         return nameMapStore.userNameMap.get(newAg.value.toId)
     }
 })
+
+const showAllowAllWarning = ref(false)
 async function add(){
+    if(isSaveEdit.value && newAg.value.to == AuthGrantTo.All && newAg.value.flag){
+        if(!showAllowAllWarning.value){
+            showAllowAllWarning.value = true
+            return
+        }else{
+            showAllowAllWarning.value = false
+        }
+    }
     if(props.onId == 0){
         newAg.value.userId = userInfoStore.userInfo.id
     }
@@ -139,7 +150,7 @@ onMounted(async() => {
 <template>
 <table class="fullWidth"><tbody>
     <tr v-for="ag,idx in listDisplay">
-        <td style="width: 90px;" :style="{color: ag.flagColor}">
+        <td style="width: 70px;" :style="{color: ag.flagColor}">
             {{ ag.flagText }}
         </td>
         <td>
@@ -156,8 +167,8 @@ onMounted(async() => {
     <tr v-if="wantAdd">
         <td>
             <select v-model="newAg.flag">
-                <option value="true">允许</option>
-                <option value="false">拒绝</option>
+                <option :value="true">允许</option>
+                <option :value="false">拒绝</option>
             </select>
         </td>
         <td>
@@ -188,10 +199,11 @@ onMounted(async() => {
         <td colspan="3" v-else-if="isSaveEdit">
             <div class="smallNoteVital about-save-edit">
                 <p>允许他人编辑存档：</p>
-                <p>1. 本功能为新功能，未经过大量使用检验，如不放心请暂时不要使用</p>
-                <p>2. 看到绿色的“可编辑”标识才能进入，如果添加授权设置后，被授权者依然未看到标识，请告诉他刷新页面</p>
-                <p>3. 请告诉你的协作者：<b>务必在离开页面前保存并退出编辑器</b>，把浏览器切到后台挂机时间太久（数分钟），会允许他人进入，导致先进入的人无法保存</p>
-                <p>4. 请告诉你的协作者：黄色的“占用中”状态时，点击“占用中”标识，可以刷新状态（检查他人是否退出）</p>
+                <p>1. 看到绿色的“可编辑”标识才能进入，如果添加授权设置后，被授权者依然未看到标识，请告诉他刷新页面</p>
+                <p>2. 请告诉你的协作者：<b>务必在离开页面前保存并退出编辑器</b>，把浏览器切到后台挂机时间太久（数分钟），会允许他人进入，导致先进入的人无法保存</p>
+                <p>3. 请告诉你的协作者：黄色的“占用中”状态时，点击“占用中”标识，可以刷新状态（检查他人是否退出）</p>
+                <p>4. <b>强烈建议</b>在你准备离开前的最后一次保存时，在工具栏勾选“强制生成备份”，以确保被他人破坏后能恢复</p>
+                <p>5. 如果遇到破坏存档的情况，请向管理员举报</p>
             </div>
         </td>
         <td colspan="3" v-else>
@@ -203,9 +215,20 @@ onMounted(async() => {
         </td>
     </tr>
 </tbody></table>
+<Prompt v-if="showAllowAllWarning" :close-btn="'我已理解其中风险'" :close-btn-delay="8" @close="add">
+    <p>允许所有人编辑存档：这包括未转为会员的游客身份用户</p>
+    <p>如果存档受到破坏，无法对破坏者进行任何遏止或处罚，因为注册新号并没有门槛</p>
+    <p>设置此项意味着你认为自己的存档毫无价值，只是玩玩而已</p>
+    <button class="cancel" @click="showAllowAllWarning=false" style="display: block;margin: 10px auto;">
+        算了吧
+    </button>
+</Prompt>
 </template>
 
 <style scoped lang="scss">
+select{
+    margin: 0px;
+}
 .ag-ops{
     text-align: right;
     width: 65px;
@@ -215,22 +238,23 @@ onMounted(async() => {
 }
 .ag-to-name{
     font-size: 14px;
-    max-width: 98px;
+    max-width: 90px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     color: #666;
+    margin: auto;
 }
 .about-save-edit{
     padding: 3px;
     background-color: white;
     text-align: left;
-    p{
-        padding: 0.4em 0;
-        text-indent: 2em;
-    }
     b{
         color:red;
     }
+}
+p{
+    padding: 0.4em 0;
+    text-indent: 2em;
 }
 </style>
