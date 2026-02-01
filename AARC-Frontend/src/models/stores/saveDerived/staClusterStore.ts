@@ -219,14 +219,12 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         neighbors = {}
     }
     function getStaClusterById(ptId:number){
-        let clutser=getStaClusters()?.find(cluster =>
+        let clutser = getStaClusters()?.find(cluster =>
                 cluster.some(sta => sta.id === ptId)
             )
         if (!clutser){
-            let point = saveStore.save?.points.find(x => x.id == ptId)
-            if (!point){
-                return []
-            }
+            let point = saveStore.getPtById(ptId)
+            if (!point) return []
             return [point]
         }
         return clutser
