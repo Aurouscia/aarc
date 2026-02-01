@@ -17,9 +17,11 @@ import AuthGrantEdit from '../components/AuthGrantEdit.vue';
 import { AuthGrantOn, AuthGrantTypeOfSave } from '@/app/com/apiGenerated';
 import SwitchingTabs from '@/components/common/SwitchingTabs.vue';
 import SaveAvatar from '../components/SaveAvatar.vue';
+import { useSavesRoutesJump } from './routes/routesJump';
 
 const saveList = ref<WithIntroShow<SaveDto>[]>()
 const api = useApiStore();
+const { saveDiffsRoute } = useSavesRoutesJump()
 const { showPop } = useUniqueComponentsStore()
 const userInfoStore = useUserInfoStore()
 const props = defineProps<{
@@ -241,6 +243,12 @@ onMounted(async()=>{
             <td>权限</td>
             <td>
                 <button class="lite confirm" @click="authGrantSb?.extend">打开设置栏</button>
+            </td>
+        </tr>
+        <tr v-if="!isCreatingSave">
+            <td>记录</td>
+            <td>
+                <RouterLink :to="saveDiffsRoute(editingSave.id)" target="_blank" class="confirm">查看访客编辑记录</RouterLink>
             </td>
         </tr>
         <tr>

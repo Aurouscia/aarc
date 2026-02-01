@@ -4,6 +4,7 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import App from './App.vue'
 import './styles/styles.scss'
 import '@aurouscia/au-color-picker/style.css'
+import '@anilkumarthakur/vue3-json-viewer/styles.css'
 import { appSetup } from './app/setup/appSetup'
 import { enforceNoGesture } from './utils/eventUtils/enforceNoGesture'
 

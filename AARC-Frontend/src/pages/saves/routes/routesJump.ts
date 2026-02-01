@@ -1,5 +1,5 @@
 import { RouteLocationRaw } from "vue-router"
-import { mySavesName, searchSaveName } from "./routesNames"
+import { mySavesName, saveDiffsName, searchSaveName } from "./routesNames"
 
 export const useSavesRoutesJump = ()=>{
     function mySavesRoute():RouteLocationRaw{
@@ -24,5 +24,14 @@ export const useSavesRoutesJump = ()=>{
             }
         }
     }
-    return { mySavesRoute, someonesSavesRoute, searchSaveRoute }
+    function saveDiffsRoute(saveId?:number, userId?:number){
+        return {
+            name:saveDiffsName,
+            query:{
+                saveId,
+                userId
+            }
+        }
+    }
+    return { mySavesRoute, someonesSavesRoute, searchSaveRoute, saveDiffsRoute }
 }
