@@ -113,7 +113,8 @@ defineExpose({
     <div class="toolItem" v-if="!visitorMode">
         <div class="smallNote">
             使本次保存强制生成备份<br/>
-            建议在公共存档“即将交给他人”前备份一次
+            建议在公共存档“即将交给他人”前备份一次<br/>
+            缺陷：仅对“绿色保存按钮”有效，ctrl+S无效
         </div>
         <div style="display: flex;align-items: center;color:#999">
             <input v-model="mustBackup" type="checkbox"/>请勾选

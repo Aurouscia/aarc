@@ -136,7 +136,7 @@ const preventLeaveStore = usePreventLeavingUnsavedStore()
 const { preventLeaving, releasePreventLeaving } = preventLeaveStore
 const { showUnsavedWarning, preventLeavingDisabled } = storeToRefs(preventLeaveStore)
 let lastSavedTime = 0
-async function saveData(mustBackup?:boolean){
+async function saveData(mustBackup:boolean){
     if(lastSavedTime + 1000 > Date.now()){
         console.warn('保存过于频繁（1秒内），已忽略本次保存请求')
         return
@@ -241,7 +241,7 @@ watch(props, async()=>{
     window.location.reload()
 })
 
-const saveShortcutListener = new ShortcutListener(()=>{ saveData() }, {code:'KeyS', ctrl:true})
+const saveShortcutListener = new ShortcutListener(()=>{ saveData(false) }, {code:'KeyS', ctrl:true})
 const deleteShortcutListener = new ShortcutListener(()=>{
     const ael = document.activeElement
     const focusingText = ael instanceof HTMLInputElement || ael instanceof HTMLTextAreaElement
@@ -303,7 +303,7 @@ onBeforeUnmount(()=>{
     <Cvs v-if="loadComplete"></Cvs>
     <Menu v-if="loadComplete" @save-data="saveData"></Menu>
     <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving"
-        :save="saveData" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
+        :save="()=>saveData(false)" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
     <HiddenLongWarnPrompt v-if="showHiddenLongWarn" @ok="showHiddenLongWarn=false"></HiddenLongWarnPrompt>
     <div v-if="savingDisabledWarning" class="statusDisplay saving-disabled-warning" :class="{'warning-hidden': savingDisabledWarningHide}">
         {{ savingDisabledWarning }}
