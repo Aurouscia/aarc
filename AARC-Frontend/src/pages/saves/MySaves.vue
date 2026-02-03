@@ -244,7 +244,7 @@ onMounted(async()=>{
         <tr v-if="!isCreatingSave">
             <td>权限</td>
             <td>
-                <button class="lite confirm" @click="authGrantSb?.extend">打开设置栏</button>
+                <button class="lite confirm" @click="authGrantSb?.extend">打开权限设置栏</button>
             </td>
         </tr>
         <tr v-if="!isCreatingSave">

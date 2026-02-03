@@ -215,12 +215,13 @@ onMounted(async() => {
         </td>
     </tr>
 </tbody></table>
-<Prompt v-if="showAllowAllWarning" :close-btn="'我已理解其中风险'" :close-btn-delay="8" @close="add">
+<Prompt v-if="showAllowAllWarning" :close-btn="'我已理解其中风险'" :close-btn-delay="20" @close="add">
     <p>允许所有人编辑存档：这包括未转为会员的游客身份用户</p>
     <p>如果存档受到破坏，无法对破坏者进行任何遏止或处罚，因为注册新号并没有门槛</p>
     <p>设置此项意味着你认为自己的存档毫无价值，只是玩玩而已</p>
+    <p style="color: red">建议：改为使用“允许某用户”（可以允许某游客）或使用“允许会员”</p>
     <button class="cancel" @click="showAllowAllWarning=false" style="display: block;margin: 10px auto;">
-        算了吧
+        退出
     </button>
 </Prompt>
 </template>

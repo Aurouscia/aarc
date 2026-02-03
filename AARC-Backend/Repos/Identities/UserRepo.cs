@@ -111,7 +111,7 @@ namespace AARC.Repos.Identities
 
         public List<UserDtoSimple> QuickSearchUser(string search)
         {
-            var userQ = FilterByName(Viewable, search);
+            var userQ = FilterByName(Existing, search);
             var res = userQ
                 .OrderBy(x => x.Name.Length)
                 .ThenByDescending(x => x.LastActive)
