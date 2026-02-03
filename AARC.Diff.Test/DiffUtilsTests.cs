@@ -797,6 +797,167 @@ public class DiffUtilsTests
     }
 
     [Fact]
+    public void DeepEquals_LargeNumber_BeyondDecimalRange_UsesDoubleComparison()
+    {
+        // Arrange - 超出 decimal 范围的大数，但 double 可以表示
+        // decimal.MaxValue ≈ 7.9e28，这里使用 1e30
+        var jsonA = @"1e30";
+        var jsonB = @"1e30";
+        using var docA = JsonDocument.Parse(jsonA);
+        using var docB = JsonDocument.Parse(jsonB);
+
+        // Act
+        var result = DiffUtils.DeepEquals(docA.RootElement, docB.RootElement);
+
+        // Assert - 应该通过 double 比较相等，不抛出 FormatException
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void DeepEquals_LargeNumbers_DifferentValues_ReturnsFalse()
+    {
+        // Arrange - 两个不同的大数
+        var jsonA = @"1e30";
+        var jsonB = @"2e30";
+        using var docA = JsonDocument.Parse(jsonA);
+        using var docB = JsonDocument.Parse(jsonB);
+
+        // Act
+        var result = DiffUtils.DeepEquals(docA.RootElement, docB.RootElement);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void DeepEquals_ScientificNotation_SameValue_ReturnsTrue()
+    {
+        // Arrange - 科学计数法表示的相同数值
+        var jsonA = @"1.5e10";
+        var jsonB = @"15000000000";
+        using var docA = JsonDocument.Parse(jsonA);
+        using var docB = JsonDocument.Parse(jsonB);
+
+        // Act
+        var result = DiffUtils.DeepEquals(docA.RootElement, docB.RootElement);
+
+        // Assert - 1.5e10 == 15000000000
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void DeepEquals_VeryLargeInteger_BeyondDecimalRange_UsesDoubleComparison()
+    {
+        // Arrange - 非常大的整数，超出 decimal 范围
+        var jsonA = @"1234567890123456789012345678901234567890";
+        var jsonB = @"1234567890123456789012345678901234567890";
+        using var docA = JsonDocument.Parse(jsonA);
+        using var docB = JsonDocument.Parse(jsonB);
+
+        // Act
+        var result = DiffUtils.DeepEquals(docA.RootElement, docB.RootElement);
+
+        // Assert - 应该通过原始文本比较相等，不抛出 FormatException
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void DeepEquals_VerySmallNumber_BeyondDecimalRange_UsesDoubleComparison()
+    {
+        // Arrange - 非常小的数（接近 0，但超出 decimal 精度）
+        var jsonA = @"1e-50";
+        var jsonB = @"1e-50";
+        using var docA = JsonDocument.Parse(jsonA);
+        using var docB = JsonDocument.Parse(jsonB);
+
+        // Act
+        var result = DiffUtils.DeepEquals(docA.RootElement, docB.RootElement);
+
+        // Assert - 应该通过 double 比较相等
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void DeepEquals_NegativeLargeNumber_BeyondDecimalRange_UsesDoubleComparison()
+    {
+        // Arrange - 负的大数，超出 decimal 范围
+        var jsonA = @"-1e30";
+        var jsonB = @"-1e30";
+        using var docA = JsonDocument.Parse(jsonA);
+        using var docB = JsonDocument.Parse(jsonB);
+
+        // Act
+        var result = DiffUtils.DeepEquals(docA.RootElement, docB.RootElement);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void DeepEquals_HighPrecisionDecimal_ReturnsTrue()
+    {
+        // Arrange - 高精度小数，在 decimal 范围内
+        var jsonA = @"1.1234567890123456789012345678";
+        var jsonB = @"1.1234567890123456789012345678";
+        using var docA = JsonDocument.Parse(jsonA);
+        using var docB = JsonDocument.Parse(jsonB);
+
+        // Act
+        var result = DiffUtils.DeepEquals(docA.RootElement, docB.RootElement);
+
+        // Assert - 应该通过 decimal 比较相等
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void DeepEquals_HighPrecisionDecimal_DifferentValues_ReturnsFalse()
+    {
+        // Arrange - 高精度小数，微小差异
+        var jsonA = @"1.1234567890123456789012345678";
+        var jsonB = @"1.1234567890123456789012345679";
+        using var docA = JsonDocument.Parse(jsonA);
+        using var docB = JsonDocument.Parse(jsonB);
+
+        // Act
+        var result = DiffUtils.DeepEquals(docA.RootElement, docB.RootElement);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void DeepEquals_NumberInObject_BeyondDecimalRange_NoException()
+    {
+        // Arrange - 对象中包含超大数值
+        var jsonA = @"{ ""value"": 1e30, ""name"": ""test"" }";
+        var jsonB = @"{ ""value"": 1e30, ""name"": ""test"" }";
+        using var docA = JsonDocument.Parse(jsonA);
+        using var docB = JsonDocument.Parse(jsonB);
+
+        // Act
+        var result = DiffUtils.DeepEquals(docA.RootElement, docB.RootElement);
+
+        // Assert - 应该正常比较，不抛出异常
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void DeepEquals_NumberInArray_BeyondDecimalRange_NoException()
+    {
+        // Arrange - 数组中包含超大数值
+        var jsonA = @"[1e30, 2e30, 3e30]";
+        var jsonB = @"[1e30, 2e30, 3e30]";
+        using var docA = JsonDocument.Parse(jsonA);
+        using var docB = JsonDocument.Parse(jsonB);
+
+        // Act
+        var result = DiffUtils.DeepEquals(docA.RootElement, docB.RootElement);
+
+        // Assert - 应该正常比较，不抛出异常
+        Assert.True(result);
+    }
+
+    [Fact]
     public void DeepEquals_EmptyObjects_ReturnsTrue()
     {
         // Arrange

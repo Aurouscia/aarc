@@ -176,6 +176,15 @@ internal static class DiffUtils
 
     private static bool CompareNumber(JsonElement a, JsonElement b)
     {
-        return a.GetDecimal() == b.GetDecimal();
+        // 优先尝试数值比较，避免字符串分配
+        if (a.TryGetDecimal(out var decA) && b.TryGetDecimal(out var decB))
+            return decA == decB;
+        
+        // 尝试 double 比较（处理更大范围的数值）
+        if (a.TryGetDouble(out var doubleA) && b.TryGetDouble(out var doubleB))
+            return doubleA == doubleB;
+        
+        // 回退到原始文本比较（处理特殊数值格式）
+        return a.GetRawText() == b.GetRawText();
     }
 }
