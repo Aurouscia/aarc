@@ -5,6 +5,7 @@ import copy from 'copy-to-clipboard'
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { ref } from 'vue';
 import { useEnvStore } from '@/models/stores/envStore';
+import Notice from '@/components/common/Notice.vue';
 
 const cs = useConfigStore()
 const envStore = useEnvStore()
@@ -58,9 +59,10 @@ function handleInputChange(){
     <button @click="importFromClipboard">从剪切板导入</button>
     <input v-if="wantToImport" v-model="importedConfigJson" placeholder="请粘贴在此"
         @change="handleInputChange"/>
-    <p class="smallNote">
-        若遇到“剪切板长度限制”等问题，请及时反馈
-    </p>
+    <Notice :type="'warn'">
+        “存档配置”和“存档”是两个概念，存档配置仅指线路样式、字体大小等部分，不包括线路和车站。
+        如果需要导入/导出整个存档，请前往“我的存档-信息设置”找到导出工程文件和替换存档数据。
+    </Notice>
 </div>
 </ConfigSection>
 </template>
