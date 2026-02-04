@@ -57,10 +57,16 @@ function c(){
         </tr>
     </tbody></table>
     <Prompt v-if="guideShow" :bg-click-close="true" @close="guideShow=false">
-        <p>1. 请确保所需的字体已在当前设备安装</p>
-        <p>2. 多个字体写多行，如果第一个字体不支持，会使用第二个，以此类推（例如：仅支持英语的A字体应放在中英两用B字体前面，以确保英文使用A字体，中文使用B字体）</p>
-        <p>3. 如果下面的“测试文本”变了字体，说明成功应用</p>
-        <p>4. 跨平台通用内置字体：serif、cursive、monospace</p>
+        <p>1. 请确保所需的字体已在当前设备安装（例如windows内置“宋体”，macOS内置“Songti SC”）</p>
+        <p>2. 多个字体写多行，如果第一个字体不支持，会使用第二个，以此类推（例如：仅支持英语的A字体应放在中英两用B字体前面，以确保同一段内英文使用A字体，中文使用B字体）</p>
+        <p>3. 如果输入框下方的“测试文本”变了字体，说明设置成功</p>
+        <p>4. 跨平台通用的内置字体：serif、cursive、monospace</p>
     </Prompt>
 </ConfigSection>
 </template>
+
+<style scoped>
+p{
+    margin: 0.5em 0;
+}
+</style>
