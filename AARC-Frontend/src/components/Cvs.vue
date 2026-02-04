@@ -120,6 +120,7 @@ defineExpose({init})
     position: fixed;
     inset: 0px;
     overflow: scroll;
+    touch-action: none;
 }
 .cvsCont{
     transition: 0s;
