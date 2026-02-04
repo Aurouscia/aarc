@@ -73,9 +73,8 @@ onMounted(async()=>{
         <Notice v-if="!noticeRead" :title="'注册须知'" :type="'info'">
             <p><b>为了确保内容合规性，新账号为“游客”账号</b></p>
             <p>“游客”不会显示在用户列表中，“游客”的作品也无法公开展示，
-            如果想要公开展示作品，需要由管理员将账号转为“会员”（转正）</p>
+            如果想要公开展示作品，需要由管理员将账号转为“正式用户”（转正）</p>
             <ol>
-                <li>管理员可以在首页看到“游客”的最新作品，如果管理员认为作品质量高，就会为账号转正</li>
                 <li>{{ contact || '暂不接收主动申请转正' }}</li>
             </ol>
             <button @click="noticeKnown" style="display: block; margin: 6px auto;">

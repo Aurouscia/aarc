@@ -35,7 +35,7 @@ onMounted(()=>{
     <p>本项目正在持续完善改进中，想提出建议请qq私聊我或<a href="https://gitee.com/au114514/aarc/issues" target="_blank">点击此处</a></p>
 </div>
 <Notice :type="'info'" :title="'⚠️ 重大变动'">
-    已移除所有“允许所有人”和“允许会员”编辑存档的设置，如有需要请重新添加
+    🤝目前大部分公共存档仅正式用户能参与，如果想参与多人合作，请参考“注册”处的引导转为正式用户💡
 </Notice>
 <div class="marginedSection">
     <NewestSaves></NewestSaves>
