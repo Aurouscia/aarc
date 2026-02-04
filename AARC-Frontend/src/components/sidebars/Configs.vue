@@ -18,6 +18,7 @@ import PinyinConvertConfig from './configs/PinyinConvertConfig.vue';
 import { useNameEditStore } from '@/models/stores/nameEditStore';
 import SaveConfigReuse from './configs/SaveConfigReuse.vue';
 import BgRefImageConfig from './configs/BgRefImageConfig.vue';
+import FontConfig from './configs/FontConfig.vue';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
@@ -125,6 +126,8 @@ defineExpose({
 <TextTagConfig></TextTagConfig>
 
 <TextTagIconConfig></TextTagIconConfig>
+
+<FontConfig></FontConfig>
 
 <EditorConfig></EditorConfig>
 

@@ -24,7 +24,7 @@ export const useDiscardAreaCvsWorker = defineStore('discardAreaCvsWorker',()=>{
         const [ox, oy] = origin
         const fontSize = size/6
         const margin = size/12
-        ctx.font = {font:'microsoft YaHei', fontSize}
+        ctx.font = {font:'sans-serif', fontSize}
         ctx.fillStyle = 'red'
         ctx.textAlign = 'left'
         ctx.textBaseline = 'top'

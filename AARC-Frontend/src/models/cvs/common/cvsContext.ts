@@ -1,3 +1,4 @@
+import { convertLineSeppedToCommaSepped } from "@/utils/lang/fontStr";
 import { TextMetricsSelected } from "@/utils/type/TextMetricsSelected";
 
 export class CvsBlock{
@@ -113,6 +114,10 @@ export class CvsContext{
         this.b.ctx2d.textBaseline = value}
     set textAlign(value:CanvasTextAlign){
         this.b.ctx2d.textAlign = value}
-    set font(value:{fontSize:number, font:string}){
-        this.b.ctx2d.font = `${value.fontSize*this.b.scale}px ${value.font}, sans-serif`}
+    set font(value:{fontSize:number, font?:string}){
+        const size = value.fontSize
+        let stack = convertLineSeppedToCommaSepped(value.font)
+        const fontStack = stack ? `${stack}, ` : '';
+        this.b.ctx2d.font = `${size * this.b.scale}px ${fontStack}sans-serif`;
+    }
 }

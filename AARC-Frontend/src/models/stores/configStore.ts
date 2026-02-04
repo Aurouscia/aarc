@@ -30,11 +30,11 @@ export const configDefault:Config = {
     ptStaExchangeLineColor: '#999999',
 
     staNameFontSize: 26,
-    staNameFont: 'microsoft YaHei',
+    staNameFont: '',
     staNameRowHeight: 30,
     staNameColor: '#000000',
     staNameSubFontSize: 18,
-    staNameSubFont: 'microsoft YaHei',
+    staNameSubFont: '',
     staNameSubRowHeight: 20,
     staNameSubColor: '#888888',
 
@@ -60,11 +60,11 @@ export const configDefault:Config = {
     colorPresetGreenland: '#ceeda4',
     colorPresetIsland: '#ffffff',
 
-    textTagFont: 'microsoft YaHei',
+    textTagFont: '',
     textTagFontSizeBase: 30,
     textTagFontColorHex: '#333333',
     textTagRowHeightBase: 34,
-    textTagSubFont: 'microsoft YaHei',
+    textTagSubFont: '',
     textTagSubFontSizeBase: 16,
     textTagSubRowHeightBase: 18,
     textTagSubFontColorHex: '#999999',
