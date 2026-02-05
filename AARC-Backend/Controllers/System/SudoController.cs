@@ -55,9 +55,9 @@ namespace AARC.Controllers.System
                 .Where(x => x.On == AuthGrantOn.Save)
                 .Where(x => x.Type == (byte)AuthGrantTypeOfSave.Edit)
                 .Where(x => x.Flag == true)
-                .Where(x => x.To == AuthGrantTo.All ||  x.To == AuthGrantTo.AllMembers)
+                .Where(x => x.To == AuthGrantTo.All)
                 .ExecuteDelete();
-            return $"已删除 {deleted} 条公共编辑授权";
+            return $"已删除 {deleted} 条“允许所有人编辑”授权";
         }
     }
 }

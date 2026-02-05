@@ -106,14 +106,18 @@ const newAgToName = computed(() => {
     }
 })
 
-const showAllowAllWarning = ref(false)
+const showAllowAllMemberWarning = ref(false)
 async function add(){
     if(isSaveEdit.value && newAg.value.to == AuthGrantTo.All && newAg.value.flag){
-        if(!showAllowAllWarning.value){
-            showAllowAllWarning.value = true
+        showPop('不能这样设置：\n“允许所有人编辑存档”', 'failed')
+        return
+    }
+    if(isSaveEdit.value && newAg.value.to == AuthGrantTo.AllMembers && newAg.value.flag){
+        if(!showAllowAllMemberWarning.value){
+            showAllowAllMemberWarning.value = true
             return
         }else{
-            showAllowAllWarning.value = false
+            showAllowAllMemberWarning.value = false
         }
     }
     if(props.onId == 0){
@@ -215,13 +219,11 @@ onMounted(async() => {
         </td>
     </tr>
 </tbody></table>
-<Prompt v-if="showAllowAllWarning" :close-btn="'我已理解其中风险'" :close-btn-delay="20" @close="add">
-    <p>允许所有人编辑存档：这包括未转为正式用户的游客身份用户</p>
-    <p>如果存档受到破坏，无法对破坏者进行任何遏止或处罚，因为注册新号并没有门槛</p>
-    <p>设置此项意味着你认为自己的存档毫无价值，只是玩玩而已</p>
-    <p style="color: red">建议：改为使用“允许某用户”（可以允许某游客）或使用“允许正式用户”</p>
-    <button class="cancel" @click="showAllowAllWarning=false" style="display: block;margin: 10px auto;">
-        退出
+<Prompt v-if="showAllowAllMemberWarning" :close-btn="'我知道了'" :close-btn-delay="3" @close="add">
+    <p>允许正式会员编辑：</p>
+    <p>如果存档受到破坏，请查看访客编辑记录，并立即加群向管理员汇报，待破坏存档者被封禁（转为游客）后，再使用”备份取用“功能恢复存档到未破坏状态。</p>
+    <button class="cancel" @click="showAllowAllMemberWarning=false" style="display: block;margin: 10px auto;">
+        取消添加
     </button>
 </Prompt>
 </template>

@@ -49,7 +49,7 @@ async function removeAllPublicSaveEditAuthGrants() {
         </button>
         <button :class="mode=='removeAllPublicSaveEditAuthGrants'?'confirm':'minor'"
             @click="mode='removeAllPublicSaveEditAuthGrants';removeAllPublicSaveEditAuthGrantsMsg = undefined">
-            移除所有“存档公共编辑”授权
+            移除所有“允许所有人编辑”授权
         </button>
     </div>
     <div class="inputs"> 

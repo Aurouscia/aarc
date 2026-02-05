@@ -34,8 +34,8 @@ onMounted(()=>{
     <p v-if="guideInfo.extra" style="font-size: 14px;">{{ guideInfo.extra }}</p>
     <p>本项目正在持续完善改进中，想提出建议请qq私聊我或<a href="https://gitee.com/au114514/aarc/issues" target="_blank">点击此处</a></p>
 </div>
-<Notice :type="'info'" :title="'⚠️ 重大变动'">
-    🤝目前大部分公共存档仅正式用户能参与，如果想参与多人合作，请参考“注册”处的引导转为正式用户💡
+<Notice :type="'warn'" :title="'⚠️ 重大变动'">
+    🤝目前“公共存档”仅<b>正式用户</b>能参与，如果想参与多人合作，请参考“注册”处的引导转为正式用户💡
 </Notice>
 <div class="marginedSection">
     <NewestSaves></NewestSaves>
@@ -135,7 +135,7 @@ onMounted(()=>{
     欢迎对本项目源码作出贡献或提出改进意见。<br/>
     <a href="https://gitee.com/au114514/aarc" target="_blank">Gitee(本体)</a>&nbsp;
     <a href="https://github.com/Aurouscia/aarc" target="_blank">Github(自动同步镜像)</a>
-    <div>本项目将用户的劳动成果保护放在第一位，不限制保存次数，请尽可能多保存。若出现误操作/他人破坏/恶性bug导致进度大量丢失，可联系服主获取备份。</div>
+    <div>本项目将用户的劳动成果保护放在第一位，不限制保存次数，请尽可能多保存。若出现误操作/他人破坏/恶性bug导致进度大量丢失，可使用备份回档。</div>
     <div style="color:cornflowerblue">承诺：不管后期添加多少功能，本项目永不以任何形式收取任何费用，所有功能全部开源免费。</div>
 </div>
 </template>
