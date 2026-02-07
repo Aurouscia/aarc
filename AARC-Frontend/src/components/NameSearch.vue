@@ -21,7 +21,7 @@ const { show, searchText, showResults } = storeToRefs(nameSearchStore)
 
 // 当前选中的结果索引
 const selectedIndex = ref(-1)
-const maxResultCount = 50
+const maxResultCount = 1000
 const isMatchingEmpty = computed(() => searchText.value === searchMarkForEmptyName)
 
 // 匹配逻辑：name 或 nameS 包含搜索串（不区分大小写）
