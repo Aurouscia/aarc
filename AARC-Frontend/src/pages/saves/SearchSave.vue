@@ -68,7 +68,7 @@ onMounted(()=>{
     <div class="searchControl">
         <div>
             <button v-show="search" class="lite" @click="search=undefined;load()">清空</button>
-            <input v-model="search" class="saveSearchInput" placeholder="搜索存档名称" @blur="load"/>
+            <input v-model="search" class="saveSearchInput" placeholder="搜索存档名或id" @blur="load"/>
         </div>
         <select v-model="orderBy" @change="load">
             <option :value="'active'">最新更新</option>
@@ -112,7 +112,7 @@ onMounted(()=>{
         <td colspan="4">点击输入框外任意处搜索</td>
     </tr>
     <tr v-else-if="!search && searchRes.length===0" class="searchStatus">
-        <td colspan="4">请输入搜索关键词</td>
+        <td colspan="4">请输入搜索关键词，搜id时使用前缀“id:”</td>
     </tr>
     <tr v-else-if="searchRes.length===0" class="searchStatus">
         <td colspan="4">无匹配结果</td>
@@ -132,5 +132,10 @@ onMounted(()=>{
 .searchStatus{
     color: #666; 
     font-size: 16px;
+}
+@media screen and (max-width: 600px) {
+    .searchStatus td{
+        text-align: left;
+    }
 }
 </style>

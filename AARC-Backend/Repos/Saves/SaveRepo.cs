@@ -104,7 +104,14 @@ namespace AARC.Repos.Saves
             //sqlite默认大小写敏感，此处强制转为不敏感的（应该不怎么影响性能）
             if (string.IsNullOrWhiteSpace(search))
                 return [];
-            if (search != "所有作品")
+            // 检查是否为id搜索格式（id:... 或 id：...，不区分大小写，冒号全半角都行）
+            var idMatch = System.Text.RegularExpressions.Regex.Match(search, @"^id\s*[:：]\s*(\d+)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (idMatch.Success)
+            {
+                int id = int.Parse(idMatch.Groups[1].Value);
+                q = base.WithId(id);
+            }
+            else if (search != "所有作品")
             {
                 if (Context is AarcSqliteContext)
                     q = q.Where(x => x.Name.ToLower().Contains(search.ToLower()));
