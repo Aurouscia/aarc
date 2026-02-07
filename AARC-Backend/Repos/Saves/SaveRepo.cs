@@ -10,6 +10,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace AARC.Repos.Saves
 {
@@ -105,7 +106,7 @@ namespace AARC.Repos.Saves
             if (string.IsNullOrWhiteSpace(search))
                 return [];
             // 检查是否为id搜索格式（id:... 或 id：...，不区分大小写，冒号全半角都行）
-            var idMatch = System.Text.RegularExpressions.Regex.Match(search, @"^id\s*[:：]\s*(\d+)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            var idMatch = SaveRepoRegex.IdSearchRegex().Match(search);
             if (idMatch.Success)
             {
                 int id = int.Parse(idMatch.Groups[1].Value);
@@ -383,5 +384,11 @@ namespace AARC.Repos.Saves
     {
         Initialization = 0,
         Renewal = 1
+    }
+
+    public static partial class SaveRepoRegex
+    {
+        [GeneratedRegex(@"^id\s*[:：]\s*(\d+)$", RegexOptions.IgnoreCase)]
+        public static partial Regex IdSearchRegex();
     }
 }
