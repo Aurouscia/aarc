@@ -1,23 +1,31 @@
+using System.ComponentModel.DataAnnotations;
 using AARC.Models.DbModels.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace AARC.Models.DbModels.Identities;
 
-public class UserHistory:IDbModel
+[Index(nameof(TargetUserId), nameof(OperatorUserId))]
+public class UserHistory
 {
     public int Id { get; set; }
     public int TargetUserId { get; set; }
     public int OperatorUserId { get; set; }
     public UserHistoryType UserHistoryType { get; set; }
-    public UserType UserTypeOld { get; set; }
     public UserType UserTypeNew { get; set; }
-    public DateTime LastActive { get; set; }
-    public bool Deleted { get; set; }
+    public int UserCreditDelta { get; set; }
+    [MaxLength(commentMaxLength)]
+    public string? Comment { get; set; }
+    public DateTime Time { get; set; }
+    
+    public const int commentMaxLength = 128;
 }
 
 public enum UserHistoryType:byte
 {
     Unknown = 0,
-    Login = 1,
-    Register = 2,
-    ChangeUserType = 3
+    Register = 1,
+    Login = 2,
+    ChangeType = 3,
+    ChangePassword = 4,
+    ChangeCredit = 5
 }

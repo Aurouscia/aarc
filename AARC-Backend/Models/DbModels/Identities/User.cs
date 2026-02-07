@@ -28,7 +28,7 @@ namespace AARC.Models.DbModels.Identities
         public const int nameMaxLength = 16;
         public const int emailMaxLength = 64;
         public const int introMaxLength = 128;
-        public const int passwordResetQuestionMaxLength = 16;
+        public const int passwordResetQuestionMaxLength = 32;
         public const int passwordResetAnswerMaxLength = 16;
     }
 }

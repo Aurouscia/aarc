@@ -69,7 +69,7 @@ namespace AARC.Repos
     public static class PrioritizableExtension
     {
         public static void RearrangePriority<T>(
-            this List<T> list, List<int> order) where T : class, IPrioritizable
+            this List<T> list, List<int> order) where T : class, IPrioritizable, IDbModel
         {
             var orderDict = order
                 .Select((value, index) => (value, index))
@@ -80,7 +80,7 @@ namespace AARC.Repos
                 int oy = orderDict.TryGetValue(y.Id, out var iy) ? iy : int.MaxValue;
                 return ox.CompareTo(oy);
             });
-            RearrangePriority(list);
+            list.RearrangePriority();
         }
         public static void RearrangePriority<T>(
             this List<T> list) where T : class, IPrioritizable
