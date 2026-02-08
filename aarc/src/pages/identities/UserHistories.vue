@@ -135,7 +135,8 @@ onMounted(()=>{
     </tr>
 </tbody></table>
 </div>
-<button class="minor loadMore" @click="load('append')">加载更多</button>
+<button v-if="list.length > 0" class="minor loadMore" @click="load('append')">加载更多</button>
+<div v-else class="smallNote loadMore">暂无相关记录（可点击筛选条件移除）</div>
 </template>
 
 <style scoped lang="scss">
@@ -145,5 +146,6 @@ onMounted(()=>{
 .loadMore{
     display: block;
     margin: 10px auto;
+    text-align: center;
 }
 </style>
