@@ -2,14 +2,20 @@
 import { UserDto } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import Prompt from '@/components/common/Prompt.vue';
-import { ref } from 'vue';
+import { ref, computed, onMounted, useTemplateRef } from 'vue';
 
 const api = useApiStore()
 
 const nameSearch = ref('')
 const users = ref<UserDto[]>([])
+const selectedIndex = ref(-1)
+const inputRef = useTemplateRef<HTMLInputElement>('inputRef')
+
+const hasUsers = computed(() => users.value.length > 0)
+
 async function load(){
     users.value = []
+    selectedIndex.value = -1
     if(!nameSearch.value) return
     const res = await api.user.quickSearch(nameSearch.value)
     if(res)
@@ -23,18 +29,59 @@ function callLoad(){
 async function selectUser(u:UserDto|undefined) {
     emit('select', u)
 }
+function selectCurrentUser() {
+    if (selectedIndex.value >= 0 && selectedIndex.value < users.value.length) {
+        selectUser(users.value[selectedIndex.value])
+    }
+}
+function handleKeydown(e: KeyboardEvent) {
+    if (!hasUsers.value) return
+    
+    switch (e.key) {
+        case 'ArrowDown':
+            e.preventDefault()
+            selectedIndex.value = (selectedIndex.value + 1) % users.value.length
+            break
+        case 'ArrowUp':
+            e.preventDefault()
+            selectedIndex.value = selectedIndex.value <= 0 
+                ? users.value.length - 1 
+                : selectedIndex.value - 1
+            break
+        case 'Enter':
+            e.preventDefault()
+            selectCurrentUser()
+            break
+    }
+}
 const emit = defineEmits<{
     (e:'select', u:UserDto|undefined): void
 }>()
+
+onMounted(() => {
+    inputRef.value?.focus()
+})
 </script>
 
 <template>
 <Prompt @close="selectUser(undefined)" :bg-click-close="true">
     <div class="user-select-title">用户选择器</div>
     <div class="user-select">
-        <input v-model="nameSearch" placeholder="搜索用户名" @input="callLoad"/>
+        <input 
+            ref="inputRef"
+            v-model="nameSearch" 
+            placeholder="搜索用户名" 
+            @input="callLoad"
+            @keydown="handleKeydown"
+        />
         <div class="user-select-res">
-            <div v-for="user in users" :key="user.id" @click="selectUser(user)">
+            <div 
+                v-for="(user, index) in users" 
+                :key="user.id" 
+                @click="selectUser(user)"
+                @mouseenter="selectedIndex = index"
+                :class="{ 'selected': index === selectedIndex }"
+            >
                 {{ user.name }}
             </div>
         </div>
@@ -69,8 +116,8 @@ const emit = defineEmits<{
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            &:hover{
-                background-color: #f0f0f0;
+            &:hover, &.selected{
+                background-color: #ddd;
             }
         }
     }
