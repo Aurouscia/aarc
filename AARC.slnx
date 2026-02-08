@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="AARC-Backend/AARC.csproj" />
   <Project Path="AARC.Diff.Test/AARC.Diff.Test.csproj" />
   <Project Path="AARC.Diff/AARC.Diff.csproj" />
+  <Project Path="AARC.WebApi/AARC.WebApi.csproj" />
 </Solution>
