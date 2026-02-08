@@ -94,10 +94,10 @@ namespace AARC.WebApi.Repos.Identities
                         .Where(x => x.Id == myId)
                         .ProjectTo<UserDto>(mapper.ConfigurationProvider)
                         .FirstOrDefault();
-                    if (me is { })
+                    if (me is not null)
                     {
                         if (orderbySave)
-                            me.SaveCount = saveQ.Where(x => x.OwnerUserId == myId).Count();
+                            me.SaveCount = saveQ.Count(x => x.OwnerUserId == myId);
                         finalList.Insert(0, me);
                     }
                 }

@@ -42,10 +42,12 @@ const pwdRepeat = ref<string>()
 const userInfoStore = useUserInfoStore()
 const { userInfo } = storeToRefs(userInfoStore)
 let originalNameAndPwd = ''
+let originalType: UserType|undefined = undefined
 function startEditing(u:UserDto){
     editingUser.value = u
     pwdRepeat.value = undefined
     originalNameAndPwd = summerizeNameAndPwd()
+    originalType = u.type
     infoSidebar.value?.extend()
 }
 async function doneEditing(){
@@ -56,11 +58,25 @@ async function doneEditing(){
         showPop("两次输入的密码不一致", "failed")
         return
     }
-    success = await api.user.update({user:editingUser.value})
+    const isAdminChangingOthers = userInfo.value.isAdmin && userInfo.value.id != editingUser.value.id
+    const newNameAndPwd = summerizeNameAndPwd()
+    const isChangingNameOrPwd = newNameAndPwd !== originalNameAndPwd
+    const isChangingType = originalType != editingUser.value.type
+    let comment:string|null|undefined = null
+    if(isAdminChangingOthers && (isChangingNameOrPwd || isChangingType)){
+        comment = window.prompt('请输入简短备注（申请qq号、封禁理由、重置密码原因等）')
+        if(comment === null)
+            return
+        if(!comment.trim()){
+            showPop('必须输入备注', 'failed')
+            return
+        }
+    }
+    comment ||= undefined
+    success = await api.user.update({user:editingUser.value, comment})
     if(success){
         showPop("操作成功", "success")
-        let newNameAndPwd = summerizeNameAndPwd()
-        if(newNameAndPwd !== originalNameAndPwd && userInfo.value?.id === editingUser.value.id){
+        if(isChangingNameOrPwd && userInfo.value?.id === editingUser.value.id){
             showPop("请立即重新登录", "warning")
             loginRouteJump()
         }else{
@@ -187,7 +203,7 @@ onMounted(async()=>{
                     <input v-model="pwdRepeat" type="password" autocomplete="new-password"/>
                 </td>
             </tr>
-            <tr>
+            <tr v-if="userInfo.id == editingUser.id">
                 <td>简介</td>
                 <td>
                     <textarea v-model="editingUser.intro" placeholder="可提供自己的联系方式（不超过128个字符）"></textarea>

@@ -54,6 +54,10 @@ public class UserHistoryService(
         int? targetUserId,
         string? comment = null)
     {
+        if (comment is not null && comment.Length > UserHistory.commentMaxLength)
+        {
+            throw new RqEx($"备注必须少于{UserHistory.commentMaxLength}字符");
+        }
         var uh = CreateInstance(type);
         uh.OperatorUserId = userIdProvider.RequireUserId();
         uh.TargetUserId = targetUserId ?? userIdProvider.RequireUserId();
