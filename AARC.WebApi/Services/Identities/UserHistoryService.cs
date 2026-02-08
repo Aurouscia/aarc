@@ -26,9 +26,9 @@ public class UserHistoryService(
         context.SaveChanges();
     }
 
-    public void RecordChangePassword(int targetUserId, string? comment)
+    public void RecordChangeNameOrPassword(int targetUserId, string? comment)
     {
-        var uh = CreateInstance(UserHistoryType.ChangePassword, targetUserId, comment);
+        var uh = CreateInstance(UserHistoryType.ChangeNameOrPassword, targetUserId, comment);
         UserHistories.Add(uh);
         context.SaveChanges();
     }

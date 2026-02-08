@@ -179,6 +179,7 @@ namespace AARC.WebApi.Repos.Identities
             if (user is null)
                 throw new RqEx("找不到指定用户");
             
+            bool changedName = user.Name != u.Name;
             bool wantChangeType = user.Type != u.Type;
             if (wantChangeType && !current.IsAdmin)
             {
@@ -197,13 +198,16 @@ namespace AARC.WebApi.Repos.Identities
                 mapper.Map(u, user);
                 
                 //不在mapper处理Password，需另外手动处理
+                bool changedPassword = false;
                 if (!string.IsNullOrWhiteSpace(u.Password))
                 {
                     //若密码不为空，设置新密码
                     var pwdEncrypted = UserPwdEncryption.Encrypt(u.Password);
                     user.Password = pwdEncrypted;
-                    userHistoryService.RecordChangePassword(user.Id, comment);
+                    changedPassword = true;
                 }
+                if(changedPassword || changedName)
+                    userHistoryService.RecordChangeNameOrPassword(user.Id, comment);
                 base.Update(user, true);
                 t.Commit();
             }

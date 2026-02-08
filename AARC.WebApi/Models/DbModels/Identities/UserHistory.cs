@@ -26,6 +26,6 @@ public enum UserHistoryType:byte
     Register = 1,
     Login = 2,
     ChangeType = 3,
-    ChangePassword = 4,
+    ChangeNameOrPassword = 4,
     ChangeCredit = 5
 }
