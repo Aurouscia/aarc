@@ -1,4 +1,5 @@
 ﻿using AARC.WebApi.Models.DbModels.Enums;
+using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Repos.Identities;
 using AARC.WebApi.Services.App.ActionFilters;
 using AARC.WebApi.Services.App.Turnstile;
@@ -24,6 +25,14 @@ namespace AARC.WebApi.Controllers.Identities
             //orderby: active(默认) 或 save
             var list = userRepo.IndexUser(search, orderby);
             return list;
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public List<UserHistoryService.UserHistoryDto> LoadHistory(
+            int targetUserId, int operatorUserId, UserHistoryType type, int skip)
+        {
+            return userHistoryService.Load(targetUserId, operatorUserId, type, skip);
         }
 
         [AllowAnonymous]

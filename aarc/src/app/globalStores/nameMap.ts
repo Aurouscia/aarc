@@ -23,11 +23,14 @@ export const useNameMapStore = defineStore('nameMap', ()=>{
             m.value.clear()
             lastCompleteLoaded.set(on, now)
         }
-        const notLoaded = ids.filter(id => !m.value.has(id))
-        if(notLoaded.length > 0){
+        const idsSet = new Set(ids)
+        for(const id of m.value.keys()){
+            idsSet.delete(id)
+        }
+        if(idsSet.size > 0){
             let res: {id?:number, name?:string}[]|undefined
             if(on == 'userNameMap')
-                res = await api.user.quickDisplay(notLoaded)
+                res = await api.user.quickDisplay([...idsSet])
             else if(on == 'userGroupNameMap')
                 throw new Error('not implemented')
             if(res){

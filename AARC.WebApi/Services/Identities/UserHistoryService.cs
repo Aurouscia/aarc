@@ -2,16 +2,36 @@ using AARC.WebApi.Models.Db.Context;
 using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Services.App.HttpAuthInfo;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace AARC.WebApi.Services.Identities;
 
 public class UserHistoryService(
     AarcContext context,
-    HttpUserIdProvider userIdProvider)
+    HttpUserIdProvider userIdProvider,
+    IMapper mapper)
 {
     private DbSet<UserHistory> UserHistories => context.UserHistories;
 
+    public List<UserHistoryDto> Load(int targetUserId, int operatorUserId, UserHistoryType type, int skip)
+    {
+        var q = UserHistories.AsQueryable();
+        if (type != UserHistoryType.Unknown)
+            q = q.Where(x => x.UserHistoryType == type);
+        if(targetUserId > 0)
+            q = q.Where(x => x.OperatorUserId == operatorUserId);
+        if(operatorUserId > 0)
+            q = q.Where(x => x.OperatorUserId == operatorUserId);
+        return q
+            .OrderByDescending(x => x.Id)
+            .Skip(skip)
+            .Take(20)
+            .ProjectTo<UserHistoryDto>(mapper.ConfigurationProvider)
+            .ToList();
+    }
+    
     public void RecordLogin(int userId)
     {
         var uh = CreateSelfHelpedInstance(UserHistoryType.Login, userId);
@@ -81,5 +101,21 @@ public class UserHistoryService(
             Time = DateTime.Now,
             UserHistoryType = type
         };
+    }
+
+    public class UserHistoryDto : UserHistory
+    {
+        public string? TimeStr { get; set; }
+    }
+    public class UserHistoryDtoProfile : Profile
+    {
+        public UserHistoryDtoProfile()
+        {
+            CreateMap<UserHistory, UserHistoryDto>()
+                .ForMember(
+                    x => x.TimeStr,
+                    memberOptions: y
+                        => y.MapFrom(x => x.Time.ToString("yyyy-MM-dd HH:mm")));
+        }
     }
 }
