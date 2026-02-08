@@ -12,4 +12,5 @@ appsettingsLocal.json
 wwwroot/
 
 # 数据目录
-Data/
+Data/**/*
+!Data/**/.gitkeep
