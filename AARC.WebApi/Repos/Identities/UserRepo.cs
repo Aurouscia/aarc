@@ -3,6 +3,7 @@ using AARC.WebApi.Models.Db.Context.Specific;
 using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Services.App.HttpAuthInfo;
+using AARC.WebApi.Services.Identities;
 using AARC.WebApi.Utils;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -14,6 +15,7 @@ namespace AARC.WebApi.Repos.Identities
         AarcContext context,
         HttpUserInfoService httpUserInfoService,
         HttpUserIdProvider httpUserIdProvider,
+        UserHistoryService userHistoryService,
         IMapper mapper
         ) : Repo<User>(context)
     {
@@ -145,50 +147,71 @@ namespace AARC.WebApi.Repos.Identities
                 Password = UserPwdEncryption.Encrypt(password),
                 Type = createAdmin ? UserType.Admin : UserType.Tourist
             };
-            base.Add(u);
-            return true;
+            using var t = Context.Database.BeginTransaction();
+            try
+            {
+                int uid = base.Add(u);
+                userHistoryService.RecordRegister(uid);
+                t.Commit();
+                return true;
+            }
+            catch
+            {
+                t.Rollback();
+                throw;
+            }
         }
 
-        public bool UpdateUser(UserDto u, out string? errmsg)
+        public void UpdateUser(UserDto u, string? comment)
         {
             if (u.Id == 0)
-            {
-                errmsg = "数据异常";
-                return false;
-            }
+                throw new RqEx("数据异常");
             var current = httpUserInfoService.UserInfo.Value;
             if (current.Id != u.Id && !current.IsAdmin)
             {
                 //除管理员之外的用户只能update自己的信息
-                errmsg = "无权操作";
-                return false;
+                throw new RqEx("无权操作");
             }
-            errmsg = CheckModel(u.Name, u.Password, u.Intro, u.Id);
-            if (errmsg is { })
-                return false;
+            var errmsg = CheckModel(u.Name, u.Password, u.Intro, u.Id);
+            if(errmsg is not null)
+                throw new RqEx(errmsg);
             var user = base.Get(u.Id);
             if (user is null)
-            {
-                errmsg = "找不到指定用户";
-                return false;
-            }
+                throw new RqEx("找不到指定用户");
+            
             bool wantChangeType = user.Type != u.Type;
             if (wantChangeType && !current.IsAdmin)
             {
                 //除管理员之外的用户不能编辑Type
-                errmsg = "无权操作";
-                return false;
+                throw new RqEx("无权操作");
             }
-            mapper.Map(u, user);
-            //不在mapper处理Password，需另外手动处理
-            if (!string.IsNullOrWhiteSpace(u.Password))
+
+            using var t = Context.Database.BeginTransaction();
+            try
             {
-                //若密码不为空，设置新密码
-                var pwdEncrypted = UserPwdEncryption.Encrypt(u.Password);
-                user.Password = pwdEncrypted;
+                if (wantChangeType)
+                {
+                    userHistoryService.RecordChangeType(u.Id, u.Type, comment);
+                }
+                    
+                mapper.Map(u, user);
+                
+                //不在mapper处理Password，需另外手动处理
+                if (!string.IsNullOrWhiteSpace(u.Password))
+                {
+                    //若密码不为空，设置新密码
+                    var pwdEncrypted = UserPwdEncryption.Encrypt(u.Password);
+                    user.Password = pwdEncrypted;
+                    userHistoryService.RecordChangePassword(user.Id, comment);
+                }
+                base.Update(user, true);
+                t.Commit();
             }
-            base.Update(user, true);
-            return true;
+            catch
+            {
+                t.Rollback();
+                throw;
+            }
         }
 
         public UserDto? GetUserInfo(int id)

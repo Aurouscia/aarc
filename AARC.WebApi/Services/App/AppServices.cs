@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
 using AARC.WebApi.Services.App.Turnstile;
-using AARC.WebApi.Services.Identities.AuthGrants;
 
 namespace AARC.WebApi.Services.App
 {
@@ -55,9 +54,6 @@ namespace AARC.WebApi.Services.App
             services.AddNSwagDocument();
             services.AddSingleton<NSwagTsGenService>();
             services.AddSingleton<TurnstileVerifyService>();
-
-            services.AddScoped<AuthGrantOwnerService>();
-            services.AddScoped<AuthGrantCheckService>();
 
             services.SetupAutoMapper(config);
             return services;

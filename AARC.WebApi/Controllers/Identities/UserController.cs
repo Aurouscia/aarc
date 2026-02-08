@@ -1,8 +1,8 @@
 ﻿using AARC.WebApi.Models.DbModels.Enums;
-using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Repos.Identities;
 using AARC.WebApi.Services.App.ActionFilters;
 using AARC.WebApi.Services.App.Turnstile;
+using AARC.WebApi.Services.Identities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +13,7 @@ namespace AARC.WebApi.Controllers.Identities
     [Route(ApiConsts.routePattern)]
     public class UserController(
         UserRepo userRepo,
+        UserHistoryService userHistoryService,
         TurnstileVerifyService turnstileVerifyService
         ) : Controller
     {
@@ -56,11 +57,19 @@ namespace AARC.WebApi.Controllers.Identities
         }
 
         [HttpPost]
-        public bool Update([FromBody] UserDto user)
+        public bool Update([FromBody] UserUpdateRequest request)
         {
-            var success = userRepo.UpdateUser(user, out var errmsg);
-            if (!success)
-                throw new RqEx(errmsg);
+            var user = request.User ?? throw new RqEx("数据异常");
+            var comment = request.Comment;
+            userRepo.UpdateUser(user, comment);
+            return true;
+        }
+
+        [HttpPost]
+        [UserCheck(UserType.Admin)]
+        public bool ChangeCredit([FromForm] int userId, [FromForm] int creditDelta, [FromForm] string? comment)
+        {
+            userHistoryService.RecordChangeCredit(userId, creditDelta, comment);
             return true;
         }
 
@@ -82,5 +91,11 @@ namespace AARC.WebApi.Controllers.Identities
                 throw new RqEx(errmsg);
             return true;
         }
+    }
+
+    public class UserUpdateRequest
+    {
+        public UserDto? User { get; set; }
+        public string? Comment { get; set; }
     }
 }

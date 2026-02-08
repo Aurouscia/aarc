@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using AARC.WebApi.Repos.Identities;
 using AARC.WebApi.Services.App.HttpAuthInfo;
+using AARC.WebApi.Services.Identities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
@@ -12,6 +13,7 @@ namespace AARC.WebApi.Controllers.System
     [Route(ApiConsts.routePattern)]
     public class AuthController(
         UserRepo userRepo,
+        UserHistoryService userHistoryService,
         HttpUserInfoService userInfo,
         IConfiguration config,
         ILogger<AuthController> logger)
@@ -52,6 +54,7 @@ namespace AARC.WebApi.Controllers.System
 
             string tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
             logger.LogInformation("[{userId}]{username}登录成功", u.Id, username);
+            userHistoryService.RecordLogin(u.Id);
             return new LoginResponse(tokenStr);
         }
         [HttpGet]

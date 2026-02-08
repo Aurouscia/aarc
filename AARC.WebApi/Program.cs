@@ -4,6 +4,7 @@ using AARC.WebApi.Repos;
 using AARC.WebApi.Services.App;
 using AARC.WebApi.Services.App.Logging;
 using AARC.WebApi.Services.Files;
+using AARC.WebApi.Services.Identities;
 using AARC.WebApi.Services.Saves;
 using AARC.WebApi.Utils;
 using Serilog;
@@ -25,6 +26,8 @@ try
     builder.Services.AddFilesServices();
     //添加存档处理服务
     builder.Services.AddSavesServices();
+    //添加身份有关服务
+    builder.Services.AddIdentitiesServices();
     
     var app = builder.Build();
     if (app.Environment.IsDevelopment())

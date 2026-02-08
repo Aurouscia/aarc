@@ -56,7 +56,7 @@ async function doneEditing(){
         showPop("两次输入的密码不一致", "failed")
         return
     }
-    success = await api.user.update(editingUser.value)
+    success = await api.user.update({user:editingUser.value})
     if(success){
         showPop("操作成功", "success")
         let newNameAndPwd = summerizeNameAndPwd()
