@@ -2,7 +2,7 @@
 import { UserHistoryDto, UserHistoryType } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import { useNameMapStore } from '@/app/globalStores/nameMap';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { userTypeReadable } from './models/utils';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 
@@ -10,7 +10,7 @@ const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
 const targetUserId = ref<number>()
 const operatorUserId = ref<number>()
-const type = ref<UserHistoryType>(UserHistoryType.Unknown)
+const type = ref<UserHistoryType>()
 const nameMap = useNameMapStore()
 
 const list = ref<UserHistoryDto[]>([])
@@ -49,6 +49,10 @@ function detail(uh:UserHistoryDto){
         return uh.userCreditDelta
 }
 
+watch(()=>[targetUserId.value, operatorUserId.value, type.value], ()=>{
+    load()
+})
+
 onMounted(()=>{
     load()
 })
@@ -56,12 +60,23 @@ onMounted(()=>{
 
 <template>
 <h1>系统操作记录</h1>
+<div class="conditions">
+    <button v-if="operatorUserId" class="off" @click="operatorUserId = 0">
+        筛选操作者：{{ nameMap.userNameMap.get(operatorUserId) }}
+    </button>
+    <button v-if="targetUserId" class="off" @click="targetUserId = 0">
+        筛选目标：{{ nameMap.userNameMap.get(targetUserId) }}
+    </button>
+    <button v-if="type" class="off" @click="type = 0">
+        筛选类型：{{ typeStr(type) }}
+    </button>
+</div>
 <div class="wideTableContainer">
 <table class="index" style="min-width: 100%;"><tbody>
     <tr>
         <th style="min-width: 90px;">时间</th>
         <th style="min-width: 100px;">操作者</th>
-        <th style="min-width: 100px;">被操作者</th>
+        <th style="min-width: 100px;">目标</th>
         <th style="min-width: 130px;">类型</th>
         <th style="min-width: 100px;">详情</th>
     </tr>
@@ -70,13 +85,19 @@ onMounted(()=>{
             {{ h.timeStr }}
         </td>
         <td>
-            {{ nameMap.userNameMap.get(h.operatorUserId ?? 0) ?? '---' }}
+            <button @click="operatorUserId = h.operatorUserId" class="lite">
+                {{ nameMap.userNameMap.get(h.operatorUserId ?? 0) ?? '---' }}
+            </button>
         </td>
         <td>
-            {{ nameMap.userNameMap.get(h.targetUserId ?? 0) ?? '---' }}
+            <button @click="targetUserId = h.targetUserId" class="lite">
+                {{ nameMap.userNameMap.get(h.targetUserId ?? 0) ?? '---' }}
+            </button>
         </td>
         <td>
-            {{ typeStr(h.userHistoryType) }}
+            <button @click="type = h.userHistoryType" class="lite">
+                {{ typeStr(h.userHistoryType) }}
+            </button>
         </td>
         <td>
             {{ detail(h) }}

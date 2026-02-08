@@ -21,7 +21,7 @@ public class UserHistoryService(
         if (type != UserHistoryType.Unknown)
             q = q.Where(x => x.UserHistoryType == type);
         if(targetUserId > 0)
-            q = q.Where(x => x.OperatorUserId == operatorUserId);
+            q = q.Where(x => x.TargetUserId == targetUserId);
         if(operatorUserId > 0)
             q = q.Where(x => x.OperatorUserId == operatorUserId);
         return q
