@@ -1,6 +1,6 @@
 /**
  * 按需进行代理url转换（如果同源则不转换）  
- * 参考：AARC-Backend/Controllers/System/ProxyController.cs
+ * 参考：AARC.WebApi/Controllers/System/ProxyController.cs
  * @param url 原url
  * @param type 代理类型
  * @returns 代理url

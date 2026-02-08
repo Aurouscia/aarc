@@ -8,7 +8,7 @@ namespace AARC.Services.App.OpenApi
         IHttpContextAccessor httpContextAccessor)
     {
         public const string outputPath
-            = "../AARC-Frontend/src/app/com/apiGenerated.ts";
+            = "../aarc/src/app/com/apiGenerated.ts";
         public async Task<int> GenApiTsClient()
         {
             var document = await GetOpenApiDocument();

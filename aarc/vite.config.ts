@@ -45,7 +45,7 @@ export default defineConfig(({ mode }) => {
     },
     build:{
       emptyOutDir:true,
-      outDir:"../AARC-Backend/wwwroot",
+      outDir:"../AARC.WebApi/wwwroot",
       rollupOptions: {
         output: {
           manualChunks: (id) => {

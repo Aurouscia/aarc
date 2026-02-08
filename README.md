@@ -1,4 +1,4 @@
-<img src="https://gitee.com/au114514/aarc/raw/master/AARC-Frontend/src/assets/logo/aarc-new.svg" width="150px" style="display:block;margin:auto"/>
+<img src="https://gitee.com/au114514/aarc/raw/master/aarc/src/assets/logo/aarc-new.svg" width="150px" style="display:block;margin:auto"/>
 
 <div style="text-align:center;margin-top:15px">
 <div style="font-size:22px">先进型抽象线路图画布</div>
@@ -46,7 +46,7 @@ http://aarc.jowei19.com
 
 1. 下载代码文件  
     - 如果使用git，在命令行中输入`git clone 【本仓库链接】`
-2. 进入前端文件夹(`/AARC-Frontend`)，按照该目录下的`README.md`文件进行操作，编译前端代码
+2. 进入前端目录(`/aarc`)，按照该目录下的`README.md`文件进行操作，编译前端代码
     - 编译完成后，会自动输出到后端的`wwwroot`目录下
 3. 双击项目根目录的sln文件，进入vs或rider
 4. 在本地的`/Data`目录中生成/更新数据库架构
