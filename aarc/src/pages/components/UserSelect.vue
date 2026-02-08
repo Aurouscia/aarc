@@ -47,6 +47,7 @@ const emit = defineEmits<{
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 8px;
+    text-align: center;
 }
 .user-select{
     width: 240px;

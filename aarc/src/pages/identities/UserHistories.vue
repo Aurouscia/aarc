@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { UserHistoryDto, UserHistoryType } from '@/app/com/apiGenerated';
+import { UserDto, UserHistoryDto, UserHistoryType } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import { useNameMapStore } from '@/app/globalStores/nameMap';
 import { onMounted, ref, watch } from 'vue';
 import { userTypeReadable } from './models/utils';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import UserSelect from '../components/UserSelect.vue';
 
 const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
 const targetUserId = ref<number>()
 const operatorUserId = ref<number>()
-const type = ref<UserHistoryType>()
+const type = ref<UserHistoryType>(UserHistoryType.Unknown)
 const nameMap = useNameMapStore()
 
 const list = ref<UserHistoryDto[]>([])
@@ -30,6 +31,10 @@ async function load(append?:'append') {
     }
 }
 
+const types = ref([
+    UserHistoryType.Unknown, UserHistoryType.Register, UserHistoryType.Login, UserHistoryType.ChangeType,
+    UserHistoryType.ChangeNameOrPassword, UserHistoryType.ChangeCredit
+])
 function typeStr(type?:UserHistoryType){
     if(type == UserHistoryType.Register)
         return '注册'
@@ -41,12 +46,29 @@ function typeStr(type?:UserHistoryType){
         return '重命名或改密码'
     if(type == UserHistoryType.ChangeCredit)
         return '修改信用分'
+    if(type == UserHistoryType.Unknown)
+        return '全部类型'
 }
 function detail(uh:UserHistoryDto){
     if(uh.userHistoryType == UserHistoryType.ChangeType)
         return userTypeReadable(uh.userTypeNew)
     if(uh.userHistoryType == UserHistoryType.ChangeCredit)
         return uh.userCreditDelta
+}
+
+const showOpSelect = ref(false)
+const showTarSelect = ref(false)
+function userSelected(forParam:'op'|'tar', u?:UserDto){
+    showOpSelect.value = false
+    showTarSelect.value = false
+    if(!u) return
+    nameMap.appendToMap('userNameMap', u.id ?? -1, u.name ?? '---')
+    if(forParam=='op'){
+        operatorUserId.value = u.id
+    }
+    else{
+        targetUserId.value = u.id
+    }
 }
 
 watch(()=>[targetUserId.value, operatorUserId.value, type.value], ()=>{
@@ -64,13 +86,20 @@ onMounted(()=>{
     <button v-if="operatorUserId" class="off" @click="operatorUserId = 0">
         筛选操作者：{{ nameMap.userNameMap.get(operatorUserId) }}
     </button>
+    <button v-else @click="showOpSelect=true">筛选操作者</button>
     <button v-if="targetUserId" class="off" @click="targetUserId = 0">
         筛选目标：{{ nameMap.userNameMap.get(targetUserId) }}
     </button>
+    <button v-else @click="showTarSelect=true">筛选目标</button>
     <button v-if="type" class="off" @click="type = 0">
         筛选类型：{{ typeStr(type) }}
     </button>
+    <select v-else v-model.number="type">
+        <option v-for="t in types" :value="t">{{ typeStr(t) }}</option>
+    </select>
 </div>
+<UserSelect v-if="showOpSelect" @select="u=>userSelected('op', u)"></UserSelect>
+<UserSelect v-if="showTarSelect" @select="u=>userSelected('tar', u)"></UserSelect>
 <div class="wideTableContainer">
 <table class="index" style="min-width: 100%;"><tbody>
     <tr>
@@ -95,7 +124,7 @@ onMounted(()=>{
             </button>
         </td>
         <td>
-            <button @click="type = h.userHistoryType" class="lite">
+            <button @click="type = h.userHistoryType ?? 0" class="lite">
                 {{ typeStr(h.userHistoryType) }}
             </button>
         </td>
