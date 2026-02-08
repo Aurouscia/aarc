@@ -10,8 +10,8 @@ using AARC.WebApi.Models.Db.Context;
 using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Enums.AuthGrantTypes;
 using AARC.WebApi.Models.DbModels.Saves;
-using AARC.WebApi.Services.App.AuthGrants;
 using AARC.WebApi.Services.App.HttpAuthInfo;
+using AARC.WebApi.Services.Identities.AuthGrants;
 using AARC.WebApi.Services.Saves;
 using AARC.WebApi.Utils;
 

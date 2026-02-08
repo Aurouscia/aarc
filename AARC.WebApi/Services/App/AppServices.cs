@@ -10,8 +10,8 @@ using AspNetCore.Proxy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
-using AARC.WebApi.Services.App.AuthGrants;
 using AARC.WebApi.Services.App.Turnstile;
+using AARC.WebApi.Services.Identities.AuthGrants;
 
 namespace AARC.WebApi.Services.App
 {

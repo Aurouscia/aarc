@@ -4,7 +4,7 @@ using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Repos;
 using AARC.WebApi.Services.App.HttpAuthInfo;
 
-namespace AARC.WebApi.Services.App.AuthGrants;
+namespace AARC.WebApi.Services.Identities.AuthGrants;
 
 public class AuthGrantCheckService(
     AarcContext context,
