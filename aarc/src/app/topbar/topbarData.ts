@@ -1,6 +1,6 @@
 import { mySavesName, saveToolsName, searchSaveName } from "@/pages/saves/routes/routesNames";
 import { TopbarModel, TopbarModelItem } from "./topbarModel";
-import { aboutName, loginName, userHistoriesName, userListName } from "@/pages/identities/routes/routesNames";
+import { aboutName, loginName, userCreditName, userHistoriesName, userListName } from "@/pages/identities/routes/routesNames";
 import { faq } from "@/pages/homes/routes/routesNames";
 import { useCommonLocalConfigStore } from "@/app/localConfig/commonLocalConfig";
 import { userFileList } from "@/pages/files/routes/routesNames";
@@ -77,6 +77,10 @@ export async function getTopbarData(): Promise<TopbarModel> {
                 {
                     title: "系统操作记录",
                     link: { name: userHistoriesName }
+                },
+                {
+                    title: "信用分",
+                    link: { name: userCreditName }
                 },
                 {
                     title: "关于",

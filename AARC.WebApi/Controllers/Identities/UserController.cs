@@ -82,6 +82,12 @@ namespace AARC.WebApi.Controllers.Identities
             return true;
         }
 
+        [HttpGet]
+        public int GetCredit(int userId)
+        {
+            return userHistoryService.GetUserCredit(userId);
+        }
+
         [AllowAnonymous]
         [HttpGet]
         public UserDto GetInfo(int id)

@@ -136,7 +136,8 @@ onMounted(()=>{
 </tbody></table>
 </div>
 <button v-if="list.length > 0" class="minor loadMore" @click="load('append')">加载更多</button>
-<div v-else class="smallNote loadMore">暂无相关记录（可点击筛选条件移除）</div>
+<div v-else class="smallNote loadMore">暂无相关记录</div>
+<div class="smallNote loadMore">提示：可点击激活的筛选条件移除</div>
 </template>
 
 <style scoped lang="scss">

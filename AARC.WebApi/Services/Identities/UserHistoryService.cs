@@ -13,6 +13,7 @@ public class UserHistoryService(
     HttpUserIdProvider userIdProvider,
     IMapper mapper)
 {
+    public const int userCreditBase = 10;
     private DbSet<UserHistory> UserHistories => context.UserHistories;
 
     public List<UserHistoryDto> Load(int targetUserId, int operatorUserId, UserHistoryType type, int skip)
@@ -30,6 +31,14 @@ public class UserHistoryService(
             .Take(20)
             .ProjectTo<UserHistoryDto>(mapper.ConfigurationProvider)
             .ToList();
+    }
+
+    public int GetUserCredit(int userId)
+    {
+        var sum = UserHistories
+            .Where(x => x.TargetUserId == userId && x.UserHistoryType == UserHistoryType.ChangeCredit)
+            .Sum(x => x.UserCreditDelta);
+        return userCreditBase + sum;
     }
     
     public void RecordLogin(int userId)
