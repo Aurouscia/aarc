@@ -1,4 +1,4 @@
-namespace AARC.Models.DbModels.Enums.AuthGrantTypes;
+namespace AARC.WebApi.Models.DbModels.Enums.AuthGrantTypes;
 
 public enum AuthGrantTypeOfSave : byte
 {

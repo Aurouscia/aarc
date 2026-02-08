@@ -1,7 +1,7 @@
-﻿using AARC.Services.App.OpenApi;
+﻿using AARC.WebApi.Services.App.OpenApi;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AARC.Controllers.System
+namespace AARC.WebApi.Controllers.System
 {
     [ApiController]
     [Route("dev/[action]")]

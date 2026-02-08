@@ -1,11 +1,11 @@
-﻿using AARC.Models.DbModels.Enums;
-using AARC.Models.DbModels.Identities;
-using AARC.Repos.Files;
-using AARC.Services.App.ActionFilters;
+﻿using AARC.WebApi.Models.DbModels.Enums;
+using AARC.WebApi.Models.DbModels.Identities;
+using AARC.WebApi.Repos.Files;
+using AARC.WebApi.Services.App.ActionFilters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AARC.Controllers.Files
+namespace AARC.WebApi.Controllers.Files
 {
     [Authorize]
     [ApiController]

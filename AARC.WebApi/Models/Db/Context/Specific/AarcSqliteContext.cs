@@ -1,7 +1,7 @@
-﻿using AARC.Utils;
+﻿using AARC.WebApi.Utils;
 using Microsoft.EntityFrameworkCore;
 
-namespace AARC.Models.Db.Context.Specific
+namespace AARC.WebApi.Models.Db.Context.Specific
 {
     public class AarcSqliteContext : AarcContext
     {

@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace AARC.Models.DbModels.Saves;
+namespace AARC.WebApi.Models.DbModels.Saves;
 
 [Index(nameof(OwnerUserId), nameof(ParentFolderId))]
 public class SaveFolder:IDbModel, IPrioritizable, IOwnable

@@ -1,4 +1,4 @@
-namespace AARC.Models.DbModels;
+namespace AARC.WebApi.Models.DbModels;
 
 public interface IPrioritizable
 {

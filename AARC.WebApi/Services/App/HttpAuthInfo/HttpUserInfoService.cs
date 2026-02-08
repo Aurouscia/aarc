@@ -1,10 +1,10 @@
-﻿using AARC.Models.Db.Context;
-using AARC.Models.DbModels.Identities;
-using AARC.Repos;
+﻿using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.DbModels.Identities;
+using AARC.WebApi.Repos;
 using System.IdentityModel.Tokens.Jwt;
-using AARC.Models.DbModels.Enums;
+using AARC.WebApi.Models.DbModels.Enums;
 
-namespace AARC.Services.App.HttpAuthInfo
+namespace AARC.WebApi.Services.App.HttpAuthInfo
 {
     public class HttpUserInfoService
     {

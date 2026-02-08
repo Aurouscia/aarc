@@ -1,10 +1,10 @@
-using AARC.Models.Db.Context;
-using AARC.Models.DbModels.Enums.AuthGrantTypes;
-using AARC.Models.DbModels.Identities;
-using AARC.Repos;
-using AARC.Services.App.HttpAuthInfo;
+using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.DbModels.Enums.AuthGrantTypes;
+using AARC.WebApi.Models.DbModels.Identities;
+using AARC.WebApi.Repos;
+using AARC.WebApi.Services.App.HttpAuthInfo;
 
-namespace AARC.Services.App.AuthGrants;
+namespace AARC.WebApi.Services.App.AuthGrants;
 
 public class AuthGrantCheckService(
     AarcContext context,

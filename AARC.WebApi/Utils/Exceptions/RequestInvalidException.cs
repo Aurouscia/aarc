@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace AARC.Utils.Exceptions
+namespace AARC.WebApi.Utils.Exceptions
 {
     public class RequestInvalidException(
         string? msg = null,

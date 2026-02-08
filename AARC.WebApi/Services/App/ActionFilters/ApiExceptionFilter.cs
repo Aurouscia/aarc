@@ -1,10 +1,10 @@
-﻿using AARC.Utils.Exceptions;
+﻿using AARC.WebApi.Utils.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Net;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace AARC.Services.App.ActionFilters
+namespace AARC.WebApi.Services.App.ActionFilters
 {
     public class ApiExceptionFilter(
         ILogger<ApiExceptionFilter> logger,

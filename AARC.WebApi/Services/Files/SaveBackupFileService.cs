@@ -1,7 +1,7 @@
 ﻿using System.IO.Compression;
 using System.Text.Json;
 
-namespace AARC.Services.Files
+namespace AARC.WebApi.Services.Files
 {
     public class SaveBackupFileService(
         IWebHostEnvironment env, ILogger<SaveBackupFileService> logger)

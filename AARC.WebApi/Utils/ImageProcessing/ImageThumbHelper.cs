@@ -4,7 +4,7 @@ using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Memory;
 using SixLabors.ImageSharp.Processing;
 
-namespace AARC.Utils.ImageProcessing
+namespace AARC.WebApi.Utils.ImageProcessing
 {
     public class ImageThumbHelper
     {

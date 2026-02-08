@@ -1,19 +1,19 @@
-﻿using AARC.Services.App.ActionFilters;
-using AARC.Services.App.Authentication;
-using AARC.Services.App.Config;
-using AARC.Services.App.HttpAuthInfo;
-using AARC.Services.App.Logging;
-using AARC.Services.App.Mapping;
-using AARC.Services.App.OpenApi;
-using AARC.Utils;
+﻿using AARC.WebApi.Services.App.ActionFilters;
+using AARC.WebApi.Services.App.Authentication;
+using AARC.WebApi.Services.App.Config;
+using AARC.WebApi.Services.App.HttpAuthInfo;
+using AARC.WebApi.Services.App.Logging;
+using AARC.WebApi.Services.App.Mapping;
+using AARC.WebApi.Services.App.OpenApi;
+using AARC.WebApi.Utils;
 using AspNetCore.Proxy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
-using AARC.Services.App.AuthGrants;
-using AARC.Services.App.Turnstile;
+using AARC.WebApi.Services.App.AuthGrants;
+using AARC.WebApi.Services.App.Turnstile;
 
-namespace AARC.Services.App
+namespace AARC.WebApi.Services.App
 {
     public static class AppServices
     {

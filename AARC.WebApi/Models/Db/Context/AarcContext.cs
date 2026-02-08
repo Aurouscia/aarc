@@ -1,9 +1,9 @@
-﻿using AARC.Models.DbModels.Files;
-using AARC.Models.DbModels.Identities;
-using AARC.Models.DbModels.Saves;
+﻿using AARC.WebApi.Models.DbModels.Files;
+using AARC.WebApi.Models.DbModels.Identities;
+using AARC.WebApi.Models.DbModels.Saves;
 using Microsoft.EntityFrameworkCore;
 
-namespace AARC.Models.Db.Context
+namespace AARC.WebApi.Models.Db.Context
 {
     public abstract class AarcContext: DbContext
     {

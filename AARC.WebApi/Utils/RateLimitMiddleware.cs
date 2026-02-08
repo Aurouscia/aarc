@@ -1,8 +1,8 @@
-using AARC.Controllers.System;
+using AARC.WebApi.Controllers.System;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace AARC.Utils;
+namespace AARC.WebApi.Utils;
 
 public class RateLimitMiddleware
 {

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
 using System.Net;
 
-namespace AARC.Controllers.System
+namespace AARC.WebApi.Controllers.System
 {
     [OpenApiIgnore]
     public class ProxyController : Controller

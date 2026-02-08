@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace AARC.Database.Migrations.Sqlite
+namespace AARC.WebApi.Database.Migrations.Sqlite
 {
     /// <inheritdoc />
     public partial class CreateTableSaveDiffs : Migration

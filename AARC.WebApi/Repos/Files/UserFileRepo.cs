@@ -1,13 +1,13 @@
-﻿using AARC.Models.Db.Context;
-using AARC.Models.DbModels.Files;
-using AARC.Models.DbModels.Saves;
-using AARC.Services.App.HttpAuthInfo;
-using AARC.Services.App.Mapping;
-using AARC.Services.Files;
+﻿using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.DbModels.Files;
+using AARC.WebApi.Models.DbModels.Saves;
+using AARC.WebApi.Services.App.HttpAuthInfo;
+using AARC.WebApi.Services.App.Mapping;
+using AARC.WebApi.Services.Files;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 
-namespace AARC.Repos.Files
+namespace AARC.WebApi.Repos.Files
 {
     public class UserFileRepo(
         AarcContext context,

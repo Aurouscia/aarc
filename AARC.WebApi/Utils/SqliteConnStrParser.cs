@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AARC.Utils
+namespace AARC.WebApi.Utils
 {
     public static class SqliteConnStrParser
     {

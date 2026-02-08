@@ -1,8 +1,8 @@
-﻿using AARC.Models.Db.Context;
-using AARC.Models.DbModels;
+﻿using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.DbModels;
 using Microsoft.EntityFrameworkCore;
 
-namespace AARC.Repos
+namespace AARC.WebApi.Repos
 {
     public abstract class Repo<T>(
         AarcContext context

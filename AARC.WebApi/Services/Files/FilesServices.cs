@@ -1,4 +1,4 @@
-﻿namespace AARC.Services.Files
+﻿namespace AARC.WebApi.Services.Files
 {
     public static class FilesServices
     {

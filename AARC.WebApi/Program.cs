@@ -1,11 +1,11 @@
-global using RqEx = AARC.Utils.Exceptions.RequestInvalidException;
-using AARC.Models.Db.Context;
-using AARC.Repos;
-using AARC.Services.App;
-using AARC.Services.App.Logging;
-using AARC.Services.Files;
-using AARC.Services.Saves;
-using AARC.Utils;
+global using RqEx = AARC.WebApi.Utils.Exceptions.RequestInvalidException;
+using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Repos;
+using AARC.WebApi.Services.App;
+using AARC.WebApi.Services.App.Logging;
+using AARC.WebApi.Services.Files;
+using AARC.WebApi.Services.Saves;
+using AARC.WebApi.Utils;
 using Serilog;
 
 try

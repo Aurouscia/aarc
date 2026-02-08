@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace AARC.Utils
+namespace AARC.WebApi.Utils
 {
     public static class MD5Helper
     {

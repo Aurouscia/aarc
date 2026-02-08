@@ -1,8 +1,8 @@
-﻿using AARC.Repos.Files;
-using AARC.Repos.Identities;
-using AARC.Repos.Saves;
+﻿using AARC.WebApi.Repos.Files;
+using AARC.WebApi.Repos.Identities;
+using AARC.WebApi.Repos.Saves;
 
-namespace AARC.Repos
+namespace AARC.WebApi.Repos
 {
     public static class RepoServices
     {

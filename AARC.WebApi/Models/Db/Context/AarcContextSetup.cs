@@ -1,6 +1,6 @@
-﻿using AARC.Models.Db.Context.Specific;
+﻿using AARC.WebApi.Models.Db.Context.Specific;
 
-namespace AARC.Models.Db.Context
+namespace AARC.WebApi.Models.Db.Context
 {
     public static class AarcContextSetup
     {

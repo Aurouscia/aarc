@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace AARC.Services.App.Mapping
+namespace AARC.WebApi.Services.App.Mapping
 {
     public static class AutoMapperSetup
     {

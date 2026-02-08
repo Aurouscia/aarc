@@ -1,11 +1,11 @@
-using AARC.Models.Db.Context;
-using AARC.Models.DbModels;
-using AARC.Models.DbModels.Files;
-using AARC.Models.DbModels.Identities;
-using AARC.Models.DbModels.Saves;
-using AARC.Services.App.HttpAuthInfo;
+using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.DbModels;
+using AARC.WebApi.Models.DbModels.Files;
+using AARC.WebApi.Models.DbModels.Identities;
+using AARC.WebApi.Models.DbModels.Saves;
+using AARC.WebApi.Services.App.HttpAuthInfo;
 
-namespace AARC.Services.App.AuthGrants;
+namespace AARC.WebApi.Services.App.AuthGrants;
 
 public class AuthGrantOwnerService(
     AarcContext context,

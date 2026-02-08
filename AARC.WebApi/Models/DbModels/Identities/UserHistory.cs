@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using AARC.Models.DbModels.Enums;
+using AARC.WebApi.Models.DbModels.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace AARC.Models.DbModels.Identities;
+namespace AARC.WebApi.Models.DbModels.Identities;
 
 [Index(nameof(TargetUserId), nameof(OperatorUserId))]
 public class UserHistory

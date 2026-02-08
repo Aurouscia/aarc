@@ -1,14 +1,14 @@
-﻿using AARC.Models.Db.Context;
-using AARC.Models.Db.Context.Specific;
-using AARC.Models.DbModels.Enums;
-using AARC.Models.DbModels.Identities;
-using AARC.Services.App.HttpAuthInfo;
-using AARC.Utils;
+﻿using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.Db.Context.Specific;
+using AARC.WebApi.Models.DbModels.Enums;
+using AARC.WebApi.Models.DbModels.Identities;
+using AARC.WebApi.Services.App.HttpAuthInfo;
+using AARC.WebApi.Utils;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 
-namespace AARC.Repos.Identities
+namespace AARC.WebApi.Repos.Identities
 {
     public class UserRepo(
         AarcContext context,

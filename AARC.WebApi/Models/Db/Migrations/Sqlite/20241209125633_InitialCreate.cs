@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace AARC.Models.Db.Migrations.Sqlite
+namespace AARC.WebApi.Models.Db.Migrations.Sqlite
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

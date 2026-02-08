@@ -1,10 +1,10 @@
-using AARC.Models.DbModels.Enums.AuthGrantTypes;
-using AARC.Models.DbModels.Identities;
-using AARC.Repos.Identities;
+using AARC.WebApi.Models.DbModels.Enums.AuthGrantTypes;
+using AARC.WebApi.Models.DbModels.Identities;
+using AARC.WebApi.Repos.Identities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AARC.Controllers.Identities
+namespace AARC.WebApi.Controllers.Identities
 {
     [Authorize]
     [ApiController]

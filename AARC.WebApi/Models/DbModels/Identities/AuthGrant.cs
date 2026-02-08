@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace AARC.Models.DbModels.Identities;
+namespace AARC.WebApi.Models.DbModels.Identities;
 
 /// <summary>
 /// 授权

@@ -1,4 +1,4 @@
-namespace AARC.Services.App.Turnstile;
+namespace AARC.WebApi.Services.App.Turnstile;
 
 public class TurnstileVerifyService(
     IConfiguration cfg,

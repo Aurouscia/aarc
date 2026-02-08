@@ -1,7 +1,7 @@
-﻿using AARC.Models.DbModels;
+﻿using AARC.WebApi.Models.DbModels;
 using AutoMapper;
 
-namespace AARC.Services.App.Mapping
+namespace AARC.WebApi.Services.App.Mapping
 {
     public static class AutoMapperExtensions
     {

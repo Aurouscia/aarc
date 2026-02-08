@@ -1,6 +1,6 @@
-﻿using AARC.Utils.Exceptions;
+﻿using AARC.WebApi.Utils.Exceptions;
 
-namespace AARC.Services.App.Config
+namespace AARC.WebApi.Services.App.Config
 {
     public class MasterKeyChecker(IConfiguration config)
     {

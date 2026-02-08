@@ -1,4 +1,4 @@
-﻿namespace AARC.Controllers
+﻿namespace AARC.WebApi.Controllers
 {
     public static class ApiConsts
     {

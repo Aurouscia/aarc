@@ -1,4 +1,4 @@
-﻿namespace AARC.Models.Db.Context
+﻿namespace AARC.WebApi.Models.Db.Context
 {
     public class AarcContextOptions
     {

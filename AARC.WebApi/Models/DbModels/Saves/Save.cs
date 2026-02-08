@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using AARC.Models.DbModels.Enums;
+using AARC.WebApi.Models.DbModels.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace AARC.Models.DbModels.Saves
+namespace AARC.WebApi.Models.DbModels.Saves
 {
     [Index(nameof(OwnerUserId))]
     public class Save : IDbModel, IPrioritizable, IOwnable

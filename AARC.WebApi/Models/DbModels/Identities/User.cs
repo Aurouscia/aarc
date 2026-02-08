@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using AARC.Models.DbModels.Enums;
+using AARC.WebApi.Models.DbModels.Enums;
 
-namespace AARC.Models.DbModels.Identities
+namespace AARC.WebApi.Models.DbModels.Identities
 {
     public class User : IDbModel
     {

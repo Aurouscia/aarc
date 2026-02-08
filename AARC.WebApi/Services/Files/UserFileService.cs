@@ -1,8 +1,8 @@
-﻿using AARC.Utils;
-using AARC.Utils.ImageProcessing;
+﻿using AARC.WebApi.Utils;
+using AARC.WebApi.Utils.ImageProcessing;
 using Microsoft.Extensions.FileProviders;
 
-namespace AARC.Services.Files
+namespace AARC.WebApi.Services.Files
 {
     /// <summary>
     /// 用户文件保存服务<br/>

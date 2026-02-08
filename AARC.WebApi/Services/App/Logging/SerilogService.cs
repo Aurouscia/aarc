@@ -1,8 +1,8 @@
-﻿using AARC.Services.App.Logging;
+﻿using AARC.WebApi.Services.App.Logging;
 using Serilog;
 using Serilog.Events;
 
-namespace AARC.Services.App.Logging
+namespace AARC.WebApi.Services.App.Logging
 {
     public static class SerilogService
     {

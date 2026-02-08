@@ -2,7 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace AARC.Services.App.Authentication
+namespace AARC.WebApi.Services.App.Authentication
 {
     public static class JwtService
     {

@@ -2,7 +2,7 @@
 using NSwag;
 using NSwag.CodeGeneration.TypeScript;
 
-namespace AARC.Services.App.OpenApi
+namespace AARC.WebApi.Services.App.OpenApi
 {
     public class NSwagTsGenService(
         IHttpContextAccessor httpContextAccessor)

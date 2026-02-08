@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace AARC.Models.DbModels.Files
+namespace AARC.WebApi.Models.DbModels.Files
 {
     [Index(nameof(OwnerUserId), nameof(Size), nameof(Priority))]
     public class UserFile : IDbModel, IPrioritizable, IOwnable

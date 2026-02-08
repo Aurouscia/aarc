@@ -1,12 +1,12 @@
-﻿using AARC.Models.DbModels.Identities;
-using AARC.Services.App.HttpAuthInfo;
+﻿using AARC.WebApi.Models.DbModels.Identities;
+using AARC.WebApi.Services.App.HttpAuthInfo;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Net;
-using AARC.Models.DbModels.Enums;
+using AARC.WebApi.Models.DbModels.Enums;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace AARC.Services.App.ActionFilters
+namespace AARC.WebApi.Services.App.ActionFilters
 {
     public class UserCheckFilter(
         HttpUserIdProvider httpUserIdProvider,

@@ -1,4 +1,4 @@
-namespace AARC.Models.DbModels.Enums;
+namespace AARC.WebApi.Models.DbModels.Enums;
 
 /// <summary>
 /// 作品的CreativeCommons许可证

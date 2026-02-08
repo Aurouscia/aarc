@@ -1,18 +1,18 @@
-﻿using AARC.Models.Db.Context;
-using AARC.Models.Db.Context.Specific;
-using AARC.Models.DbModels.Enums;
-using AARC.Models.DbModels.Identities;
-using AARC.Models.DbModels.Saves;
-using AARC.Services.App.HttpAuthInfo;
-using AARC.Services.App.Mapping;
-using AARC.Services.Saves;
+﻿using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.Db.Context.Specific;
+using AARC.WebApi.Models.DbModels.Enums;
+using AARC.WebApi.Models.DbModels.Identities;
+using AARC.WebApi.Models.DbModels.Saves;
+using AARC.WebApi.Services.App.HttpAuthInfo;
+using AARC.WebApi.Services.App.Mapping;
+using AARC.WebApi.Services.Saves;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 
-namespace AARC.Repos.Saves
+namespace AARC.WebApi.Repos.Saves
 {
     public class SaveRepo(
         AarcContext context,

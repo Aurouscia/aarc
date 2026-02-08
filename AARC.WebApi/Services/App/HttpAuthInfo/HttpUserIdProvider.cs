@@ -1,6 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 
-namespace AARC.Services.App.HttpAuthInfo
+namespace AARC.WebApi.Services.App.HttpAuthInfo
 {
     public class HttpUserIdProvider
     {

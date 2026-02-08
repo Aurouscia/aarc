@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.FileProviders;
 
-namespace AARC.Services.Files
+namespace AARC.WebApi.Services.Files
 {
     public class SaveMiniatureFileService(IWebHostEnvironment env, ILogger<SaveMiniatureFileService> logger)
     {

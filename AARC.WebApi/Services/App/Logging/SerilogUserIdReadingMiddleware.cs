@@ -1,7 +1,7 @@
-﻿using AARC.Services.App.HttpAuthInfo;
+﻿using AARC.WebApi.Services.App.HttpAuthInfo;
 using Serilog;
 
-namespace AARC.Services.App.Logging
+namespace AARC.WebApi.Services.App.Logging
 {
     public class SerilogUserIdReadingMiddleware(
         RequestDelegate next,

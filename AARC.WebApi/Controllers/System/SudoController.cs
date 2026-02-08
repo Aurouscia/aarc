@@ -1,13 +1,13 @@
-﻿using AARC.Models.Db.Context;
-using AARC.Models.DbModels.Enums.AuthGrantTypes;
-using AARC.Models.DbModels.Identities;
-using AARC.Repos.Identities;
-using AARC.Services.App.Config;
-using AARC.Services.Files;
+﻿using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.DbModels.Enums.AuthGrantTypes;
+using AARC.WebApi.Models.DbModels.Identities;
+using AARC.WebApi.Repos.Identities;
+using AARC.WebApi.Services.App.Config;
+using AARC.WebApi.Services.Files;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace AARC.Controllers.System
+namespace AARC.WebApi.Controllers.System
 {
     [ApiController]
     [Route("sudo/[action]")]

@@ -2,7 +2,7 @@
 using NSwag.Generation.Processors.Security;
 using NSwag;
 
-namespace AARC.Services.App.OpenApi
+namespace AARC.WebApi.Services.App.OpenApi
 {
     public static class NSwagService
     {

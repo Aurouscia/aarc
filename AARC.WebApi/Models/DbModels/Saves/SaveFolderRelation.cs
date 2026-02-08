@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace AARC.Models.DbModels.Saves;
+namespace AARC.WebApi.Models.DbModels.Saves;
 
 [Index(nameof(SaveId), nameof(FolderId))]
 public class SaveFolderRelation: IPrioritizable
