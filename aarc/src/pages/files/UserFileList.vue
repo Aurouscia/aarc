@@ -10,6 +10,7 @@ import settingsIcon from '@/assets/ui/gear.svg';
 import copy from 'copy-to-clipboard';
 import Notice from '@/components/common/Notice.vue';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
+import { isSvg } from '@/utils/fileUtils/ext';
 
 const fileList = ref<UserFileDto[]>();
 const api = useApiStore()
@@ -128,8 +129,10 @@ onMounted(async() => {
         <div v-else class="file-list">
             <div v-for="file in fileList" :key="file.id" class="file-item">
                 <div class="file-preview">
-                    <!-- 为图片添加id -->
-                    <img 
+                    <div v-if="isSvg(file.storeName) && Number(file.size) > 100*1000" class="svg-placeholder">
+                        <span class="svg-icon">SVG</span>
+                    </div>
+                    <img v-else
                       :src="urlBase + file.urlThumb" 
                       :alt="file.displayName" 
                       class="preview-image" 
@@ -272,6 +275,24 @@ onMounted(async() => {
         width: 100%;
         height: 100%;
         object-fit: cover;
+    }
+
+    .svg-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f0f0f0;
+    }
+
+    .svg-icon {
+        font-size: 14px;
+        font-weight: bold;
+        color: #666;
+        padding: 4px 8px;
+        border: 2px solid #666;
+        border-radius: 4px;
     }
 
     .file-info {
