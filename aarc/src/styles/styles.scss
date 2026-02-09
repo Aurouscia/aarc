@@ -48,6 +48,11 @@ h1{
     color: #666;
     letter-spacing: 0.1em;
     font-weight: normal;
+    span.small{
+        font-size: 14px;
+        letter-spacing: normal;
+        vertical-align: baseline;
+    }
 }
 h1.h1WithBtns{
     display: flex;

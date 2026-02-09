@@ -11,6 +11,7 @@ namespace AARC.WebApi.Services.Identities;
 public class UserHistoryService(
     AarcContext context,
     HttpUserIdProvider userIdProvider,
+    HttpUserInfoService userInfoService,
     IMapper mapper)
 {
     public const int userCreditBase = 10;
@@ -19,12 +20,22 @@ public class UserHistoryService(
     public List<UserHistoryDto> Load(int targetUserId, int operatorUserId, UserHistoryType type, int skip)
     {
         var q = UserHistories.AsQueryable();
+        if (userInfoService.IsAdmin)
+        {
+            if(targetUserId > 0)
+                q = q.Where(x => x.TargetUserId == targetUserId);
+            if(operatorUserId > 0)
+                q = q.Where(x => x.OperatorUserId == operatorUserId);   
+        }
+        else
+        {
+            var uid = userIdProvider.UserIdLazy.Value;
+            if (uid == 0)
+                return [];
+            q = q.Where(x => x.OperatorUserId == uid || x.TargetUserId == uid);
+        }
         if (type != UserHistoryType.Unknown)
             q = q.Where(x => x.UserHistoryType == type);
-        if(targetUserId > 0)
-            q = q.Where(x => x.TargetUserId == targetUserId);
-        if(operatorUserId > 0)
-            q = q.Where(x => x.OperatorUserId == operatorUserId);
         return q
             .OrderByDescending(x => x.Id)
             .Skip(skip)

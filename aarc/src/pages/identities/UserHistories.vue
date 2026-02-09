@@ -6,6 +6,7 @@ import { onMounted, ref, watch } from 'vue';
 import { userTypeReadable } from './models/utils';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import UserSelect from '../components/UserSelect.vue';
+import { useUserInfoStore } from '@/app/globalStores/userInfo';
 
 const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
@@ -13,6 +14,7 @@ const targetUserId = ref<number>()
 const operatorUserId = ref<number>()
 const type = ref<UserHistoryType>(UserHistoryType.Unknown)
 const nameMap = useNameMapStore()
+const userInfo = useUserInfoStore()
 
 const list = ref<UserHistoryDto[]>([])
 async function load(append?:'append') {
@@ -81,16 +83,18 @@ onMounted(()=>{
 </script>
 
 <template>
-<h1>系统操作记录</h1>
+<h1>系统操作记录<span class="small">（仅管理员和自己可见）</span></h1>
 <div class="conditions">
-    <button v-if="operatorUserId" class="off" @click="operatorUserId = 0">
-        筛选操作者：{{ nameMap.userNameMap.get(operatorUserId) }}
-    </button>
-    <button v-else @click="showOpSelect=true">筛选操作者</button>
-    <button v-if="targetUserId" class="off" @click="targetUserId = 0">
-        筛选目标：{{ nameMap.userNameMap.get(targetUserId) }}
-    </button>
-    <button v-else @click="showTarSelect=true">筛选目标</button>
+    <template v-if="userInfo.isAdmin">
+        <button v-if="operatorUserId" class="off" @click="operatorUserId = 0">
+            筛选操作者：{{ nameMap.userNameMap.get(operatorUserId) }}
+        </button>
+        <button v-else @click="showOpSelect=true">筛选操作者</button>
+        <button v-if="targetUserId" class="off" @click="targetUserId = 0">
+            筛选目标：{{ nameMap.userNameMap.get(targetUserId) }}
+        </button>
+        <button v-else @click="showTarSelect=true">筛选目标</button>
+    </template>
     <button v-if="type" class="off" @click="type = 0">
         筛选类型：{{ typeStr(type) }}
     </button>
@@ -137,7 +141,7 @@ onMounted(()=>{
 </div>
 <button v-if="list.length > 0" class="minor loadMore" @click="load('append')">加载更多</button>
 <div v-else class="smallNote loadMore">暂无相关记录</div>
-<div class="smallNote loadMore">提示：可点击激活的筛选条件移除</div>
+<div class="smallNote loadMore" v-if="userInfo.isAdmin">提示：可点击激活的筛选条件移除</div>
 </template>
 
 <style scoped lang="scss">
