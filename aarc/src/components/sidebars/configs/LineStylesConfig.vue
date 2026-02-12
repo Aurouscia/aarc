@@ -7,10 +7,11 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import { moveUpInArray } from '@/utils/lang/moveUpInArray';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
 import { storeToRefs } from 'pinia';
-import { CSSProperties, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
+import { CSSProperties, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
 import convert from 'color-convert'
 import { timestampMS } from '@/utils/timeUtils/timestamp';
 import ConfigSection from '../configs/shared/ConfigSection.vue';
+import { debounce } from '@/utils/lang/debounce';
 
 const saveStore = useSaveStore()
 const { save } = storeToRefs(saveStore)
@@ -106,10 +107,14 @@ function checkStyleName(s:LineStyle){
     }
 }
 
-function rr(){
+function rerender(){
     envStore.rerender([], [])
     renderPreviewCvs()
 }
+const debouncedRerender = debounce(rerender, 600)
+watch(()=>save.value?.lineStyles, ()=>{
+    debouncedRerender()
+}, {deep: true})
 
 let timer = 0
 onMounted(()=>{
@@ -133,7 +138,7 @@ onUnmounted(()=>{
         </div>
         <div v-if="showDetail[s.id]" class="detail">
             <div class="name">
-                <h3>名称</h3><input v-model="s.name" placeholder="风格名称(必填)" @blur="checkStyleName(s);rr()"/>
+                <h3>名称</h3><input v-model="s.name" placeholder="风格名称(必填)" @blur="checkStyleName(s)"/>
             </div>
             <div class="layers">
                 <div v-for="layer,idx in s.layers" class="layer">
@@ -143,21 +148,21 @@ onUnmounted(()=>{
                             <div class="leftPart">
                                 <AuColorPicker v-if="!layer.colorMode || layer.colorMode==='fixed'"
                                     ref="colorPicker"
-                                    v-model="layer.color" @done="rr()"
+                                    v-model="layer.color"
                                     :entry-styles="{border:'1px solid black'}" :pos="-85"
                                     :entry-respond-delay="1"
                                     :panel-click-stop-propagation="true"></AuColorPicker>
                                 <div v-else-if="layer.colorMode==='line'" class="following">跟随线路颜色</div>
                             </div>
-                            <button v-if="layer.colorMode!=='line'" class="lite" @click="layer.colorMode='line';rr()">跟随线路</button>
-                            <button v-else class="lite" @click="layer.colorMode='fixed';rr()">取消跟随</button>
+                            <button v-if="layer.colorMode!=='line'" class="lite" @click="layer.colorMode='line'">跟随线路</button>
+                            <button v-else class="lite" @click="layer.colorMode='fixed'">取消跟随</button>
                         </div>
                     </div>
                     <div>
                         <h3>宽度</h3>
                         <div class="numberConfig">
                             <div class="leftPart">
-                                <input type="range" v-model="layer.width" :min="0" :max="1" :step="0.05" @blur="rr()"/>
+                                <input type="range" v-model="layer.width" :min="0" :max="1" :step="0.05"/>
                             </div>
                             <div class="numberView">{{ layer.width }}</div>
                         </div>
@@ -166,37 +171,37 @@ onUnmounted(()=>{
                         <h3>透明</h3>
                         <div class="numberConfig">
                             <div class="leftPart">
-                                <input type="range" v-model="layer.opacity" :min="0" :max="1" :step="0.05" @blur="rr()"/>
+                                <input type="range" v-model="layer.opacity" :min="0" :max="1" :step="0.05"/>
                             </div>
                             <div class="numberView">{{ layer.opacity }}</div>
                         </div>
                     </div>
                     <div>
                         <h3>虚线</h3>
-                        <input v-model="layer.dash" class="dashConfigInput" placeholder="空格隔开的数字" @blur="rr()"/>
+                        <input v-model="layer.dash" class="dashConfigInput" placeholder="空格隔开的数字"/>
                     </div>
                     <div v-if="layer.dash">
-                        <h3>虚线段</h3>
+                        <h3>虚线端部</h3>
                         <select v-model="layer.dashCap">
                             <option :value="undefined">方头</option>
                             <option :value="'round'">圆头</option>
                         </select>
                     </div>
                     <div class="ops">
-                        <button v-if="idx>0" class="lite lsMoveUp" @click="moveUpInArray(s.layers, idx);rr()">上移</button>
-                        <button class="lite lsDelete" @click="delLayer(s, idx);rr()">删除</button>
+                        <button v-if="idx>0" class="lite lsMoveUp" @click="moveUpInArray(s.layers, idx)">上移</button>
+                        <button class="lite lsDelete" @click="delLayer(s, idx)">删除</button>
                     </div>
                 </div>
             </div>
             <div class="ops">
-                <button class="ok" @click="addLayer(s);rr()">+层级</button>
-                <button v-if="sIdx>0" class="minor" @click="moveUpInArray(save?.lineStyles, sIdx);rr()">上移</button>
-                <button class="cancel" @click="delStyle(s);rr()">删除</button>
+                <button class="ok" @click="addLayer(s)">+层级</button>
+                <button v-if="sIdx>0" class="minor" @click="moveUpInArray(save?.lineStyles, sIdx)">上移</button>
+                <button class="cancel" @click="delStyle(s)">删除</button>
             </div>
         </div>
     </div>
     <div class="newStyle">
-        <button class="ok" @click="addStyle();rr()">+新建样式</button>
+        <button class="ok" @click="addStyle()">+新建样式</button>
     </div>
 </div>
 </ConfigSection>
