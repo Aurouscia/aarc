@@ -12,6 +12,7 @@ import convert from 'color-convert'
 import { timestampMS } from '@/utils/timeUtils/timestamp';
 import ConfigSection from '../configs/shared/ConfigSection.vue';
 import { debounce } from '@/utils/lang/debounce';
+import foldIcon from '@/assets/ui/fold.svg';
 
 const saveStore = useSaveStore()
 const { save } = storeToRefs(saveStore)
@@ -131,19 +132,30 @@ onUnmounted(()=>{
 <template>
 <ConfigSection :title="'线路风格'">
 <div class="lineStyles" @click="clickContainer">
-    <div v-for="s,sIdx in save?.lineStyles" :key="s.id">
-        <div class="preview">
+    <div v-for="s,sIdx in save?.lineStyles" :key="s.id" :class="{showDetail:showDetail[s.id]}">
+        <div class="preview" @click="showDetail[s.id] = !showDetail[s.id]">
             <canvas :width="cvsWidth" :height="cvsHeight" :style="cvsStyle" :id="cvsEleId(s.id)"></canvas>
-            <div @click="showDetail[s.id] = !showDetail[s.id]" class="sqrBtn withShadow">...</div>
+            <div class="foldBtn">
+                <img :src="foldIcon"/>
+            </div>
         </div>
         <div v-if="showDetail[s.id]" class="detail">
             <div class="name">
-                <h3>名称</h3><input v-model="s.name" placeholder="风格名称(必填)" @blur="checkStyleName(s)"/>
+                <h3>风格名</h3><input v-model="s.name" placeholder="风格名称(必填)" @blur="checkStyleName(s)"/>
             </div>
             <div class="layers">
                 <div v-for="layer,idx in s.layers" class="layer">
+                    <div class="layerHead">
+                        <b v-if="idx == 0">—顶层—</b>
+                        <b v-else-if="idx == s.layers.length-1">—底层—</b>
+                        <b v-else>—第{{idx+1}}层—</b>
+                        <div class="ops">
+                            <button v-if="idx>0" class="lite lsMoveUp" @click="moveUpInArray(s.layers, idx)">上移</button>
+                            <button class="lite lsDelete" @click="delLayer(s, idx)">删除</button>
+                        </div>
+                    </div>
                     <div>
-                        <h3>颜色</h3>
+                        <b>颜色</b>
                         <div class="colorConfig">
                             <div class="leftPart">
                                 <AuColorPicker v-if="!layer.colorMode || layer.colorMode==='fixed'"
@@ -159,7 +171,7 @@ onUnmounted(()=>{
                         </div>
                     </div>
                     <div>
-                        <h3>宽度</h3>
+                        <b>宽度</b>
                         <div class="numberConfig">
                             <div class="leftPart">
                                 <input type="range" v-model="layer.width" :min="0" :max="1" :step="0.05"/>
@@ -168,7 +180,7 @@ onUnmounted(()=>{
                         </div>
                     </div>
                     <div>
-                        <h3>透明</h3>
+                        <b>透明</b>
                         <div class="numberConfig">
                             <div class="leftPart">
                                 <input type="range" v-model="layer.opacity" :min="0" :max="1" :step="0.05"/>
@@ -177,26 +189,22 @@ onUnmounted(()=>{
                         </div>
                     </div>
                     <div>
-                        <h3>虚线</h3>
+                        <b>虚线</b>
                         <input v-model="layer.dash" class="dashConfigInput" placeholder="空格隔开的数字"/>
                     </div>
                     <div v-if="layer.dash">
-                        <h3>虚线端部</h3>
+                        <b>虚线端部</b>
                         <select v-model="layer.dashCap">
                             <option :value="undefined">方头</option>
                             <option :value="'round'">圆头</option>
                         </select>
                     </div>
-                    <div class="ops">
-                        <button v-if="idx>0" class="lite lsMoveUp" @click="moveUpInArray(s.layers, idx)">上移</button>
-                        <button class="lite lsDelete" @click="delLayer(s, idx)">删除</button>
-                    </div>
                 </div>
             </div>
-            <div class="ops">
+            <div class="layersOps">
                 <button class="ok" @click="addLayer(s)">+层级</button>
-                <button v-if="sIdx>0" class="minor" @click="moveUpInArray(save?.lineStyles, sIdx)">上移</button>
-                <button class="cancel" @click="delStyle(s)">删除</button>
+                <button v-if="sIdx>0" class="minor" @click="moveUpInArray(save?.lineStyles, sIdx)">上移风格</button>
+                <button class="cancel" @click="delStyle(s)">删除风格</button>
             </div>
         </div>
     </div>
@@ -209,107 +217,160 @@ onUnmounted(()=>{
 
 <style scoped lang="scss">
 .lineStyles{
-    background-color: #eee;
     padding: 5px;
     &>div{
-        border: 2px solid #666;
         border-radius: 10px;
-        margin: 10px 0px 10px 0px;
-        padding: 5px;
+        margin: 16px 0px 16px 0px;
+        box-shadow: 0px 0px 5px 0px #ccc;
+        background-color: #eee;
+        overflow: hidden;
+        border: 2px solid #eee;
+        &:first-child{
+            margin-top: 0px;
+        }
         .preview{
             display: flex;
             justify-content: space-between;
             align-items: center;
             height: 30px;
+            padding: 5px;
+            cursor: pointer;
             canvas{
                 border-radius: 10px;
             }
-        }
-        h3{
-            font-size: 16px;
-            font-weight: normal;
-        }
-        .name{
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            input{
-                width: 120px;
+            .foldBtn{
+                width: 30px;
+                height: 30px;
+                border-radius: 6px;
+                img{
+                    width: 20px;
+                    height: 20px;
+                    margin: 5px;
+                    transform: rotate(0deg);
+                    user-select: none;
+                }
             }
         }
-        .layers{
-            .layer{
-                border: 1px solid #666;
-                border-radius: 5px;
-                margin: 5px 0px 0px 0px;
-                &>div{
-                    margin: 5px;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
+        &.showDetail {
+            border-color: #666;
+            .preview{
+                img {
+                    transform: rotate(180deg);
+                }
+            }
+        }
+        .detail{
+            background-color: white;
+            padding: 8px;
+            h3{
+                font-size: 16px;
+                font-weight: normal;
+            }
+            .name{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                input{
+                    width: 120px;
+                }
+            }
+            .layers{
+                .layer{
+                    border-radius: 5px;
+                    margin: 8px 0px 0px 0px;
+                    box-shadow: 0px 0px 5px 0px #ccc;
+                    padding-bottom: 1px;
                     &>div{
-                        height: 30px;
-                    }
-                    .colorConfig, .numberConfig{
-                        flex-grow: 1;
+                        margin: 5px;
                         display: flex;
-                        justify-content: space-between;
                         align-items: center;
-                        .leftPart{
-                            width: 120px;
+                        gap: 14px;
+                        b{
+                            color: #666;
+                            font-size: 13px;
+                        }
+                        &>div{
+                            height: 34px;
+                        }
+                        .colorConfig, .numberConfig{
+                            flex-grow: 1;
                             display: flex;
-                            justify-content: center;
-                        }
-                    }
-                    .colorConfig{
-                        .following{
-                            color: #999;
-                            font-size: 14px;
-                        }
-                        button.lite{
-                            flex-grow: 0;
-                            font-size: 14px;
-                            text-decoration: underline;
-                            &:hover{
-                                color:black
+                            justify-content: space-between;
+                            align-items: center;
+                            .leftPart{
+                                width: 120px;
+                                display: flex;
+                                justify-content: center;
                             }
                         }
-                    }
-                    .numberConfig{
-                        .numberView{
-                            width: 40px;
+                        .colorConfig{
+                            .following{
+                                color: #999;
+                                font-size: 14px;
+                            }
+                            button.lite{
+                                flex-grow: 0;
+                                font-size: 14px;
+                                text-decoration: underline;
+                                &:hover{
+                                    color:black
+                                }
+                            }
                         }
-                        input[type=range]{
+                        .numberConfig{
+                            .numberView{
+                                width: 40px;
+                            }
+                            input[type=range]{
+                                width: 120px;
+                            }
+                        }
+                        .dashConfigInput{
+                            margin: 0px;
                             width: 120px;
                         }
                     }
-                    .dashConfigInput{
+                    .layerHead{
+                        background-color: #f3f3f3;
                         margin: 0px;
-                        width: 120px;
-                    }
-                }
-                &>.ops{
-                    button.lsMoveUp{
-                        color: #999;
-                    }
-                    button.lsDelete{
-                        color: plum
+                        padding: 0px 6px;
+                        b{
+                            font-size: 15px;
+                        }
+                        .ops{
+                            flex-grow: 1;
+                            display: flex;
+                            justify-content: flex-end;
+                            align-items: center;
+                            gap: 6px;
+                        }
+                        button{
+                            font-size: 14px;
+                        }
+                        button.lsMoveUp{
+                            color: #666;
+                        }
+                        button.lsDelete{
+                            color: plum
+                        }
                     }
                 }
             }
-        }
-        .ops{
-            margin: 10px 0px 0px 0px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
+            .layersOps{
+                margin-top: 10px;
+                display: flex;
+                justify-content: center;
+                gap: 6px;
+            }
         }
     }
     &>.newStyle{
         border: none;
         display: flex;
         justify-content: center;
+        button{
+            flex-grow: 1;
+        }
     }
 }
 </style>
