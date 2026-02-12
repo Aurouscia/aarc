@@ -175,6 +175,13 @@ onUnmounted(()=>{
                         <h3>虚线</h3>
                         <input v-model="layer.dash" class="dashConfigInput" placeholder="空格隔开的数字" @blur="rr()"/>
                     </div>
+                    <div v-if="layer.dash">
+                        <h3>虚线段</h3>
+                        <select v-model="layer.dashCap">
+                            <option :value="undefined">方头</option>
+                            <option :value="'round'">圆头</option>
+                        </select>
+                    </div>
                     <div class="ops">
                         <button v-if="idx>0" class="lite lsMoveUp" @click="moveUpInArray(s.layers, idx);rr()">上移</button>
                         <button class="lite lsDelete" @click="delLayer(s, idx);rr()">删除</button>

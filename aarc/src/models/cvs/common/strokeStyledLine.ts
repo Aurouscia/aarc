@@ -16,7 +16,7 @@ export function strokeStyledLine(
     ctx.setLineDash([])
     ctx.lineCap = 'butt'
     ctx.stroke()
-    for(let i=lineStyle.layers.length-1; i>=0; i--){
+    for(let i = lineStyle.layers.length - 1; i >= 0; i--){
         const layer = lineStyle.layers[i]
         //被input设置的width和opacity是字符串形式的数字，此处应该使用双等号判断是否为0，三等号判断将始终为false
         if(!layer.width || layer.width==0){
@@ -27,7 +27,7 @@ export function strokeStyledLine(
         }
         ctx.lineWidth = lineWidthBase * layer.width
         ctx.globalAlpha = layer.opacity
-        if(layer.colorMode==='line')
+        if(layer.colorMode === 'line')
             ctx.strokeStyle = dynaColor
         else {
             if(layer.color){
@@ -41,11 +41,13 @@ export function strokeStyledLine(
             dashNums[i] = dashNums[i]*lineWidthBase
         }
         ctx.setLineDash(dashNums)
+        ctx.lineCap = layer.dashCap || 'butt'
         ctx.stroke()
     }
     //容易忘记初始化的属性必须复位
     ctx.setLineDash([])
     ctx.globalAlpha = 1
+    ctx.lineCap = 'butt'
 }
 function parseDash(dashStr?:string):number[]{
     const res:number[] = []

@@ -98,6 +98,7 @@ export interface LineStyle{
         width?:number
         opacity?:number
         dash?:string
+        dashCap?:CanvasLineCap
     }[]
 }
 export interface LineGroup{
