@@ -79,7 +79,8 @@ public class SaveDiffService(
                 new KeyedArrayConfig(["lineStyles"], true),
                 new KeyedArrayConfig(["lineGroups"], true),
                 new KeyedArrayConfig(["textTags"], false),
-                new KeyedArrayConfig(["textTagIcons"], true)
+                new KeyedArrayConfig(["textTagIcons"], true),
+                new KeyedArrayConfig(["patterns"], true)
             ],
             LongArrayConfigs = [
                 new LongArrayConfig(["pointLinks"], PtLinkEqMark)
