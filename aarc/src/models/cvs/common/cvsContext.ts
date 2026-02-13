@@ -26,14 +26,14 @@ export class CvsContext{
         this.b = block
     }
 
-    callMethod(method:'beginPath'|'closePath'|'stroke'|'fill'){
+    private callMethod(method:'beginPath'|'closePath'|'stroke'|'fill'){
         this.b.ctx2d[method]()
     }
-    callMethodXY(method:'moveTo'|'lineTo', x:number, y:number){
+    private callMethodXY(method:'moveTo'|'lineTo', x:number, y:number){
         let b = this.b
         b.ctx2d[method](b.mapX(x), b.mapY(y))
     }
-    callMethodXYWH(method:'strokeRect'|'fillRect', x:number, y:number, width:number, height:number){
+    private callMethodXYWH(method:'strokeRect'|'fillRect', x:number, y:number, width:number, height:number){
         let b = this.b
         b.ctx2d[method](b.mapX(x), b.mapY(y), width*b.scale, height*b.scale)
     }
@@ -85,6 +85,22 @@ export class CvsContext{
         dx = b.mapX(dx); dy = b.mapY(dy)
         dw *= b.scale; dh *= b.scale
         b.ctx2d.drawImage(image, dx, dy, dw, dh)
+    }
+    createPattern(image:CanvasImageSource, repetition: string|null){
+        return this.b.ctx2d.createPattern(image, repetition)
+    }
+    translate(x:number, y:number){
+        this.b.ctx2d.translate(x, y)
+    }
+
+    getUnderlyingCanvas(){
+        return this.b.ctx2d.canvas
+    }
+    getCurrentScale(){
+        return this.b.scale
+    }
+    getCurrentOffset(): [number, number]{
+        return [this.b.x, this.b.y]
     }
     clear(){
         const cvs = this.b.ctx2d.canvas

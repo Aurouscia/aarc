@@ -1,15 +1,19 @@
 import { LineStyle } from "@/models/save"
 import { CvsContext } from "./cvsContext"
+import { usePatternStore } from "@/models/stores/patternStore"
+import { Coord } from "@/models/coord"
 
 export function strokeStyledLine(
     ctx: CanvasRenderingContext2D|CvsContext,
-    options: {        
+    options: {
+        scale?:number,
+        offset?:Coord,
         lineStyle:LineStyle,
         lineWidthBase:number,
         dynaColor:string,
         fixedColorConverter:(c:string)=>string
     }){
-    const { lineWidthBase, lineStyle, dynaColor, fixedColorConverter } = options
+    const { scale, offset, lineWidthBase, lineStyle, dynaColor, fixedColorConverter } = options
     ctx.lineWidth = lineWidthBase
     ctx.globalAlpha = 1
     ctx.strokeStyle = dynaColor
@@ -27,21 +31,38 @@ export function strokeStyledLine(
         }
         ctx.lineWidth = lineWidthBase * layer.width
         ctx.globalAlpha = layer.opacity
+        let color
         if(layer.colorMode === 'line')
-            ctx.strokeStyle = dynaColor
+            color = dynaColor
         else {
             if(layer.color){
-                ctx.strokeStyle = fixedColorConverter(layer.color)
+                color = fixedColorConverter(layer.color)
             } else {
-                ctx.strokeStyle = 'white'
+                color = 'white'
             }
         }
-        const dashNums = parseDash(layer.dash)
-        for(let i=0;i<dashNums.length;i++){
-            dashNums[i] = dashNums[i]*lineWidthBase
+
+        ctx.strokeStyle = color
+
+        if(layer.dash){
+            const dashNums = parseDash(layer.dash)
+            for(let i=0;i<dashNums.length;i++){
+                dashNums[i] = dashNums[i]*lineWidthBase
+            }
+            ctx.setLineDash(dashNums)
+            ctx.lineCap = layer.dashCap || 'butt'
         }
-        ctx.setLineDash(dashNums)
-        ctx.lineCap = layer.dashCap || 'butt'
+        else if(layer.pattern){
+            console.log(offset, scale)
+            const patternBase = usePatternStore().getRendered(layer.pattern, scale ?? 1, color, 1)
+            if(patternBase){
+                const pattern = ctx.createPattern(patternBase, null)
+                if(pattern){
+                    ctx.strokeStyle = pattern
+                }
+            }
+        }
+
         ctx.stroke()
     }
     //容易忘记初始化的属性必须复位

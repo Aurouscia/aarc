@@ -7,6 +7,9 @@ export function coordAdd(a:Coord, b:Coord):Coord{
 export function coordSub(a:Coord, b:Coord):Coord{
     return [a[0]-b[0], a[1]-b[1]]
 }
+export function coordInv(a:Coord):Coord{
+    return [-a[0], -a[1]]
+}
 export function coordSubSgn(a:Coord, b:Coord):SgnCoord{
     return sgnCoord(coordSub(a, b))
 }

@@ -231,7 +231,8 @@ export const devSave:Save = {
             name: "2号线",
             nameSub: "Line 2",
             color: "#009900",
-            type: LineType.common
+            type: LineType.common,
+            style: 100001
         },
         {
             id: 103,
@@ -346,6 +347,24 @@ export const devSave:Save = {
                     opacity: 1
                 }
             ]
+        },
+        {
+            id: 100001,
+            name:"某公司的线",
+            layers:[
+                {
+                    width: 0.8,
+                    colorMode: 'line',
+                    opacity: 0.8,
+                    pattern: 2000000
+                },
+                {
+                    width: 0.8,
+                    color: '#ffffff',
+                    colorMode: 'fixed',
+                    opacity: 0.5
+                }
+            ]
         }
     ],
     textTagIcons:[
@@ -360,6 +379,20 @@ export const devSave:Save = {
             width: 50,
             name: '测试-火车站',
             url: 'http://aarc.jowei19.com/icons/a/train.svg'
+        }
+    ],
+    patterns:[
+        {
+            id: 2000000,
+            width: 9,
+            height: 9,
+            grid: {
+                width: 1,
+                color: '#ffffff',
+                opacity: 0.5,
+                rise45: true,
+                fall45: true
+            }
         }
     ],
     config:{},
