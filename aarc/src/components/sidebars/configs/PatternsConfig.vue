@@ -4,7 +4,7 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import { useEnvStore } from '@/models/stores/envStore';
 import { usePatternStore } from '@/models/stores/patternStore';
 import { storeToRefs } from 'pinia';
-import { CSSProperties, nextTick, ref, useTemplateRef, watch } from 'vue';
+import { CSSProperties, nextTick, onMounted, ref, useTemplateRef, watch } from 'vue';
 import ConfigSection from '../configs/shared/ConfigSection.vue';
 import { debounce } from '@/utils/lang/debounce';
 import foldIcon from '@/assets/ui/fold.svg';
@@ -17,6 +17,33 @@ const envStore = useEnvStore()
 const patternStore = usePatternStore()
 const showDetail = ref<Record<number, boolean|undefined>>({})
 const colorPicker = useTemplateRef('colorPicker')
+// 记录每个图案是否保持宽高一致
+const keepRatio = ref<Record<number, boolean>>({})
+
+// 初始化 keepRatio 状态
+function initKeepRatio(patterns?: Pattern[]){
+    if(!patterns) return
+    for(const p of patterns){
+        if(keepRatio.value[p.id] === undefined){
+            keepRatio.value[p.id] = p.width === p.height
+        }
+    }
+}
+
+// 处理宽度变化，如果保持比例则同步高度
+function onWidthChange(pattern: Pattern){
+    if(keepRatio.value[pattern.id]){
+        pattern.height = pattern.width
+    }
+}
+
+// 处理保持比例复选框变化
+function onKeepRatioChange(pattern: Pattern, checked: boolean){
+    keepRatio.value[pattern.id] = checked
+    if(checked){
+        pattern.height = pattern.width
+    }
+}
 
 function clickContainer(){
     //点击"其他地方"关闭颜色选择器
@@ -34,7 +61,7 @@ function delPattern(pattern: Pattern){
 
 function addPattern(){
     const newId = saveStore.getNewId()
-    const newPattern = {
+    const newPattern:Pattern = {
         id: newId,
         name: '',
         width: 10,
@@ -43,10 +70,12 @@ function addPattern(){
             width: 1,
             color: '#000000',
             opacity: 1,
-            horizontal: true,
-            vertical: true
+            rise45: true,
+            fall45: true
         }
     }
+    // 新创建的图案默认保持宽高一致
+    keepRatio.value[newId] = true
     save.value?.patterns?.push(newPattern)
     nextTick(()=>renderPreviewCvsOf(newPattern))
 }
@@ -107,6 +136,16 @@ const debouncedRerender = debounce(rerender, 600)
 watch(()=>save.value?.patterns, ()=>{
     debouncedRerender()
 }, {deep: true})
+
+// 监听 patterns 变化，初始化新图案的 keepRatio
+watch(()=>save.value?.patterns, (newPatterns)=>{
+    initKeepRatio(newPatterns)
+}, {deep: false})
+
+onMounted(()=>{
+    initKeepRatio(save.value?.patterns)
+    renderPreviewCvs()
+})
 </script>
 
 <template>
@@ -128,7 +167,7 @@ watch(()=>save.value?.patterns, ()=>{
                     <b>宽度</b>
                     <div class="numberConfig">
                         <div class="leftPart">
-                            <input type="range" v-model="p.width" :min="5" :max="50" :step="1"/>
+                            <input type="range" v-model="p.width" :min="5" :max="50" :step="1" @input="onWidthChange(p)"/>
                         </div>
                         <div class="numberView">{{ p.width }}</div>
                     </div>
@@ -137,9 +176,15 @@ watch(()=>save.value?.patterns, ()=>{
                     <b>高度</b>
                     <div class="numberConfig">
                         <div class="leftPart">
-                            <input type="range" v-model="p.height" :min="5" :max="50" :step="1"/>
+                            <input type="range" v-model="p.height" :min="5" :max="50" :step="1" :disabled="keepRatio[p.id]"/>
                         </div>
                         <div class="numberView">{{ p.height }}</div>
+                    </div>
+                </div>
+                <div>
+                    <b>保持一致</b>
+                    <div class="numberConfig">
+                        <input type="checkbox" :checked="keepRatio[p.id]" @change="e => onKeepRatioChange(p, (e.target as HTMLInputElement).checked)"/>
                     </div>
                 </div>
             </div>
@@ -185,21 +230,21 @@ watch(()=>save.value?.patterns, ()=>{
                     <div class="gridLineType">
                         <label>
                             <input type="checkbox" v-model="p.grid.horizontal"/>
-                            <span>水平</span>
+                            <span>水平线</span>
                         </label>
                         <label>
                             <input type="checkbox" v-model="p.grid.vertical"/>
-                            <span>垂直</span>
+                            <span>垂直线</span>
                         </label>
                     </div>
                     <div class="gridLineType">
                         <label>
                             <input type="checkbox" v-model="p.grid.rise45"/>
-                            <span>上升</span>
+                            <span>上升线</span>
                         </label>
                         <label>
                             <input type="checkbox" v-model="p.grid.fall45"/>
-                            <span>下降</span>
+                            <span>下降线</span>
                         </label>
                     </div>
                 </div>

@@ -392,9 +392,7 @@ export const devSave:Save = {
                 color: '#ffffff',
                 opacity: 0.5,
                 rise45: true,
-                fall45: true,
-                vertical: true, 
-                horizontal: true
+                fall45: true
             }
         }
     ],
