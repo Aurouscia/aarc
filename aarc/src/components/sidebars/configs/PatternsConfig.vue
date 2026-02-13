@@ -166,7 +166,11 @@ onMounted(()=>{
         </div>
         <div v-if="showDetail[p.id]" class="detail">
             <div class="name">
-                <h3>纹理名</h3><input v-model="p.name" placeholder="纹理名称(必填)" @blur="checkPatternName(p)"/>
+                <h3>纹理名</h3><input v-model="p.name" placeholder="必填" @blur="checkPatternName(p)"/>
+            </div>
+            <div class="patternOps">
+                <button v-if="pIdx>0" class="minor" @click="moveUpInArray(save?.patterns, pIdx)">上移纹理</button>
+                <button class="cancel" @click="delPattern(p)">删除纹理</button>
             </div>
             <div class="dimensions">
                 <div>
@@ -255,10 +259,6 @@ onMounted(()=>{
                     </div>
                 </div>
             </div>
-            <div class="patternOps">
-                <button v-if="pIdx>0" class="minor" @click="moveUpInArray(save?.patterns, pIdx)">上移纹理</button>
-                <button class="cancel" @click="delPattern(p)">删除纹理</button>
-            </div>
         </div>
     </div>
     <div class="newPattern">
@@ -325,6 +325,8 @@ onMounted(()=>{
                 align-items: center;
                 input{
                     width: 120px;
+                    border-radius: 0px;
+                    border-width: 0px 0px 1px 0px;
                 }
             }
             .dimensions{

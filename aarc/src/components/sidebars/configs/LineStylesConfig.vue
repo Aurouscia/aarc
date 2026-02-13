@@ -141,7 +141,12 @@ onUnmounted(()=>{
         </div>
         <div v-if="showDetail[s.id]" class="detail">
             <div class="name">
-                <h3>风格名</h3><input v-model="s.name" placeholder="风格名称(必填)" @blur="checkStyleName(s)"/>
+                <h3>风格名</h3><input v-model="s.name" placeholder="必填" @blur="checkStyleName(s)"/>
+            </div>
+            <div class="layersOps">
+                <button class="ok" @click="addLayer(s)">+层级</button>
+                <button v-if="sIdx>0" class="minor" @click="moveUpInArray(save?.lineStyles, sIdx)">上移风格</button>
+                <button class="cancel" @click="delStyle(s)">删除风格</button>
             </div>
             <div class="layers">
                 <div v-for="layer,idx in s.layers" class="layer">
@@ -207,11 +212,6 @@ onUnmounted(()=>{
                         </select>
                     </div>
                 </div>
-            </div>
-            <div class="layersOps">
-                <button class="ok" @click="addLayer(s)">+层级</button>
-                <button v-if="sIdx>0" class="minor" @click="moveUpInArray(save?.lineStyles, sIdx)">上移风格</button>
-                <button class="cancel" @click="delStyle(s)">删除风格</button>
             </div>
         </div>
     </div>
@@ -279,6 +279,8 @@ onUnmounted(()=>{
                 align-items: center;
                 input{
                     width: 120px;
+                    border-radius: 0px;
+                    border-width: 0px 0px 1px 0px;
                 }
             }
             .layers{
