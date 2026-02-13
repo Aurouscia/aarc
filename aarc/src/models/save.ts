@@ -10,6 +10,7 @@ export interface Save{
     lineGroups?: LineGroup[]
     textTags: TextTag[]
     textTagIcons?: TextTagIcon[]
+    patterns?: Pattern[]
     cvsSize: Coord
     config: ConfigInSave
     meta: SaveMetaData
@@ -98,7 +99,8 @@ export interface LineStyle{
         width?:number
         opacity?:number
         dash?:string
-        dashCap?:CanvasLineCap
+        dashCap?:CanvasLineCap,
+        pattern?:number
     }[]
 }
 export interface LineGroup{
@@ -143,12 +145,32 @@ export interface TextOptions{
     //b?:boolean
     //u?:boolean
 }
-
 export interface TextTagIcon{
     id:number,
     name?:string,
     url?:string,
     width?:number
+}
+
+export interface Pattern{
+    id: number
+    width: number
+    height: number
+    grid?: {
+        width: number
+        color?: string
+        opacity?: number
+        horizontal?: boolean
+        vertical?: boolean
+        // rise：左下往右上，fall：左上往右下
+        // arctan(0.5)约为27度，arctan(2)约为63度，你懂我的意思吧？
+        rise27?: boolean
+        rise45?: boolean
+        rise63?: boolean
+        fall27?: boolean
+        fall45?: boolean
+        fall63?: boolean
+    }
 }
 
 export interface SaveMetaData{
