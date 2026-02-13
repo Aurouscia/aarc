@@ -130,7 +130,7 @@ onUnmounted(()=>{
 </script>
 
 <template>
-<ConfigSection :title="'线路风格'">
+<ConfigSection :title="'线路样式'">
 <div class="lineStyles" @click="clickContainer">
     <div v-for="s,sIdx in save?.lineStyles" :key="s.id" :class="{showDetail:showDetail[s.id]}">
         <div class="preview" @click="showDetail[s.id] = !showDetail[s.id]">

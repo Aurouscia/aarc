@@ -154,7 +154,7 @@ onMounted(()=>{
 <ConfigSection :title="'纹理（新）'" @show="()=>$nextTick(renderPreviewCvs)">
 <div class="patterns" @click="clickContainer">
     <div class="smallNote" style="text-align: center;">
-        纹理目前可用在“线路风格”的层级中<br/>
+        纹理目前可用在“线路样式”的层级中<br/>
         形成带网格花纹的线路
     </div>
     <div v-for="p,pIdx in save?.patterns" :key="p.id" :class="{showDetail:showDetail[p.id]}">
