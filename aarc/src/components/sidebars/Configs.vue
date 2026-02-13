@@ -19,6 +19,7 @@ import { useNameEditStore } from '@/models/stores/nameEditStore';
 import SaveConfigReuse from './configs/SaveConfigReuse.vue';
 import BgRefImageConfig from './configs/BgRefImageConfig.vue';
 import FontConfig from './configs/FontConfig.vue';
+import PatternsConfig from './configs/PatternsConfig.vue';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
@@ -126,6 +127,8 @@ defineExpose({
 <TextTagConfig></TextTagConfig>
 
 <TextTagIconConfig></TextTagIconConfig>
+
+<PatternsConfig></PatternsConfig>
 
 <FontConfig></FontConfig>
 

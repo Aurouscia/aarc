@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps<{
     title: string,
@@ -7,7 +7,20 @@ const props = defineProps<{
     defaultShow?: boolean,
     noTitle?: boolean
 }>()
+const emit = defineEmits<{
+    (e: 'show'):void,
+    (e: 'hide'):void
+}>()
+
 const show = ref(props.defaultShow??false);
+
+watch(()=>show.value, (newVal)=>{
+    if(newVal){
+        emit('show')
+    }else{
+        emit('hide')
+    }
+})
 </script>
 
 <template>
