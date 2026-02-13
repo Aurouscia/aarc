@@ -52,13 +52,16 @@ export function strokeStyledLine(
             ctx.setLineDash(dashNums)
             ctx.lineCap = layer.dashCap || 'butt'
         }
-        else if(layer.pattern){
-            let offsetForPattern = offset ?? [0, 0]
-            const patternBase = usePatternStore().getRendered(layer.pattern, scale ?? 1, offsetForPattern , color, 1)
-            if(patternBase){
-                const pattern = ctx.createPattern(patternBase, null)
-                if(pattern){
-                    ctx.strokeStyle = pattern
+        else {
+            ctx.setLineDash([])
+            if(layer.pattern){
+                let offsetForPattern = offset ?? [0, 0]
+                const patternBase = usePatternStore().getRendered(layer.pattern, scale ?? 1, offsetForPattern , color, 1)
+                if(patternBase){
+                    const pattern = ctx.createPattern(patternBase, null)
+                    if(pattern){
+                        ctx.strokeStyle = pattern
+                    }
                 }
             }
         }
