@@ -176,7 +176,8 @@ export interface Pattern{
 
 export interface SaveMetaData{
     lineStylesVersion?: number,
-    textTagIconsVersion?: number
+    textTagIconsVersion?: number,
+    patternsVersion?: number
 }
 
 export function saveStaCount(save:Save){

@@ -1,6 +1,7 @@
 import { Save, SaveMetaData } from "../save"
 import { initFreshNewConfig, upgradeConfig } from "./upgrade/config"
-import { freshNewLineStyleVersion, initFreshNewLineStyles, upgradeLineStyles } from "./upgrade/lineStyles"
+import { freshNewLineStylesVersion, initFreshNewLineStyles, upgradeLineStyles } from "./upgrade/lineStyles"
+import { freshNewPatternsVersion, initFreshNewPatterns, upgradePatterns } from "./upgrade/patterns"
 import { freshNewTextTagIconsVersion, upgradeTextTagIcons } from "./upgrade/textTagIcons"
 import { initFreshNewTextTags } from "./upgrade/textTags"
 import { ensureValidCvsSize } from "./valid/cvsSize"
@@ -52,6 +53,7 @@ export function normalizeSave(obj:any){
         initFreshNewLineStyles(obj, getNewId)
         initFreshNewConfig(obj)
         initFreshNewTextTags(obj, getNewId)
+        initFreshNewPatterns(obj, getNewId)
     }else{
         fillDefault('meta', 'object', {})
     }
@@ -59,6 +61,7 @@ export function normalizeSave(obj:any){
     upgradeLineStyles(obj, getNewId)
     upgradeConfig(obj)
     upgradeTextTagIcons(obj, getNewId)
+    upgradePatterns(obj, getNewId)
 
     // 一些存档不知道哪来的point.key，给它删掉
     // 这里可以确定obj.points肯定是数组
@@ -72,7 +75,8 @@ export function normalizeSave(obj:any){
 
 function getFreshNewMeta():SaveMetaData{
     return {
-        lineStylesVersion: freshNewLineStyleVersion,
-        textTagIconsVersion: freshNewTextTagIconsVersion
+        lineStylesVersion: freshNewLineStylesVersion,
+        textTagIconsVersion: freshNewTextTagIconsVersion,
+        patternsVersion: freshNewPatternsVersion
     }
 }

@@ -1,6 +1,6 @@
 import { Save } from "@/models/save";
 
-export const freshNewLineStyleVersion = 0
+export const freshNewLineStylesVersion = 0
 export function initFreshNewLineStyles(s:Save, getNewId:()=>number){
     s.lineStyles ??= []
     s.lineStyles.push(

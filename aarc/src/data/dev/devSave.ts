@@ -384,6 +384,7 @@ export const devSave:Save = {
     patterns:[
         {
             id: 2000000,
+            name: '网格',
             width: 13,
             height: 13,
             grid: {
