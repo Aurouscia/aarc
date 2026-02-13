@@ -384,8 +384,8 @@ export const devSave:Save = {
     patterns:[
         {
             id: 2000000,
-            width: 9,
-            height: 9,
+            width: 13,
+            height: 13,
             grid: {
                 width: 1,
                 color: '#ffffff',

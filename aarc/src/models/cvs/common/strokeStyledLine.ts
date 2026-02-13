@@ -53,8 +53,8 @@ export function strokeStyledLine(
             ctx.lineCap = layer.dashCap || 'butt'
         }
         else if(layer.pattern){
-            console.log(offset, scale)
-            const patternBase = usePatternStore().getRendered(layer.pattern, scale ?? 1, color, 1)
+            let offsetForPattern = offset ?? [0, 0]
+            const patternBase = usePatternStore().getRendered(layer.pattern, scale ?? 1, offsetForPattern , color, 1)
             if(patternBase){
                 const pattern = ctx.createPattern(patternBase, null)
                 if(pattern){

@@ -21,7 +21,6 @@ import { rayToCoordDist } from "@/utils/rayUtils/rayToCoordDist";
 import { numberCmpEpsilon } from "@/utils/consts";
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
-import { coordInv, coordMut } from "@/utils/coordUtils/coordMath";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill:number}
 type LineRenderType = 'both'|'body'|'carpet'
@@ -427,7 +426,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 const itsStyle = saveStore.save?.lineStyles?.find(x=>x.id===lineInfo.style)
                 if(itsStyle){
                     const scale = ctx.getCurrentScale()
-                    const offset = coordMut(coordInv(ctx.getCurrentOffset()), 1)
+                    const offset = ctx.getCurrentOffset()
                     strokeStyledLine(ctx, {
                         scale,
                         offset,
