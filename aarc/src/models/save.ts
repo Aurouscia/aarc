@@ -154,6 +154,7 @@ export interface TextTagIcon{
 
 export interface Pattern{
     id: number
+    name?: string
     width: number
     height: number
     grid?: {
