@@ -362,7 +362,7 @@ export const devSave:Save = {
                     width: 0.8,
                     color: '#ffffff',
                     colorMode: 'fixed',
-                    opacity: 0.5
+                    opacity: 0.7
                 }
             ]
         }
@@ -385,8 +385,8 @@ export const devSave:Save = {
         {
             id: 2000000,
             name: '网格',
-            width: 13,
-            height: 13,
+            width: 8,
+            height: 8,
             grid: {
                 width: 1,
                 color: '#ffffff',

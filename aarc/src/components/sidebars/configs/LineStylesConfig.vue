@@ -199,6 +199,13 @@ onUnmounted(()=>{
                             <option :value="'round'">圆头</option>
                         </select>
                     </div>
+                    <div v-else>
+                        <b>纹理</b>
+                        <select v-model="layer.pattern">
+                            <option :value="undefined">无</option>
+                            <option v-for="p in save?.patterns" :value="p.id">{{ p.name }}</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="layersOps">
