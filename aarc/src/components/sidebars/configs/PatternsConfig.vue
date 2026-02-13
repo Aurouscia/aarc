@@ -76,6 +76,8 @@ function addPattern(){
     }
     // 新创建的图案默认保持宽高一致
     keepRatio.value[newId] = true
+    if(save.value)
+        save.value.patterns ??= []
     save.value?.patterns?.push(newPattern)
     nextTick(()=>renderPreviewCvsOf(newPattern))
 }
