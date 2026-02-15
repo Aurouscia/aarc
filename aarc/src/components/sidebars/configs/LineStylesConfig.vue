@@ -40,8 +40,10 @@ function delStyle(lineStyle:LineStyle){
     }
 }
 function addStyle(){
+    if(!save.value) return
     const newId = saveStore.getNewId()
-    save.value?.lineStyles?.push({
+    save.value.lineStyles ??= []
+    save.value.lineStyles.push({
         id:newId,
         layers:[getDefaultLayer()]
     })
