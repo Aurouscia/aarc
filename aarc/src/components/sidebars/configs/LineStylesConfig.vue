@@ -232,7 +232,7 @@ onUnmounted(()=>{
         margin: 16px 0px 16px 0px;
         box-shadow: 0px 0px 5px 0px #ccc;
         background-color: #eee;
-        overflow: hidden;
+        overflow: visible;
         border: 2px solid #eee;
         &:first-child{
             margin-top: 0px;
@@ -271,6 +271,7 @@ onUnmounted(()=>{
         .detail{
             background-color: white;
             padding: 8px;
+            border-radius: 0px 0px 8px 8px; // 外层容器的radius - 边框宽度
             h3{
                 font-size: 16px;
                 font-weight: normal;
@@ -345,6 +346,7 @@ onUnmounted(()=>{
                         background-color: #f3f3f3;
                         margin: 0px;
                         padding: 0px 6px;
+                        border-radius: 5px 5px 0px 0px;
                         b{
                             font-size: 15px;
                         }
