@@ -12,6 +12,7 @@ import { searchMarkForEmptyName, useNameSearchStore } from '@/models/stores/name
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
+import StringReplace from './StringReplace.vue';
 
 const envStore = useEnvStore()
 const pointLinkStore = usePointLinkStore()
@@ -129,6 +130,7 @@ defineExpose({
             检测名称重复车站
         </button>
     </div>
+    <StringReplace></StringReplace>
 </SideBar>
 </template>
 
