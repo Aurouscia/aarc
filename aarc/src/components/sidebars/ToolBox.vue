@@ -71,7 +71,7 @@ defineExpose({
 <template>
 <SideBar ref="sidebar">
     <div class="toolItem">
-        <div class="smallNote">用于添加标题/作者等信息，请勿用于标注站名</div>
+        <div class="smallNote">用于添加标题/作者等信息，<b style="color:red">请勿</b>用于标注站名</div>
         <div class="smallNote">需要线路/地形名称标签，请点击线路/地形创建</div>
         <button @click="end();envStore.createTextTag();fd()">创建文本标签</button>
     </div>
@@ -115,7 +115,7 @@ defineExpose({
         <div class="smallNote">
             使本次保存强制生成备份<br/>
             建议在公共存档“即将交给他人”前备份一次<br/>
-            缺陷：仅对“绿色保存按钮”有效，ctrl+S无效
+            <b>缺陷：</b>仅对“绿色保存按钮”有效，ctrl+S无效
         </div>
         <div style="display: flex;align-items: center;color:#999">
             <input v-model="mustBackup" type="checkbox"/>请勾选
@@ -130,7 +130,7 @@ defineExpose({
             检测名称重复车站
         </button>
     </div>
-    <StringReplace></StringReplace>
+    <StringReplace class="toolItem"></StringReplace>
 </SideBar>
 </template>
 

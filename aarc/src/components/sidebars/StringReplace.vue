@@ -4,7 +4,6 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import { LineType } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
-import ConfigSection from './configs/shared/ConfigSection.vue';
 
 const { showPop } = useUniqueComponentsStore();
 const saveStore = useSaveStore();
@@ -22,8 +21,8 @@ interface ReplaceTarget {
 const targets = ref<ReplaceTarget[]>([
   { key: 'staName', label: '站名', checked: true },
   { key: 'staNameS', label: '副站名', checked: false },
-  { key: 'textTagText', label: '文本标签主文本', checked: false },
-  { key: 'textTagTextS', label: '文本标签副文本', checked: false },
+  { key: 'textTagText', label: '标签主文本', checked: false },
+  { key: 'textTagTextS', label: '标签副文本', checked: false },
   { key: 'lineNameCommon', label: '线路主名', checked: false },
   { key: 'lineNameSubCommon', label: '线路副名', checked: false },
   { key: 'lineNameTerrain', label: '地形主名', checked: false },
@@ -165,7 +164,7 @@ function handleLines(
 </script>
 
 <template>
-  <ConfigSection :title="'文本替换'">
+        <div class="smallNote">文本替换</div>
     <div class="input-group">
       <label>查找文本：</label>
       <input 
@@ -205,7 +204,6 @@ function handleLines(
     >
       执行替换
     </button>
-  </ConfigSection>
 </template>
 
 <style scoped lang="scss">
@@ -247,9 +245,4 @@ function handleLines(
   width: 100%;
 }
 
-.smallNote {
-  font-size: 12px;
-  color: #999;
-  margin-bottom: 8px;
-}
 </style>
