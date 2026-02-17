@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, CSSProperties, nextTick, ref, useTemplateRef, watch } from 'vue';
 import SideBar from '../common/SideBar.vue';
+import Prompt from '../common/Prompt.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { storeToRefs } from 'pinia';
 import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
@@ -147,6 +148,65 @@ defineExpose({
     comeOut: ()=>{sidebar.value?.extend()},
     fold: ()=>{sidebar.value?.fold()}
 })
+
+// -------- 坐标乘除 --------
+const scaleRatio = ref<number>(2)
+const scaleOp = ref<'multiply' | 'divide'>('multiply')
+
+const scaleConfirming = ref<boolean>(false)
+
+function scaleRatioInvalid(): boolean {
+    const v = scaleRatio.value
+    if (!v || isNaN(v) || v <= 0) return true
+    return false
+}
+
+function requestScaleConfirm() {
+    if (scaleRatioInvalid()) return
+    scaleConfirming.value = true
+}
+
+function cancelScaleConfirm() {
+    scaleConfirming.value = false
+}
+
+function executeScale() {
+    if (!saveStore.save) return
+    const ratio = scaleRatio.value
+    const isDivide = scaleOp.value === 'divide'
+    const factor = isDivide ? 1 / ratio : ratio
+
+    for (const pt of saveStore.save.points) {
+        pt.pos[0] = Math.round(pt.pos[0] * factor)
+        pt.pos[1] = Math.round(pt.pos[1] * factor)
+        if (pt.nameP) {
+            pt.nameP[0] = Math.round(pt.nameP[0] * factor)
+            pt.nameP[1] = Math.round(pt.nameP[1] * factor)
+        }
+    }
+    for (const tag of saveStore.save.textTags) {
+        tag.pos[0] = Math.round(tag.pos[0] * factor)
+        tag.pos[1] = Math.round(tag.pos[1] * factor)
+    }
+    const newW = Math.round(saveStore.save.cvsSize[0] * factor)
+    const newH = Math.round(saveStore.save.cvsSize[1] * factor)
+    saveStore.setCvsSize([newW, newH])
+
+    staNameMainRectStore.clearItems()
+    cvsFrameStore.initContSizeStyle()
+    nextTick(() => {
+        cvsBlocksControlStore.refreshBlocks(false)
+        nextTick(() => {
+            baseCvsDispatcher.renderBaseCvs()
+            mainCvsDispatcher.renderMainCvs({})
+            cvsFrameStore.updateScaleLock()
+        })
+    })
+
+    const opText = isDivide ? `÷${ratio}` : `×${ratio}`
+    showPop(`坐标${opText} 操作成功`, 'success')
+    scaleConfirming.value = false
+}
 </script>
 
 <template>
@@ -230,6 +290,61 @@ defineExpose({
     <Notice v-if="everythingWillGoOut" :type="'danger'">
         这样调整后<br/>所有内容都会被移出画布范围
     </Notice>
+
+    <!-- 坐标乘除 -->
+    <div class="scaleSection">
+        <div class="scaleTitle">坐标乘除</div>
+        <div class="scaleRow">
+            <div class="scaleOpBtns">
+                <button
+                    :class="['scaleOpBtn', scaleOp === 'multiply' ? 'active' : 'minor']"
+                    @click="scaleOp = 'multiply'"
+                >乘法 ×</button>
+                <button
+                    :class="['scaleOpBtn', scaleOp === 'divide' ? 'active' : 'minor']"
+                    @click="scaleOp = 'divide'"
+                >除法 ÷</button>
+            </div>
+            <input
+                v-model.number="scaleRatio"
+                type="number"
+                min="0.1"
+                max="10.0"
+                step="0.5"
+                class="scaleInput"
+                placeholder="倍率"
+            />
+        </div>
+        <div class="scalePreview" v-if="!scaleRatioInvalid()">
+            <span class="gray">画布将变为 </span>
+            <span class="bold">
+                {{
+                    scaleOp === 'multiply'
+                        ? `${Math.round(cvsWidth * scaleRatio)}×${Math.round(cvsHeight * scaleRatio)}`
+                        : `${Math.round(cvsWidth / scaleRatio)}×${Math.round(cvsHeight / scaleRatio)}`
+                }}
+            </span>
+        </div>
+        <button
+            @click="requestScaleConfirm"
+            :disabled="scaleRatioInvalid()"
+            class="scaleExecBtn"
+        >执行坐标{{ scaleOp === 'multiply' ? '乘法' : '除法' }}</button>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <Prompt v-if="scaleConfirming" :bg-click-close="true" @close="cancelScaleConfirm">
+        <div class="promptScale">
+            <div class="promptScaleTitle">⚠️ 操作警告</div>
+            <div class="promptScaleMsg">
+                坐标乘除会破坏现有车站团的连接关系！你真的要执行此操作吗？
+            </div>
+            <div class="promptScaleBtns">
+                <button class="minor" @click="cancelScaleConfirm">取消</button>
+                <button class="danger" @click="executeScale">确认</button>
+            </div>
+        </div>
+    </Prompt>
 </SideBar>
 </template>
 
@@ -367,5 +482,152 @@ defineExpose({
 
 input[type=number]{
     width: 70px;
+}
+
+// -------- 坐标乘除 --------
+.scaleSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0 5px;
+    padding: 12px;
+    border-top: 1px solid #ddd;
+}
+
+.scaleTitle {
+    font-size: 13px;
+    color: #999;
+    align-self: flex-start;
+}
+
+.scaleRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.scaleOpBtns {
+    display: flex;
+    gap: 4px;
+}
+
+.scaleOpBtn {
+    padding: 4px 10px;
+    font-size: 13px;
+    &.active {
+        background-color: #555;
+        color: white;
+    }
+}
+
+.scaleInput {
+    width: 72px;
+    padding: 5px 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    &:focus {
+        outline: none;
+        border-color: #888;
+    }
+}
+
+.scalePreview {
+    font-size: 12px;
+    .gray { color: #aaa; }
+    .bold { font-weight: bold; color: #555; }
+}
+
+.scaleExecBtn {
+    width: 150px;
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
+.promptScale {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    .promptScaleTitle {
+        font-size: 18px;
+        font-weight: bold;
+        color: #c0392b;
+    }
+    .promptScaleMsg {
+        text-align: center;
+        font-size: 14px;
+        color: #333;
+        line-height: 1.6;
+        max-width: 240px;
+        .bold {
+            font-weight: bold;
+            color: #c0392b;
+        }
+    }
+    .promptScaleBtns {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    }
+}
+
+.scaleOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.scaleModal {
+    background: white;
+    border-radius: 10px;
+    padding: 20px 24px;
+    max-width: 300px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+}
+
+.scaleModalWarn {
+    font-size: 16px;
+    font-weight: bold;
+    color: #c0392b;
+}
+
+.scaleModalMsg {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.6;
+    .bold {
+        font-weight: bold;
+        color: #c0392b;
+    }
+}
+
+.scaleModalBtns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    button {
+        min-width: 70px;
+        &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    }
 }
 </style>
