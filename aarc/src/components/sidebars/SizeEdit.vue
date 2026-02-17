@@ -142,6 +142,47 @@ function applyChange(){
     })
 }
 
+// -------- 图幅适配 --------
+const fitPadRatio = ref<number>(0.02)
+
+function fitCanvas() {
+    if (!saveStore.save) return
+    const xs: number[] = []
+    const ys: number[] = []
+    for (const pt of saveStore.save.points) {
+        xs.push(pt.pos[0])
+        ys.push(pt.pos[1])
+    }
+    for (const tag of saveStore.save.textTags) {
+        xs.push(tag.pos[0])
+        ys.push(tag.pos[1])
+    }
+    if (xs.length === 0) {
+        showPop('画布上没有任何元素', 'failed')
+        return
+    }
+    const minX = Math.min(...xs)
+    const maxX = Math.max(...xs)
+    const minY = Math.min(...ys)
+    const maxY = Math.max(...ys)
+    const spanX = maxX - minX
+    const spanY = maxY - minY
+    const padX = Math.round(spanX * fitPadRatio.value)
+    const padY = Math.round(spanY * fitPadRatio.value)
+
+    const targetLeft   = Math.round(minX - padX)
+    const targetTop    = Math.round(minY - padY)
+    const targetRight  = Math.round(maxX + padX)
+    const targetBottom = Math.round(maxY + padY)
+
+    pendingChanges.value = [
+        -targetTop,
+        targetRight - cvsWidth.value,
+        targetBottom - cvsHeight.value,
+        -targetLeft,
+    ]
+}
+
 const manualMode = ref(false)
 const sidebar = useTemplateRef('sidebar')
 defineExpose({
@@ -264,6 +305,11 @@ function executeScale() {
     <div class="ops">
         <button v-if="!manualMode" @click="manualMode=true" class="minor">手动输入增量</button>
         <button v-else @click="manualMode=false" class="minor">按钮调整增量</button>
+        <button @click="fitCanvas" class="minor">图幅适配</button>
+        <div class="fitPadRow">
+            <span>边距比例</span>
+            <input v-model.number="fitPadRatio" type="number" min="0" step="0.01" class="fitPadInput"/>
+        </div>
     </div>
     <div v-if="!manualMode" class="incrementEdit">
         <div class="incTag">步长</div>
@@ -463,6 +509,24 @@ function executeScale() {
     button{
         width: 150px;
     }
+    .fitPadRow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #999;
+    }
+    .fitPadInput {
+        width: 60px;
+        padding: 3px 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        &:focus {
+            outline: none;
+            border-color: #888;
+        }
+    }
 }
 
 .explain{
@@ -563,71 +627,12 @@ input[type=number]{
         color: #333;
         line-height: 1.6;
         max-width: 240px;
-        .bold {
-            font-weight: bold;
-            color: #c0392b;
-        }
     }
     .promptScaleBtns {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 15px;
-        button:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-    }
-}
-
-.scaleOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-}
-
-.scaleModal {
-    background: white;
-    border-radius: 10px;
-    padding: 20px 24px;
-    max-width: 300px;
-    width: 90%;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
-}
-
-.scaleModalWarn {
-    font-size: 16px;
-    font-weight: bold;
-    color: #c0392b;
-}
-
-.scaleModalMsg {
-    font-size: 14px;
-    color: #333;
-    line-height: 1.6;
-    .bold {
-        font-weight: bold;
-        color: #c0392b;
-    }
-}
-
-.scaleModalBtns {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    button {
-        min-width: 70px;
-        &:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
     }
 }
 </style>
