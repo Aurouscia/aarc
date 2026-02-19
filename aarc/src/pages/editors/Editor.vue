@@ -30,6 +30,7 @@ import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 import { useIdentitiesRoutesJump } from '../identities/routes/routesJump';
 import { coordRound } from '@/utils/coordUtils/coordRound';
+import { useUndoStore } from '@/models/stores/utils/undoStore';
 
 const heartbeatIntervalSecs = 3 * 60 // 每3分钟心跳一次
 
@@ -45,6 +46,7 @@ const envStore = useEnvStore()
 const configStore = useConfigStore()
 const resetterStore = useResetterStore()
 const iconStore = useIconStore()
+const undoStore = useUndoStore()
 const api = useApiStore()
 const userInfoStore = useUserInfoStore()
 const saveIdNum = computed(()=>parseInt(props.saveId))
@@ -110,6 +112,7 @@ async function load() {
             loadComplete.value = true
         }catch{
             showPop('存档损坏，请联系管理员', 'failed')
+            return
         }
         if(viewOnly.value){
             preventLeavingDisabled.value = true //浏览模式，不阻止未保存退出
@@ -128,6 +131,10 @@ async function load() {
         savingDisabledWarning.value = '此处为体验环境，不能保存\n如需创作，请注册账户并新建存档'
         savingDisabledWarningHide.value = true //暂时隐藏，等第一次编辑后再出现
         preventLeavingDisabled.value = true //demo环境，不阻止未保存退出
+    }
+    if(saveStore.save){
+        undoStore.clear()
+        undoStore.push(saveStore.save)
     }
 }
 
@@ -221,6 +228,8 @@ function setLeavingPreventing(){
             notLoginNeedToWarn.value = false
         }
         preventLeaving()
+        if(saveStore.save)
+            undoStore.push(saveStore.save)
     }
 }
 
@@ -241,11 +250,14 @@ watch(props, async()=>{
     window.location.reload()
 })
 
-const saveShortcutListener = new ShortcutListener(()=>{ saveData(false) }, {code:'KeyS', ctrl:true})
-const deleteShortcutListener = new ShortcutListener(()=>{
+const isFocusingText = ()=>{
     const ael = document.activeElement
     const focusingText = ael instanceof HTMLInputElement || ael instanceof HTMLTextAreaElement
-    if(focusingText){
+    return focusingText
+}
+const saveShortcutListener = new ShortcutListener(()=>{ saveData(false) }, {code:'KeyS', ctrl:true})
+const deleteShortcutListener = new ShortcutListener(()=>{
+    if(isFocusingText()){
         // 如果正在输入文字：不prevent浏览器默认行为（delete键确实有用）且不进行删除操作
         return { dontPrevent: true }
     }
@@ -255,6 +267,18 @@ const deleteShortcutListener = new ShortcutListener(()=>{
         envStore.delActiveTextTag(true)
     }
 }, {code:'Delete'})
+const undoShortcutListener = new ShortcutListener(()=>{
+    if(isFocusingText())
+        return { dontPrevent: true }
+    else
+        undoStore.undo()
+}, {code:'KeyZ', ctrl:true})
+const redoShortcutListener = new ShortcutListener(()=>{
+    if(isFocusingText())
+        return { dontPrevent: true }
+    else
+        undoStore.redo()
+}, {code:'KeyZ', ctrl:true, shift:true})
 const cachePreventerInputId = 'cachePreventerInput'
 const { cachePreventStart, cachePreventStop } = useCachePreventer(cachePreventerInputId)
 const showHiddenLongWarn = ref(false)
@@ -273,6 +297,8 @@ onBeforeMount(async()=>{
     await load()
     saveShortcutListener.start()
     deleteShortcutListener.start()
+    undoShortcutListener.start()
+    redoShortcutListener.start()
     cachePreventStart()
     hiddenLongWatcher.startWatching()
 })
@@ -288,6 +314,8 @@ onBeforeUnmount(()=>{
     topbarShow.value = true
     saveShortcutListener.dispose()
     deleteShortcutListener.dispose()
+    undoShortcutListener.dispose()
+    redoShortcutListener.dispose()
     cachePreventStop()
     hiddenLongWatcher.stopWatching()
 })

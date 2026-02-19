@@ -19,7 +19,7 @@
   "dependencies": {
     "@anilkumarthakur/vue3-json-viewer": "^0.4.1",
     "@aurouscia/au-color-picker": "^1.1.0",
-    "@aurouscia/au-undo-redo": "^0.3.0",
+    "@aurouscia/au-undo-redo": "^1.0.1",
     "@aurouscia/keyboard-shortcut": "^3.0.0",
     "@aurouscia/vite-app-version": "^0.2.0",
     "axios": "^1.13.2",
