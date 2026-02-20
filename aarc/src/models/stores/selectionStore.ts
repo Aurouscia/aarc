@@ -105,7 +105,7 @@ export const useSelectionStore = defineStore('selection', ()=>{
     function setMode(e: KeyboardEvent){
         if(isFocusingInput())
             return
-        if(e.shiftKey && !e.ctrlKey) {
+        if(e.shiftKey) {
             if (e.ctrlKey || e.metaKey) 
                 mode.value = 'sub'
             else 
