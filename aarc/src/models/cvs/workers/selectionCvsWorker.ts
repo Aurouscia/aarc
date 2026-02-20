@@ -50,7 +50,8 @@ export const useSelectionCvsWorker = defineStore('selectionCvsWorker', ()=>{
             let strong = phase <= 100 || (phase > 200 && phase <= 300)
             ctx.globalAlpha = strong ? 0.6 : 0.2
             const density = 0.4 * Math.exp(-0.05 * coords.length)
-            const edges = buildConnectedGraph(coords, 0, density)
+            // 超过200个点：不画那些花里胡哨的网状线，避免卡死
+            const edges = coords.length > 200 ? [] : buildConnectedGraph(coords, 0, density)
             ctx.lineWidth = 6
             ctx.strokeStyle = 'black'
             ctx.beginPath()
