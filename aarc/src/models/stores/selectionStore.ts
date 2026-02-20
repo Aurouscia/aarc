@@ -7,6 +7,7 @@ import { coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { rectCoordDistSqLessThan } from "@/utils/coordUtils/coordRect";
 import { useTextTagRectStore } from "./saveDerived/textTagRectStore";
 import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
+import { isFocusingInput } from "@/utils/domUtils/focusingInput";
 
 type SelectionTarget = ControlPoint|TextTag
 export const useSelectionStore = defineStore('selection', ()=>{
@@ -99,6 +100,8 @@ export const useSelectionStore = defineStore('selection', ()=>{
         setMode(e)
     });
     function setMode(e: KeyboardEvent){
+        if(isFocusingInput())
+            return
         if(e.shiftKey && !e.ctrlKey) {
             if (e.ctrlKey || e.metaKey) 
                 mode.value = 'sub'

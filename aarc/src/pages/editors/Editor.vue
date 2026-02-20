@@ -31,6 +31,7 @@ import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom'
 import { useIdentitiesRoutesJump } from '../identities/routes/routesJump';
 import { coordRound } from '@/utils/coordUtils/coordRound';
 import { useUndoStore } from '@/models/stores/utils/undoStore';
+import { isFocusingInput } from '@/utils/domUtils/focusingInput';
 
 const heartbeatIntervalSecs = 3 * 60 // 每3分钟心跳一次
 
@@ -250,14 +251,9 @@ watch(props, async()=>{
     window.location.reload()
 })
 
-const isFocusingText = ()=>{
-    const ael = document.activeElement
-    const focusingText = ael instanceof HTMLInputElement || ael instanceof HTMLTextAreaElement
-    return focusingText
-}
 const saveShortcutListener = new ShortcutListener(()=>{ saveData(false) }, {code:'KeyS', ctrl:true})
 const deleteShortcutListener = new ShortcutListener(()=>{
-    if(isFocusingText()){
+    if(isFocusingInput()){
         // 如果正在输入文字：不prevent浏览器默认行为（delete键确实有用）且不进行删除操作
         return { dontPrevent: true }
     }
@@ -268,13 +264,13 @@ const deleteShortcutListener = new ShortcutListener(()=>{
     }
 }, {code:'Delete'})
 const undoShortcutListener = new ShortcutListener(()=>{
-    if(isFocusingText())
+    if(isFocusingInput())
         return { dontPrevent: true }
     else
         undoStore.undo()
 }, {code:'KeyZ', ctrl:true})
 const redoShortcutListener = new ShortcutListener(()=>{
-    if(isFocusingText())
+    if(isFocusingInput())
         return { dontPrevent: true }
     else
         undoStore.redo()
