@@ -20,12 +20,17 @@ export interface Config{
     ptStaFillColor: string,
     ptStaExchangeLineColor: string,
 
+    // TODO: 感觉这个应该收敛为统一结构的对象，什么时候闲写个upgrade
     staNameFontSize: number,
     staNameFont: string,
+    staNameFontWeight: string,
+    staNameFontStyle: string,
     staNameRowHeight: number,
     staNameColor: string,
     staNameSubFontSize: number,
     staNameSubFont: string,
+    staNameSubFontWeight: string,
+    staNameSubFontStyle: string,
     staNameSubRowHeight: number,
     staNameSubColor: string,
 
@@ -52,10 +57,14 @@ export interface Config{
     colorPresetIsland: string
 
     textTagFont: string,
+    textTagFontStyle: string,
+    textTagFontWeight: string,
     textTagFontSizeBase: number,
     textTagFontColorHex: string,
     textTagRowHeightBase: number,
     textTagSubFont: string,
+    textTagSubFontStyle: string,
+    textTagSubFontWeight: string,
     textTagSubFontSizeBase: number,
     textTagSubFontColorHex: string,
     textTagSubRowHeightBase: number,
