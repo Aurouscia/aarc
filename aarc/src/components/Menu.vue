@@ -16,12 +16,14 @@ import snapInterPtImg from '@/assets/ui/editor/snapInterPt.svg';
 import snapInterPtEnabledImg from '@/assets/ui/editor/snapInterPtEnabled.svg';
 import snapNeighborExtendImg from '@/assets/ui/editor/snapNeighborExtend.svg';
 import snapNeighborExtendEnabledImg from '@/assets/ui/editor/snapNeighborExtendEnabled.svg';
+import undoImg from '@/assets/ui/editor/undo.svg';
 import ToolBox from './sidebars/ToolBox.vue';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 import NameSearch from './NameSearch.vue';
 import { AuShortcutListener } from '@aurouscia/keyboard-shortcut';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useNameSearchStore } from '@/models/stores/nameSearchStore';
+import { useUndoStore } from '@/models/stores/utils/undoStore';
 
 const lines = useTemplateRef('lines')
 const terrains = useTemplateRef('terrains')
@@ -37,6 +39,7 @@ const {
     snapInterPtEnabled:sipe,
     snapGridEnabled:sge 
 } = storeToRefs(useSnapStore())
+const { undo, redo } = useUndoStore()
 const anotherMenuFolded = ref(true)
 
 type SidebarNames = 'lines'|'terrains'|'sizeEdit'|'exportImage'|'configs'|'toolBox'|undefined
@@ -130,13 +133,19 @@ onUnmounted(()=>{
     <div class="anotherMenu" :class="{anotherMenuFolded}">
         <div class="anotherMenuColumn">
             <div class="searchBtn sqrBtn withShadow" @click="nameSearchStore.toggleShow()">
-                <img :src="searchImg"/>
+                <img :src="searchImg" style="width: 70%; height: 70%;"/>
             </div>
             <div class="foldBtn sqrBtn withShadow" @click="anotherMenuFolded=!anotherMenuFolded">
-                <img :src="foldImg"/>
+                <img :src="foldImg" style="width: 70%; height: 70%;"/>
             </div>
         </div>
         <div class="anotherMenuColumn">
+            <div @click="undo" class="sqrBtn withShadow">
+                <img :src="undoImg"/>
+            </div>
+            <div @click="redo" class="sqrBtn withShadow">
+                <img :src="undoImg" style="transform: scaleX(-1);"/>
+            </div>
             <div @click="snee=!snee" :class="{snapEnabled:snee}" class="sqrBtn withShadow">
                 <img :src="snee ? snapNeighborExtendEnabledImg : snapNeighborExtendImg"/>
             </div>
@@ -171,15 +180,18 @@ $dist-from-edge: 5px;
     .snapEnabled{
         box-shadow: 0px 0px 8px 0px green;
     }
+    .sqrBtn{
+        background-color: white;
+        img{
+            width: 100%;
+            height: 100%;
+        }
+    }
     .foldBtn, .searchBtn{
         background-color: white;
         display: flex;
         justify-content: center;
         align-items: center;
-        img{
-            width: 70%;
-            height: 70%;
-        }
     }
     .foldBtn img{
         transition: 0.2s;
