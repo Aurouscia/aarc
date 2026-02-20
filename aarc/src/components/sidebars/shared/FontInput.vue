@@ -81,13 +81,16 @@ const fontStyleOptions = [
     }
 
     .display-demo{
-        padding: 4px 8px;
-        border-radius: 4px;
+        padding: 6px 10px;
+        border-radius: 6px;
         display: inline-block;
         word-break: break-all;
         font-size: 16px;
-        background-color: white;
-        color: gray
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f0 100%);
+        border: 1px solid #d0d4dc;
+        box-shadow: inset 0 1px 2px rgba(255,255,255,0.8), 0 1px 2px rgba(0,0,0,0.05);
+        color: #4a5568;
+        margin-top: 2px;
     }
 }
 </style>
