@@ -8,6 +8,7 @@ import { rectCoordDistSqLessThan } from "@/utils/coordUtils/coordRect";
 import { useTextTagRectStore } from "./saveDerived/textTagRectStore";
 import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
 import { isFocusingInput } from "@/utils/domUtils/focusingInput";
+import { useCvsFrameStore } from "./cvsFrameStore";
 
 type SelectionTarget = ControlPoint|TextTag
 export const useSelectionStore = defineStore('selection', ()=>{
@@ -23,11 +24,13 @@ export const useSelectionStore = defineStore('selection', ()=>{
     const { save } = storeToRefs(saveStore)
     const { enumerateTextTagRects } = useTextTagRectStore()
     
-    const brushRadius = computed<number>(()=>100)
+    function getBrushRadius(){
+        return useCvsFrameStore().getViewRectBiggerSideLength() / 10
+    }
     function brush(coord?:Coord){
         selCursor.value = coord
         if(!coord || !working.value) return
-        let radius = brushRadius.value
+        let radius = getBrushRadius()
         const radiusSq = radius ** 2
         for(const p of save.value?.points ?? []){
             if(coordDistSqLessThan(coord, p.pos, radiusSq)){
@@ -126,7 +129,7 @@ export const useSelectionStore = defineStore('selection', ()=>{
         showControl,
         showedControl,
         selCursor,
-        brushRadius,
+        getBrushRadius,
         brush,
         setBrushStatus,
         enableForTouchScreen,

@@ -20,7 +20,7 @@ export const useSelectionCvsWorker = defineStore('selectionCvsWorker', ()=>{
             let brushColor = 'gray'
             if(selStore.working)
                 brushColor = selStore.mode == 'add' ? 'green' : 'palevioletred'
-            const r = selStore.brushRadius
+            const r = selStore.getBrushRadius()
             ctx.beginPath()
             ctx.globalAlpha = 1
             ctx.arc(...cursor, r, 0, 2 * Math.PI)
