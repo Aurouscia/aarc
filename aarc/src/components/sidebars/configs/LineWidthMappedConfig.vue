@@ -4,12 +4,12 @@ import { storeToRefs } from 'pinia';
 import { useConfigStore } from '@/models/stores/configStore';
 import { clamp } from '@/utils/lang/clamp';
 import { useEnvStore } from '@/models/stores/envStore';
+import { onMounted } from 'vue';
 
 const envStore = useEnvStore()
 const { config } = storeToRefs(useConfigStore())
 function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', value?:string){
-    if(!config.value.lineWidthMapped)
-        config.value.lineWidthMapped = {}
+    config.value.lineWidthMapped ??= {}
     const valueNum = value ? parseFloat(value) : NaN
     const lwm = config.value.lineWidthMapped
     if(!lwm[width])
@@ -20,6 +20,10 @@ function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', val
         lwm[width][setItem] = undefined
     envStore.rerender([], undefined)
 }
+
+onMounted(()=>{
+    config.value.lineWidthMapped ??= {}
+})
 </script>
 
 <template>
