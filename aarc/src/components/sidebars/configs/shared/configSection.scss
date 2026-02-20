@@ -4,7 +4,7 @@
         align-items: center;
         color: #999;
         font-size: 20px;
-        gap: 10px;
+        gap: 6px;
         margin: 5px;
         border-top: 1px solid #ccc;
         padding-top: 5px;
@@ -13,22 +13,22 @@
         .special{
             color: rgb(111, 180, 111);
         }
+        .shownStatusIcon{
+            width: 20px;
+            height: 20px;
+            img{
+                transform: rotate(-90deg);
+            }
+        }
         &.sectorShown{
-            font-weight: bold;
             color: black;
             .special{
                 color: green;
             }
-        }
-        .shownStatusIcon{
-            width: 20px;
-            height: 20px;
-            font-size: 16px;
-            line-height: 20px;
-            font-weight: bold;
-            text-align: center;
-            border: 1px solid #999;
-            border-radius: 5px;
+            img{
+                transform: rotate(0deg);
+                filter: brightness(0);
+            }
         }
     }
     .explain{

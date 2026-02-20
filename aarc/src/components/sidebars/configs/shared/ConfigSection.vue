@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
+import foldIcon from '@/assets/ui/fold.svg';
 
 const props = defineProps<{
     title: string,
@@ -26,7 +27,9 @@ watch(()=>show.value, (newVal)=>{
 <template>
 <div class="configSection">
     <h2 v-if="!noTitle" :class="{sectorShown:show}" @click="show = !show">
-        <div class="shownStatusIcon">{{ show ? '×':'+' }}</div>
+        <div class="shownStatusIcon">
+            <img :src="foldIcon"/>
+        </div>
         <div :class="{special}">{{ title }}</div>
     </h2>
     <slot v-if="show"></slot>
