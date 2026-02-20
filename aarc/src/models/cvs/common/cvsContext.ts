@@ -130,10 +130,12 @@ export class CvsContext{
         this.b.ctx2d.textBaseline = value}
     set textAlign(value:CanvasTextAlign){
         this.b.ctx2d.textAlign = value}
-    set font(value:{fontSize:number, font?:string}){
+    set font(value:{fontSize:number, font?:string, weight?:string, style?:string}){
         const size = value.fontSize
+        const weight = value.weight ?? 'normal'
+        const style = value.style ?? 'normal'
         let stack = convertLineSeppedToCommaSepped(value.font)
         const fontStack = stack ? `${stack}, ` : '';
-        this.b.ctx2d.font = `${size * this.b.scale}px ${fontStack}sans-serif`;
+        this.b.ctx2d.font = `${style} ${weight} ${size * this.b.scale}px ${fontStack}sans-serif`;
     }
 }

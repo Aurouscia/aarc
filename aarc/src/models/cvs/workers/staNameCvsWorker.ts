@@ -100,12 +100,16 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             text: pt.name,
             color: cs.config.staNameColor,
             font: cs.config.staNameFont,
+            weight: cs.config.staNameFontWeight,
+            style: cs.config.staNameFontStyle,
             fontSize: cs.config.staNameFontSize * fontSizeRatio,
             rowHeight: cs.config.staNameRowHeight * fontSizeRatio
         },{
             text: pt.nameS,
             color: cs.config.staNameSubColor,
             font: cs.config.staNameSubFont,
+            weight: cs.config.staNameSubFontWeight,
+            style: cs.config.staNameSubFontStyle,
             fontSize: cs.config.staNameSubFontSize * fontSizeRatio,
             rowHeight: cs.config.staNameSubRowHeight * fontSizeRatio
         },

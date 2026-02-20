@@ -14,9 +14,17 @@ const guideShow = ref(false)
 
 watch(()=>[
     config.value.staNameFont,
+    config.value.staNameFontStyle,
+    config.value.staNameFontWeight,
     config.value.staNameSubFont,
+    config.value.staNameSubFontStyle,
+    config.value.staNameSubFontWeight,
     config.value.textTagFont,
-    config.value.textTagSubFont
+    config.value.textTagFontStyle,
+    config.value.textTagFontWeight,
+    config.value.textTagSubFont,
+    config.value.textTagSubFontStyle,
+    config.value.textTagSubFontWeight,
 ], ()=>{
     c()
 })
@@ -27,7 +35,7 @@ function c(){
     window.clearTimeout(rtimer)
     rtimer = window.setTimeout(()=>{
         envStore.rerender([], [])
-    }, 1000)
+    }, 500)
 }
 </script>
 
@@ -41,19 +49,36 @@ function c(){
         </tr>
         <tr>
             <td>主站名</td>
-            <td><FontInput v-model="config.staNameFont"></FontInput></td>
+            <td><FontInput v-model="config.staNameFont"
+                    v-model:font-style="config.staNameFontStyle"
+                    v-model:font-weight="config.staNameFontWeight"
+                ></FontInput></td>
         </tr>
         <tr>
             <td>副站名</td>
-            <td><FontInput v-model="config.staNameSubFont"></FontInput></td>
+            <td><FontInput v-model="config.staNameSubFont"
+                    v-model:font-style="config.staNameSubFontStyle"
+                    v-model:font-weight="config.staNameSubFontWeight"
+                ></FontInput></td>
         </tr>
         <tr>
             <td>标签<br/>主文本</td>
-            <td><FontInput v-model="config.textTagFont"></FontInput></td>
+            <td><FontInput v-model="config.textTagFont"
+                    v-model:font-style="config.textTagFontStyle"
+                    v-model:font-weight="config.textTagFontWeight"
+                ></FontInput></td>
         </tr>
         <tr>
             <td>标签<br/>副文本</td>
-            <td><FontInput v-model="config.textTagSubFont"></FontInput></td>
+            <td><FontInput v-model="config.textTagSubFont"
+                    v-model:font-style="config.textTagSubFontStyle"
+                    v-model:font-weight="config.textTagSubFontWeight"
+                ></FontInput></td>
+        </tr>
+        <tr>
+            <td colspan="2" class="smallNote">
+                请商用用户使用开源字体，避免侵权
+            </td>
         </tr>
     </tbody></table>
     <Prompt v-if="guideShow" :bg-click-close="true" @close="guideShow=false">

@@ -8,6 +8,8 @@ export interface DrawTextBodyOption{
     text?:string
     color:string
     font:string
+    weight?:string
+    style?:string
     fontSize:number
     rowHeight:number
 }
