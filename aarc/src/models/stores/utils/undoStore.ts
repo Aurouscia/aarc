@@ -30,7 +30,6 @@ export const useUndoStore = defineStore('undo', ()=>{
     }
 
     async function undo(){
-        console.log({urPatches: !!urPatches, canUndo: canUndo.value})
         if(!urPatches || !canUndo.value)
             return
         const state = urPatches.undo()
@@ -49,6 +48,7 @@ export const useUndoStore = defineStore('undo', ()=>{
     }
 
     async function restoreState(state: Save){
+        // TODO: activeCvsDispatcher会因为获取不到画布报错一次，有点难看不过问题不大
         saveStore.save = state
         resetterStore.resetDerivedStores()
         await resetterStore.relaunchDerivedStores()

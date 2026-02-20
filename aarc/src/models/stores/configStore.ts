@@ -116,24 +116,14 @@ export const useConfigStore = defineStore('config', ()=>{
         }
     }
 
-    const staNameFontStr = computed<string>(()=>
-        `${config.value.staNameFontSize}px ${config.value.staNameFont}`)
-    const staNameFontSubStr = computed<string>(()=>
-        `${config.value.staNameSubFontSize}px ${config.value.staNameSubFont}`)
     const clickPtThrsSq = computed<number>(()=>
         config.value.clickPtThrs ** 2)
     const clickLineThrsSq = computed<number>(()=>
         config.value.clickLineThrs ** 2)
     const clickLineThrs_sqrt2_sq = computed<number>(()=>
-        (config.value.clickLineThrs * sqrt2) ** 2) 
-    const snapOctaClingPtPtThrsSq = computed<number>(()=>
-        config.value.snapOctaClingPtPtThrs ** 2)
+        (config.value.clickLineThrs * sqrt2) ** 2)
     const snapOctaClingPtNameThrsSq = computed<number>(()=>
         config.value.snapOctaClingPtNameThrs ** 2)
-    const textTagFontStr = (ratio:number = 1)=>
-        `${config.value.textTagFontSizeBase * ratio}px ${config.value.textTagFont}`
-    const textTagSubFontStr = (ratio:number = 1)=>
-        `${config.value.textTagSubFontSizeBase * ratio}px ${config.value.textTagSubFont}`
     
     function getPresetColor(presetType:ColorPreset){
         if(presetType == ColorPreset.water)
@@ -173,10 +163,8 @@ export const useConfigStore = defineStore('config', ()=>{
     return { 
         config, readConfigFromSave, writeConfigToSave,
         getConfigForExporting, importConfig,
-        staNameFontStr, staNameFontSubStr,
         clickPtThrsSq, clickLineThrsSq, clickLineThrs_sqrt2_sq, 
-        snapOctaClingPtPtThrsSq, snapOctaClingPtNameThrsSq,
-        textTagFontStr, textTagSubFontStr,
+        snapOctaClingPtNameThrsSq,
         getPresetColor, getTurnRadiusOf
     }
 })
