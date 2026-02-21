@@ -4,6 +4,7 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import { LineType } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import ConfigSection from './configs/shared/ConfigSection.vue';
 
 const { showPop } = useUniqueComponentsStore();
 const saveStore = useSaveStore();
@@ -164,7 +165,7 @@ function handleLines(
 </script>
 
 <template>
-        <div class="smallNote">文本替换</div>
+  <ConfigSection :title="'文本批量替换'">
     <div class="input-group">
       <label>查找文本：</label>
       <input 
@@ -185,7 +186,6 @@ function handleLines(
       />
     </div>
     
-    <div class="smallNote">选择替换对象：</div>
     <div class="targets-list">
       <label 
         v-for="target in targets" 
@@ -204,39 +204,30 @@ function handleLines(
     >
       执行替换
     </button>
+  </ConfigSection>
 </template>
 
 <style scoped lang="scss">
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
-  
+  gap: 3px;
   label {
     font-size: 14px;
     color: #666;
-  }
-  
-  input[type="text"] {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
   }
 }
 
 .targets-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  margin: 12px 0;
+  gap: 4px;
 }
 
 .target-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   font-size: 14px;
 }
 

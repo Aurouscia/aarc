@@ -146,4 +146,11 @@ defineExpose({
         border-bottom: 0px;
     }
 }
+.configSection {
+    padding: 0px;
+    &:deep(h2) {
+        align-self: stretch;
+        border: none;
+    }
+}
 </style>
