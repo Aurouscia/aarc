@@ -304,11 +304,11 @@ function executeScale() {
         </div>
     </div>
     <div class="ops">
-        <button v-if="!manualMode" @click="manualMode=true" class="minor">手动输入增量</button>
-        <button v-else @click="manualMode=false" class="minor">按钮调整增量</button>
+        <button v-if="manualMode" @click="manualMode=false" class="minor">手动输入增量模式</button>
+        <button v-else @click="manualMode=true" class="minor">按钮调整增量模式</button>
     </div>
     <div v-if="!manualMode" class="incrementEdit">
-        <div class="incTag">步长</div>
+        <div class="incTag">按钮步长</div>
         <div class="incCtrl">
             <button @click="changeIncrementIncre(false)" class="off">-</button>
             <div class="incDisplay">{{ changeIncrement }}</div>
@@ -472,7 +472,7 @@ function executeScale() {
     justify-content: space-between;
     gap: 6px;
     margin: auto;
-    margin-top: 10px;
+    margin: 10px 0px 10px;
     width: 250px;
     padding: 5px;
     background-color: #ccc;
