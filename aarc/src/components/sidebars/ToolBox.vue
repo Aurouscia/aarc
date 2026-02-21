@@ -13,6 +13,7 @@ import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import StringReplace from './StringReplace.vue';
+import ConfigSection from './configs/shared/ConfigSection.vue';
 
 const envStore = useEnvStore()
 const pointLinkStore = usePointLinkStore()
@@ -71,8 +72,8 @@ defineExpose({
 <template>
 <SideBar ref="sidebar">
     <div class="toolItem">
-        <div class="smallNote">用于添加标题/作者等信息，<b style="color:red">请勿</b>用于标注站名</div>
-        <div class="smallNote">需要线路/地形名称标签，请点击线路/地形创建</div>
+        <div class="smallNote">用于添加标题/作者等，<b style="color:red">勿</b>用于标注站名</div>
+        <div class="smallNote">需要线路名标签，请点击线路/地形创建</div>
         <button @click="end();envStore.createTextTag();fd()">创建文本标签</button>
     </div>
     <div class="toolItem">
@@ -121,16 +122,16 @@ defineExpose({
             <input v-model="mustBackup" type="checkbox"/>请勾选
         </div>
     </div>
-    <div class="toolItem">
-        <div class="smallNote">站名相关功能</div>
+    <ConfigSection title="站名相关功能">
         <button @click="nameSearchStore.toggleShow(searchMarkForEmptyName);fd()">
             查找无名车站
         </button>
         <button @click="findDuplicateStas">
             检测名称重复车站
         </button>
-    </div>
-    <StringReplace class="toolItem"></StringReplace>
+    </ConfigSection>
+    <StringReplace></StringReplace>
+    <div style="height: 100px;"></div>
 </SideBar>
 </template>
 
