@@ -12,6 +12,7 @@ import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 import Notice from '../common/Notice.vue';
 import { useStaNameMainRectStore } from '@/models/stores/saveDerived/staNameRectStore';
+import ConfigSection from './configs/shared/ConfigSection.vue';
 
 const { showPop } = useUniqueComponentsStore()
 const saveStore = useSaveStore()
@@ -305,11 +306,6 @@ function executeScale() {
     <div class="ops">
         <button v-if="!manualMode" @click="manualMode=true" class="minor">手动输入增量</button>
         <button v-else @click="manualMode=false" class="minor">按钮调整增量</button>
-        <button @click="fitCanvas" class="minor">图幅适配</button>
-        <div class="fitPadRow">
-            <span>边距比例</span>
-            <input v-model.number="fitPadRatio" type="number" min="0" step="0.01" class="fitPadInput"/>
-        </div>
     </div>
     <div v-if="!manualMode" class="incrementEdit">
         <div class="incTag">步长</div>
@@ -337,9 +333,19 @@ function executeScale() {
         这样调整后<br/>所有内容都会被移出画布范围
     </Notice>
 
+    <ConfigSection :title="'图幅适配'">
+        <div class="fitPad">
+            <div class="fitPadRow">
+                <span>边距比例</span>
+                <input v-model.number="fitPadRatio" type="number" min="0" step="0.01" class="fitPadInput"/>
+            </div>
+            <button @click="fitCanvas">执行图幅适配</button>
+        </div>
+    </ConfigSection>
+
     <!-- 坐标乘除 -->
+    <ConfigSection :title="'整体内容缩放'">
     <div class="scaleSection">
-        <div class="scaleTitle">坐标乘除</div>
         <div class="scaleRow">
             <div class="scaleOpBtns">
                 <button
@@ -381,9 +387,9 @@ function executeScale() {
     <!-- 确认弹窗 -->
     <Prompt v-if="scaleConfirming" :bg-click-close="true" @close="cancelScaleConfirm">
         <div class="promptScale">
-            <div class="promptScaleTitle">⚠️ 操作警告</div>
+            <div class="promptScaleTitle">警告</div>
             <div class="promptScaleMsg">
-                坐标乘除会破坏现有车站团的连接关系！你真的要执行此操作吗？
+                坐标乘除会破坏现有车站团的连接关系，需要重新手动拼合！你真的要执行此操作吗？
             </div>
             <div class="promptScaleBtns">
                 <button class="minor" @click="cancelScaleConfirm">取消</button>
@@ -391,6 +397,7 @@ function executeScale() {
             </div>
         </div>
     </Prompt>
+    </ConfigSection>
 </SideBar>
 </template>
 
@@ -409,8 +416,7 @@ function executeScale() {
         @include plusMinusBtn()
     }
 }
-.sizeEdit{
-    width: 270px;
+.sizeEdit {
     height: 270px;
     padding: 5px;
     margin: auto;
@@ -509,24 +515,6 @@ function executeScale() {
     button{
         width: 150px;
     }
-    .fitPadRow {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-        color: #999;
-    }
-    .fitPadInput {
-        width: 60px;
-        padding: 3px 5px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 13px;
-        &:focus {
-            outline: none;
-            border-color: #888;
-        }
-    }
 }
 
 .explain{
@@ -548,21 +536,30 @@ input[type=number]{
     width: 70px;
 }
 
+// -------- 图幅适配 --------
+.fitPad{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 4px;
+    gap: 4px;
+    .fitPadRow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .fitPadInput {
+        width: 60px;
+    }
+}
+
 // -------- 坐标乘除 --------
 .scaleSection {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    margin: 15px 0 5px;
-    padding: 12px;
-    border-top: 1px solid #ddd;
-}
-
-.scaleTitle {
-    font-size: 13px;
-    color: #999;
-    align-self: flex-start;
+    padding: 4px 12px;
 }
 
 .scaleRow {
@@ -580,6 +577,7 @@ input[type=number]{
     padding: 4px 10px;
     font-size: 13px;
     &.active {
+        border: #555 2px solid;
         background-color: #555;
         color: white;
     }
