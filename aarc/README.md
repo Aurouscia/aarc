@@ -4,7 +4,11 @@
 
 ## 准备
 1. 确保本地安装了`node.js`尽可能新的稳定版本
-2. 在本目录打开命令行，运行`npm install`，npm会自动使用国内镜像源
+2. 安装 pnpm（如果尚未安装）：
+   ```bash
+   npm install -g pnpm --registry=https://registry.npmmirror.com
+   ```
+3. 在本目录打开命令行，运行`pnpm install`，pnpm会自动使用国内镜像源
 
 ### 不自己启动后端（无需安装dotnet）
 3. 访问 http://aarc.jowei19.com/apiGenerated.ts 下载最新的`apiGenerated.ts`
@@ -22,7 +26,7 @@
 
 ### 注意
 如果拉取了代码更新，且运行时发现问题，大概率是因为：
-- npm依赖项有更新：需要重新`npm install`
+- npm依赖项有更新：需要重新`pnpm install`
 - api有更新：需要按上述“准备”步骤重新获取`apiGenerated.ts`文件
 
 ## 编译
