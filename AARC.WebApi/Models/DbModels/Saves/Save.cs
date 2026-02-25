@@ -18,11 +18,13 @@ namespace AARC.WebApi.Models.DbModels.Saves
         public string? Intro { get; set; }
         [MaxLength(int.MaxValue)]
         public string? Data { get; set; }
+        public byte[]? DataCompressed { get; set; }
         public int StaCount { get; set; }
         public int LineCount { get; set; }
         public byte Priority { get; set; }
         public DateTime HeartbeatAt { get; set; }
         public int HeartbeatUserId { get; set; }
+        public int ForkedFromId { get; set; }
         public DateTime LastActive { get; set; }
         [MaxLength(int.MaxValue)]
         public string? Metadata0 { get; set; }
