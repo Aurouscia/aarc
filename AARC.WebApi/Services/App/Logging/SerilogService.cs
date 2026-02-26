@@ -1,4 +1,4 @@
-﻿using AARC.WebApi.Services.App.Logging;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Serilog;
 using Serilog.Events;
 
@@ -39,6 +39,15 @@ namespace AARC.WebApi.Services.App.Logging
                 {
                     if (ex is not null)
                         return LogEventLevel.Error;
+
+                    // 检查 action 上是否有 LogLevelAttribute 特性
+                    var endpoint = httpContext.GetEndpoint();
+                    var actionDescriptor = endpoint?.Metadata.GetMetadata<ControllerActionDescriptor>();
+                    var logLevelAttr = actionDescriptor?.MethodInfo.GetCustomAttributes(typeof(LogLevelAttribute), false)
+                        .FirstOrDefault() as LogLevelAttribute;
+                    if (logLevelAttr != null)
+                        return logLevelAttr.Level;
+
                     if (elapsed > 3000)
                         return LogEventLevel.Warning;
                     return LogEventLevel.Information;
