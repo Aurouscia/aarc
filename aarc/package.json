@@ -7,6 +7,10 @@
     "name": "Au"
   },
   "license": "Apache-2.0",
+  "packageManager": "pnpm@10.30.2",
+  "pnpm": {
+    "onlyBuiltDependencies": ["@parcel/watcher", "esbuild"]
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsx build.ts",
