@@ -151,9 +151,11 @@ namespace AARC.WebApi.Repos.Saves
             ValidateDto(saveDto);
             var uid = httpUserIdProvider.RequireUserId();
             
-            // 检查用户是否有过多的空存档
+            // 检查用户是否有过多的空存档（同时检查旧字段 Data 和新字段 DataCompressed）
             var emptySavesCount = Existing
-                .Count(x => x.OwnerUserId == uid && (x.Data == null || x.Data.Length == 0));
+                .Count(x => x.OwnerUserId == uid 
+                    && (x.Data == null || x.Data.Length == 0)
+                    && (x.DataCompressed == null || x.DataCompressed.Length == 0));
             if (emptySavesCount >= 5)
                 throw new RqEx("空存档不得超过5个");
             
@@ -179,11 +181,13 @@ namespace AARC.WebApi.Repos.Saves
                 Heartbeat(id, HeartbeatType.Initialization, true); 
             else // 非强制：使用续约心跳，需要“上次心跳用户是自己”才行（用于编辑器内保存）
                 Heartbeat(id, HeartbeatType.Renewal);
+            var compressedData = SaveDataCompression.Compress(data);
             var updated = Existing
                 .Where(x => x.Id == id)
                 .ExecuteUpdate(spc => spc
                     .SetProperty(x => x.LastActive, DateTime.Now)
-                    .SetProperty(x => x.Data, data)
+                    .SetProperty(x => x.Data, (string?)null)  // 清空旧字段
+                    .SetProperty(x => x.DataCompressed, compressedData)  // 存储压缩数据
                     .SetProperty(x => x.StaCount, staCount)
                     .SetProperty(x => x.LineCount, lineCount));
             if (updated == 0)
@@ -197,9 +201,13 @@ namespace AARC.WebApi.Repos.Saves
             try
             {
                 var model = Get(id) ?? throw new RqEx("找不到指定存档");
-                var dataOriginal = model.Data ?? "{}";
+                // 优先从压缩字段读取旧数据，兼容旧数据
+                var dataOriginal = SaveDataCompression.Decompress(model.DataCompressed) 
+                    ?? model.Data 
+                    ?? "{}";
                 saveDiffService.CreateDiff(dataOriginal, data, id, uid, false);
-                model.Data = data;
+                model.Data = null;  // 清空旧字段
+                model.DataCompressed = SaveDataCompression.Compress(data);  // 存储压缩数据
                 model.StaCount = staCount;
                 model.LineCount = lineCount;
                 Update(model, true, false);
@@ -244,11 +252,12 @@ namespace AARC.WebApi.Repos.Saves
                 Heartbeat(id, HeartbeatType.Initialization);
             var res = Viewable
                 .Where(x => x.Id == id)
-                .Select(x => new { x.Id, x.Data })
+                .Select(x => new { x.Id, x.Data, x.DataCompressed })
                 .FirstOrDefault();
             if (res is null)
                 throw new RqEx("无法加载存档数据");
-            return res.Data;
+            // 优先从压缩字段解压，兼容旧数据
+            return SaveDataCompression.Decompress(res.DataCompressed) ?? res.Data;
         }
         public void Remove(int id)
         {
