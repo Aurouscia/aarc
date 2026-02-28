@@ -7,7 +7,10 @@
     "name": "Au"
   },
   "license": "Apache-2.0",
-  "packageManager": "pnpm@10.30.2",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=10"
+  },
   "pnpm": {
     "onlyBuiltDependencies": ["@parcel/watcher", "esbuild"]
   },
