@@ -219,16 +219,12 @@ function executeScale() {
     const factor = isDivide ? 1 / ratio : ratio
 
     for (const pt of saveStore.save.points) {
-        pt.pos[0] = Math.round(pt.pos[0] * factor)
-        pt.pos[1] = Math.round(pt.pos[1] * factor)
-        if (pt.nameP) {
-            pt.nameP[0] = Math.round(pt.nameP[0] * factor)
-            pt.nameP[1] = Math.round(pt.nameP[1] * factor)
-        }
+        pt.pos[0] = pt.pos[0] * factor
+        pt.pos[1] = pt.pos[1] * factor
     }
     for (const tag of saveStore.save.textTags) {
-        tag.pos[0] = Math.round(tag.pos[0] * factor)
-        tag.pos[1] = Math.round(tag.pos[1] * factor)
+        tag.pos[0] = tag.pos[0] * factor
+        tag.pos[1] = tag.pos[1] * factor
     }
     const newW = Math.round(saveStore.save.cvsSize[0] * factor)
     const newH = Math.round(saveStore.save.cvsSize[1] * factor)

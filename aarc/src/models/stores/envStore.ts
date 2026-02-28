@@ -711,7 +711,9 @@ export const useEnvStore = defineStore('env', ()=>{
 
     function delActivePt(rerenderAfterDone?:boolean, onlyDelNameIfSelectedName?:boolean){
         if(activePt.value){
-            nameEditStore.transferNameInCluster(activePt.value)
+            let newNameOwnerPt=nameEditStore.transferNameInCluster(activePt.value)
+                                //需要在删除站前找到新的载体并且赋予站名
+                                //需要在删除站后找到站名合适的位置
             nameEditStore.endEditing()
             setOpsPos(false)
             if(onlyDelNameIfSelectedName && activePtType.value === 'name'){
@@ -719,6 +721,9 @@ export const useEnvStore = defineStore('env', ()=>{
                 activePt.value.nameS = undefined
             }else{
                 saveStore.removePt(activePt.value.id);
+            }
+            if (newNameOwnerPt){
+                newNameOwnerPt.nameP = nameEditStore.optimizedNamePos(newNameOwnerPt.id)
             }
             setStaNameRect(activePt.value.id, undefined);
         } else {
@@ -747,11 +752,17 @@ export const useEnvStore = defineStore('env', ()=>{
                             const ptIdx = saveStore.save.points.findIndex(x=>x.id == pt)
                             if(ptIdx>=0){
                                 let ptItem=saveStore.getPtById(pt)
+                                let newNameOwnerPt:undefined|ControlPoint
+                                //需要在删除站前找到新的载体并且赋予站名
+                                //需要在删除站后找到站名合适的位置
                                 if (ptItem){
-                                    nameEditStore.transferNameInCluster(ptItem)
+                                    newNameOwnerPt=nameEditStore.transferNameInCluster(ptItem)
                                 }
                                 saveStore.deletedPoint(pt)
                                 saveStore.save.points.splice(ptIdx, 1)
+                                if (newNameOwnerPt){
+                                    newNameOwnerPt.nameP = nameEditStore.optimizedNamePos(newNameOwnerPt.id)
+                                }
                             }
                         }
                         saveStore.removePointLinkByPt(pt)

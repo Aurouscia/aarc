@@ -193,8 +193,10 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
             //被删除的站是唯一站名
             newCluster[0].name = deletedPoint.name
             newCluster[0].nameS = deletedPoint.nameS
-            newCluster[0].nameP = optimizedNamePos(newCluster[0].id)
+            return newCluster[0]
+            //.nameP = optimizedNamePos(newCluster[0].id)
         }
+        return
     }
     //#endregion
 
