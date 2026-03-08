@@ -253,6 +253,7 @@ export const devSave:Save = {
             nameSub: "New Town Branch",
             color: "#ff8800",
             type: LineType.common,
+            style: -1,
             parent: 103
         }
     ],

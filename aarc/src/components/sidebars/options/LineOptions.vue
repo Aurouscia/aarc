@@ -331,6 +331,7 @@ onMounted(()=>{
             <td>样式</td>
             <td>
                 <select v-model="props.line.style" @change="reportInfoChanged(true)">
+                    <option :value="-1">跟随主线</option>
                     <option :value="0">默认</option>
                     <option v-for="style in selectableLineStyles" :value="style.id">
                         {{ style.name }}

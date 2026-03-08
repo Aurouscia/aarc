@@ -840,6 +840,7 @@ export const useEnvStore = defineStore('env', ()=>{
             saveStore.createNewLine(newLine)
             if(parent){
                 ensureChildrenOptionsSame(parent)
+                newLine.style = -1 // 新创建的线路：style设为-1（表示跟随主线）
             }
             rerender.value([newLine.id], [pt1.id, pt2.id])
             activeLine.value = newLine

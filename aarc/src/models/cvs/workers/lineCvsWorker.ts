@@ -437,7 +437,12 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             if(drawBody){
                 const lineColor = lineStateStore.getLineActualColor(lineInfo)
                 const lineDownplayed = lineStateStore.isLineDownplayed(lineInfo.id)
-                const itsStyle = saveStore.save?.lineStyles?.find(x=>x.id===lineInfo.style)
+                let styleId = lineInfo.style
+                if(styleId == -1 && lineInfo.parent){
+                    // -1 表示跟随主线路的样式
+                    styleId = saveStore.getLineById(lineInfo.parent)?.style
+                }
+                const itsStyle = saveStore.save?.lineStyles?.find(x=>x.id===styleId)
                 if(itsStyle){
                     const scale = ctx.getCurrentScale()
                     const offset = ctx.getCurrentOffset()
