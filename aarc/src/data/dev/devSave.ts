@@ -20,9 +20,10 @@ export const devSave:Save = {
             pos: [550, 300],
             dir: ControlPointDir.incline,
             sta: ControlPointSta.sta,
-            name: '五福路',
-            nameS: 'wufu Rd.',
-            nameP: [30,0]
+            name: '这是AARC方便快捷的原因',
+            nameS: '两个站拼在一起即可形成并线换乘站',
+            nameP: [47.32276, -123.68622],
+            anchorX: 0
         },
         {
             id: 3,
@@ -64,7 +65,10 @@ export const devSave:Save = {
             id: 7,
             pos: [532.322330475, 317.677669525],
             dir: ControlPointDir.incline,
-            sta: ControlPointSta.sta
+            sta: ControlPointSta.sta,
+            name: '五福路',
+            nameS: 'wufu Rd.',
+            nameP: [-20, 0]
         },
         {
             id: 8,
@@ -253,7 +257,7 @@ export const devSave:Save = {
             nameSub: "New Town Branch",
             color: "#ff8800",
             type: LineType.common,
-            style: -1,
+            style: 100002,
             parent: 103
         }
     ],
@@ -346,6 +350,26 @@ export const devSave:Save = {
                     color: '#ffffff',
                     colorMode: 'fixed',
                     opacity: 1
+                }
+            ]
+        },
+        {
+            id: 100002,
+            name:"特殊快线",
+            layers:[
+                {
+                    width: 0.5,
+                    color: '#ffffff',
+                    colorMode: 'fixed',
+                    opacity: 1,
+                    dash: '0 3.5 0.5 0.5'
+                },
+                {
+                    width: 0.2,
+                    color: '#ffffff',
+                    colorMode: 'fixed',
+                    opacity: 1,
+                    dash: '3 0.5 0.5 0.5'
                 }
             ]
         },
