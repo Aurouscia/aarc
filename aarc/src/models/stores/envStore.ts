@@ -869,8 +869,8 @@ export const useEnvStore = defineStore('env', ()=>{
         if(!children || children.length===0)
             return []
         for(const c of children){
-            removeNonexistentKeys<Line>(c, parentLine, ['id', 'name', 'nameSub', 'parent', 'pts'])
-            assignAllProps<Line>(c, parentLine, ['id', 'name', 'nameSub', 'parent', 'pts'])
+            removeNonexistentKeys<Line>(c, parentLine, ['id', 'name', 'nameSub', 'parent', 'pts', 'style'])
+            assignAllProps<Line>(c, parentLine, ['id', 'name', 'nameSub', 'parent', 'pts', 'style'])
         }
         return children;
     }

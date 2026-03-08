@@ -3,9 +3,12 @@ import { CvsContext } from "./cvsContext"
 import { usePatternStore } from "@/models/stores/patternStore"
 import { Coord } from "@/models/coord"
 
+export type LineStrokeTarget = 'base'|'style'|'both'
+
 export function strokeStyledLine(
     ctx: CanvasRenderingContext2D|CvsContext,
     options: {
+        target?: LineStrokeTarget,
         scale?:number,
         offset?:Coord,
         lineStyle:LineStyle,
@@ -13,13 +16,17 @@ export function strokeStyledLine(
         dynaColor:string,
         fixedColorConverter:(c:string)=>string
     }){
-    const { scale, offset, lineWidthBase, lineStyle, dynaColor, fixedColorConverter } = options
-    ctx.lineWidth = lineWidthBase
-    ctx.globalAlpha = 1
-    ctx.strokeStyle = dynaColor
-    ctx.setLineDash([])
-    ctx.lineCap = 'butt'
-    ctx.stroke()
+    const { target, scale, offset, lineWidthBase, lineStyle, dynaColor, fixedColorConverter } = options
+    if(target != 'style'){
+        ctx.lineWidth = lineWidthBase
+        ctx.globalAlpha = 1
+        ctx.strokeStyle = dynaColor
+        ctx.setLineDash([])
+        ctx.lineCap = 'butt'
+        ctx.stroke()
+    }
+    if(target == 'base')
+        return
     for(let i = lineStyle.layers.length - 1; i >= 0; i--){
         const layer = lineStyle.layers[i]
         //被input设置的width和opacity是字符串形式的数字，此处应该使用双等号判断是否为0，三等号判断将始终为false

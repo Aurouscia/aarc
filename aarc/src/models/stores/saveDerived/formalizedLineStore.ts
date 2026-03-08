@@ -57,6 +57,7 @@ export const useFormalizedLineStore = defineStore('formalizedLine', ()=>{
 
     return { 
         setLinesFormalPts,
+        getLinesFormalPts: getItem,
         enumerateFormalizedLines: enumerateItems,
         findAdjacentFormalPts,
         clearItems,

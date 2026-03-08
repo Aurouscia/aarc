@@ -16,7 +16,7 @@ import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
 import { getByIndexInRing, isRing, isRingByFormalPts } from "@/utils/lineUtils/isRing";
 import { drawArcByThreePoints } from "@/utils/drawUtils/drawArc";
 import { CvsContext } from "../common/cvsContext";
-import { strokeStyledLine } from "../common/strokeStyledLine";
+import { LineStrokeTarget, strokeStyledLine } from "../common/strokeStyledLine";
 import { rayToCoordDist } from "@/utils/rayUtils/rayToCoordDist";
 import { numberCmpEpsilon } from "@/utils/consts";
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
@@ -66,17 +66,31 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         }
         if(line.length===0)
             return
-        const lineInfo = line[0]
-        ctx.beginPath()
+        
         for(const l of line){
             const pts = saveStore.getPtsByIds(l.pts)
             if(pts.length<=1)
                 return;
             const formalPts = formalize(pts)
             formalizedLineStore.setLinesFormalPts(l.id, formalPts)
-            linkPts(ctx, formalPts, l)
         }
-        doRender(ctx, lineInfo, undefined, undefined, rtype)
+
+        const includeCarpet = !rtype || rtype == 'carpet' || rtype == 'both'
+
+        const draw = (renderType: LineRenderType, strokeTarget?: LineStrokeTarget)=>{
+            for(const l of line){
+                if(strokeTarget == 'style' && !l.style)
+                    continue
+                ctx.beginPath()
+                const formalPts = formalizedLineStore.getLinesFormalPts(l.id) ?? []
+                linkPts(ctx, formalPts, l)
+                doRender(ctx, l, undefined, undefined, renderType, strokeTarget)
+            }
+        }
+        if(includeCarpet)
+            draw('carpet')
+        draw('body', 'base')
+        draw('body', 'style')
     }
     function renderSegsAroundActivePt(ctx:CvsContext)
         :{relatedPts:Iterable<ControlPoint>, formalizedSegs:FormalizedLine[]}
@@ -404,8 +418,11 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
         }
     }
-    function doRender(ctx:CvsContext, lineInfo:Line, enforceNoFill?:boolean, enforceLineWidth?:number, type?:LineRenderType){
-        const drawCarpet =( !type || type==='both' || type==='carpet')&& (!lineInfo.removeCarpet)
+    function doRender(
+        ctx:CvsContext, lineInfo:Line, enforceNoFill?:boolean,
+        enforceLineWidth?:number, type?:LineRenderType, strokeTarget?:LineStrokeTarget
+    ){
+        const drawCarpet = (!type || type==='both' || type==='carpet') && (!lineInfo.removeCarpet)
         const drawBody = !type || type==='both' || type==='body'
         if(!lineInfo.isFilled || enforceNoFill || lineInfo.type!==LineType.terrain){
             const lineWidth = cs.config.lineWidth * (enforceLineWidth||lineInfo.width||1)
@@ -425,6 +442,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                     const scale = ctx.getCurrentScale()
                     const offset = ctx.getCurrentOffset()
                     strokeStyledLine(ctx, {
+                        target: strokeTarget,
                         scale,
                         offset,
                         lineStyle: itsStyle,

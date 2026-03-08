@@ -327,6 +327,18 @@ onMounted(()=>{
     </template>
     </tbody></table>
     <table v-if="haveParent" class="fullWidth"><tbody>
+        <tr v-if="line.type===LineType.common">
+            <td>样式</td>
+            <td>
+                <select v-model="props.line.style" @change="reportInfoChanged(true)">
+                    <option :value="0">默认</option>
+                    <option v-for="style in selectableLineStyles" :value="style.id">
+                        {{ style.name }}
+                    </option>
+                </select>
+                <div class="smallNote">(可在设置-线路样式<br/>自定义更多选项)</div>
+            </td>
+        </tr>
         <tr>
             <td>标签<br/>创建</td>
             <td>
