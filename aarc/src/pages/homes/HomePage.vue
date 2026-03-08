@@ -31,8 +31,7 @@ onMounted(()=>{
         </b>
     </p>
     <p v-if="guideInfo.findHelp">{{ guideInfo.findHelp }}</p>
-    <p v-if="guideInfo.extra" style="font-size: 14px;">{{ guideInfo.extra }}</p>
-    <p>本项目正在持续完善改进中，想提出建议请qq私聊我或<a href="https://gitee.com/au114514/aarc/issues" target="_blank">点击此处</a></p>
+    <p v-if="guideInfo.extra" class="guideExtra" v-html="guideInfo.extra"></p>
 </div>
 <Notice :type="'warn'" :title="'⚠️ 重大变动'">
     🤝目前“公共存档”仅<b>正式用户</b>能参与，如果想参与多人合作，请参考“注册”处的引导转为正式用户💡
@@ -154,6 +153,19 @@ onMounted(()=>{
         color: #999;
         margin-bottom: 0.5em;
         white-space: pre-wrap;
+        &.guideExtra {
+            font-size: 14px;
+            &:deep(a) {
+                color: cornflowerblue;
+                animation: linkFlash 2s ease-in-out;
+            }
+            @keyframes linkFlash {
+                0% { color: cornflowerblue; }
+                50% { color: darkblue; }
+                50.01% { color: cornflowerblue; }
+                100% { color: darkblue; }
+            }
+        }
     }
     h1{
         font-size: 30px;
@@ -216,7 +228,7 @@ onMounted(()=>{
     margin: 20px 0px;
     .userTypeNote{
         text-align: center;
-        color: #666;
+        color: palevioletred;
     }
 }
 </style>
