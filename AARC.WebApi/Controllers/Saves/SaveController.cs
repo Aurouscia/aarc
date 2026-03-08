@@ -59,7 +59,7 @@ namespace AARC.WebApi.Controllers.Saves
             var list = saveRepo.GetMySaves(uid);
             EnrichSaveMini(list);
             EnrichUserName(list, isForMySaves: true);
-            EnrichPrivilege(list);
+            EnrichPrivilege(list, true);
             return list;
         }
         [AllowAnonymous]
@@ -71,7 +71,7 @@ namespace AARC.WebApi.Controllers.Saves
             var list = saveRepo.Search(search, orderBy, pageIdx);
             EnrichSaveMini(list);
             EnrichUserName(list);
-            EnrichPrivilege(list);
+            EnrichPrivilege(list, true);
             return list;
         }
         [HttpPost]
@@ -79,6 +79,15 @@ namespace AARC.WebApi.Controllers.Saves
         public bool Add([FromBody]SaveDto saveDto)
         {
             saveRepo.Create(saveDto);
+            userRepo.UpdateCurrentUserLastActive();
+            return true;
+        }
+        [HttpPost]
+        [UserCheck]
+        public bool Fork(int id)
+        {
+            authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.Fork, false);
+            saveRepo.Fork(id);
             userRepo.UpdateCurrentUserLastActive();
             return true;
         }
@@ -327,17 +336,20 @@ namespace AARC.WebApi.Controllers.Saves
             }
         }
         [NonAction]
-        private void EnrichPrivilege(List<SaveDto> saves)
+        private void EnrichPrivilege(List<SaveDto> saves, bool needFork = false)
         {
             var ids = saves.ConvertAll(x => x.Id);
             var allowEdit = authGrantCheckService
                 .CalculateFor(AuthGrantOn.Save, ids, (byte)AuthGrantTypeOfSave.Edit, false);
             var allowView = authGrantCheckService
                 .CalculateFor(AuthGrantOn.Save, ids, (byte)AuthGrantTypeOfSave.View, true);
+            var allowFork = needFork ? authGrantCheckService
+                .CalculateFor(AuthGrantOn.Save, ids, (byte)AuthGrantTypeOfSave.Fork, false) : [];
             for (int i = 0; i < saves.Count; i++)
             {
                 saves[i].AllowRequesterEdit = allowEdit.ElementAtOrDefault(i);
                 saves[i].AllowRequesterView = allowView.ElementAtOrDefault(i);
+                saves[i].AllowRequesterFork = allowFork.ElementAtOrDefault(i);
             }
         }
         [NonAction]

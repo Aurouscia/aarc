@@ -163,6 +163,14 @@ namespace AARC.WebApi.Repos.Saves
             save.OwnerUserId = uid;
             base.Add(save);
         }
+        public void Fork(int id)
+        {
+            var data = Existing.FirstOrDefault(x => x.Id == id) ?? throw new RqEx("找不到指定存档");
+            var copied = mapper.Map<Save>(data); // 复制一份
+            copied.OwnerUserId = httpUserIdProvider.RequireUserId();
+            copied.ForkedFromId = id;
+            base.Add(copied);
+        }
         public void UpdateInfo(SaveDto saveDto)
         {
             ValidateDto(saveDto);
@@ -368,6 +376,7 @@ namespace AARC.WebApi.Repos.Saves
         public string? LastActive { get; set; }
         public bool AllowRequesterView { get; set; }
         public bool AllowRequesterEdit { get; set; }
+        public bool AllowRequesterFork { get; set; }
         public int EditingByUserId { get; set; }
         public string? EditingByUserName { get; set; }
         [JsonIgnore]
@@ -386,6 +395,7 @@ namespace AARC.WebApi.Repos.Saves
                 .ForMember(
                     destinationMember: x => x.LastActive,
                     memberOptions: mem => mem.MapFrom(source => source.LastActive.ToString("yyyy-MM-dd HH:mm")));
+            CreateMap<Save, Save>();
         }
     }
     

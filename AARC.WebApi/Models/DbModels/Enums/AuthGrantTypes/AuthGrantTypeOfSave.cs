@@ -7,5 +7,6 @@ public enum AuthGrantTypeOfSave : byte
     ExportImage = 2,
     ExportJson = 3,
     Edit = 4,
-    Comment = 5
+    Comment = 5,
+    Fork = 6
 }
