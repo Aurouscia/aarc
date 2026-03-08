@@ -153,8 +153,8 @@ onMounted(()=>{
     <tr>
         <td colspan="2" class="nameAndColorTd">
             <div>
-                <input v-model.lazy.trim="line.name" @blur="reportInfoChanged(false)"/>
-                <input v-model.lazy.trim="line.nameSub" @blur="reportInfoChanged(false)"/>
+                <input v-model.lazy.trim="line.name" @blur="reportInfoChanged(false)" placeholder="请输入线路名称"/>
+                <input v-model.lazy.trim="line.nameSub" @blur="reportInfoChanged(false)" placeholder="请输入线路副名称"/>
                 <template v-if="!haveParent">
                     <ColorPickerForLine ref="picker0" v-if="line.type===LineType.common" :line="line"
                         :entry-styles="pickerEntryStyles" @color-updated="emit('colorUpdated')"></ColorPickerForLine> 
