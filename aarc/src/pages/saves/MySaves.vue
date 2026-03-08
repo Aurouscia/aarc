@@ -19,10 +19,12 @@ import SwitchingTabs from '@/components/common/SwitchingTabs.vue';
 import SaveAvatar from '../components/SaveAvatar.vue';
 import { useSavesRoutesJump } from './routes/routesJump';
 import SaveBackups from '../components/SaveBackups.vue';
+import { useRouter } from 'vue-router';
 
 const saveList = ref<WithIntroShow<SaveDto>[]>()
 const api = useApiStore();
-const { saveDiffsRoute } = useSavesRoutesJump()
+const router = useRouter()
+const { mySavesRoute, saveDiffsRoute } = useSavesRoutesJump()
 const { showPop } = useUniqueComponentsStore()
 const userInfoStore = useUserInfoStore()
 const props = defineProps<{
@@ -44,6 +46,7 @@ watch(uidNum, load)
 
 const ownerName = ref<string>()
 async function load(){
+    setEnteredFrom()
     if(uidNum.value > 0){
         const ownerInfo = await api.user.getInfo(uidNum.value)
         ownerName.value = ownerInfo?.name || '??'
@@ -161,15 +164,24 @@ async function downloadJson(){
     if(!editingSave.value)
         return
     const json = await api.save.loadData(editingSave.value.id, false)
-    if(json)
+    if(json){
         fileDownload(json, `${editingSave.value.name}.aarc.json`)
+        showPop('已开始下载', 'success')    
+    }
+}
+
+async function fork(id?: number) {
+    const resp = await api.save.fork(id)
+    if(resp){
+        showPop('另存成功', 'success')
+        router.push(mySavesRoute())
+    }
 }
 
 const authGrantSb = useTemplateRef('authGrantSb')
 const backupSb = useTemplateRef('backupSb')
 const { setEnteredFrom } = useEnteredCanvasFromStore()
 onMounted(async()=>{
-    setEnteredFrom()
     await load()
     await appVersionCheck()
 })
@@ -192,7 +204,7 @@ onMounted(async()=>{
             <span class="introNote">简介点击展开</span>
         </th>
         <th style="width: 130px;min-width: 130px">上次更新</th>
-        <th style="width: 80px;min-width: 80px"></th>
+        <th style="width: 100px;min-width: 100px"></th>
     </tr>
     <tr v-for="s in saveList">
         <td>
@@ -210,6 +222,7 @@ onMounted(async()=>{
         </td>
         <td>
             <button v-if="isMine" class="minor" @click="startEditingInfo(s)">信息设置</button>
+            <button v-else-if="s.allowRequesterFork" class="minor" @click="fork(s.id)">另存为我的</button>
         </td>
     </tr>
     <tr v-if="saveList.length==0" style="color: #666; font-size: 16px;">

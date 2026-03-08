@@ -66,6 +66,7 @@ onMounted(async ()=>{
     color: cornflowerblue;
     border-bottom: 4px solid cornflowerblue;
     font-weight: bold;
+    background-color: rgb(237, 243, 255);
 }
 .controls>div{
     flex-grow: 1;
