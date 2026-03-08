@@ -59,7 +59,6 @@ async function downloadMainCvsAsImage() {
         const ctx2d = cvs.getContext('2d')!
         const ctx = new CvsContext(new CvsBlock(scale, 0, 0, ctx2d))
         const mainRenderingOptions:MainCvsRenderingOptions = {
-            changedLines:[],
             movedStaNames:[],
             suppressRenderedCallback:true,
             ctx,

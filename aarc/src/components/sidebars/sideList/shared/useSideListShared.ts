@@ -68,7 +68,6 @@ export function useSideListShared(
         window.clearTimeout(orderChangeRerenderTimer)
         orderChangeRerenderTimer = window.setTimeout(()=>{
             mainCvsDispatcher.renderMainCvs({
-                changedLines:[],
                 movedStaNames:[]
             })
         }, 500)
