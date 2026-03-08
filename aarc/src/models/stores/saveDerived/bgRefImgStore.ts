@@ -83,9 +83,10 @@ export const useBgRefImageStore = defineStore('bgRefImage', ()=>{
         const cfg = configStore.config.bgRefImage
         const url = preDisplayUrl.value
         if(!url) return undefined
-        if(!cfg.export)
-            return url
-        return convertToProxyUrlIfNeeded(url, 'icon')
+        const isRelativeOrHttps = url.startsWith('https') || url.startsWith('/')
+        if(!cfg.export && isRelativeOrHttps)
+            return url // 如果不是导出用的，而且是相对路径或https，则可以使用本身的路径，无需走代理
+        return convertToProxyUrlIfNeeded(url, 'icon') // 如果是导出用的，或是http，必须走代理
     })
 
     return {
