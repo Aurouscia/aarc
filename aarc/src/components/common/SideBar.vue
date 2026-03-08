@@ -90,10 +90,7 @@ const emit = defineEmits<{
 </div>
 </template>
 
-<style scoped>
-.sideBar button{
-    margin-bottom: 10px;
-}
+<style scoped lang="scss">
 .body{
     padding: 10px;
     overflow-y: auto;
@@ -110,6 +107,13 @@ const emit = defineEmits<{
     background-color: white;
     box-shadow: none;
     z-index: 1002;
+    button{
+        margin-bottom: 10px;
+    }
+    &:deep(select){
+        max-width: 190px;
+        text-overflow: ellipsis;
+    }
 }
 .cover{
     opacity: 0;
