@@ -167,6 +167,7 @@ namespace AARC.WebApi.Repos.Saves
         {
             var data = Existing.FirstOrDefault(x => x.Id == id) ?? throw new RqEx("找不到指定存档");
             var copied = mapper.Map<Save>(data); // 复制一份
+            copied.Id = 0; // 重置主键，让数据库生成新记录
             copied.OwnerUserId = httpUserIdProvider.RequireUserId();
             copied.ForkedFromId = id;
             base.Add(copied);
