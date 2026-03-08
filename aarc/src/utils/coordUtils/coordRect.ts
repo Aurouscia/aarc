@@ -63,3 +63,37 @@ export function rectCoordDistSqLessThan(rect:RectCoord, pos:Coord, cmpSq:number)
     const distSq = xDiffSq + yDiffSq;
     return distSq < cmpSq;
 }
+
+/** 计算旋转后的轴对齐包围盒(AABB) */
+export function getRotatedAABB(rect:RectCoord, angleDeg:number, anchor:Coord):RectCoord{
+    const angle = angleDeg * Math.PI / 180
+    const cos = Math.cos(angle)
+    const sin = Math.sin(angle)
+    const [ax, ay] = anchor
+    
+    // 原始矩形的四个角
+    const corners:Coord[] = [
+        [rect[0][0], rect[0][1]], // 左上
+        [rect[1][0], rect[0][1]], // 右上
+        [rect[1][0], rect[1][1]], // 右下
+        [rect[0][0], rect[1][1]]  // 左下
+    ]
+    
+    // 旋转每个角点
+    const rotated = corners.map(([x, y]) => {
+        const dx = x - ax
+        const dy = y - ay
+        return [
+            ax + dx * cos - dy * sin,
+            ay + dx * sin + dy * cos
+        ] as Coord
+    })
+    
+    // 计算新的AABB
+    const xs = rotated.map(p => p[0])
+    const ys = rotated.map(p => p[1])
+    return [
+        [Math.min(...xs), Math.min(...ys)],
+        [Math.max(...xs), Math.max(...ys)]
+    ] as RectCoord
+}

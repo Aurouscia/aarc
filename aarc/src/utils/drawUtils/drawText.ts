@@ -3,6 +3,7 @@ import { Coord, RectCoord, SgnCoord, SgnNumber } from "@/models/coord"
 import { splitLinesClean } from "../lang/splitLines"
 import { CvsContext } from "@/models/cvs/common/cvsContext"
 import { TextMetricsSelected } from "../type/TextMetricsSelected"
+import { getRotatedAABB } from "@/utils/coordUtils/coordRect"
 
 export interface DrawTextBodyOption{
     text?:string
@@ -18,21 +19,45 @@ export interface DrawTextStrokeOption{
     color:string
     opacity:number
 }
+
+export interface DrawTextResult{
+    rectFull:RectCoord
+    rectMain:RectCoord
+    /** 旋转后的AABB（如果指定了旋转角度） */
+    rotatedAABB?:RectCoord
+    /** 旋转角度（度） */
+    rotation?:number
+    /** 旋转中心 */
+    anchor?:Coord
+    /** 未旋转的原始rect（本地坐标系） */
+    originalRect?:RectCoord
+}
+
 export function drawText(
     ctx:CvsContext, pos:Coord, align:SgnCoord, textAlignOverride: SgnNumber|undefined,
     main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false,
-    task:'draw'|'measure'|'both' = 'both', width?:number
-    ): {rectFull:RectCoord, rectMain:RectCoord}|undefined
+    task:'draw'|'measure'|'both' = 'both', width?:number,
+    rotation?:number // 新增：旋转角度（度），绕锚点旋转
+    ): DrawTextResult|undefined
 {
     const [x, y] = pos
     const [xSgn, ySgn] = align
+
+    // 如果需要旋转，保存上下文并应用旋转
+    const needRotate = rotation && rotation !== 0
+    if(needRotate && (task === 'draw' || task === 'both')){
+        ctx.save()
+        ctx.translate(x, y)
+        ctx.rotate(rotation * Math.PI / 180)
+        ctx.translate(-x, -y)
+    }
 
     ctx.textBaseline = 'middle'
     const { mainHeight, subHeight, mainLines, subLines } = splitLines(main, sub)
     const totalHeight = mainHeight+subHeight
     const mainRowMargin = main.rowHeight - main.fontSize
     const subRowMargin = sub.rowHeight - sub.fontSize
-    const yTop = getYTop(y, ySgn, totalHeight, mainRowMargin, subRowMargin) //减去文本上下的空隙（半个“行距与字体大小之差”）
+    const yTop = getYTop(y, ySgn, totalHeight, mainRowMargin, subRowMargin) //减去文本上下的空隙（半个"行距与字体大小之差"）
 
     //const mainFontStr = concatFontStr(main.font, main.fontSize)
     //const subFontStr = concatFontStr(sub.font, sub.fontSize)
@@ -113,6 +138,11 @@ export function drawText(
             ctx.fillText(text, useX, ty)
     })
 
+    // 恢复上下文（如果旋转了）
+    if(needRotate && (task === 'draw' || task === 'both')){
+        ctx.restore()
+    }
+
     if(needMeasure){
         const rectFull = getRect(x, y, xSgn, ySgn, biggestWidth, totalHeight)
         const rectMain = getMainRectByFullRect(rectFull, xSgn, biggestWidth, mainWidth, totalHeight, mainHeight)
@@ -120,10 +150,22 @@ export function drawText(
             //如果指定了宽度，将矩形的宽度调整为指定宽度
             enlargeRectToWidth(rectFull, xSgn, width)
         }
-        return {
+        
+        const result:DrawTextResult = {
             rectFull,
             rectMain
         }
+
+        // 如果有旋转，计算旋转后的AABB和存储相关信息
+        if(needRotate){
+            result.rotation = rotation
+            result.anchor = [x, y]
+            result.originalRect = [...rectFull] as RectCoord
+            // 计算旋转后的AABB
+            result.rotatedAABB = getRotatedAABB(rectFull, rotation, [x, y])
+        }
+
+        return result
     }
 }
 
@@ -131,8 +173,8 @@ const chineseStyleDropCapPattern = /^[0-9a-zA-Z]{1,3}(?=\s?号?环?线$)/
 export function drawTextForLineName(
     ctx:CvsContext, pos:Coord, align:SgnCoord, textAlignOverride:SgnNumber,
     main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false,
-    task:'draw'|'measure'|'both' = 'both', width?:number, dropCap?:boolean):
-    {isDropCap:boolean, rect:RectCoord|undefined}|undefined
+    task:'draw'|'measure'|'both' = 'both', width?:number, dropCap?:boolean, rotation?:number):
+    {isDropCap:boolean, rect:RectCoord|undefined, drawTextResult?:DrawTextResult}|undefined
 {
     const mainText = main.text?.trim() || ''
     const subText = sub.text?.trim() || ''
@@ -142,9 +184,11 @@ export function drawTextForLineName(
     {
         //如果不是需要dropCap的线路名，则fallback到一般的写法
         const textAlign = textAlignOverride
+        const drawResult = drawText(ctx, pos, align, textAlign, main, sub, stroke, task, width, rotation)
         return {
             isDropCap:false,
-            rect:drawText(ctx, pos, align, textAlign, main, sub, stroke, task, width)?.rectFull
+            rect:drawResult?.rectFull,
+            drawTextResult: drawResult
         }
     }
     const needDraw = task === 'draw' || task === 'both'
@@ -156,6 +200,15 @@ export function drawTextForLineName(
     const [x, y] = pos
     const [xSgn, ySgn] = align
     const yTop = getYTop(y, ySgn, totalHeight)
+
+    // 如果需要旋转，保存上下文并应用旋转
+    const needRotate = rotation && rotation !== 0
+    if(needRotate && needDraw){
+        ctx.save()
+        ctx.translate(x, y)
+        ctx.rotate(rotation * Math.PI / 180)
+        ctx.translate(-x, -y)
+    }
 
     const lineNum = match[0]
     const restPart = mainText.substring(lineNum.length).trim()
@@ -202,15 +255,38 @@ export function drawTextForLineName(
         ctx.fillStyle = sub.color
         ctx.fillText(subText, subX, subY)
     }
+
+    // 恢复上下文（如果旋转了）
+    if(needRotate && needDraw){
+        ctx.restore()
+    }
+
     if(needMeasure){
         const rect = getRect(x, y, xSgn, ySgn, totalWidth, totalHeight)
         if(width){
             //如果指定了宽度，将矩形的宽度调整为指定宽度
             enlargeRectToWidth(rect, xSgn, width)
         }
+
+        // 如果有旋转，计算旋转后的AABB
+        let rotatedAABB:RectCoord|undefined
+        if(needRotate){
+            rotatedAABB = getRotatedAABB(rect, rotation, [x, y])
+        }
+
+        const drawTextResult:DrawTextResult|undefined = needRotate ? {
+            rectFull: rotatedAABB || rect,
+            rectMain: rotatedAABB || rect,
+            rotatedAABB,
+            rotation,
+            anchor: [x, y],
+            originalRect: [...rect] as RectCoord
+        } : undefined
+
         return {
             isDropCap: true,
-            rect
+            rect: rotatedAABB || rect,
+            drawTextResult
         }
     }
 }

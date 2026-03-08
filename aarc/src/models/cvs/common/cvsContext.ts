@@ -92,6 +92,15 @@ export class CvsContext{
     translate(x:number, y:number){
         this.b.ctx2d.translate(x, y)
     }
+    rotate(angle:number){
+        this.b.ctx2d.rotate(angle)
+    }
+    save(){
+        this.b.ctx2d.save()
+    }
+    restore(){
+        this.b.ctx2d.restore()
+    }
 
     getUnderlyingCanvas(){
         return this.b.ctx2d.canvas
