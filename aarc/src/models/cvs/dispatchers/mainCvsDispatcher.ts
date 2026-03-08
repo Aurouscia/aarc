@@ -22,8 +22,6 @@ import { useRenderOptionsStore } from "@/models/stores/renderOptionsStore";
 import { useBgRefImageCvsWorker } from "../workers/bgRefImageCvsWorker";
 
 export interface MainCvsRenderingOptions{
-    /** 这次渲染前哪些线路形状变动了？不提供即为所有 */
-    changedLines?: number[],
     /** 这次渲染前哪些站名位置移动了？不提供即为所有 */
     movedStaNames?: number[],
     /** 阻止“渲染后”钩子触发 */
@@ -63,7 +61,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         const tStart = logRendering ? timestampMS():0
         isRendering.value = true
         const ctx = options.ctx || getCtx();
-        const { changedLines, movedStaNames, suppressRenderedCallback } = options
+        const { movedStaNames, suppressRenderedCallback } = options
         const forExport = renderOptionsStore.exporting
         if(forExport){
             ctx.globalAlpha = renderOptionsStore.bgOpacity ?? 1
@@ -79,15 +77,15 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
 
         const creatingLink = pointLinkStore.isCreating
         tic()
-        renderAllLines(ctx, changedLines, LineType.terrain, 'carpet')
+        renderAllLines(ctx, LineType.terrain, 'carpet')
         tic('地形-地毯')
         renderAllTerrainSmooth(ctx, 'carpet')
         tic('地形-平滑地毯')
         renderAllTerrainSmooth(ctx, 'body')
         tic('地形-平滑')
-        renderAllLines(ctx, [], LineType.terrain, 'body')
+        renderAllLines(ctx, LineType.terrain, 'body')
         tic('地形-本体')
-        renderAllLines(ctx, changedLines, LineType.common)
+        renderAllLines(ctx, LineType.common)
         tic('线路')
         renderAllPoints(ctx, forExport, forExport)
         tic('点')
@@ -117,15 +115,14 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         if(!suppressRenderedCallback && afterMainCvsRendered.value)
             afterMainCvsRendered.value()
     }
-    envStore.rerender = (changedLines, movedStaNames)=>{
+    envStore.rerender = (_changedLines, movedStaNames)=>{
+        // TODO：将rerender的参数改为对象
         renderMainCvs({
-            changedLines,
             movedStaNames
         })
     }
     cvsBlocksControlStore.blocksReformHandler.push(()=>{
         renderMainCvs({
-            changedLines:undefined,
             movedStaNames:undefined,
             suppressRenderedCallback:true
         })

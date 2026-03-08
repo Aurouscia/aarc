@@ -32,7 +32,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     const formalizedLineStore = useFormalizedLineStore()
     const cs = useConfigStore();
     const colorProc = useColorProcStore()
-    function renderAllLines(ctx:CvsContext, needReportFormalPtsLines?:number[], ltype?:LineType, rtype?:LineRenderType){
+    function renderAllLines(ctx:CvsContext, ltype?:LineType, rtype?:LineRenderType){
         if(!saveStore.save){
             return
         }
@@ -49,7 +49,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             const children = saveStore.getLinesByParent(line.id)
             if(children)
                 toRender.push(...children)
-            renderLine(ctx, toRender, needReportFormalPtsLines, rtype)
+            renderLine(ctx, toRender, rtype)
         }
     }
     /**
@@ -60,7 +60,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
      * @param rtype 渲染类型（地毯/本体）
      * @returns 
      */
-    function renderLine(ctx:CvsContext, line:Line|Line[], needReportFormalPtsLines?:number[], rtype?:LineRenderType){
+    function renderLine(ctx:CvsContext, line:Line|Line[], rtype?:LineRenderType){
         if(!(line instanceof Array)){
             line = [line]
         }
@@ -72,11 +72,8 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             const pts = saveStore.getPtsByIds(l.pts)
             if(pts.length<=1)
                 return;
-            const needReportFormalPts = !needReportFormalPtsLines || needReportFormalPtsLines.includes(l.id)
-            const formalPts = formalize(pts) //TODO: needReportFormalPts参数可以不要，即使跳过了formalize也几乎没有优化
-            if(needReportFormalPts){
-                formalizedLineStore.setLinesFormalPts(l.id, formalPts)
-            }
+            const formalPts = formalize(pts)
+            formalizedLineStore.setLinesFormalPts(l.id, formalPts)
             linkPts(ctx, formalPts, l)
         }
         doRender(ctx, lineInfo, undefined, undefined, rtype)
