@@ -8,6 +8,7 @@ export interface Save{
     lines: Line[]
     lineStyles?: LineStyle[]
     lineGroups?: LineGroup[]
+    lineSlices?: LineSlice[]
     textTags: TextTag[]
     textTagIcons?: TextTagIcon[]
     patterns?: Pattern[]
@@ -172,6 +173,16 @@ export interface Pattern{
         fall45?: boolean
         fall63?: boolean
     }
+}
+
+export interface LineSlice{
+    id:number
+    line:number
+    /** 起始点Id */
+    fromPt:number
+    /** 结束点Id */
+    toPt:number
+    style?:number
 }
 
 export interface SaveMetaData{
