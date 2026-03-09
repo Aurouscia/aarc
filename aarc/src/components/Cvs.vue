@@ -16,6 +16,7 @@ import { useCvsBlocksControlStore } from '@/models/cvs/common/cvs';
 import { useBgRefImageStore } from '@/models/stores/saveDerived/bgRefImgStore';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
 import { usePointLinkStore } from '@/models/stores/pointLinkStore';
+import { useLineSliceStore } from '@/models/stores/lineSliceStore';
 import { useSelectionStore } from '@/models/stores/selectionStore';
 
 const envStore = useEnvStore();
@@ -29,6 +30,7 @@ const activeCvsDispatcher = useActiveCvsDispatcher()
 const { showWait } = useUniqueComponentsStore()
 const cvsBlocksControlStore = useCvsBlocksControlStore()
 const pointLinkStore = usePointLinkStore()
+const lineSliceStore = useLineSliceStore()
 const selectionStore = useSelectionStore()
 
 let activeCvsRenderTimer = 0
@@ -96,6 +98,10 @@ defineExpose({init})
         正在创建连接，请点击第<b>{{ pointLinkStore.helpTextNumber }}</b>个点<br/>
         <button class="lite" @click="pointLinkStore.abortCreatingPtLink">取消创建</button>
     </div>
+    <div v-if="lineSliceStore.isCreating" class="statusDisplay lineSliceCreatingStatus">
+        {{ lineSliceStore.helpText }}<br/>
+        <button class="lite" @click="lineSliceStore.abortCreatingSlice">取消创建</button>
+    </div>
     <div v-if="selectionStore.showControl" class="statusDisplay selectionWorkingStatus">
         <button v-if="selectionStore.mode=='add'" @click="selectionStore.mode='sub'" class="selAddMode">
             添选模式</button>
@@ -135,7 +141,7 @@ defineExpose({init})
         height: 100%;
     }
 }
-.pointLinkCreatingStatus, .selectionWorkingStatus{
+.pointLinkCreatingStatus, .lineSliceCreatingStatus, .selectionWorkingStatus{
     z-index: 1001;
     color: white;
     background-color: olivedrab;
