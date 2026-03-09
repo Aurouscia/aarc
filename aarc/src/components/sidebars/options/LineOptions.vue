@@ -338,6 +338,7 @@ onMounted(()=>{
                     </option>
                 </select>
                 <div class="smallNote">(可在设置-线路样式<br/>自定义更多选项)</div>
+                <div class="smallNote">注意：支线与主线样式不同时，半透明的样式颜色会重叠。如果要避免颜色重叠，请确保使用同一个样式，或设置样式透明度为1。</div>
             </td>
         </tr>
         <tr>

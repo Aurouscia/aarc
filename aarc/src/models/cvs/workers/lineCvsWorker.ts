@@ -89,8 +89,23 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         }
         if(includeCarpet)
             draw('carpet')
-        draw('body', 'base')
-        draw('body', 'style')
+        const allStyles = new Set<number>()
+        line.forEach(l => allStyles.add(l.style ?? 0))
+        const allSameStyle = allStyles.size < 2 || (allStyles.size == 2 && allStyles.has(-1))
+        // 如果有不一样的样式（除了那同一个和-1之外），则使用新版渲染逻辑（样式逐个线路画）
+        if(!allSameStyle){
+            draw('body', 'base')
+            draw('body', 'style')
+        }
+        else{
+            // 如果样式都一样，则使用旧版逻辑（所有样式一笔画出来）
+            ctx.beginPath()
+            for(const l of line){
+                const formalPts = formalizedLineStore.getLinesFormalPts(l.id) ?? []
+                linkPts(ctx, formalPts, l)
+            }
+            doRender(ctx, line[0], undefined, undefined, 'body', 'both')
+        }
     }
     function renderSegsAroundActivePt(ctx:CvsContext)
         :{relatedPts:Iterable<ControlPoint>, formalizedSegs:FormalizedLine[]}
