@@ -41,7 +41,7 @@ onMounted(()=>{
     <div v-if="userInfoStore.isLoginedTourist" class="userTypeNote">当前账号为游客，作品无法公开展示</div>
 </div>
 <div v-if="userInfoStore.isAdmin" class="marginedSection">
-    <div class="userTypeNote">当前账号为管理，酌情转正以下游客</div>
+    <div class="userTypeNote">当前账号为管理，请监视以下游客情况（不要随意给人转正）</div>
     <NewestSaves :for-auditor="true"></NewestSaves>
 </div>
 <div class="marginedSection">
