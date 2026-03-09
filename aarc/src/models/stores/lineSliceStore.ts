@@ -17,22 +17,25 @@ export const useLineSliceStore = defineStore('lineSliceStore',()=>{
     
     const isCreating = computed(()=>!!creatingSlice.value)
     
-    /** 当前步骤：1=选第1个点, 2=选第2个点, 3=选线路（如果需要） */
-    const currentStep = computed(()=>{
-        if(!creatingSlice.value) return 0
+    type Step = 'idle' | 'selectFirstPt' | 'selectSecondPt' | 'selectLine'
+    
+    /** 当前步骤 */
+    const currentStep = computed<Step>(()=>{
+        if(!creatingSlice.value) return 'idle'
         const ptCount = creatingSlice.value.ptIds.length
-        if(ptCount < 2) return ptCount + 1
+        if(ptCount === 0) return 'selectFirstPt'
+        if(ptCount === 1) return 'selectSecondPt'
         // 有两个点后，如果有多个候选线路，需要第三步选择线路
-        if(creatingSlice.value.candidateLineIds.length > 1) return 3
-        return 2 // 只有两个点，自动确定线路
+        if(creatingSlice.value.candidateLineIds.length > 1) return 'selectLine'
+        return 'idle' // 只有两个点且只有一个候选线路，自动完成
     })
     
     /** 帮助文本 */
     const helpText = computed(()=>{
         const step = currentStep.value
-        if(step === 1) return '请点击起点'
-        if(step === 2) return '请点击终点'
-        if(step === 3) return '请点击要应用片段的线路'
+        if(step === 'selectFirstPt') return '请点击起点'
+        if(step === 'selectSecondPt') return '请点击终点'
+        if(step === 'selectLine') return '请点击要应用片段的线路'
         return ''
     })
 

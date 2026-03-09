@@ -20,6 +20,7 @@ import { usePointLinkCvsWorker } from "../workers/pointLinkCvsWorker";
 import { useWatermarkCvsWorker } from "../workers/watermarkCvsWorker";
 import { useRenderOptionsStore } from "@/models/stores/renderOptionsStore";
 import { useBgRefImageCvsWorker } from "../workers/bgRefImageCvsWorker";
+import { useLineSliceStore } from "@/models/stores/lineSliceStore";
 
 export interface MainCvsRenderingOptions{
     /** 这次渲染前哪些站名位置移动了？不提供即为所有 */
@@ -42,6 +43,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const { getCtx: getCtx } = useCvs(canvasIdPrefix)
     const cvsBlocksControlStore = useCvsBlocksControlStore()
     const pointLinkStore = usePointLinkStore()
+    const lineSliceStore = useLineSliceStore()
     const { renderAllLines } = useLineCvsWorker()
     const { renderAllPoints } = usePointCvsWorker()
     const { renderClusters, getClustersRenderingData } = useClusterCvsWorker()
@@ -75,7 +77,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         if(!visitorMode.value)
             renderWatermark(ctx, 'beforeMain', forExport)
 
-        const creatingLink = pointLinkStore.isCreating
+        const creatingLinkOrSlice = pointLinkStore.isCreating || lineSliceStore.isCreating
         tic()
         renderAllLines(ctx, LineType.terrain, 'carpet')
         tic('地形-地毯')
@@ -90,11 +92,11 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         renderAllPoints(ctx, forExport, forExport)
         tic('点')
         const clusterData = getClustersRenderingData()
-        renderClusters(ctx, clusterData, 'carpet', creatingLink)
+        renderClusters(ctx, clusterData, 'carpet', creatingLinkOrSlice)
         renderAllLinks(ctx, 'carpet')
-        renderClusters(ctx, clusterData, 'body', creatingLink)
+        renderClusters(ctx, clusterData, 'body', creatingLinkOrSlice)
         renderAllLinks(ctx, 'body')
-        renderClusters(ctx, clusterData, 'core', creatingLink, !forExport)
+        renderClusters(ctx, clusterData, 'core', creatingLinkOrSlice, !forExport)
         renderAllLinks(ctx, 'core')
         tic('集群')
         renderAllPtName(ctx, movedStaNames, forExport)

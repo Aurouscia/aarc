@@ -21,6 +21,7 @@ import { usePointLinkStore } from "@/models/stores/pointLinkStore";
 import { useSelectionCvsWorker } from "../workers/selectionCvsWorker";
 import { useSelectionStore } from "@/models/stores/selectionStore";
 import { computed } from "vue";
+import { useLineSliceStore } from "@/models/stores/lineSliceStore";
 
 export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const saveStore = useSaveStore()
@@ -29,6 +30,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
     const lineExtendStore = useLineExtendStore()
     const pointLinkStore = usePointLinkStore()
     const selectionStore = useSelectionStore()
+    const lineSliceStore = useLineSliceStore()
     const canvasIdPrefix = 'active'
     const { getCtx } = useCvs(canvasIdPrefix)
     const { renderSegsAroundActivePt, renderLine } = useLineCvsWorker()
@@ -48,7 +50,7 @@ export const useActiveCvsDispatcher = defineStore('activeCvsDispatcher', ()=>{
 
     const noNeedActiveCvs = computed(()=>{
         const sel = selectionStore.enabled || selectionStore.selected.size > 0
-        return !sel && !envStore.somethingActive && !pointLinkStore.isCreating
+        return !sel && !envStore.somethingActive && !pointLinkStore.isCreating && !lineSliceStore.isCreating
     })
 
     function renderActiveCvs(){

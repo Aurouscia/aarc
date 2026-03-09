@@ -22,6 +22,7 @@ import rfdc from "rfdc";
 import { coordRound } from "@/utils/coordUtils/coordRound";
 import { usePointLinkStore } from "./pointLinkStore";
 import { useSelectionStore } from "./selectionStore";
+import { useLineSliceStore } from "./lineSliceStore";
 import { assignAllProps, removeNonexistentKeys } from "@/utils/lang/assignAllProps";
 import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
 import { useOptionsOpenerStore } from "./utils/optionsOpenerStore";
@@ -70,6 +71,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const discardAreaStore = useDiscardAreaStore()
     const pointLinkStore = usePointLinkStore()
     const selectionStore = useSelectionStore()
+    const lineSliceStore = useLineSliceStore()
     const optionsOpenerStore = useOptionsOpenerStore()
     const deepClone = rfdc()
     function init(){
@@ -130,6 +132,7 @@ export const useEnvStore = defineStore('env', ()=>{
         nameEditStore.edited = false
         textTagEditStore.edited = false
         pointLinkStore.abortCreatingPtLink()
+        lineSliceStore.abortCreatingSlice()
         selectionStore.disableForTouchScreen()
     }
     function pureClickHandler(clientCord:Coord, clickType?:PureClickType, noDetect=false){
@@ -206,6 +209,23 @@ export const useEnvStore = defineStore('env', ()=>{
             }
             return
         }
+        if(lineSliceStore.isCreating){
+            if(lineSliceStore.currentStep == 'selectFirstPt' || lineSliceStore.currentStep == 'selectSecondPt'){
+                const pt = onPt(coord, true)
+                if(pt){
+                    cursorPos.value = [...pt.pos]
+                    lineSliceStore.slicePtClick(pt.id)
+                }
+            } else if(lineSliceStore.currentStep == 'selectLine'){
+                const line = onLine(coord).at(0)
+                if(line){
+                    cursorPos.value = coord
+                    lineSliceStore.sliceLineClick(line.lineId)
+                }
+            }
+            return
+        }
+
 
 
         //取消所有状态
