@@ -5,6 +5,7 @@ import { computed } from 'vue';
 import settingsIcon from '@/assets/ui/settings.svg';
 import branchIcon from '@/assets/ui/editor/branch.svg';
 import branchSeperateIcon from '@/assets/ui/editor/branchSeperate.svg';
+import calendarIcon from '@/assets/ui/calendar.svg';
 
 const envStore = useEnvStore()
 
@@ -45,7 +46,7 @@ const mode = computed<'A'|'B'>(()=>{
         <img class="btn-icon" :src="branchSeperateIcon"/>
     </div>
     <div v-if="mode==='A'" class="sqrBtn" @click="editTimeOfLine(l)">
-        ||||
+        <img class="btn-icon" :src="calendarIcon"/>
     </div>
     <div v-if="mode==='B'" class="sqrBtn moveBtn" :class="{ sqrActive: arrangingId === l.id }" @mousedown="e => mouseDownLineArrange(e, l.id)"
         @touchstart="e => mouseDownLineArrange(e, l.id)">
@@ -61,7 +62,6 @@ const mode = computed<'A'|'B'>(()=>{
     width: 20px;
     height: 20px;
     margin: 5px;
-    border-radius: 5px;
     filter: brightness(0) contrast(1000%); // 变纯黑
     &.btn-icon-bigger{
         width: 22px;
