@@ -1,6 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
 import { useSaveStore } from "../saveStore";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { Line, LineTimeInfo } from "@/models/save";
 
 /** 时间点类型 */

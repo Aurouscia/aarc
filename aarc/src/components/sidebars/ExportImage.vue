@@ -24,13 +24,14 @@ import { useLineTimeStore } from '@/models/stores/saveDerived/lineTimeStore';
 import ExportEtcConfig from './configs/ExportEtcConfig.vue';
 import ExportTimeConfig from './configs/ExportTimeConfig.vue';
 import UPNG from 'upng-js'
+import Prompt from '../common/Prompt.vue';
 
 const sidebar = useTemplateRef('sidebar')
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const saveStore = useSaveStore()
 const api = useApiStore()
-const { browserInfo, isIPhoneOrIPad, isWebkit } = storeToRefs(useBrowserInfoStore())
+const { browserInfo, isIPhoneOrIPad, isWebkit, isWindows } = storeToRefs(useBrowserInfoStore())
 const route = useRoute()
 const { showPop } = useUniqueComponentsStore()
 const exported = ref<boolean>(false)
@@ -128,9 +129,8 @@ async function downloadMiniatureCvsAsImage() {
 
 /**
  * 导出 APNG 动图
- * 默认设置：256x256 尺寸，每帧 1 秒，使用关键时间点
  */
-async function downloadApng() {
+async function downloadMiniatureApng() {
     if(exporting.value)
         return
     exported.value = false
@@ -151,10 +151,12 @@ async function downloadApng() {
     })
 
     if(timePoints.length < 2){
-        showPop('时间信息不足，无法生成动图\n请为线路添加开通时间', 'failed')
+        showPop('请为线路添加\n开通时间设置', 'failed')
         exporting.value = false
         return
     }
+    let firstTime = timePoints.at(0) ?? 0
+    timePoints.unshift(firstTime - 10)
 
     const renderOptions = useRenderOptionsStore()
     const frames: ArrayBuffer[] = []
@@ -163,7 +165,7 @@ async function downloadApng() {
     // 默认设置
     const CANVAS_SIZE = 256
     const SCALE = 2
-    const FRAME_DELAY_MS = 1000 // 每帧 1 秒
+    const FRAME_DELAY_MS = 800 // 每帧时长
 
     try{
         for(const time of timePoints){
@@ -196,7 +198,10 @@ async function downloadApng() {
         }
 
         // 清理
-        setTimeout(() => URL.revokeObjectURL(url), 60000)
+        setTimeout(() => {
+            URL.revokeObjectURL(url)
+            exported.value = false
+        }, 60000)
     }
     catch(e){
         console.error(e)
@@ -319,6 +324,8 @@ onMounted(()=>{
         }
     }
 })
+
+const showApngExportNotice = ref(false)
 </script>
 
 <template>
@@ -377,6 +384,18 @@ onMounted(()=>{
             </div>
             <button @click="downloadMainCvsAsImage" class="ok">导出为图片</button>
             <button @click="downloadMiniatureCvsAsImage" class="minor">导出为缩略图</button>
+            <button @click="downloadMiniatureApng" class="minor">导出发展史动图（试验）</button>
+            <div v-show="!exported" class="note apng-notice-entry" @click="showApngExportNotice=true">
+                试验功能有关注意事项
+            </div>
+            <Prompt v-if="showApngExportNotice" @close="showApngExportNotice=false" :bg-click-close="true">
+                <p>请先为每条线路设置“开通时间”，才能使用本功能。</p><br/>
+                <p>本功能导出的是 APNG 格式（后缀名和 png 一样），仅在部分软件中能呈现动态效果（包括QQ），在 QQ 聊天中发送和查看时请选择“原图”。</p>
+                <template v-if="isWindows">
+                    <br/>
+                    <p v-if="isWindows">Windows 自带相册无法查看动态效果，请右键选择打开方式 Edge 查看。</p>
+                </template>
+            </Prompt>
             <div v-show="exported" class="note">
                 若点击导出后没有开始下载<br />请尝试<a :id="downloadAnchorElementId" class="downloadAnchor">点击此处</a>
             </div>
@@ -503,5 +522,10 @@ onMounted(()=>{
 
 .exportConfigs{
     padding: 20px 0px 100px;
+}
+
+.apng-notice-entry{
+    cursor: pointer;
+    color: cornflowerblue
 }
 </style>
