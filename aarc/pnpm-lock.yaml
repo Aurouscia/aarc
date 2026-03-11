@@ -23,6 +23,9 @@ importers:
       '@aurouscia/vite-app-version':
         specifier: ^0.2.0
         version: 0.2.0
+      '@types/upng-js':
+        specifier: ^2.1.5
+        version: 2.1.5
       axios:
         specifier: ^1.13.5
         version: 1.13.5
@@ -53,6 +56,9 @@ importers:
       rfdc:
         specifier: ^1.4.1
         version: 1.4.1
+      upng-js:
+        specifier: ^2.1.0
+        version: 2.1.0
       vue:
         specifier: ^3.5.28
         version: 3.5.28(typescript@5.9.3)
@@ -540,6 +546,9 @@ packages:
   '@types/node@25.3.0':
     resolution: {integrity: sha512-4K3bqJpXpqfg2XKGK9bpDTc6xO/xoUP/RBWS7AtRMug6zZFaRekiLzjVtAoZMquxoAbzBvy5nxQ7veS5eYzf8A==}
 
+  '@types/upng-js@2.1.5':
+    resolution: {integrity: sha512-CzXg1lcCcWzrmYmke9BLbBPzb2DpdC1bXuXf0BtK3Bygvsozslei8S1bheDI1QUfZzZpMeQI5fywfnMj4CxocQ==}
+
   '@vitejs/plugin-vue@6.0.4':
     resolution: {integrity: sha512-uM5iXipgYIn13UUQCZNdWkYk+sysBeA97d5mHsAoAt1u/wpN3+zxOmsVJWosuzX+IMGRzeYUNytztrYznboIkQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -849,6 +858,9 @@ packages:
     resolution: {integrity: sha512-9qny7Z9DsQU8Ou39ERsPU4OZQlSTP47ShQzuKZ6PRXpYLtIFgl/DEBYEXKlvcEa+9tHVcK8CF81Y2V72qaZhWA==}
     engines: {node: '>=18'}
 
+  pako@1.0.11:
+    resolution: {integrity: sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==}
+
   parse-ms@4.0.0:
     resolution: {integrity: sha512-TXfryirbmq34y8QBwgqCVLi+8oA3oWx2eAnSn62ITyEhEYaWRlVZ2DvMM9eZbMs/RfxPu/PK/aBLyGj4IrqMHw==}
     engines: {node: '>=18'}
@@ -983,6 +995,9 @@ packages:
   unicorn-magic@0.3.0:
     resolution: {integrity: sha512-+QBBXBCvifc56fsbuxZQ6Sic3wqqc3WWaqxs58gvJrcOuN83HGTCwz3oS5phzU9LthRNE9VrJCFCLUgHeeFnfA==}
     engines: {node: '>=18'}
+
+  upng-js@2.1.0:
+    resolution: {integrity: sha512-d3xzZzpMP64YkjP5pr8gNyvBt7dLk/uGI67EctzDuVp4lCZyVMo0aJO6l/VDlgbInJYDY6cnClLoBp29eKWI6g==}
 
   vite-plugin-full-reload@1.2.0:
     resolution: {integrity: sha512-kz18NW79x0IHbxRSHm0jttP4zoO9P9gXh+n6UTwlNKnviTTEpOlum6oS9SmecrTtSr+muHEn5TUuC75UovQzcA==}
@@ -1330,6 +1345,8 @@ snapshots:
   '@types/node@25.3.0':
     dependencies:
       undici-types: 7.18.2
+
+  '@types/upng-js@2.1.5': {}
 
   '@vitejs/plugin-vue@6.0.4(vite@7.3.1(@types/node@25.3.0)(sass@1.97.3)(tsx@4.21.0))(vue@3.5.28(typescript@5.9.3))':
     dependencies:
@@ -1687,6 +1704,8 @@ snapshots:
       path-key: 4.0.0
       unicorn-magic: 0.3.0
 
+  pako@1.0.11: {}
+
   parse-ms@4.0.0: {}
 
   path-browserify@1.0.1: {}
@@ -1810,6 +1829,10 @@ snapshots:
   undici-types@7.18.2: {}
 
   unicorn-magic@0.3.0: {}
+
+  upng-js@2.1.0:
+    dependencies:
+      pako: 1.0.11
 
   vite-plugin-full-reload@1.2.0:
     dependencies:

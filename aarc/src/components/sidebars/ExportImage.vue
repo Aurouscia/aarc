@@ -20,15 +20,18 @@ import { storeToRefs } from 'pinia';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import ExportAccentuationConfig from './configs/ExportAccentuationConfig.vue';
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
+import { useLineTimeStore } from '@/models/stores/saveDerived/lineTimeStore';
 import ExportEtcConfig from './configs/ExportEtcConfig.vue';
 import ExportTimeConfig from './configs/ExportTimeConfig.vue';
+import UPNG from 'upng-js'
+import Prompt from '../common/Prompt.vue';
 
 const sidebar = useTemplateRef('sidebar')
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const saveStore = useSaveStore()
 const api = useApiStore()
-const { browserInfo, isIPhoneOrIPad, isWebkit } = storeToRefs(useBrowserInfoStore())
+const { browserInfo, isIPhoneOrIPad, isWebkit, isWindows } = storeToRefs(useBrowserInfoStore())
 const route = useRoute()
 const { showPop } = useUniqueComponentsStore()
 const exported = ref<boolean>(false)
@@ -122,6 +125,96 @@ async function downloadMiniatureCvsAsImage() {
     }
     exporting.value = false
 }
+
+
+/**
+ * 导出 APNG 动图
+ */
+async function downloadMiniatureApng() {
+    if(exporting.value)
+        return
+    exported.value = false
+    exporting.value = true
+    exportFailedMsg.value = false
+
+    const fileName = await getExportImageFileName(true)
+    if(!fileName){
+        exporting.value = false
+        return
+    }
+
+    // 获取所有关键时间点（只包含 open 事件）
+    const { getUniqueTimeValues } = useLineTimeStore()
+    const timePoints = getUniqueTimeValues({ 
+        types: ['open'],
+        onlyOpened: true 
+    })
+
+    if(timePoints.length < 2){
+        showPop('请为线路添加\n开通时间设置', 'failed')
+        exporting.value = false
+        return
+    }
+    let firstTime = timePoints.at(0) ?? 0
+    timePoints.unshift(firstTime - 10)
+
+    const renderOptions = useRenderOptionsStore()
+    const frames: ArrayBuffer[] = []
+    const delays: number[] = []
+    
+    // 默认设置
+    const CANVAS_SIZE = 256
+    const SCALE = 2
+    const FRAME_DELAY_MS = 800 // 每帧时长
+
+    try{
+        for(const time of timePoints){
+            // 设置当前时间点（使用覆盖机制，不影响用户设置）
+            renderOptions.setTimeMomentOverride(time)
+            
+            // 渲染缩略图帧
+            const cvs = miniatureCvsDispatcher.renderMiniatureCvs(CANVAS_SIZE, SCALE)
+            const ctx = cvs.getContext('2d')!
+            const imageData = ctx.getImageData(0, 0, cvs.width, cvs.height)
+            
+            // 复制数据（因为 imageData.data 会被复用）
+            frames.push(imageData.data.buffer.slice(0))
+            delays.push(FRAME_DELAY_MS)
+        }
+
+        // 编码为 APNG
+        const apngBuffer = UPNG.encode(frames, CANVAS_SIZE, CANVAS_SIZE, 0, delays)
+        const blob = new Blob([apngBuffer], { type: 'image/png' })
+        const url = URL.createObjectURL(blob)
+
+        // 下载
+        const link = getDownloadAnchor()
+        if(link && 'href' in link){
+            exported.value = true
+            link.href = url
+            if('download' in link)
+                link.download = fileName.replace(/\.\w+$/, '.png') // 确保扩展名为 png
+            link.click()
+        }
+
+        // 清理
+        setTimeout(() => {
+            URL.revokeObjectURL(url)
+            exported.value = false
+        }, 60000)
+    }
+    catch(e){
+        console.error(e)
+        showPop('APNG 导出失败', 'failed')
+        exportFailedMsg.value = '生成动图时出错'
+    }
+    finally{
+        // 清除时间覆盖，恢复用户设置
+        renderOptions.setTimeMomentOverride(undefined)
+        exporting.value = false
+    }
+}
+
 async function getExportImageFileName(isMini?:boolean){
     let saveId = route.params[editorParamNameSaveId]
     if(typeof saveId === 'object')
@@ -231,6 +324,8 @@ onMounted(()=>{
         }
     }
 })
+
+const showApngExportNotice = ref(false)
 </script>
 
 <template>
@@ -289,6 +384,18 @@ onMounted(()=>{
             </div>
             <button @click="downloadMainCvsAsImage" class="ok">导出为图片</button>
             <button @click="downloadMiniatureCvsAsImage" class="minor">导出为缩略图</button>
+            <button @click="downloadMiniatureApng" class="minor">导出发展史动图（试验）</button>
+            <div v-show="!exported" class="note apng-notice-entry" @click="showApngExportNotice=true">
+                试验功能有关注意事项
+            </div>
+            <Prompt v-if="showApngExportNotice" @close="showApngExportNotice=false" :bg-click-close="true">
+                <p>请先为每条线路设置“开通时间”，才能使用本功能。</p><br/>
+                <p>本功能导出的是 APNG 格式（后缀名和 png 一样），仅在部分软件中能呈现动态效果（包括QQ），在 QQ 聊天中发送和查看时请选择“原图”。</p>
+                <template v-if="isWindows">
+                    <br/>
+                    <p v-if="isWindows">Windows 自带相册无法查看动态效果，请右键选择打开方式 Edge 查看。</p>
+                </template>
+            </Prompt>
             <div v-show="exported" class="note">
                 若点击导出后没有开始下载<br />请尝试<a :id="downloadAnchorElementId" class="downloadAnchor">点击此处</a>
             </div>
@@ -415,5 +522,10 @@ onMounted(()=>{
 
 .exportConfigs{
     padding: 20px 0px 100px;
+}
+
+.apng-notice-entry{
+    cursor: pointer;
+    color: cornflowerblue
 }
 </style>
