@@ -146,6 +146,10 @@ const isSaveEdit = computed(()=>{
     return props.on == AuthGrantOn.Save && props.type == AuthGrantTypeOfSave.Edit
 })
 
+const isSaveFork = computed(()=>{
+    return props.on == AuthGrantOn.Save && props.type == AuthGrantTypeOfSave.Fork
+})
+
 onMounted(async() => {
     await load()
 })
@@ -201,13 +205,21 @@ onMounted(async() => {
             <button class="lite confirm" @click="wantAdd=true">新增授权设置</button>
         </td>
         <td colspan="3" v-else-if="isSaveEdit">
-            <div class="smallNoteVital about-save-edit">
+            <div class="smallNoteVital about">
                 <p>允许他人编辑存档：</p>
-                <p>1. 看到绿色的“可编辑”标识才能进入，如果添加授权设置后，被授权者依然未看到标识，请告诉他刷新页面</p>
-                <p>2. 请告诉你的协作者：<b>务必在离开页面前保存并退出编辑器</b>，把浏览器切到后台挂机时间太久（数分钟），会允许他人进入，导致先进入的人无法保存</p>
-                <p>3. 请告诉你的协作者：黄色的“占用中”状态时，点击“占用中”标识，可以刷新状态（检查他人是否退出）</p>
-                <p>4. <b>强烈建议</b>在你准备离开前的最后一次保存时，在工具栏勾选“强制生成备份”，以确保被他人破坏后能恢复</p>
-                <p>5. 如果遇到破坏存档的情况，请向管理员举报</p>
+                <p>1. <b>仅正式用户</b>才能开放公共存档给他人编辑，请参考注册处的提示转正</p>
+                <p>2. 看到绿色的“可编辑”标识才能进入，如果添加授权设置后，被授权者依然未看到标识，请告诉他刷新页面</p>
+                <p>3. 请告诉你的协作者：<b>务必在离开页面前保存并退出编辑器（点击离开按钮）</b>，断网或把浏览器切到后台挂机时间太久（数分钟），会允许他人进入，导致先进入的人无法保存</p>
+                <p>4. 请告诉你的协作者：黄色的“占用中”状态时，点击“占用中”标识，可以刷新状态（检查他人是否退出）</p>
+                <p>5. <b>强烈建议</b>在你准备离开前的最后一次保存时，在工具栏勾选“强制生成备份”，以确保被他人破坏后能恢复</p>
+                <p>6. 如果遇到破坏存档的情况，请向管理员举报</p>
+            </div>
+        </td>
+        <td colspan="3" v-else-if="isSaveFork">
+            <div class="smallNoteVital about">
+                <p>允许他人另存：</p>
+                <p>代表你授权他人随意修改你作品的复制版，虽然你可以修改权限设置，但对于已被他人另存的作品，授权无法撤回。</p>
+                <p>请不要尝试“必须保留原作者名”等君子协定，原则上平台不会负责处理有关纠纷。</p>
             </div>
         </td>
         <td colspan="3" v-else>
@@ -248,7 +260,7 @@ select{
     color: #666;
     margin: auto;
 }
-.about-save-edit{
+.about{
     padding: 3px;
     background-color: white;
     text-align: left;
