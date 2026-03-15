@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, useTemplateRef, watch } from 'vue';
-import SideBar from '../common/SideBar.vue';
+import SideBar from '../../common/SideBar.vue';
 import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useApiStore } from '@/app/com/apiStore';
 import { useRoute } from 'vue-router';
@@ -12,19 +12,19 @@ import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
-import Notice from '../common/Notice.vue';
-import ExportWatermarkConfig from './configs/ExportWatermarkConfig.vue';
-import ConfigSection from './configs/shared/ConfigSection.vue';
-import ExportInfo from './etc/ExportInfo.vue'
+import Notice from '../../common/Notice.vue';
+import ExportWatermarkConfig from '../configs/ExportWatermarkConfig.vue';
+import ConfigSection from '../configs/shared/ConfigSection.vue';
+import ExportInfo from './ExportInfo.vue'
 import { storeToRefs } from 'pinia';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
-import ExportAccentuationConfig from './configs/ExportAccentuationConfig.vue';
+import ExportAccentuationConfig from '../configs/ExportAccentuationConfig.vue';
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
 import { useLineTimeStore } from '@/models/stores/saveDerived/lineTimeStore';
-import ExportEtcConfig from './configs/ExportEtcConfig.vue';
-import ExportTimeConfig from './configs/ExportTimeConfig.vue';
+import ExportEtcConfig from '../configs/ExportEtcConfig.vue';
+import ExportTimeConfig from '../configs/ExportTimeConfig.vue';
 import UPNG from 'upng-js'
-import Prompt from '../common/Prompt.vue';
+import Prompt from '../../common/Prompt.vue';
 
 const sidebar = useTemplateRef('sidebar')
 const mainCvsDispatcher = useMainCvsDispatcher()

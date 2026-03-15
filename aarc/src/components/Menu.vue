@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import Lines from './sidebars/sideList/Lines.vue';
 import Terrains from './sidebars/sideList/Terrains.vue';
 import SizeEdit from './sidebars/SizeEdit.vue';
-import ExportImage from './sidebars/ExportImage.vue';
+import ExportImage from './sidebars/export/ExportImage.vue';
 import Configs from './sidebars/Configs.vue';
 import { storeToRefs } from 'pinia';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
