@@ -25,6 +25,7 @@ import ExportTimeConfig from '../configs/ExportTimeConfig.vue';
 import Prompt from '../../common/Prompt.vue';
 import { useImageExport } from './composables/useImageExport';
 import { useApngExport } from './composables/useApngExport';
+import { useGifExport } from './composables/useGifExport';
 
 const sidebar = useTemplateRef('sidebar')
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -61,6 +62,13 @@ const {
     exportFailedMsg: apngExportFailedMsg,
     exportApng
 } = useApngExport()
+
+const {
+    exporting: gifExporting,
+    exported: gifExported,
+    exportFailedMsg: gifExportFailedMsg,
+    exportGif
+} = useGifExport()
 
 async function downloadMainCvsAsImage() {
     if(exporting.value)
@@ -139,6 +147,21 @@ async function downloadMiniatureApng() {
     }
 
     await exportApng({ fileName })
+}
+
+/**
+ * 导出 GIF 动图
+ */
+async function downloadMiniatureGif() {
+    if(gifExporting.value)
+        return
+    
+    const fileName = await getExportImageFileName(true)
+    if(!fileName){
+        return
+    }
+
+    await exportGif({ fileName })
 }
 
 async function getExportImageFileName(isMini?:boolean){
@@ -233,6 +256,17 @@ watch(apngExportFailedMsg, (val) => {
     exportFailedMsg.value = val
 })
 
+// 同步 gif 导出状态到组件
+watch(gifExporting, (val) => {
+    exporting.value = val
+})
+watch(gifExported, (val) => {
+    exported.value = val
+})
+watch(gifExportFailedMsg, (val) => {
+    exportFailedMsg.value = val
+})
+
 const showApngExportNotice = ref(false)
 </script>
 
@@ -292,7 +326,8 @@ const showApngExportNotice = ref(false)
             </div>
             <button @click="downloadMainCvsAsImage" class="ok">导出为图片</button>
             <button @click="downloadMiniatureCvsAsImage" class="minor">导出为缩略图</button>
-            <button @click="downloadMiniatureApng" class="minor">导出发展史动图（试验）</button>
+            <button @click="downloadMiniatureApng" class="minor">导出发展史动图（APNG）</button>
+            <button @click="downloadMiniatureGif" class="minor">导出发展史动图（GIF）</button>
             <div v-show="!exported" class="note apng-notice-entry" @click="showApngExportNotice=true">
                 试验功能有关注意事项
             </div>
