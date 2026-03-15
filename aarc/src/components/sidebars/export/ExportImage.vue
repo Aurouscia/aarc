@@ -20,29 +20,47 @@ import { storeToRefs } from 'pinia';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 import ExportAccentuationConfig from '../configs/ExportAccentuationConfig.vue';
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
-import { useLineTimeStore } from '@/models/stores/saveDerived/lineTimeStore';
 import ExportEtcConfig from '../configs/ExportEtcConfig.vue';
 import ExportTimeConfig from '../configs/ExportTimeConfig.vue';
-import UPNG from 'upng-js'
 import Prompt from '../../common/Prompt.vue';
+import { useImageExport } from './composables/useImageExport';
+import { useApngExport } from './composables/useApngExport';
 
 const sidebar = useTemplateRef('sidebar')
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const saveStore = useSaveStore()
 const api = useApiStore()
-const { browserInfo, isIPhoneOrIPad, isWebkit, isWindows } = storeToRefs(useBrowserInfoStore())
+const { isWindows } = storeToRefs(useBrowserInfoStore())
 const route = useRoute()
 const { showPop } = useUniqueComponentsStore()
-const exported = ref<boolean>(false)
-const exporting = ref<boolean>(false)
-const exportFailedMsg = ref<false|string>(false)
 
 const renderOptionsStore = useRenderOptionsStore()
 const exportLocalConfig = useExportLocalConfigStore()
 const { 
     fileNameStyle, fileFormat, fileQuality, pixelRestrict, pixelRestrictMode, ads, bgRefImage
 } = storeToRefs(exportLocalConfig)
+
+// 使用 composables
+const { 
+    exporting, 
+    exported, 
+    exportFailedMsg, 
+    downloadAnchorElementId,
+    canEncodeWebP,
+    cvsToDataUrl,
+    triggerDownload,
+    startExport,
+    finishExport,
+    setExportFailed
+} = useImageExport()
+
+const {
+    exporting: apngExporting,
+    exported: apngExported,
+    exportFailedMsg: apngExportFailedMsg,
+    exportApng
+} = useApngExport()
 
 async function downloadMainCvsAsImage() {
     if(exporting.value)
@@ -51,9 +69,7 @@ async function downloadMainCvsAsImage() {
         showPop('jpg不支持背景透明\n请改用其他格式', 'failed')
         return
     }
-    exported.value = false
-    exporting.value = true
-    exportFailedMsg.value = false
+    startExport()
 
     const fileName = await getExportImageFileName()
     if(fileName){
@@ -73,57 +89,40 @@ async function downloadMainCvsAsImage() {
 
         let imageDataUrl
         try{
-            imageDataUrl = await cvsToDataUrl(cvs)
+            imageDataUrl = await cvsToDataUrl(cvs, fileFormat.value, fileQuality.value)
         }
         catch(e){
             console.error(e)
             showPop('导出失败\n请查看指引', 'failed')
-            exporting.value = false
-            exportFailedMsg.value = '可能是浏览器像素上限，请查看指引'
+            setExportFailed('可能是浏览器像素上限，请查看指引')
             return
         }
         if(!imageDataUrl){
             return
         }
-        var link = getDownloadAnchor()
-        if(link && 'href' in link){
-            exported.value = true
-            link.href = imageDataUrl;
-            if('download' in link)
-                link.download = fileName
-            link.click();
-        }
+        triggerDownload(imageDataUrl, fileName)
 
         renderOptionsStore.exporting = false; // 复位导出模式
     }
-    exporting.value = false
+    finishExport()
 }
 let activeUrl:string|undefined = undefined;
 async function downloadMiniatureCvsAsImage() {
     if(exporting.value)
         return
-    exported.value = false
-    exporting.value = true
-    exportFailedMsg.value = false
+    startExport()
     const fileName = await getExportImageFileName(true)
     if(fileName){
         if(activeUrl)
             URL.revokeObjectURL(activeUrl)
         const cvs = miniatureCvsDispatcher.renderMiniatureCvs(256, 2)
-        activeUrl = await cvsToDataUrl(cvs)
+        activeUrl = await cvsToDataUrl(cvs, fileFormat.value, fileQuality.value)
         if(!activeUrl){
             return
         }
-        var link = getDownloadAnchor()
-        if(link && 'href' in link){
-            exported.value = true
-            link.href = activeUrl;
-            if('download' in link)
-                link.download = fileName
-            link.click();
-        }
+        triggerDownload(activeUrl, fileName)
     }
-    exporting.value = false
+    finishExport()
 }
 
 
@@ -131,88 +130,15 @@ async function downloadMiniatureCvsAsImage() {
  * 导出 APNG 动图
  */
 async function downloadMiniatureApng() {
-    if(exporting.value)
+    if(apngExporting.value)
         return
-    exported.value = false
-    exporting.value = true
-    exportFailedMsg.value = false
-
+    
     const fileName = await getExportImageFileName(true)
     if(!fileName){
-        exporting.value = false
         return
     }
 
-    // 获取所有关键时间点（只包含 open 事件）
-    const { getUniqueTimeValues } = useLineTimeStore()
-    const timePoints = getUniqueTimeValues({ 
-        types: ['open'],
-        onlyOpened: true 
-    })
-
-    if(timePoints.length < 2){
-        showPop('请为线路添加\n开通时间设置', 'failed')
-        exporting.value = false
-        return
-    }
-    let firstTime = timePoints.at(0) ?? 0
-    timePoints.unshift(firstTime - 10)
-
-    const renderOptions = useRenderOptionsStore()
-    const frames: ArrayBuffer[] = []
-    const delays: number[] = []
-    
-    // 默认设置
-    const CANVAS_SIZE = 256
-    const SCALE = 2
-    const FRAME_DELAY_MS = 800 // 每帧时长
-
-    try{
-        for(const time of timePoints){
-            // 设置当前时间点（使用覆盖机制，不影响用户设置）
-            renderOptions.setTimeMomentOverride(time)
-            
-            // 渲染缩略图帧
-            const cvs = miniatureCvsDispatcher.renderMiniatureCvs(CANVAS_SIZE, SCALE)
-            const ctx = cvs.getContext('2d')!
-            const imageData = ctx.getImageData(0, 0, cvs.width, cvs.height)
-            
-            // 复制数据（因为 imageData.data 会被复用）
-            frames.push(imageData.data.buffer.slice(0))
-            delays.push(FRAME_DELAY_MS)
-        }
-
-        // 编码为 APNG
-        const apngBuffer = UPNG.encode(frames, CANVAS_SIZE, CANVAS_SIZE, 0, delays)
-        const blob = new Blob([apngBuffer], { type: 'image/png' })
-        const url = URL.createObjectURL(blob)
-
-        // 下载
-        const link = getDownloadAnchor()
-        if(link && 'href' in link){
-            exported.value = true
-            link.href = url
-            if('download' in link)
-                link.download = fileName.replace(/\.\w+$/, '.png') // 确保扩展名为 png
-            link.click()
-        }
-
-        // 清理
-        setTimeout(() => {
-            URL.revokeObjectURL(url)
-            exported.value = false
-        }, 60000)
-    }
-    catch(e){
-        console.error(e)
-        showPop('APNG 导出失败', 'failed')
-        exportFailedMsg.value = '生成动图时出错'
-    }
-    finally{
-        // 清除时间覆盖，恢复用户设置
-        renderOptions.setTimeMomentOverride(undefined)
-        exporting.value = false
-    }
+    await exportApng({ fileName })
 }
 
 async function getExportImageFileName(isMini?:boolean){
@@ -268,35 +194,6 @@ function getExportRenderSize():{scale:number, cvsWidth:number, cvsHeight:number}
         cvsHeight: saveStore.cvsHeight*scale
     }
 }
-function canEncodeWebP() {
-  const c = document.createElement('canvas');
-  return c.toDataURL('image/webp').indexOf('data:image/webp') === 0;
-}
-async function cvsToDataUrl(cvs:OffscreenCanvas):Promise<string>{
-    let mime = 'image/png'
-    if(fileFormat.value=='webp')
-        mime = 'image/webp'
-    else if(fileFormat.value=='jpeg')
-        mime = 'image/jpeg'
-    if(mime=='image/webp' && !canEncodeWebP()){
-        const bi = browserInfo.value
-        let msg = "当前环境不支持webp格式，请咨询管理员"
-        if(isIPhoneOrIPad.value)
-            msg = `当前设备（iPhone/iPad）不支持webp格式`
-        else if(isWebkit.value)
-            msg = `当前浏览器（${bi.browser.name}，${bi.engine.name}内核）不支持webp格式`
-        showPop(msg, 'failed')
-        exportFailedMsg.value = msg
-        return ''
-    }
-    const blob = await cvs.convertToBlob({ type: mime, quality: fileQuality.value});
-    return URL.createObjectURL(blob);
-}
-
-const downloadAnchorElementId = 'downloadAnchor'
-function getDownloadAnchor(){
-    return document.getElementById(downloadAnchorElementId)
-}
 
 watch(ads, ()=>{
     if(ads.value && ads.value !== 'no'){
@@ -323,6 +220,17 @@ onMounted(()=>{
             fileFormat.value = 'png'
         }
     }
+})
+
+// 同步 apng 导出状态到组件
+watch(apngExporting, (val) => {
+    exporting.value = val
+})
+watch(apngExported, (val) => {
+    exported.value = val
+})
+watch(apngExportFailedMsg, (val) => {
+    exportFailedMsg.value = val
 })
 
 const showApngExportNotice = ref(false)
