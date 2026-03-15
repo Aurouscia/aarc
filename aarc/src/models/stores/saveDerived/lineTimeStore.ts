@@ -359,16 +359,33 @@ export const useLineTimeStore = defineStore('lineTime', () => {
         for (const line of sorted) {
             const openTime = line.time?.open
             if (typeof openTime !== 'number' || openTime <= timeMoment) {
-                console.log('线路', line.name, '开通了')
                 opened.push(line)
             } else {
-                console.log('线路', line.name, '未开通')
                 notOpened.push(line)
             }
         }
-
-        console.log('最终顺序', [...notOpened, ...opened])
         return [...notOpened, ...opened]
+    })
+
+    const linesFilteredByOpenState = computed<Line[]>(() => {
+        const { effectiveTimeMoment } = useRenderOptionsStore()
+        const timeMoment = effectiveTimeMoment
+        const sorted = linesSortedByOpenTime.value
+        
+        if (typeof timeMoment !== 'number') {
+            // 没有设置时间，直接返回倒序数组
+            return sorted
+        }
+
+        const opened: Line[] = []
+
+        for (const line of sorted) {
+            const openTime = line.time?.open
+            if (typeof openTime !== 'number' || openTime <= timeMoment) {
+                opened.push(line)
+            }
+        }
+        return opened
     })
 
     return {
@@ -377,6 +394,7 @@ export const useLineTimeStore = defineStore('lineTime', () => {
         linesSortedByOpenTime,
         linesSortedByOpenTimeDesc,
         linesSortedByOpenState,
+        linesFilteredByOpenState,
         getTimePoints,
         getUniqueTimeValues,
         getTimeRange,

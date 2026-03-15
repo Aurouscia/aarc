@@ -26,6 +26,7 @@ import Prompt from '../../common/Prompt.vue';
 import { useImageExport } from './composables/useImageExport';
 import { useApngExport } from './composables/useApngExport';
 import { useGifExport } from './composables/useGifExport';
+import ExportAnimationMiniConfig from './configs/ExportAnimationMiniConfig.vue';
 
 const sidebar = useTemplateRef('sidebar')
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -39,7 +40,7 @@ const { showPop } = useUniqueComponentsStore()
 const renderOptionsStore = useRenderOptionsStore()
 const exportLocalConfig = useExportLocalConfigStore()
 const { 
-    fileNameStyle, fileFormat, fileQuality, pixelRestrict, pixelRestrictMode, ads, bgRefImage
+    fileNameStyle, fileFormat, fileQuality, pixelRestrict, pixelRestrictMode, ads, bgRefImage, animationMini
 } = storeToRefs(exportLocalConfig)
 
 // 使用 composables
@@ -135,33 +136,23 @@ async function downloadMiniatureCvsAsImage() {
 
 
 /**
- * 导出 APNG 动图
+ * 导出略缩图动画（根据设置中的格式决定导出 APNG 或 GIF）
  */
-async function downloadMiniatureApng() {
-    if(apngExporting.value)
-        return
-    
+async function downloadMiniatureAnimation() {
     const fileName = await getExportImageFileName(true)
     if(!fileName){
         return
     }
 
-    await exportApng({ fileName })
-}
-
-/**
- * 导出 GIF 动图
- */
-async function downloadMiniatureGif() {
-    if(gifExporting.value)
-        return
-    
-    const fileName = await getExportImageFileName(true)
-    if(!fileName){
-        return
+    if(animationMini.value.fileFormat === 'gif'){
+        if(gifExporting.value)
+            return
+        await exportGif({ fileName })
+    } else {
+        if(apngExporting.value)
+            return
+        await exportApng({ fileName })
     }
-
-    await exportGif({ fileName })
 }
 
 async function getExportImageFileName(isMini?:boolean){
@@ -326,17 +317,17 @@ const showApngExportNotice = ref(false)
             </div>
             <button @click="downloadMainCvsAsImage" class="ok">导出为图片</button>
             <button @click="downloadMiniatureCvsAsImage" class="minor">导出为缩略图</button>
-            <button @click="downloadMiniatureApng" class="minor">导出发展史动图（APNG）</button>
-            <button @click="downloadMiniatureGif" class="minor">导出发展史动图（GIF）</button>
+            <button @click="downloadMiniatureAnimation" class="minor">导出发展史动图（{{ animationMini.fileFormat }}）</button>
             <div v-show="!exported" class="note apng-notice-entry" @click="showApngExportNotice=true">
                 试验功能有关注意事项
             </div>
             <Prompt v-if="showApngExportNotice" @close="showApngExportNotice=false" :bg-click-close="true">
                 <p>请先为每条线路设置“开通时间”，才能使用本功能。</p><br/>
-                <p>本功能导出的是 APNG 格式（后缀名和 png 一样），仅在部分软件中能呈现动态效果（包括QQ），在 QQ 聊天中发送和查看时请选择“原图”。</p>
+                <p>本功能可在下方的“略缩图动画”中设置。</p><br/>
+                <p>建议使用 GIF 格式，一般不会有放不出来的破事。如果导出 APNG 格式，仅在部分软件中能呈现动态效果。在 QQ 聊天中发送和查看时请选择“原图”。</p>
                 <template v-if="isWindows">
                     <br/>
-                    <p v-if="isWindows">Windows 自带相册无法查看动态效果，请右键选择打开方式 Edge 查看。</p>
+                    <p v-if="isWindows">Windows 自带相册无法查看 APNG，请右键选择打开方式 Edge 查看。</p>
                 </template>
             </Prompt>
             <div v-show="exported" class="note">
@@ -353,6 +344,7 @@ const showApngExportNotice = ref(false)
                 若导出失败或长时间无响应<br />请查看本页下方“浏览器限制”部分
             </div>
             <div class="exportConfigs">
+                <ExportAnimationMiniConfig></ExportAnimationMiniConfig>
                 <ExportTimeConfig></ExportTimeConfig>
                 <ExportAccentuationConfig></ExportAccentuationConfig>
                 <ExportWatermarkConfig></ExportWatermarkConfig>

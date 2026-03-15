@@ -30,7 +30,7 @@ watch(()=>timeMomentStr.value, (newVal)=>{
 </script>
 
 <template>
-<ConfigSection :title="'导出时间点'">
+<ConfigSection :title="'导出特定时间点'">
 <table class="fullWidth"><tbody>
     <tr>
         <td style="width: 120px;">

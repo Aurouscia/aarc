@@ -4,6 +4,8 @@ import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
 import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
 import { useImageExport } from './useImageExport';
 import { storeToRefs } from 'pinia';
+import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
+import { clamp } from '@/utils/lang/clamp';
 
 export interface FrameData {
     imageData: ImageData
@@ -34,6 +36,7 @@ export function useAnimatedExport() {
 
     const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
     const renderOptions = useRenderOptionsStore()
+    const { animationMini: animConfig } = storeToRefs(useExportLocalConfigStore())
 
     /**
      * 获取动画时间点（包含初始状态）
@@ -60,13 +63,18 @@ export function useAnimatedExport() {
      * 渲染所有帧（通用逻辑）
      */
     async function renderFrames(options: AnimatedExportOptions): Promise<RenderedFramesResult | null> {
-        const {
+        let {
             canvasSize = 256,
             lineWidth = 2,
-            frameDelayMs = 800
+            frameDelayMs = animConfig.value.interval
         } = options
 
-        const { linesSortedByOpenState } = storeToRefs(useLineTimeStore())
+        if(typeof frameDelayMs != 'number')
+            frameDelayMs = 800
+        frameDelayMs = clamp(frameDelayMs, 100, 3000)
+
+        const { linesSortedByOpenState, linesFilteredByOpenState } = storeToRefs(useLineTimeStore())
+        const lines = animConfig.value.hideNotOpened ?  linesFilteredByOpenState : linesSortedByOpenState
 
         const timePoints = getAnimationTimePoints()
         if (!timePoints) {
@@ -85,7 +93,7 @@ export function useAnimatedExport() {
                 const cvs = miniatureCvsDispatcher.renderMiniatureCvs({
                     sideLength: canvasSize,
                     lineWidth,
-                    lines: linesSortedByOpenState.value
+                    lines: lines.value
                 })
                 const ctx = cvs.getContext('2d')!
                 const imageData = ctx.getImageData(0, 0, cvs.width, cvs.height)
