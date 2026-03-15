@@ -13,15 +13,15 @@ export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker',
     const lineStateStore = useLineStateStore()
     const cs = useConfigStore()
     const formalizedLineStore = useFormalizedLineStore()
-    function renderAllLines(ctx:CvsContext, lineWidth:number){
+    function renderAllLines(ctx:CvsContext, options:{lineWidth:number, lines?:Line[]}){
         const render = (lineInfo:Line, pts:FormalPt[])=>{
             if(!lineInfo)
                 return
             const poss = pts.map(x=>x.pos)
-            let lineWidthHere = lineWidth
+            let lineWidthHere = options.lineWidth
             if(lineInfo.type === LineType.terrain){
                 const originalWidth = cs.config.lineWidth * (lineInfo.width||1)
-                lineWidthHere = Math.max(lineWidth, originalWidth)
+                lineWidthHere = Math.max(options.lineWidth, originalWidth)
             }
             renderLine(ctx, lineInfo, poss, lineWidthHere)
         }
@@ -30,8 +30,13 @@ export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker',
             formalizedLines.push({lineId, pts})
         })
         const targets:{lineInfo:Line, pts:FormalPt[]}[] = []
-        //按照saveStore.linesSortedByZIndex的顺序渲染（这个顺序一直都是对的）
-        saveStore.linesSortedByZIndex.forEach(line=>{
+        // 默认按照saveStore.linesSortedByZIndex的顺序渲染（这个顺序一直都是对的）
+        let lines = saveStore.linesSortedByZIndex
+        if(options.lines){
+            // 对于线路数组，如果传入了覆盖值，使用覆盖值
+            lines = options.lines
+        }
+        lines.forEach(line=>{
             const pts = formalizedLines.find(x=>x.lineId === line.id)?.pts
             //isFake的线不绘入略缩图
             if(pts && !line.isFake)

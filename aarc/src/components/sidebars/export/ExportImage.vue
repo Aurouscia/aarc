@@ -123,7 +123,7 @@ async function downloadMiniatureCvsAsImage() {
     if(fileName){
         if(activeUrl)
             URL.revokeObjectURL(activeUrl)
-        const cvs = miniatureCvsDispatcher.renderMiniatureCvs(256, 2)
+        const cvs = miniatureCvsDispatcher.renderMiniatureCvs({sideLength:256, lineWidth:2})
         activeUrl = await cvsToDataUrl(cvs, fileFormat.value, fileQuality.value)
         if(!activeUrl){
             return

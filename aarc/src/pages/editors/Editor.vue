@@ -190,7 +190,7 @@ async function saveData(mustBackup:boolean){
         showPop('保存成功', 'success')
 
         //次要任务：更新缩略图，无论是否成功都不影响主流程
-        const miniCvs = miniatureCvsDispatcher.renderMiniatureCvs(256, 2)
+        const miniCvs = miniatureCvsDispatcher.renderMiniatureCvs({sideLength: 256, lineWidth: 2})
         const miniBlob = await miniCvs.convertToBlob()
         await api.save.updateMiniature(saveIdNum.value, {data:miniBlob, fileName:'mini.png'})
 

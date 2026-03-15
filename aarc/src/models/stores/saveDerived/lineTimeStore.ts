@@ -2,6 +2,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { useSaveStore } from "../saveStore";
 import { computed } from "vue";
 import { Line, LineTimeInfo } from "@/models/save";
+import { keepOrderSort } from "@/utils/lang/keepOrderSort";
 
 /** 时间点类型 */
 export type TimePointType = 
@@ -304,9 +305,42 @@ export const useLineTimeStore = defineStore('lineTime', () => {
         return save.value?.lines.filter(l => l.time != null) || []
     })
 
+    /**
+     * 获取按开通时间排序的线路数组（无开通时间的排最前，时间相同的保持原顺序）
+     */
+    const linesSortedByOpenTime = computed<Line[]>(() => {
+        const lines = save.value?.lines || []
+        const linesCopy = [...lines]
+        keepOrderSort(linesCopy, (a, b) => {
+            const aOpen = a.time?.open
+            const bOpen = b.time?.open
+            // 无开通时间的排最前
+            if (typeof aOpen !== 'number' && typeof bOpen !== 'number') {
+                return 0
+            }
+            if (typeof aOpen !== 'number') {
+                return -1
+            }
+            if (typeof bOpen !== 'number') {
+                return 1
+            }
+            return aOpen - bOpen
+        })
+        return linesCopy
+    })
+
+    /**
+     * 获取按开通时间倒序的线路数组（无开通时间的排最后，时间相同的保持原顺序）
+     */
+    const linesSortedByOpenTimeDesc = computed<Line[]>(() => {
+        return [...linesSortedByOpenTime.value].reverse()
+    })
+
     return {
         allTimePoints,
         linesWithTime,
+        linesSortedByOpenTime,
+        linesSortedByOpenTimeDesc,
         getTimePoints,
         getUniqueTimeValues,
         getTimeRange,

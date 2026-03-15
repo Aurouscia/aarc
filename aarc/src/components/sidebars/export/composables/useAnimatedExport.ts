@@ -11,7 +11,7 @@ export interface FrameData {
 
 export interface AnimatedExportOptions {
     canvasSize?: number
-    scale?: number
+    lineWidth?: number
     frameDelayMs?: number
 }
 
@@ -61,9 +61,11 @@ export function useAnimatedExport() {
     async function renderFrames(options: AnimatedExportOptions): Promise<RenderedFramesResult | null> {
         const {
             canvasSize = 256,
-            scale = 2,
+            lineWidth = 2,
             frameDelayMs = 800
         } = options
+
+        const { linesSortedByOpenTimeDesc } = useLineTimeStore()
 
         const timePoints = getAnimationTimePoints()
         if (!timePoints) {
@@ -79,7 +81,11 @@ export function useAnimatedExport() {
                 renderOptions.setTimeMomentOverride(time)
 
                 // 渲染缩略图帧
-                const cvs = miniatureCvsDispatcher.renderMiniatureCvs(canvasSize, scale)
+                const cvs = miniatureCvsDispatcher.renderMiniatureCvs({
+                    sideLength: canvasSize,
+                    lineWidth,
+                    lines: linesSortedByOpenTimeDesc
+                })
                 const ctx = cvs.getContext('2d')!
                 const imageData = ctx.getImageData(0, 0, cvs.width, cvs.height)
 
