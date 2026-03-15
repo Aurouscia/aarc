@@ -3,6 +3,7 @@ import { useLineTimeStore } from '@/models/stores/saveDerived/lineTimeStore';
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
 import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
 import { useImageExport } from './useImageExport';
+import { storeToRefs } from 'pinia';
 
 export interface FrameData {
     imageData: ImageData
@@ -65,7 +66,7 @@ export function useAnimatedExport() {
             frameDelayMs = 800
         } = options
 
-        const { linesSortedByOpenTimeDesc } = useLineTimeStore()
+        const { linesSortedByOpenState } = storeToRefs(useLineTimeStore())
 
         const timePoints = getAnimationTimePoints()
         if (!timePoints) {
@@ -84,7 +85,7 @@ export function useAnimatedExport() {
                 const cvs = miniatureCvsDispatcher.renderMiniatureCvs({
                     sideLength: canvasSize,
                     lineWidth,
-                    lines: linesSortedByOpenTimeDesc
+                    lines: linesSortedByOpenState.value
                 })
                 const ctx = cvs.getContext('2d')!
                 const imageData = ctx.getImageData(0, 0, cvs.width, cvs.height)

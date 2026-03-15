@@ -1,5 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
 import { useSaveStore } from "../saveStore";
+import { useRenderOptionsStore } from "../renderOptionsStore";
 import { computed } from "vue";
 import { Line, LineTimeInfo } from "@/models/save";
 import { keepOrderSort } from "@/utils/lang/keepOrderSort";
@@ -336,11 +337,46 @@ export const useLineTimeStore = defineStore('lineTime', () => {
         return [...linesSortedByOpenTime.value].reverse()
     })
 
+    /**
+     * 根据 effectiveTimeMoment 获取线路数组
+     * - 未开通的线路（无 open 时间或 open > effectiveTimeMoment）排前面
+     * - 已开通的线路（open <= effectiveTimeMoment）排后面
+     * - 状态相同的线路，顺序与 linesSortedByOpenTimeDesc 保持一致
+     */
+    const linesSortedByOpenState = computed<Line[]>(() => {
+        const { effectiveTimeMoment } = useRenderOptionsStore()
+        const timeMoment = effectiveTimeMoment
+        const sorted = linesSortedByOpenTime.value
+        
+        if (typeof timeMoment !== 'number') {
+            // 没有设置时间，直接返回倒序数组
+            return sorted
+        }
+
+        const notOpened: Line[] = []
+        const opened: Line[] = []
+
+        for (const line of sorted) {
+            const openTime = line.time?.open
+            if (typeof openTime !== 'number' || openTime <= timeMoment) {
+                console.log('线路', line.name, '开通了')
+                opened.push(line)
+            } else {
+                console.log('线路', line.name, '未开通')
+                notOpened.push(line)
+            }
+        }
+
+        console.log('最终顺序', [...notOpened, ...opened])
+        return [...notOpened, ...opened]
+    })
+
     return {
         allTimePoints,
         linesWithTime,
         linesSortedByOpenTime,
         linesSortedByOpenTimeDesc,
+        linesSortedByOpenState,
         getTimePoints,
         getUniqueTimeValues,
         getTimeRange,
