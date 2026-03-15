@@ -7,6 +7,13 @@ import { storeToRefs } from 'pinia';
 import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
 import { clamp } from '@/utils/lang/clamp';
 
+// 动画导出配置的上下限常量
+export const ANIMATED_EXPORT_LIMITS = {
+    interval: { min: 100, max: 3000 },
+    sideLength: { options: [256, 512, 1024, 2048] as const, min: 256, max: 2048 },
+    lineWidth: { min: 1, max: 20 }
+} as const
+
 export interface FrameData {
     imageData: ImageData
     delayMs: number
@@ -64,14 +71,22 @@ export function useAnimatedExport() {
      */
     async function renderFrames(options: AnimatedExportOptions): Promise<RenderedFramesResult | null> {
         let {
-            canvasSize = 256,
-            lineWidth = 2,
+            canvasSize = animConfig.value.mini.sideLength,
+            lineWidth = animConfig.value.mini.lineWidth,
             frameDelayMs = animConfig.value.interval
         } = options
 
         if(typeof frameDelayMs != 'number')
             frameDelayMs = 800
-        frameDelayMs = clamp(frameDelayMs, 100, 3000)
+        frameDelayMs = clamp(frameDelayMs, ANIMATED_EXPORT_LIMITS.interval.min, ANIMATED_EXPORT_LIMITS.interval.max)
+
+        if(typeof canvasSize != 'number')
+            canvasSize = 256
+        canvasSize = clamp(canvasSize, ANIMATED_EXPORT_LIMITS.sideLength.min, ANIMATED_EXPORT_LIMITS.sideLength.max)
+
+        if(typeof lineWidth != 'number')
+            lineWidth = 2
+        lineWidth = clamp(lineWidth, ANIMATED_EXPORT_LIMITS.lineWidth.min, ANIMATED_EXPORT_LIMITS.lineWidth.max)
 
         const { linesSortedByOpenState, linesFilteredByOpenState } = storeToRefs(useLineTimeStore())
         const lines = animConfig.value.hideNotOpened ?  linesFilteredByOpenState : linesSortedByOpenState
