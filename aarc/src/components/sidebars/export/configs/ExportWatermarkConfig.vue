@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
-import ConfigSection from './shared/ConfigSection.vue';
+import ConfigSection from '../../configs/shared/ConfigSection.vue';
 import { watch } from 'vue';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { storeToRefs } from 'pinia';

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watch } from 'vue';
-import ConfigSection from './shared/ConfigSection.vue';
+import ConfigSection from '../../configs/shared/ConfigSection.vue';
 import { storeToRefs } from 'pinia';
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
 import { fromYMD } from '@/utils/timeUtils/timeStr';
