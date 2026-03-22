@@ -289,7 +289,7 @@ const rcConvert = useTemplateRef('rcConvert')
         </tr>
         <tr>
             <td>
-                <button class="minor downloadJsonBtn" @click="rcConvert?.extend()">转换为轨交棋</button>
+                <button class="downloadJsonBtn rcConvertBtn" @click="rcConvert?.extend()">转换为轨交棋棋盘</button>
             </td>
         </tr>
     </tbody></table>
@@ -362,6 +362,10 @@ const rcConvert = useTemplateRef('rcConvert')
     .downloadJsonBtn{
         display: block;
         margin: auto;
+    }
+    .rcConvertBtn{
+        background: linear-gradient(to right, #33BDB6, #8F98F2);
+        color: white;
     }
     .replaceJsonInfo{
         text-align: center;

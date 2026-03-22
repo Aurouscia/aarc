@@ -10,18 +10,18 @@ const props = defineProps<{
 }>()
 const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
-const domain = import.meta.env.VITE_RailChess
+const rcInstance = import.meta.env.VITE_RailChess
 
 /** 上传存档数据到railChess实例，接口格式参考railChess项目 */
 async function uploadToRailChess(){
-    if(!domain || typeof domain != 'string' || !props.save.id)
+    if(!rcInstance || typeof rcInstance != 'string' || !props.save.id)
         return
     const saveData = await api.save.loadData(props.save.id, false)
     if(!saveData){
         showPop('未能获取存档数据', 'failed')
         return
     }
-    let url = domain
+    let url = rcInstance
     if (!url.endsWith('/'))
         url += '/'
     url += 'api/AarcConvert/UploadSave'
@@ -47,6 +47,12 @@ async function uploadToRailChess(){
     const { data, errmsg } = respObj
     if(typeof data?.md5 == 'string'){
         showPop('上传成功！', 'success')
+        const sourceDomain = window.location.host
+        let targetHost = rcInstance
+        if(!targetHost.endsWith('/'))
+            targetHost += '/'
+        const redirectUrl = `${targetHost}#/aarcConverter?md5=${data.md5}&sourceDomain=${encodeURIComponent(sourceDomain)}&sourceId=${props.save.id}`
+        window.open(redirectUrl, '_blank')
     }
     else{
         showPop('rc: ' + errmsg || 'rc接口返回异常(无md)', 'failed')
@@ -62,11 +68,12 @@ defineExpose({extend})
 
 <template>
 <SideBar ref="sidebar">
-    <h1>转换为轨交棋地图</h1>
-    <template v-if="domain">
+    <h1>转换为轨交棋棋盘</h1>
+    <template v-if="rcInstance">
         <div class="smallNote">
             轨交棋是一款多人在线策略游戏，玩家可以在地铁图按线路上移动，占领车站，堵截其他玩家的行动，最终获取最高分数赢得胜利<br/>
-            转换前，请确保在<a :href="domain" target="_blank">轨交棋平台</a>中注册了账号
+            转换前，请确保在<a :href="rcInstance" target="_blank">轨交棋平台</a>中注册了账号<br/>
+            不用担心：该操作不会泄露 aarc 存档文件
         </div>
         <button @click="uploadToRailChess" class="upload-btn">上传存档并跳转</button>
     </template>
@@ -81,5 +88,8 @@ defineExpose({extend})
     display: block;
     margin: auto;
     margin-top: 20px;
+}
+a{
+    text-decoration: underline;
 }
 </style>
