@@ -20,6 +20,7 @@ import SaveAvatar from '../components/SaveAvatar.vue';
 import { useSavesRoutesJump } from './routes/routesJump';
 import SaveBackups from '../components/SaveBackups.vue';
 import { useRouter } from 'vue-router';
+import ConvertToRailChess from '../components/ConvertToRailChess.vue';
 
 const saveList = ref<WithIntroShow<SaveDto>[]>()
 const api = useApiStore();
@@ -185,6 +186,8 @@ onMounted(async()=>{
     await load()
     await appVersionCheck()
 })
+
+const rcConvert = useTemplateRef('rcConvert')
 </script>
 
 <template>
@@ -284,6 +287,11 @@ onMounted(async()=>{
                 <button class="minor downloadJsonBtn" @click="downloadJson">导出工程文件</button>
             </td>
         </tr>
+        <tr>
+            <td>
+                <button class="minor downloadJsonBtn" @click="rcConvert?.extend()">转换为轨交棋</button>
+            </td>
+        </tr>
     </tbody></table>
     <table v-if="!isCreatingSave"><tbody>
         <tr><td>
@@ -328,6 +336,7 @@ onMounted(async()=>{
         <SaveBackups :save-id="editingSave.id"></SaveBackups>
     </template>
 </SideBar>
+<ConvertToRailChess ref="rcConvert" v-if="editingSave" :save="editingSave"/>
 </template>
 
 <style scoped lang="scss">
