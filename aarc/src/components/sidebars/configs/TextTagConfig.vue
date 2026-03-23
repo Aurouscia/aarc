@@ -3,7 +3,7 @@ import { storeToRefs } from 'pinia';
 import ConfigSection from './shared/ConfigSection.vue';
 import { useConfigStore } from '@/models/stores/configStore';
 import { useEnvStore } from '@/models/stores/envStore';
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 
 const { config } = storeToRefs(useConfigStore())
 const envStore = useEnvStore()
@@ -15,6 +15,13 @@ function c(){
         envStore.rerender([], [])
     }, 500)
 }
+
+const dropCapDetectExplain = computed(()=>{
+    if(config.value.textTagForLineDropCapDetect == 'loose')
+        return '“M1某某线”的M将被放大'
+    return '“A1号线”的A1将被放大'
+})
+
 onMounted(()=>{
     config.value.textTagPlain.fontSize ??= 1
     config.value.textTagPlain.subFontSize??= 1
@@ -136,12 +143,21 @@ onMounted(()=>{
         <tr>
             <td>数字<br/>放大</td>
             <td>
-                <select v-model="config.textTagForLineDropCap" @click="c">
+                <select v-model="config.textTagForLineDropCap" @change="c">
                     <option :value="true">开启</option>
                     <option :value="false">关闭</option>
                 </select>
-                <div class="explain">若字母数字+"线"结尾</div>
                 <div class="explain">将会无视文字对齐</div>
+            </td>
+        </tr>
+        <tr v-if="config.textTagForLineDropCap">
+            <td>数字<br/>放大<br/>检测</td>
+            <td>
+                <select v-model="config.textTagForLineDropCapDetect" @change="c">
+                    <option :value="'classic'">经典</option>
+                    <option :value="'loose'">宽松</option>
+                </select>
+                <div class="explain">{{ dropCapDetectExplain }}</div>
             </td>
         </tr>
         <tr>

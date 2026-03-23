@@ -74,6 +74,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         }
         const { anchor, textAlign, width } = getParams(cs.config.textTagForLine, t)
         const dropCap = t.dropCap ?? cs.config.textTagForLineDropCap
+        const dropCapDetect = dropCap ? cs.config.textTagForLineDropCapDetect : undefined
         const paddingLineWidth = cs.config.lineWidth * getPadding(t, cs.config.textTagForLine.padding??1)
         const paddingValue = paddingLineWidth/2
         const needJustifyPos = cs.config.textTagForLine.edgeAnchorOutsidePadding ?? false
@@ -81,7 +82,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             ? justifyPosByAnchorAndPadding(t.pos, anchor, paddingValue) 
             : t.pos
         const drawLineNameRes = drawTextForLineName(
-            ctx, justifiedPos, anchor, textAlign, optMain, optSub, false, 'measure', width, dropCap)
+            ctx, justifiedPos, anchor, textAlign, optMain, optSub, false, 'measure', width, dropCapDetect)
         if(drawLineNameRes?.rect){
             const rect = drawLineNameRes.rect
             const lu = rect[0]
@@ -94,7 +95,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
                 ctx.lineWidth = paddingLineWidth
                 ctx.strokeRect(...lu, ...wh)
             }
-            drawTextForLineName(ctx, justifiedPos, anchor, textAlign, optMain, optSub, false, 'draw', width, dropCap)
+            drawTextForLineName(ctx, justifiedPos, anchor, textAlign, optMain, optSub, false, 'draw', width, dropCapDetect)
             const rectEnlarged = enlargeRect(rect, paddingValue)
             textTagRectStore.setTextTagRect(t.id, rectEnlarged)
             if(strokeRect){

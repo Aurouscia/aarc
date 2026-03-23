@@ -128,17 +128,23 @@ export function drawText(
 }
 
 const chineseStyleDropCapPattern = /^[0-9a-zA-Z]{1,3}(?=\s?号?环?线$)/
+const chineseStyleDropCapLoosePattern = /^[0-9a-zA-Z]{1,10}(?=.*号?环?线$)/
 export function drawTextForLineName(
     ctx:CvsContext, pos:Coord, align:SgnCoord, textAlignOverride:SgnNumber,
     main:DrawTextBodyOption, sub:DrawTextBodyOption, stroke?:DrawTextStrokeOption|false,
-    task:'draw'|'measure'|'both' = 'both', width?:number, dropCap?:boolean):
+    task:'draw'|'measure'|'both' = 'both', width?:number, dropCap?:'classic'|'loose'):
     {isDropCap:boolean, rect:RectCoord|undefined}|undefined
 {
     const mainText = main.text?.trim() || ''
     const subText = sub.text?.trim() || ''
-    const match = chineseStyleDropCapPattern.exec(mainText)
-    const useDropCap = dropCap && match && match.length>0 && subText
-    if(!useDropCap)
+    let useDropCap = false
+    let match: RegExpMatchArray|null = null
+    if(dropCap){
+        const dropCapPattern = dropCap == 'loose' ? chineseStyleDropCapLoosePattern : chineseStyleDropCapPattern
+        match = dropCapPattern.exec(mainText)
+        useDropCap = !!(match && match.length>0 && subText)
+    }
+    if(!useDropCap || !match)
     {
         //如果不是需要dropCap的线路名，则fallback到一般的写法
         const textAlign = textAlignOverride

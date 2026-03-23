@@ -79,6 +79,7 @@ export const configDefault:Config = {
     textTagPlain:{},
     textTagForLine:{},
     textTagForLineDropCap:true,
+    textTagForLineDropCapDetect:'classic',
     textTagForTerrain:{},
 
     configVersion:0

@@ -71,6 +71,7 @@ export interface Config{
     textTagPlain:TextTagPerTypeGlobalConfig,
     textTagForLine:TextTagPerTypeGlobalConfig,
     textTagForLineDropCap:boolean
+    textTagForLineDropCapDetect?:'classic'|'loose'
     textTagForTerrain:TextTagPerTypeGlobalConfig
 
     pinyinConvert?:PinyinConvertConfig
