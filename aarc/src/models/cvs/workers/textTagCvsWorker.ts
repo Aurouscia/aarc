@@ -22,8 +22,14 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     const textTagRectStore = useTextTagRectStore()
     const colorProcStore = useColorProcStore()
     const iconStore = useIconStore()
-    function renderAllTextTags(ctx:CvsContext){
-        const allTags = saveStore.save?.textTags
+    function renderAllTextTags(ctx:CvsContext, filter:'sunken'|'notSunken'){
+        let allTags = saveStore.save?.textTags
+        if(filter == 'sunken'){
+            allTags = allTags?.filter(x=>!!x.sunken)
+        }
+        else{
+            allTags = allTags?.filter(x=>!x.sunken)
+        }
         allTags?.forEach(t=>{
             renderOneTextTag(ctx, t)
         })

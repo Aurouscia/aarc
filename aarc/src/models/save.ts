@@ -137,6 +137,7 @@ export interface TextTag{
     icon?:number
     opacity?:number
     removeCarpet?:boolean
+    sunken?:boolean
     //rot?:FormalRotation
 }
 export interface TextOptions{

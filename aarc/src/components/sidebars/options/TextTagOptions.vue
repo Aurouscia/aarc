@@ -193,9 +193,16 @@ defineExpose({
                         <div class="smallNote">标签将不会有底层的白边</div>
                     </td>
                 </tr>
+                <tr>
+                    <td>置底</td>
+                    <td>
+                        <input type="checkbox" v-model="editing.sunken" @change="emit('changed')"/>
+                        <div class="smallNote">标签将置于线路下方</div>
+                    </td>
+                </tr>
                 <tr v-if="editing.forId">
                     <td colspan="2" class="smallNote">
-                        以上设置均可在“设置”侧栏中<br/>
+                        以上设置部分可在“设置”侧栏<br/>
                         定义全局默认值
                     </td>
                 </tr>

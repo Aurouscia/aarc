@@ -85,6 +85,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         tic('地形-平滑')
         renderAllLines(ctx, LineType.terrain, 'body')
         tic('地形-本体')
+        renderAllTextTags(ctx, 'sunken')
         renderAllLines(ctx, LineType.common)
         tic('线路')
         renderAllPoints(ctx, forExport, forExport)
@@ -99,7 +100,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         tic('集群')
         renderAllPtName(ctx, movedStaNames, forExport)
         tic('站名')
-        renderAllTextTags(ctx)
+        renderAllTextTags(ctx, 'notSunken')
         toc('标签')
         
         if(options.withAds){
