@@ -133,6 +133,7 @@ export interface TextTag{
     anchorX?:SgnNumber
     anchorY?:SgnNumber
     dropCap?:boolean
+    dropCapLength?:number
     icon?:number
     opacity?:number
     removeCarpet?:boolean

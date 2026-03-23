@@ -73,8 +73,14 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             text: !subEmpty ? t.textS?.trim() : lineInfo.nameSub
         }
         const { anchor, textAlign, width } = getParams(cs.config.textTagForLine, t)
-        const dropCap = t.dropCap ?? cs.config.textTagForLineDropCap
-        const dropCapDetect = dropCap ? cs.config.textTagForLineDropCapDetect : undefined
+        const dropCapSwitch = t.dropCap ?? cs.config.textTagForLineDropCap
+        let dropCap:'classic'|'loose'|number|undefined = undefined
+        if(dropCapSwitch){
+            dropCap = cs.config.textTagForLineDropCapDetect || 'classic' // 如果启用了，则使用指定检测模式
+        }
+        if(dropCapSwitch && typeof t.dropCapLength == 'number'){
+            dropCap = t.dropCapLength // 如果启用了且设置了长度，则使用指定长度而不是自动检测
+        }
         const paddingLineWidth = cs.config.lineWidth * getPadding(t, cs.config.textTagForLine.padding??1)
         const paddingValue = paddingLineWidth/2
         const needJustifyPos = cs.config.textTagForLine.edgeAnchorOutsidePadding ?? false
@@ -82,7 +88,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             ? justifyPosByAnchorAndPadding(t.pos, anchor, paddingValue) 
             : t.pos
         const drawLineNameRes = drawTextForLineName(
-            ctx, justifiedPos, anchor, textAlign, optMain, optSub, false, 'measure', width, dropCapDetect)
+            ctx, justifiedPos, anchor, textAlign, optMain, optSub, false, 'measure', width, dropCap)
         if(drawLineNameRes?.rect){
             const rect = drawLineNameRes.rect
             const lu = rect[0]
@@ -95,7 +101,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
                 ctx.lineWidth = paddingLineWidth
                 ctx.strokeRect(...lu, ...wh)
             }
-            drawTextForLineName(ctx, justifiedPos, anchor, textAlign, optMain, optSub, false, 'draw', width, dropCapDetect)
+            drawTextForLineName(ctx, justifiedPos, anchor, textAlign, optMain, optSub, false, 'draw', width, dropCap)
             const rectEnlarged = enlargeRect(rect, paddingValue)
             textTagRectStore.setTextTagRect(t.id, rectEnlarged)
             if(strokeRect){

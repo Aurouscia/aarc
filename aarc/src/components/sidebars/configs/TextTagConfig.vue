@@ -141,7 +141,7 @@ onMounted(()=>{
             </td>
         </tr>
         <tr>
-            <td>数字<br/>放大</td>
+            <td :rowspan="config.textTagForLineDropCap ? 2 : 1">数字<br/>放大</td>
             <td>
                 <select v-model="config.textTagForLineDropCap" @change="c">
                     <option :value="true">开启</option>
@@ -151,11 +151,10 @@ onMounted(()=>{
             </td>
         </tr>
         <tr v-if="config.textTagForLineDropCap">
-            <td>数字<br/>放大<br/>检测</td>
             <td>
                 <select v-model="config.textTagForLineDropCapDetect" @change="c">
-                    <option :value="'classic'">经典</option>
-                    <option :value="'loose'">宽松</option>
+                    <option :value="'classic'">经典检测</option>
+                    <option :value="'loose'">宽松检测</option>
                 </select>
                 <div class="explain">{{ dropCapDetectExplain }}</div>
             </td>

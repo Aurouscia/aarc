@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TextTag } from '@/models/save';
-import { ref, useTemplateRef, watch } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import SideBar from '../../common/SideBar.vue';
 import { AuColorPicker } from '@aurouscia/au-color-picker';
 import { useConfigStore } from '@/models/stores/configStore';
@@ -33,6 +33,10 @@ function startEditing(tag: TextTag) {
     iconStore.enforcePrefixSelectedTo(tag.icon??0)
     sidebar.value?.extend()
 }
+
+const editingDropCapActualEnabled = computed(()=>{
+    return editing.value?.dropCap ?? cs.config.textTagForLineDropCap
+})
 
 function ensureIconInSelection(){
     if(editing.value){
@@ -145,7 +149,7 @@ defineExpose({
                     </td>
                 </tr>
                 <tr v-if="editing.forId">
-                    <td>数字<br/>放大</td>
+                    <td :rowspan="editingDropCapActualEnabled ? 2 : 1">数字<br/>放大</td>
                     <td>
                         <select v-model="editing.dropCap" @change="emit('changed')">
                             <option :value="undefined">默认</option>
@@ -154,6 +158,22 @@ defineExpose({
                         </select>
                         <div class="smallNote">若字母数字+"线"结尾</div>
                         <div class="smallNote">将会无视文字对齐</div>
+                    </td>
+                </tr>
+                <tr v-if="editing.forId && editingDropCapActualEnabled">
+                    <td>
+                        <button v-if="editing.dropCapLength===undefined" class="lite" @click="editing.dropCapLength=1;emit('changed')">
+                            启用长度设定(当前自动)
+                        </button>
+                        <template v-else>
+                            <button class="lite" @click="editing.dropCapLength=undefined;emit('changed')">
+                                关闭长度设定(设为自动)
+                            </button>
+                            <div class="viewableRange" style="margin-top: 10px;">
+                                <input v-model.number="editing.dropCapLength" type="range" min="0" max="8" @blur="emit('changed')"/>
+                                <div class="smallNote">{{ editing.dropCapLength }}</div>
+                            </div>
+                        </template>
                     </td>
                 </tr>
                 <tr v-if="!editing.forId">
