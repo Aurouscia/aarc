@@ -1,13 +1,18 @@
 <script lang="ts" setup>
 import { Line } from '@/models/save';
 import { useEnvStore } from '@/models/stores/envStore';
+import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
+import { useSaveStore } from '@/models/stores/saveStore';
 import { computed } from 'vue';
 import settingsIcon from '@/assets/ui/settings.svg';
 import branchIcon from '@/assets/ui/editor/branch.svg';
 import branchSeperateIcon from '@/assets/ui/editor/branchSeperate.svg';
 import calendarIcon from '@/assets/ui/calendar.svg';
+import searchIcon from '@/assets/ui/search.svg';
 
 const envStore = useEnvStore()
+const cvs = useCvsFrameStore()
+const saveStore = useSaveStore()
 
 const props = withDefaults(defineProps<{
     mouseDownLineArrange: (e: MouseEvent | TouchEvent, id: number) => void,
@@ -24,6 +29,23 @@ const props = withDefaults(defineProps<{
 }>(), {
     editTimeOfLine: ()=>{}
 })
+
+const emit = defineEmits<{
+    (e:'closeSidebar'):void
+}>()
+
+function centerOnLine(){
+    const firstPtId = props.l.pts.at(0)
+    if(!firstPtId) return
+    const pt = saveStore.getPtById(firstPtId)
+    if(!pt) return
+    cvs.focusViewToPos(pt.pos)
+    envStore.activeLine = props.l
+    envStore.activePt = pt;
+    envStore.cursorPos = [...pt.pos]
+    emit('closeSidebar')
+}
+
 const mode = computed<'A'|'B'>(()=>{
     if(props.showingBtns=='arrange')
         return 'B'
@@ -55,6 +77,7 @@ const mode = computed<'A'|'B'>(()=>{
     <div v-if="mode==='B'" class="sqrBtn" @click="delLineStart(l)">
         ×
     </div>
+    <img :src="searchIcon" class="search-icon" @click="centerOnLine" title="点击寻找该线路的位置"/>
 </template>
 
 <style scoped lang="scss">
@@ -67,6 +90,20 @@ const mode = computed<'A'|'B'>(()=>{
         width: 22px;
         height: 22px;
         margin: 4px;
+    }
+}
+
+.search-icon{
+    // 位于右下角的搜索按钮，需要外层线路卡片是 position 非 static 才能正确定位
+    position: absolute;
+    right: 2px;
+    bottom: -1px;
+    width: 11px;
+    height: 11px;
+    padding: 0px 4px 4px 0px;
+    cursor: pointer;
+    &:hover{
+        filter: brightness(0.6);
     }
 }
 </style>
