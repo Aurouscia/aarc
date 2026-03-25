@@ -15,14 +15,31 @@ function pad(num:number){
     return num.toString().padStart(2, '0')
 }
 
-export function toYMD(val:number|undefined){
+export interface ToYMDOptions {
+    /** 是否包含横杠分隔符，默认为 true */
+    hyphen?: boolean
+    /** 是否补零到2位，默认为 false */
+    pad?: boolean
+}
+
+export function toYMD(val:number|undefined, options?: ToYMDOptions){
     if(!val) return ''
     try{
         const d = new Date(val)
         const year = d.getFullYear()
         const month = d.getMonth() + 1
         const date = d.getDate()
-        return `${year}-${month}-${date}`
+        
+        const { hyphen = true, pad = false } = options || {}
+        
+        const monthStr = pad ? String(month).padStart(2, '0') : String(month)
+        const dateStr = pad ? String(date).padStart(2, '0') : String(date)
+        
+        if(hyphen){
+            return `${year}-${monthStr}-${dateStr}`
+        } else {
+            return `${year}${monthStr}${dateStr}`
+        }
     }
     catch(e){
         console.error(e)

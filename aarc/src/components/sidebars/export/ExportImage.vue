@@ -6,7 +6,7 @@ import { useApiStore } from '@/app/com/apiStore';
 import { useRoute } from 'vue-router';
 import { editorParamNameSaveId } from '@/pages/editors/routes/routesNames';
 import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
-import { timeStr } from '@/utils/timeUtils/timeStr';
+import { timeStr, toYMD } from '@/utils/timeUtils/timeStr';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
@@ -26,6 +26,7 @@ import Prompt from '../../common/Prompt.vue';
 import { useImageExport } from './composables/useImageExport';
 import { useApngExport } from './composables/useApngExport';
 import { useGifExport } from './composables/useGifExport';
+import { useAnimatedExport } from './composables/useAnimatedExport';
 import ExportAnimationMiniConfig from './configs/ExportAnimationMiniConfig.vue';
 
 const sidebar = useTemplateRef('sidebar')
@@ -71,6 +72,29 @@ const {
     exportGif
 } = useGifExport()
 
+const {
+    getAnimationTimePoints
+} = useAnimatedExport()
+
+/**
+ * 渲染主画布并返回 Data URL
+ */
+async function renderMainCvsToDataUrl(): Promise<string | null> {
+    const { scale, cvsWidth, cvsHeight } = getExportRenderSize()
+    const cvs = new OffscreenCanvas(cvsWidth, cvsHeight)
+    const ctx2d = cvs.getContext('2d')!
+    const ctx = new CvsContext(new CvsBlock(scale, 0, 0, ctx2d))
+    const mainRenderingOptions:MainCvsRenderingOptions = {
+        movedStaNames:[],
+        suppressRenderedCallback:true,
+        ctx,
+        withAds: ads.value,
+        withBgRefImage: bgRefImage.value
+    }
+    mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
+    return await cvsToDataUrl(cvs, fileFormat.value, fileQuality.value)
+}
+
 async function downloadMainCvsAsImage() {
     if(exporting.value)
         return
@@ -82,31 +106,21 @@ async function downloadMainCvsAsImage() {
 
     const fileName = await getExportImageFileName()
     if(fileName){
-        const { scale, cvsWidth, cvsHeight } = getExportRenderSize()
-        const cvs = new OffscreenCanvas(cvsWidth, cvsHeight)
-        const ctx2d = cvs.getContext('2d')!
-        const ctx = new CvsContext(new CvsBlock(scale, 0, 0, ctx2d))
-        const mainRenderingOptions:MainCvsRenderingOptions = {
-            movedStaNames:[],
-            suppressRenderedCallback:true,
-            ctx,
-            withAds: ads.value,
-            withBgRefImage: bgRefImage.value
-        }
         renderOptionsStore.exporting = true; // 启用导出模式
-        mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
 
         let imageDataUrl
         try{
-            imageDataUrl = await cvsToDataUrl(cvs, fileFormat.value, fileQuality.value)
+            imageDataUrl = await renderMainCvsToDataUrl()
         }
         catch(e){
             console.error(e)
             showPop('导出失败\n请查看指引', 'failed')
             setExportFailed('可能是浏览器像素上限，请查看指引')
+            renderOptionsStore.exporting = false;
             return
         }
         if(!imageDataUrl){
+            renderOptionsStore.exporting = false;
             return
         }
         triggerDownload(imageDataUrl, fileName)
@@ -133,7 +147,58 @@ async function downloadMiniatureCvsAsImage() {
     }
     finishExport()
 }
-
+async function downloadMainCvsAtAllTimePoints(){
+    if(exporting.value)
+        return
+    
+    const timePoints = getAnimationTimePoints()
+    if(!timePoints){
+        showPop('请为线路添加\n开通时间设置', 'failed')
+        return
+    }
+    
+    startExport()
+    renderOptionsStore.exporting = true
+    
+    const baseFileName = await getExportImageFileName()
+    
+    if(!baseFileName){
+        finishExport()
+        renderOptionsStore.exporting = false
+        return
+    }
+    
+    try{
+        for(let i = 0; i < timePoints.length; i++){
+            const time = timePoints[i]
+            
+            // 设置当前时间点
+            renderOptionsStore.setTimeMomentOverride(time)
+            
+            // 渲染画布并获取 Data URL
+            const imageDataUrl = await renderMainCvsToDataUrl()
+            if(!imageDataUrl){
+                continue
+            }
+            
+            // 生成文件名（添加年月日后缀）并下载
+            const dateSuffix = toYMD(time, { hyphen: false, pad: true }) || `${i + 1}`
+            const fileName = baseFileName.replace(/(\.\w+)$/, `-${dateSuffix}$1`)
+            triggerDownload(imageDataUrl, fileName)
+            
+            // 小延迟，避免浏览器阻塞
+            await new Promise(resolve => setTimeout(resolve, 200))
+        }
+    } catch(e){
+        console.error(e)
+        showPop('导出失败\n请查看指引', 'failed')
+        setExportFailed('导出过程中出错')
+    } finally {
+        renderOptionsStore.setTimeMomentOverride(undefined)
+        renderOptionsStore.exporting = false
+        finishExport()
+    }
+}
 
 /**
  * 导出略缩图动画（根据设置中的格式决定导出 APNG 或 GIF）
@@ -317,7 +382,7 @@ const showApngExportNotice = ref(false)
             </div>
             <button @click="downloadMainCvsAsImage" class="ok">导出为图片</button>
             <button @click="downloadMiniatureCvsAsImage" class="minor">导出为缩略图</button>
-            <button @click="downloadMiniatureAnimation" class="minor">导出发展史动图（{{ animationMini.fileFormat }}）</button>
+            <button @click="downloadMiniatureAnimation" class="minor">导出发展史略缩动图（{{ animationMini.fileFormat }}）</button>
             <div v-show="!exported" class="note apng-notice-entry" @click="showApngExportNotice=true">
                 试验功能有关注意事项
             </div>
@@ -346,6 +411,15 @@ const showApngExportNotice = ref(false)
             <div class="exportConfigs">
                 <ExportAnimationMiniConfig></ExportAnimationMiniConfig>
                 <ExportTimeConfig></ExportTimeConfig>
+                <ConfigSection :title="'导出所有时间点'">
+                    <button @click="downloadMainCvsAtAllTimePoints" class="ok"
+                        style="display: block; margin: auto; margin-top: 20px;">
+                        导出所有时间点（试验性）
+                    </button>
+                    <Notice :title="'注意'" :type="'info'">
+                        理论上本按钮会触发：连续下载多张图片，每张图片是一个时间点的线网图。如果需要使用本功能但行为异常，请改用 PC 端 Edge 浏览器。
+                    </Notice>
+                </ConfigSection>
                 <ExportAccentuationConfig></ExportAccentuationConfig>
                 <ExportWatermarkConfig></ExportWatermarkConfig>
                 <ExportEtcConfig></ExportEtcConfig>

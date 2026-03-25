@@ -16,7 +16,7 @@ export type TimePointType =
 
 /** 单个时间点 */
 export interface TimePoint {
-    /** 时间戳（年份或具体日期转为数字，如 2015 或 20150315） */
+    /** 时间戳（JavaScript Date.getTime() 返回的毫秒数） */
     value: number
     /** 时间点类型 */
     type: TimePointType

@@ -10,7 +10,7 @@ const limits = ANIMATED_EXPORT_LIMITS
 </script>
 
 <template>
-<ConfigSection :title="'略缩图动画（新）'">
+<ConfigSection :title="'略缩图动画'">
 <table class="fullWidth"><tbody>
     <tr>
         <td style="width: 120px;">
