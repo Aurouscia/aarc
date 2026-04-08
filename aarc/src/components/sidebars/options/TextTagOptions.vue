@@ -234,7 +234,7 @@ defineExpose({
                 <tr v-if="!editing.forId">
                     <td>字体</td>
                     <td v-if="editing.textOp">
-                        <FontInput
+                        <FontInput :allow-undefined="true"
                             v-model="editing.textOp.font"
                             v-model:font-style="editing.textOp.style"
                             v-model:font-weight="editing.textOp.weight"
@@ -268,7 +268,7 @@ defineExpose({
                 <tr v-if="!editing.forId">
                     <td>字体</td>
                     <td v-if="editing.textSOp">
-                        <FontInput
+                        <FontInput :allow-undefined="true"
                             v-model="editing.textSOp.font"
                             v-model:font-style="editing.textSOp.style"
                             v-model:font-weight="editing.textSOp.weight"
