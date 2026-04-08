@@ -62,6 +62,8 @@ const fontStyleOptions = [
     display: flex;
     flex-direction: column;
     gap: 4px;
+    width: 190px;
+    margin: 0px auto;
 
     .selects{
         display: flex;

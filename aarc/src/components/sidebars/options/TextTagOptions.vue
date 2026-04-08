@@ -6,6 +6,7 @@ import { AuColorPicker } from '@aurouscia/au-color-picker';
 import { useConfigStore } from '@/models/stores/configStore';
 import { useIconStore } from '@/models/stores/iconStore';
 import { storeToRefs } from 'pinia';
+import FontInput from '../shared/FontInput.vue';
 
 const cs = useConfigStore()
 const iconStore = useIconStore()
@@ -230,6 +231,16 @@ defineExpose({
                         </div>
                     </td>
                 </tr>
+                <tr v-if="!editing.forId">
+                    <td>字体</td>
+                    <td v-if="editing.textOp">
+                        <FontInput
+                            v-model="editing.textOp.font"
+                            v-model:font-style="editing.textOp.style"
+                            v-model:font-weight="editing.textOp.weight"
+                            ></FontInput>
+                    </td>
+                </tr>
             </tbody></table>
         </div>
         <h2>副文字样式</h2>
@@ -252,6 +263,16 @@ defineExpose({
                             <input type="number" v-model="editing.textSOp.size" :min="0" :max="16" :step="0.05" @change="emit('changed')"/>
                             <div class="smallNote">设为0使用全局设置</div>
                         </div>
+                    </td>
+                </tr>
+                <tr v-if="!editing.forId">
+                    <td>字体</td>
+                    <td v-if="editing.textSOp">
+                        <FontInput
+                            v-model="editing.textSOp.font"
+                            v-model:font-style="editing.textSOp.style"
+                            v-model:font-weight="editing.textSOp.weight"
+                            ></FontInput>
                     </td>
                 </tr>
             </tbody></table>

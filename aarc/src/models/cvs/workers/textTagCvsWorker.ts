@@ -173,18 +173,18 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
 
         const optMain:DrawTextBodyOption = {
             color: mo?.color || cs.config.textTagFontColorHex,
-            font: cs.config.textTagFont,
-            weight: cs.config.textTagFontWeight,
-            style: cs.config.textTagFontStyle,
+            font: mo?.font || cs.config.textTagFont,
+            weight: mo?.weight || cs.config.textTagFontWeight,
+            style: mo?.style || cs.config.textTagFontStyle,
             fontSize: cs.config.textTagFontSizeBase * mainRatio,
             rowHeight: cs.config.textTagRowHeightBase * mainRatio,
             text: !mainEmpty ? t.text?.trim() : '空文本标签'
         }
         const optSub:DrawTextBodyOption = {
             color: so?.color || cs.config.textTagSubFontColorHex,
-            font: cs.config.textTagSubFont,
-            weight: cs.config.textTagSubFontWeight,
-            style: cs.config.textTagSubFontStyle,
+            font: so?.font || cs.config.textTagSubFont,
+            weight: so?.weight || cs.config.textTagSubFontWeight,
+            style: so?.style || cs.config.textTagSubFontStyle,
             fontSize: cs.config.textTagSubFontSizeBase * subRatio,
             rowHeight: cs.config.textTagSubRowHeightBase * subRatio,
             text: !subEmpty ? t.textS?.trim(): 'Empty TextTag'

@@ -143,9 +143,9 @@ export interface TextTag{
 export interface TextOptions{
     size:number
     color:string
-    //i?:boolean
-    //b?:boolean
-    //u?:boolean
+    font?: string,
+    weight?: string,
+    style?: string,
 }
 export interface TextTagIcon{
     id:number,
