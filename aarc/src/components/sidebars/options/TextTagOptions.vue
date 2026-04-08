@@ -73,8 +73,8 @@ defineExpose({
                 <tr>
                     <td>坐标</td>
                     <td class="coord">
-                        <input type="number" v-model="editing.pos[0]" @change="emit('changed')"/><br/>
-                        <input type="number" v-model="editing.pos[1]" @change="emit('changed')"/>
+                        <input type="number" v-model="editing.pos[0]"/><br/>
+                        <input type="number" v-model="editing.pos[1]"/>
                     </td>
                 </tr>
                 <tr v-if="!editing.forId">
@@ -97,8 +97,8 @@ defineExpose({
                     <td>边距</td>
                     <td>
                         <div class="viewableRange">
-                            <input type="range" v-model="editing.padding" :min="0" :max="5" :step="0.25" @change="emit('changed')"/>
-                            <input type="number" v-model="editing.padding" :min="0" :max="5" @change="emit('changed')"/>
+                            <input type="range" v-model="editing.padding" :min="0" :max="5" :step="0.25"/>
+                            <input type="number" v-model="editing.padding" :min="0" :max="5"/>
                             <div class="smallNote">设为0使用全局设置</div>
                             <div class="smallNote">仅对线路名称标签有效</div>
                         </div>
@@ -107,7 +107,7 @@ defineExpose({
                 <tr>
                     <td>横向<br/>锚点</td>
                     <td>
-                        <select v-model="editing.anchorX" @change="emit('changed')">
+                        <select v-model="editing.anchorX">
                             <option :value="undefined">默认</option>
                             <option :value="1">左侧</option>
                             <option :value="0">中心</option>
@@ -118,7 +118,7 @@ defineExpose({
                 <tr>
                     <td>纵向<br/>锚点</td>
                     <td>
-                        <select v-model="editing.anchorY" @change="emit('changed')">
+                        <select v-model="editing.anchorY">
                             <option :value="undefined">默认</option>
                             <option :value="1">顶部</option>
                             <option :value="0">中心</option>
@@ -129,7 +129,7 @@ defineExpose({
                 <tr>
                     <td>文字<br/>对齐</td>
                     <td>
-                        <select v-model="editing.textAlign" @change="emit('changed')">
+                        <select v-model="editing.textAlign">
                             <option :value="undefined">默认</option>
                             <option :value="null">跟随横向锚点</option>
                             <option :value="1">靠左</option>
@@ -142,8 +142,8 @@ defineExpose({
                     <td>宽度</td>
                     <td>
                         <div class="viewableRange">
-                            <input type="range" v-model="editing.width" :min="0" :max="300" :step="5" @change="emit('changed')"/>
-                            <input type="number" v-model="editing.width" :min="0" :step="1" @change="emit('changed')"/>
+                            <input type="range" v-model="editing.width" :min="0" :max="300" :step="5"/>
+                            <input type="number" v-model="editing.width" :min="0" :step="1"/>
                             <div class="smallNote">如果短于指定宽度<br/>将会向锚点对侧拉长</div>
                             <div class="smallNote">设为0使用默认值</div>
                         </div>
@@ -152,7 +152,7 @@ defineExpose({
                 <tr v-if="editing.forId">
                     <td :rowspan="editingDropCapActualEnabled ? 2 : 1">数字<br/>放大</td>
                     <td>
-                        <select v-model="editing.dropCap" @change="emit('changed')">
+                        <select v-model="editing.dropCap">
                             <option :value="undefined">默认</option>
                             <option :value="true">开启</option>
                             <option :value="false">关闭</option>
@@ -163,15 +163,15 @@ defineExpose({
                 </tr>
                 <tr v-if="editing.forId && editingDropCapActualEnabled">
                     <td>
-                        <button v-if="editing.dropCapLength===undefined" class="lite" @click="editing.dropCapLength=1;emit('changed')">
+                        <button v-if="editing.dropCapLength===undefined" class="lite" @click="editing.dropCapLength=1">
                             启用长度设定(当前自动)
                         </button>
                         <template v-else>
-                            <button class="lite" @click="editing.dropCapLength=undefined;emit('changed')">
+                            <button class="lite" @click="editing.dropCapLength=undefined">
                                 关闭长度设定(设为自动)
                             </button>
                             <div class="viewableRange" style="margin-top: 10px;">
-                                <input v-model.number="editing.dropCapLength" type="range" min="0" max="8" @blur="emit('changed')"/>
+                                <input v-model.number="editing.dropCapLength" type="range" min="0" max="8"/>
                                 <div class="smallNote">{{ editing.dropCapLength }}</div>
                             </div>
                         </template>
@@ -181,8 +181,8 @@ defineExpose({
                     <td>不透<br/>明度</td>
                     <td>
                         <div class="viewableRange">
-                            <input type="range" v-model.number="editing.opacity" :min="0.05" :max="1" :step="0.05" @change="emit('changed')"/>
-                            <input type="number" v-model.number="editing.opacity" :min="0.05" :max="1" :step="0.05" @change="emit('changed')"/>
+                            <input type="range" v-model.number="editing.opacity" :min="0.05" :max="1" :step="0.05"/>
+                            <input type="number" v-model.number="editing.opacity" :min="0.05" :max="1" :step="0.05"/>
                             <div class="smallNote">配合“去除白边”使用</div>
                         </div>
                     </td>
@@ -190,14 +190,14 @@ defineExpose({
                 <tr v-if="!editing.forId">
                     <td>去除<br/>白边</td>
                     <td>
-                        <input type="checkbox" v-model="editing.removeCarpet" @change="emit('changed')"/>
+                        <input type="checkbox" v-model="editing.removeCarpet"/>
                         <div class="smallNote">标签将不会有底层的白边</div>
                     </td>
                 </tr>
                 <tr>
                     <td>置底</td>
                     <td>
-                        <input type="checkbox" v-model="editing.sunken" @change="emit('changed')"/>
+                        <input type="checkbox" v-model="editing.sunken"/>
                         <div class="smallNote">标签将置于线路下方</div>
                     </td>
                 </tr>
@@ -225,8 +225,8 @@ defineExpose({
                     <td>大小</td>
                     <td>
                         <div class="viewableRange" v-if="editing.textOp">
-                            <input type="range" v-model="editing.textOp.size" :min="0" :max="5" :step="0.05" @change="emit('changed')"/>
-                            <input type="number" v-model="editing.textOp.size" :min="0" :max="16" :step="0.05" @change="emit('changed')"/>
+                            <input type="range" v-model="editing.textOp.size" :min="0" :max="5" :step="0.05"/>
+                            <input type="number" v-model="editing.textOp.size" :min="0" :max="16" :step="0.05"/>
                             <div class="smallNote">设为0使用全局设置</div>
                         </div>
                     </td>
@@ -259,8 +259,8 @@ defineExpose({
                     <td>大小</td>
                     <td>
                         <div class="viewableRange" v-if="editing.textSOp">
-                            <input type="range" v-model="editing.textSOp.size" :min="0" :max="5" :step="0.05" @change="emit('changed')"/>
-                            <input type="number" v-model="editing.textSOp.size" :min="0" :max="16" :step="0.05" @change="emit('changed')"/>
+                            <input type="range" v-model="editing.textSOp.size" :min="0" :max="5" :step="0.05"/>
+                            <input type="number" v-model="editing.textSOp.size" :min="0" :max="16" :step="0.05"/>
                             <div class="smallNote">设为0使用全局设置</div>
                         </div>
                     </td>
