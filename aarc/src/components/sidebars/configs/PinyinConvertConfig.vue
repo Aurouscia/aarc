@@ -2,12 +2,15 @@
 import { useConfigStore } from '@/models/stores/configStore';
 import { storeToRefs } from 'pinia';
 import ConfigSection from './shared/ConfigSection.vue';
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
 import { PinyinCaseType, PinyinVariantType } from '@/app/com/apiGenerated';
 import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
+import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 
 const { config } = storeToRefs(useConfigStore())
 const { tabForPinyinConvert } = storeToRefs(useEditorLocalConfigStore())
+const { preventLeaving } = usePreventLeavingUnsavedStore()
+
 onMounted(()=>{
     config.value.pinyinConvert ??= {
         caseType: 0,
@@ -15,6 +18,10 @@ onMounted(()=>{
         rules: "公园:Park\n广场:Square\n路$:Rd.\n街$:St."
     }
 })
+
+watch(()=>config.value.pinyinConvert, ()=>{
+    preventLeaving()
+}, {deep:true})
 </script>
 
 <template>
