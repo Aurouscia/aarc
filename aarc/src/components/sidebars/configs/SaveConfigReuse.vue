@@ -3,7 +3,7 @@ import { useConfigStore } from '@/models/stores/configStore';
 import ConfigSection from './shared/ConfigSection.vue';
 import copy from 'copy-to-clipboard'
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { useEnvStore } from '@/models/stores/envStore';
 import Notice from '@/components/common/Notice.vue';
 
@@ -46,6 +46,37 @@ function handleInputChange(){
         importedConfigJson.value = ''
     }
 }
+
+const fileInputRef = useTemplateRef('fileInputRef')
+function importFromFile() {
+    if(window.confirm('确定要导入配置？这会覆盖当前存档的配置，请仔细确认！'))
+        fileInputRef.value?.click()
+}
+function handleFileChange(event: Event) {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+        try {
+            const text = reader.result as string
+            const config = JSON.parse(text)
+            cs.importConfig(config)
+            showPop('导入成功', 'success')
+            envStore.rerender()
+        } catch (e) {
+            console.error(e)
+            showPop('导入失败，请检查文件格式是否正确', 'failed')
+        } finally {
+            if (fileInputRef.value) fileInputRef.value.value = ''
+        }
+    }
+    reader.onerror = () => {
+        showPop('读取文件失败', 'failed')
+        if (fileInputRef.value) fileInputRef.value.value = ''
+    }
+    reader.readAsText(file)
+}
 </script>
 
 <template>
@@ -59,6 +90,14 @@ function handleInputChange(){
     <button @click="importFromClipboard">从剪切板导入</button>
     <input v-if="wantToImport" v-model="importedConfigJson" placeholder="请粘贴在此"
         @change="handleInputChange"/>
+    <button @click="importFromFile">从文件导入</button>
+    <input
+        ref="fileInputRef"
+        type="file"
+        accept=".txt,.json"
+        style="display: none"
+        @change="handleFileChange"
+    />
     <Notice :type="'warn'">
         “存档配置”和“存档”是两个概念，存档配置仅指线路样式、字体大小等部分，不包括线路和车站。
         如果需要导入/导出整个存档，请前往“我的存档-信息设置”找到导出工程文件和替换存档数据。
