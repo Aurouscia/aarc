@@ -29,12 +29,7 @@ export const useApiStore = defineStore('api', () => {
         jwtToken.value = token;
         localStorage.setItem(jwtTokenStorageKey, token);
     }
-    const instance = axios.create({
-        //https://github.com/RicoSuter/NSwag/issues/3294 提供的workaround
-        //看起来没用，但删掉就会报错，因为axios默认会json.parse，但生成的api.ts会再parse一次
-        //所以这里的transformResponse必须覆盖默认行为
-        transformResponse: data => data
-    })
+    const instance = axios.create()
     const { showPop, showWait } = useUniqueComponentsStore()
 
     const userAbortReason = 'http用户取消'
