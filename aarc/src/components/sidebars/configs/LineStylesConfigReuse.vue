@@ -128,20 +128,35 @@ function handleFileChange(event: Event) {
     reader.readAsText(file)
 }
 
+const maxLineStyles = 50
+
 function mergeLineStyles(importedStyles: unknown[]) {
     if (!save.value) return
     save.value.lineStyles ??= []
+
+    let addedCount = 0
+    let skippedCount = 0
 
     for (const item of importedStyles) {
         if (!item || typeof item !== 'object') continue
         const style = item as Partial<LineStyle>
         if (!Array.isArray(style.layers)) continue
 
+        if (save.value.lineStyles.length >= maxLineStyles) {
+            skippedCount++
+            continue
+        }
+
         const newStyle: LineStyle = {
             ...style as LineStyle,
             id: saveStore.getNewId()
         }
         save.value.lineStyles.push(newStyle)
+        addedCount++
+    }
+
+    if (skippedCount > 0) {
+        showPop(`数量上限 ${maxLineStyles} 个`, 'warning')
     }
 }
 </script>
