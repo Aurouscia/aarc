@@ -15,6 +15,7 @@ import FontConfig from './configs/FontConfig.vue';
 import PatternsConfig from './configs/PatternsConfig.vue';
 import LineWidthMappedConfig from './configs/LineWidthMappedConfig.vue';
 import EtcConfig from './configs/EtcConfig.vue';
+import ColorsConfig from './configs/ColorsConfig.vue';
 
 const sidebar = useTemplateRef('sidebar')
 defineExpose({
@@ -38,6 +39,8 @@ defineExpose({
 <PatternsConfig></PatternsConfig>
 
 <FontConfig></FontConfig>
+
+<ColorsConfig></ColorsConfig>
 
 <EditorConfig></EditorConfig>
 
