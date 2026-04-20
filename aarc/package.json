@@ -58,7 +58,7 @@
     "execa": "^9.6.1",
     "sass": "^1.99.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "vite": "^7.3.1",
     "vite-plugin-full-reload": "^1.2.0",
     "vue-tsc": "^3.2.7"

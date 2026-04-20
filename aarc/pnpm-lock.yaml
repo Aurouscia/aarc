@@ -10,10 +10,10 @@ importers:
     dependencies:
       '@anilkumarthakur/vue3-json-viewer':
         specifier: ^0.4.1
-        version: 0.4.1(vue@3.5.32(typescript@5.9.3))
+        version: 0.4.1(vue@3.5.32(typescript@6.0.3))
       '@aurouscia/au-color-picker':
         specifier: ^1.1.0
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.1.0(typescript@6.0.3)
       '@aurouscia/au-undo-redo':
         specifier: ^1.0.1
         version: 1.0.1
@@ -52,10 +52,10 @@ importers:
         version: 1.0.10
       pinia:
         specifier: ^3.0.4
-        version: 3.0.4(typescript@5.9.3)(vue@3.5.32(typescript@5.9.3))
+        version: 3.0.4(typescript@6.0.3)(vue@3.5.32(typescript@6.0.3))
       pinia-plugin-persistedstate:
         specifier: ^4.7.1
-        version: 4.7.1(pinia@3.0.4(typescript@5.9.3)(vue@3.5.32(typescript@5.9.3)))
+        version: 4.7.1(pinia@3.0.4(typescript@6.0.3)(vue@3.5.32(typescript@6.0.3)))
       rfdc:
         specifier: ^1.4.1
         version: 1.4.1
@@ -64,10 +64,10 @@ importers:
         version: 2.1.0
       vue:
         specifier: ^3.5.32
-        version: 3.5.32(typescript@5.9.3)
+        version: 3.5.32(typescript@6.0.3)
       vue-router:
         specifier: ^4.6.4
-        version: 4.6.4(vue@3.5.32(typescript@5.9.3))
+        version: 4.6.4(vue@3.5.32(typescript@6.0.3))
     devDependencies:
       '@types/color':
         specifier: ^4.2.1
@@ -83,7 +83,7 @@ importers:
         version: 1.0.5
       '@vitejs/plugin-vue':
         specifier: ^6.0.6
-        version: 6.0.6(vite@7.3.1(@types/node@25.6.0)(lightningcss@1.32.0)(sass@1.99.0)(tsx@4.21.0))(vue@3.5.32(typescript@5.9.3))
+        version: 6.0.6(vite@7.3.1(@types/node@25.6.0)(lightningcss@1.32.0)(sass@1.99.0)(tsx@4.21.0))(vue@3.5.32(typescript@6.0.3))
       execa:
         specifier: ^9.6.1
         version: 9.6.1
@@ -94,8 +94,8 @@ importers:
         specifier: ^4.21.0
         version: 4.21.0
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: ^6.0.3
+        version: 6.0.3
       vite:
         specifier: ^7.3.1
         version: 7.3.1(@types/node@25.6.0)(lightningcss@1.32.0)(sass@1.99.0)(tsx@4.21.0)
@@ -104,7 +104,7 @@ importers:
         version: 1.2.0
       vue-tsc:
         specifier: ^3.2.7
-        version: 3.2.7(typescript@5.9.3)
+        version: 3.2.7(typescript@6.0.3)
 
 packages:
 
@@ -1075,8 +1075,8 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  typescript@5.9.3:
-    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+  typescript@6.0.3:
+    resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -1166,14 +1166,14 @@ packages:
 
 snapshots:
 
-  '@anilkumarthakur/vue3-json-viewer@0.4.1(vue@3.5.32(typescript@5.9.3))':
+  '@anilkumarthakur/vue3-json-viewer@0.4.1(vue@3.5.32(typescript@6.0.3))':
     dependencies:
-      vue: 3.5.32(typescript@5.9.3)
+      vue: 3.5.32(typescript@6.0.3)
 
-  '@aurouscia/au-color-picker@1.1.0(typescript@5.9.3)':
+  '@aurouscia/au-color-picker@1.1.0(typescript@6.0.3)':
     dependencies:
       color-convert: 3.1.3
-      vue: 3.5.32(typescript@5.9.3)
+      vue: 3.5.32(typescript@6.0.3)
     transitivePeerDependencies:
       - typescript
 
@@ -1441,11 +1441,11 @@ snapshots:
 
   '@types/upng-js@2.1.5': {}
 
-  '@vitejs/plugin-vue@6.0.6(vite@7.3.1(@types/node@25.6.0)(lightningcss@1.32.0)(sass@1.99.0)(tsx@4.21.0))(vue@3.5.32(typescript@5.9.3))':
+  '@vitejs/plugin-vue@6.0.6(vite@7.3.1(@types/node@25.6.0)(lightningcss@1.32.0)(sass@1.99.0)(tsx@4.21.0))(vue@3.5.32(typescript@6.0.3))':
     dependencies:
       '@rolldown/pluginutils': 1.0.0-rc.13
       vite: 7.3.1(@types/node@25.6.0)(lightningcss@1.32.0)(sass@1.99.0)(tsx@4.21.0)
-      vue: 3.5.32(typescript@5.9.3)
+      vue: 3.5.32(typescript@6.0.3)
 
   '@volar/language-core@2.4.28':
     dependencies:
@@ -1535,11 +1535,11 @@ snapshots:
       '@vue/shared': 3.5.32
       csstype: 3.2.3
 
-  '@vue/server-renderer@3.5.32(vue@3.5.32(typescript@5.9.3))':
+  '@vue/server-renderer@3.5.32(vue@3.5.32(typescript@6.0.3))':
     dependencies:
       '@vue/compiler-ssr': 3.5.32
       '@vue/shared': 3.5.32
-      vue: 3.5.32(typescript@5.9.3)
+      vue: 3.5.32(typescript@6.0.3)
 
   '@vue/shared@3.5.32': {}
 
@@ -1869,18 +1869,18 @@ snapshots:
 
   picomatch@4.0.4: {}
 
-  pinia-plugin-persistedstate@4.7.1(pinia@3.0.4(typescript@5.9.3)(vue@3.5.32(typescript@5.9.3))):
+  pinia-plugin-persistedstate@4.7.1(pinia@3.0.4(typescript@6.0.3)(vue@3.5.32(typescript@6.0.3))):
     dependencies:
       defu: 6.1.4
     optionalDependencies:
-      pinia: 3.0.4(typescript@5.9.3)(vue@3.5.32(typescript@5.9.3))
+      pinia: 3.0.4(typescript@6.0.3)(vue@3.5.32(typescript@6.0.3))
 
-  pinia@3.0.4(typescript@5.9.3)(vue@3.5.32(typescript@5.9.3)):
+  pinia@3.0.4(typescript@6.0.3)(vue@3.5.32(typescript@6.0.3)):
     dependencies:
       '@vue/devtools-api': 7.7.9
-      vue: 3.5.32(typescript@5.9.3)
+      vue: 3.5.32(typescript@6.0.3)
     optionalDependencies:
-      typescript: 5.9.3
+      typescript: 6.0.3
 
   postcss@8.5.8:
     dependencies:
@@ -1971,7 +1971,7 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  typescript@5.9.3: {}
+  typescript@6.0.3: {}
 
   undici-types@7.19.2: {}
 
@@ -2003,26 +2003,26 @@ snapshots:
 
   vscode-uri@3.1.0: {}
 
-  vue-router@4.6.4(vue@3.5.32(typescript@5.9.3)):
+  vue-router@4.6.4(vue@3.5.32(typescript@6.0.3)):
     dependencies:
       '@vue/devtools-api': 6.6.4
-      vue: 3.5.32(typescript@5.9.3)
+      vue: 3.5.32(typescript@6.0.3)
 
-  vue-tsc@3.2.7(typescript@5.9.3):
+  vue-tsc@3.2.7(typescript@6.0.3):
     dependencies:
       '@volar/typescript': 2.4.28
       '@vue/language-core': 3.2.7
-      typescript: 5.9.3
+      typescript: 6.0.3
 
-  vue@3.5.32(typescript@5.9.3):
+  vue@3.5.32(typescript@6.0.3):
     dependencies:
       '@vue/compiler-dom': 3.5.32
       '@vue/compiler-sfc': 3.5.32
       '@vue/runtime-dom': 3.5.32
-      '@vue/server-renderer': 3.5.32(vue@3.5.32(typescript@5.9.3))
+      '@vue/server-renderer': 3.5.32(vue@3.5.32(typescript@6.0.3))
       '@vue/shared': 3.5.32
     optionalDependencies:
-      typescript: 5.9.3
+      typescript: 6.0.3
 
   which@2.0.2:
     dependencies:
