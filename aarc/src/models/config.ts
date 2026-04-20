@@ -1,5 +1,10 @@
 import { SgnNumber } from "./coord"
 
+/**
+ * 存档配置  
+ * 约定：所有字段必填，不能可选，由 configDefault 来兜底
+ * 必拥有所有字段的 configDefault 将被用来检查是否有多余字段
+ */
 export interface Config{
     bgColor: string,
     bgRefImage: BgRefImageConfig,
@@ -71,10 +76,10 @@ export interface Config{
     textTagPlain:TextTagPerTypeGlobalConfig,
     textTagForLine:TextTagPerTypeGlobalConfig,
     textTagForLineDropCap:boolean
-    textTagForLineDropCapDetect?:'classic'|'loose'
+    textTagForLineDropCapDetect:'classic'|'loose'
     textTagForTerrain:TextTagPerTypeGlobalConfig
 
-    pinyinConvert?:PinyinConvertConfig
+    pinyinConvert:PinyinConvertConfig
 
     configVersion:number
 }
