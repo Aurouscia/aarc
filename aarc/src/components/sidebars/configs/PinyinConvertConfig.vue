@@ -73,6 +73,9 @@ watch(()=>config.value.pinyinConvert, ()=>{
                     <p class="example-p">南站:South Rwy Sta、城市名:城市英文名</p>
                     <p>^表示开头处、$表示结尾处，例如:</p>
                     <p class="example-p">^省:provincial、站$:Rwy Sta</p>
+                    <p>^$在右侧同样可以使用，例如:</p>
+                    <p class="example-p">北$:^North、东$:^East</p>
+                    <p class="example-p">李家村东→East LiJiaCun</p>
                 </div>
             </td>
         </tr>
