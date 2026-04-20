@@ -85,12 +85,16 @@ function handleFileChange(event: Event) {
     <p class="smallNote">
         存档配置导入/导出功能可以将存档配置从一个存档导出，并导入到另一个存档，这对于创建新存档，或者将存档配置与他人共享非常有用
     </p>
-    <button @click="exportToClipboard" class="ok">导出到剪切板</button>
-    <button @click="exportToFile" class="ok">导出到json文件</button>
-    <button @click="importFromClipboard">从剪切板导入</button>
+    <div class="btnGroup">
+        <button @click="exportToClipboard" class="ok">导出到剪切板</button>
+        <button @click="exportToFile" class="ok">导出到json文件</button>
+    </div>
+    <div class="btnGroup">
+        <button @click="importFromClipboard">从剪切板导入</button>
+        <button @click="importFromFile">从文件导入</button>
+    </div>
     <input v-if="wantToImport" v-model="importedConfigJson" placeholder="请粘贴在此"
         @change="handleInputChange"/>
-    <button @click="importFromFile">从文件导入</button>
     <input
         ref="fileInputRef"
         type="file"
@@ -98,8 +102,11 @@ function handleFileChange(event: Event) {
         style="display: none"
         @change="handleFileChange"
     />
+    <Notice :type="'info'">
+        “存档配置”不包括线路样式。如果需要导出/导入线路样式，请在“线路样式”菜单中操作。
+    </Notice>
     <Notice :type="'warn'">
-        “存档配置”和“存档”是两个概念，存档配置仅指线路样式、字体大小等部分，不包括线路和车站。
+        “存档配置”和“存档”是两个概念，存档配置仅值字体大小等部分，不包括线路和车站。
         如果需要导入/导出整个存档，请前往“我的存档-信息设置”找到导出工程文件和替换存档数据。
     </Notice>
 </div>
@@ -112,5 +119,14 @@ function handleFileChange(event: Event) {
     flex-direction: column;
     align-items: center;
     gap: 8px;
+}
+.btnGroup{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+}
+.btnGroup button{
+    flex: 1;
 }
 </style>

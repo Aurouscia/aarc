@@ -13,12 +13,18 @@ import { timestampMS } from '@/utils/timeUtils/timestamp';
 import ConfigSection from '../configs/shared/ConfigSection.vue';
 import { debounce } from '@/utils/lang/debounce';
 import foldIcon from '@/assets/ui/fold.svg';
+import SideBar from '@/components/common/SideBar.vue';
+import LineStylesConfigReuse from './LineStylesConfigReuse.vue';
 
 const saveStore = useSaveStore()
 const { save } = storeToRefs(saveStore)
 const envStore = useEnvStore()
 const showDetail = ref<Record<number, boolean|undefined>>({})
 const colorPicker = useTemplateRef('colorPicker')
+const reuseSidebar = useTemplateRef('reuseSidebar')
+function openReuseSidebar() {
+    reuseSidebar.value?.extend()
+}
 function clickContainer(){
     //点击“其他地方”关闭颜色选择器
     colorPicker.value?.forEach(cp=>cp?.closePanel())
@@ -132,7 +138,7 @@ onUnmounted(()=>{
 </script>
 
 <template>
-<ConfigSection :title="'线路样式'">
+<ConfigSection :title="'线路样式（新）'">
 <div class="lineStyles" @click="clickContainer">
     <div v-for="s,sIdx in save?.lineStyles" :key="s.id" :class="{showDetail:showDetail[s.id]}">
         <div class="preview" @click="showDetail[s.id] = !showDetail[s.id]">
@@ -220,8 +226,15 @@ onUnmounted(()=>{
     <div class="newStyle">
         <button class="ok" @click="addStyle()">+新建样式</button>
     </div>
+    <div class="reuseStyle">
+        <button @click="openReuseSidebar()">导入/导出样式</button>
+    </div>
 </div>
 </ConfigSection>
+
+<SideBar ref="reuseSidebar">
+    <LineStylesConfigReuse></LineStylesConfigReuse>
+</SideBar>
 </template>
 
 <style scoped lang="scss">
@@ -381,6 +394,16 @@ onUnmounted(()=>{
         border: none;
         display: flex;
         justify-content: center;
+        margin-bottom: 8px;
+        button{
+            flex-grow: 1;
+        }
+    }
+    &>.reuseStyle{
+        border: none;
+        display: flex;
+        justify-content: center;
+        margin-top: 8px;
         button{
             flex-grow: 1;
         }

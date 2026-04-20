@@ -151,7 +151,7 @@ onMounted(()=>{
 </script>
 
 <template>
-<ConfigSection :title="'纹理（新）'" @show="()=>$nextTick(renderPreviewCvs)">
+<ConfigSection :title="'纹理'" @show="()=>$nextTick(renderPreviewCvs)">
 <div class="patterns" @click="clickContainer">
     <div class="smallNote" style="text-align: center;">
         纹理目前可用在“线路样式”的层级中<br/>
