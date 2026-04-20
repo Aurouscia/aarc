@@ -12,10 +12,13 @@ const { tabForPinyinConvert } = storeToRefs(useEditorLocalConfigStore())
 const { preventLeaving } = usePreventLeavingUnsavedStore()
 
 onMounted(()=>{
-    config.value.pinyinConvert ??= {
-        caseType: 0,
-        variantType: 0,
-        rules: "公园:Park\n广场:Square\n路$:Rd.\n街$:St."
+    const ori = config.value.pinyinConvert
+    if(!ori || !Object.keys(ori).length){
+        config.value.pinyinConvert = {
+            caseType: 0,
+            variantType: 0,
+            rules: "公园:Park\n广场:Square\n路$:Rd.\n街$:St."
+        }
     }
 })
 
