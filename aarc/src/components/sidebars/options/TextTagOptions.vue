@@ -80,7 +80,7 @@ defineExpose({
                 <tr v-if="!editing.forId">
                     <td>图标</td>
                     <td>
-                        <button v-if="!editing.icon" class="lite" @click="ensureIconInSelection">启用图标</button>
+                        <button v-if="!editing.icon" class="lite confirm" @click="ensureIconInSelection">启用图标</button>
                         <button v-else @click="turnOffIcon" class="lite">关闭图标</button>
                         <div v-if="editing.icon">
                             <select v-model="prefixSelected" @change="ensureIconInSelection" class="iconSelect">
