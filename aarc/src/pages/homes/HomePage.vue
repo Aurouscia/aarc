@@ -47,17 +47,23 @@ onMounted(()=>{
 <div class="marginedSection">
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
+<div class="marginedSection">
+    <a href="http://u.fsf.org/16e" style="display: block;margin: auto;width: 200px;" target="_blank">
+        <img src="https://static.fsf.org/nosvn/images/badges/fsfs_icons_beige-bg.png" alt="Free Software, Free Society" style="width: 100%;">
+    </a>
+    <div class="smallNote" style="text-align: center;color:#CFBC5D">
+        你对本软件拥有以下四条“软件自由”
+        <p>自由之零：出于任何目的，运行程序的自由</p>
+        <p>自由之一：研究程序如何工作，并使其适应你的需求的自由</p>
+        <p>自由之二：重新分发副本的自由，以便你能够帮助他人</p>
+        <p>自由之三：改进程序，并将你的改进公开发布的自由</p>
+        <a href="http://u.fsf.org/16e" style="text-decoration: underline;" target="_blank">"软件自由"的详细解释</a>
+        &nbsp;&nbsp;&nbsp;
+        <a href="/#/about" style="text-decoration: underline;" target="_blank">AARC源码</a>
+    </div>
+</div>
 <div class="releaseNotes">
     <RecentUpdates></RecentUpdates>
-    <!-- <Notice :type="'info'" :title="'正在开发'">
-        - 画布隐私等设置<br/>
-        - 重名站点查找<br/>
-        - （线路级）时间轴
-        1. 标签/站名的旋转和压缩<br/>
-        2. 多选和创建“元素组”功能<br/>
-        3. 站点/线路搜索定位功能<br/>
-        4. 指定线路导出<br/>
-    </Notice> -->
 </div>
 <GiteeInfo></GiteeInfo>
 <div class="roadmap">
