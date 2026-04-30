@@ -40,6 +40,10 @@ export async function getTopbarData(): Promise<TopbarModel> {
             title: "工具",
             children: [
                 {
+                    title: "滨蜀的小工具合集",
+                    link: { name: saveToolsName }
+                },
+                {
                     title: "RMP转AARC",
                     link: { name: saveToolsName }
                 },
