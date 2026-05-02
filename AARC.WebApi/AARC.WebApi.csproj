@@ -13,6 +13,7 @@
 
   <ItemGroup>
 	<PackageReference Include="AspNetCore.Proxy" Version="4.5.0" />
+	<PackageReference Include="MailKit" Version="4.11.0" />
 	<PackageReference Include="AutoMapper" Version="16.1.1" />
 	<PackageReference Include="csharp-pinyin" Version="1.0.1" />
 	<PackageReference Include="EzPinyin" Version="1.1.2" />
