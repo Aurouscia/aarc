@@ -134,17 +134,19 @@ export interface TextTag{
     anchorX?:SgnNumber
     anchorY?:SgnNumber
     dropCap?:boolean
+    dropCapLength?:number
     icon?:number
     opacity?:number
     removeCarpet?:boolean
+    sunken?:boolean
     //rot?:FormalRotation
 }
 export interface TextOptions{
     size:number
     color:string
-    //i?:boolean
-    //b?:boolean
-    //u?:boolean
+    font?: string,
+    weight?: string,
+    style?: string,
 }
 export interface TextTagIcon{
     id:number,

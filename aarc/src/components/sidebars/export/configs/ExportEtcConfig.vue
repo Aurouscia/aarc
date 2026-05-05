@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
 import { storeToRefs } from 'pinia';
-import ConfigSection from './shared/ConfigSection.vue';
+import ConfigSection from '../../configs/shared/ConfigSection.vue';
 import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
 
 const { bgOpacity } = storeToRefs(useRenderOptionsStore())

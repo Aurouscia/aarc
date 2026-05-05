@@ -2,11 +2,13 @@ import { defineStore } from "pinia";
 import { useLineSimplifiedCvsWorker } from "../workers/lineSimplifiedCvsWorker";
 import { CvsBlock, CvsContext } from "../common/cvsContext";
 import { useSaveStore } from "@/models/stores/saveStore";
+import { Line } from "@/models/save";
 
 export const useMiniatureCvsDispatcher = defineStore('miniatureCvsDispatcher', ()=>{
     const lineSimplifiedCvsWorker = useLineSimplifiedCvsWorker()
     const saveStore = useSaveStore()
-    function renderMiniatureCvs(sideLength:number, lineWidth:number){
+    function renderMiniatureCvs(options:{sideLength:number, lineWidth:number, lines?:Line[]}){
+        const { sideLength, lineWidth, lines} = options
         const cvs = new OffscreenCanvas(sideLength, sideLength)
         const ctx2d = cvs.getContext('2d')
         if(ctx2d === null)
@@ -31,7 +33,7 @@ export const useMiniatureCvsDispatcher = defineStore('miniatureCvsDispatcher', (
         )
         ctx.fillStyle = 'white'
         ctx.fillTotal()
-        lineSimplifiedCvsWorker.renderAllLines(ctx, lineWidth/ratio)
+        lineSimplifiedCvsWorker.renderAllLines(ctx, {lineWidth: lineWidth/ratio, lines})
         return cvs
     }
     return {

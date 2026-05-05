@@ -116,7 +116,8 @@ onUnmounted(()=>{
                     :showing-btns="showingBtns"
                     :arranging-id="arrangingId"
                     :l="l"
-                    :line-type-called="'线路'"></LineItemBtns>
+                    :line-type-called="'线路'"
+                    @close-sidebar="sidebar?.fold()"></LineItemBtns>
             </div>
             <div class="newLine" @click="createLine">
                 {{ isChildrenList ? '+新支线' : '+新线路'}}

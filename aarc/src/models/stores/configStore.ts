@@ -79,7 +79,10 @@ export const configDefault:Config = {
     textTagPlain:{},
     textTagForLine:{},
     textTagForLineDropCap:true,
+    textTagForLineDropCapDetect:'classic',
     textTagForTerrain:{},
+
+    pinyinConvert:{},
 
     configVersion:0
 }
@@ -107,6 +110,7 @@ export const useConfigStore = defineStore('config', ()=>{
         return configNow
     }
     function importConfig(c:ConfigInSave){
+        console.log('正在导入配置：', deepClone(c))
         Object.assign(config.value, c)
         const validKeys = Object.keys(configDefault)
         for(const k in config.value){
@@ -114,6 +118,7 @@ export const useConfigStore = defineStore('config', ()=>{
                 delete config.value[k]
             }
         }
+        console.log('写入后的配置：', deepClone(config.value))
     }
 
     const clickPtThrsSq = computed<number>(()=>

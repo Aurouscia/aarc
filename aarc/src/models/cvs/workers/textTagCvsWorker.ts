@@ -22,8 +22,14 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
     const textTagRectStore = useTextTagRectStore()
     const colorProcStore = useColorProcStore()
     const iconStore = useIconStore()
-    function renderAllTextTags(ctx:CvsContext){
-        const allTags = saveStore.save?.textTags
+    function renderAllTextTags(ctx:CvsContext, filter:'sunken'|'notSunken'){
+        let allTags = saveStore.save?.textTags
+        if(filter == 'sunken'){
+            allTags = allTags?.filter(x=>!!x.sunken)
+        }
+        else{
+            allTags = allTags?.filter(x=>!x.sunken)
+        }
         allTags?.forEach(t=>{
             renderOneTextTag(ctx, t)
         })
@@ -73,7 +79,14 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
             text: !subEmpty ? t.textS?.trim() : lineInfo.nameSub
         }
         const { anchor, textAlign, width } = getParams(cs.config.textTagForLine, t)
-        const dropCap = t.dropCap ?? cs.config.textTagForLineDropCap
+        const dropCapSwitch = t.dropCap ?? cs.config.textTagForLineDropCap
+        let dropCap:'classic'|'loose'|number|undefined = undefined
+        if(dropCapSwitch){
+            dropCap = cs.config.textTagForLineDropCapDetect || 'classic' // 如果启用了，则使用指定检测模式
+        }
+        if(dropCapSwitch && typeof t.dropCapLength == 'number'){
+            dropCap = t.dropCapLength // 如果启用了且设置了长度，则使用指定长度而不是自动检测
+        }
         const paddingLineWidth = cs.config.lineWidth * getPadding(t, cs.config.textTagForLine.padding??1)
         const paddingValue = paddingLineWidth/2
         const needJustifyPos = cs.config.textTagForLine.edgeAnchorOutsidePadding ?? false
@@ -160,18 +173,18 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
 
         const optMain:DrawTextBodyOption = {
             color: mo?.color || cs.config.textTagFontColorHex,
-            font: cs.config.textTagFont,
-            weight: cs.config.textTagFontWeight,
-            style: cs.config.textTagFontStyle,
+            font: mo?.font || cs.config.textTagFont,
+            weight: mo?.weight || cs.config.textTagFontWeight,
+            style: mo?.style || cs.config.textTagFontStyle,
             fontSize: cs.config.textTagFontSizeBase * mainRatio,
             rowHeight: cs.config.textTagRowHeightBase * mainRatio,
             text: !mainEmpty ? t.text?.trim() : '空文本标签'
         }
         const optSub:DrawTextBodyOption = {
             color: so?.color || cs.config.textTagSubFontColorHex,
-            font: cs.config.textTagSubFont,
-            weight: cs.config.textTagSubFontWeight,
-            style: cs.config.textTagSubFontStyle,
+            font: so?.font || cs.config.textTagSubFont,
+            weight: so?.weight || cs.config.textTagSubFontWeight,
+            style: so?.style || cs.config.textTagSubFontStyle,
             fontSize: cs.config.textTagSubFontSizeBase * subRatio,
             rowHeight: cs.config.textTagSubRowHeightBase * subRatio,
             text: !subEmpty ? t.textS?.trim(): 'Empty TextTag'

@@ -3,14 +3,16 @@ import { convertLineSeppedToCommaSepped } from '@/utils/lang/fontStr';
 import { computed } from 'vue';
 
 const fonts = defineModel<string | undefined>()
-const fontWeight = defineModel<string | undefined>('fontWeight')
-const fontStyle = defineModel<string | undefined>('fontStyle')
+const fontWeight = defineModel<string>('fontWeight')
+const fontStyle = defineModel<string>('fontStyle')
+const props = defineProps<{allowUndefined?:boolean}>()
 
 const commaSepValue = computed(()=>{
     return convertLineSeppedToCommaSepped(fonts.value)
 })
 
-const fontWeightOptions = [
+type Option = {value:string|undefined, label:string}
+const fontWeightOptions:Option[] = [
     { value: 'lighter', label: '细' },
     { value: '', label: '标准' },
     { value: 'bold', label: '粗' },
@@ -26,10 +28,16 @@ const fontWeightOptions = [
     { value: '900', label: '900' },
 ]
 
-const fontStyleOptions = [
+const fontStyleOptions:Option[] = [
+    { value: undefined, label:'默认' },
     { value: '', label: '标准' },
     { value: 'italic', label: '斜体' },
 ]
+
+if(props.allowUndefined){
+    fontWeightOptions.unshift({value:undefined, label:'默认'})
+    fontStyleOptions.unshift({value:undefined, label:'默认'})
+}
 </script>
 
 <template>
@@ -62,6 +70,8 @@ const fontStyleOptions = [
     display: flex;
     flex-direction: column;
     gap: 4px;
+    width: 190px;
+    margin: 0px auto;
 
     .selects{
         display: flex;

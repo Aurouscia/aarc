@@ -1,32 +1,24 @@
 export function useKvStoreCore<TValue>(){
-    const items:Record<number, TValue|undefined> = {}
+    const items:Map<number, TValue> = new Map()
     function getItem(id:number){
-        return items[id]
+        return items.get(id)
     }
     function setItem(id:number, value:TValue|undefined){
         if(value !== undefined){
-            items[id] = value
+            items.set(id, value)
         }else{
-            delete items[id]
+            items.delete(id)
         }
     }
     function enumerateItems(fn:(id:number, value:TValue)=>boolean|undefined|void){
-        for(let kv of Object.entries(items)){
-            const id = parseInt(kv[0])
-            const value = kv[1]
-            if(value !== undefined){
-                const enough = fn(id, value)
-                if(enough)
-                    break
-            }
+        for(const [id, value] of items){
+            const enough = fn(id, value)
+            if(enough)
+                break
         }
     }
     function clearItems(){
-        for (let key in items) {
-            if (items.hasOwnProperty(key)) {
-                delete items[key];
-            }
-        }
+        items.clear();
     }
     return { getItem, setItem, enumerateItems, clearItems }
 }

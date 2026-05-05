@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watch } from 'vue';
-import ConfigSection from './shared/ConfigSection.vue';
+import ConfigSection from '../../configs/shared/ConfigSection.vue';
 import { storeToRefs } from 'pinia';
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
 import { fromYMD } from '@/utils/timeUtils/timeStr';
@@ -30,7 +30,7 @@ watch(()=>timeMomentStr.value, (newVal)=>{
 </script>
 
 <template>
-<ConfigSection :title="'导出时间点'">
+<ConfigSection :title="'导出特定时间点'">
 <table class="fullWidth"><tbody>
     <tr>
         <td style="width: 120px;">

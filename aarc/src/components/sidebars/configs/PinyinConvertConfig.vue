@@ -2,19 +2,29 @@
 import { useConfigStore } from '@/models/stores/configStore';
 import { storeToRefs } from 'pinia';
 import ConfigSection from './shared/ConfigSection.vue';
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
 import { PinyinCaseType, PinyinVariantType } from '@/app/com/apiGenerated';
 import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
+import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 
 const { config } = storeToRefs(useConfigStore())
 const { tabForPinyinConvert } = storeToRefs(useEditorLocalConfigStore())
+const { preventLeaving } = usePreventLeavingUnsavedStore()
+
 onMounted(()=>{
-    config.value.pinyinConvert ??= {
-        caseType: 0,
-        variantType: 0,
-        rules: "公园:Park\n广场:Square\n路$:Rd.\n街$:St."
+    const ori = config.value.pinyinConvert
+    if(!ori || !Object.keys(ori).length){
+        config.value.pinyinConvert = {
+            caseType: 0,
+            variantType: 0,
+            rules: "公园:Park\n广场:Square\n路$:Rd.\n街$:St."
+        }
     }
 })
+
+watch(()=>config.value.pinyinConvert, ()=>{
+    preventLeaving()
+}, {deep:true})
 </script>
 
 <template>
@@ -63,6 +73,9 @@ onMounted(()=>{
                     <p class="example-p">南站:South Rwy Sta、城市名:城市英文名</p>
                     <p>^表示开头处、$表示结尾处，例如:</p>
                     <p class="example-p">^省:provincial、站$:Rwy Sta</p>
+                    <p>^$在右侧同样可以使用，例如:</p>
+                    <p class="example-p">北$:^North、东$:^East</p>
+                    <p class="example-p">李家村东→East LiJiaCun</p>
                 </div>
             </td>
         </tr>

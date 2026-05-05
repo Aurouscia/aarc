@@ -55,7 +55,8 @@ export default defineConfig(({ mode }) => {
               return 'libs'
           }
         }
-      }
+      },
+      target: ['es2015', 'ios14'],
     },
     resolve:{
       alias:{

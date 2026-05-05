@@ -6,7 +6,16 @@
 <div class="app-tools">
     <div class="problem-notice">如使用遇到问题，请联系工具的作者</div>
     <div class="tool-item">
-        <a href="http://wiki.jowei19.com/#/w/RMP-zhuan-AARC-zhuan-huan-qi" target="_blank"
+        <a href="http://binshu.jowei19.com" target="_blank"
+            class="tool-entry" style="background-color: #FAC1CB">
+            滨蜀的小工具合集
+        </a>
+        <div class="author-name">
+            作者：滨蜀
+        </div>
+    </div>
+    <div class="tool-item">
+        <a href="http://binshu.jowei19.com/aarc/aarcrmp.html" target="_blank"
             class="tool-entry" style="background: linear-gradient(to right, gray 30%, #33BDB6);">
             RMP-AARC转换器
         </a>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useRecentUpdateStore } from '@/app/globalStores/recentUpdate';
 
 interface RecentUpdates{
     updates: Array<{
@@ -11,6 +12,31 @@ interface RecentUpdates{
 
 const data = ref<RecentUpdates>();
 const isError = ref(false);
+const recentUpdateStore = useRecentUpdateStore();
+const componentRef = ref<HTMLElement>();
+
+// 判断是否有新更新（最新更新时间晚于已读时间）
+const hasNewUpdate = computed(() => {
+    if (!data.value?.updates?.length) return false;
+    const latestUpdate = data.value.updates[0];
+    if (!latestUpdate?.date) return false;
+    const latestDate = new Date(latestUpdate.date).getTime();
+    if (isNaN(latestDate)) return false;
+    
+    // 如果没有已读时间，视为有新更新
+    if (!recentUpdateStore.lastReadTime) return true;
+    
+    const lastRead = new Date(recentUpdateStore.lastReadTime).getTime();
+    if (isNaN(lastRead)) return true;
+    
+    return latestDate > lastRead;
+});
+
+// 滚动到本组件并标记为已读
+function scrollToView() {
+    componentRef.value?.scrollIntoView({ behavior: 'smooth' });
+    recentUpdateStore.markAsRead();
+}
 
 async function loadRecentUpdates() {
     try {
@@ -60,7 +86,11 @@ onMounted(async() => {
 </script>
 
 <template>
-  <div class="recent-updates" v-if="!isError">
+  <!-- 查看更新按钮 -->
+  <div v-if="hasNewUpdate" class="view-update-btn" @click="scrollToView">
+    查看更新{{ agoDisplay }}
+  </div>
+  <div ref="componentRef" class="recent-updates" v-if="!isError">
     <h2 class="updates-title" v-if="data">
         <div>
             <span class="spark-mark">🔧</span>
@@ -170,5 +200,32 @@ onMounted(async() => {
     color: #666;
     font-size: 14px;
     white-space: pre-wrap;
+}
+
+.view-update-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #ff6b6b;
+    color: white;
+    padding: 10px 24px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+    z-index: 1000;
+    transition: all 0.3s ease;
+    
+    &:hover {
+        background-color: #ff5252;
+        box-shadow: 0 6px 16px rgba(255, 107, 107, 0.5);
+        transform: translateX(-50%) translateY(-2px);
+    }
+    
+    &:active {
+        transform: translateX(-50%) translateY(0);
+    }
 }
 </style>

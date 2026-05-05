@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import ConfigSection from './shared/ConfigSection.vue';
+import ConfigSection from '../../configs/shared/ConfigSection.vue';
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
 import { computed, onMounted, ref, watch } from 'vue';
 import { Line, LineType } from '@/models/save';

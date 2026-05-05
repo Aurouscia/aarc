@@ -19,6 +19,7 @@ namespace AARC.WebApi.Services.App.OpenApi
             settings.UseAbortSignal = true;
             var generator = new TypeScriptClientGenerator(document, settings);
             var code = generator.GenerateFile();
+            code = ReplaceFixes(code);
             using var outputStream = File.Open(outputPath, FileMode.Create);
             using var writer = new StreamWriter(outputStream);
             await writer.WriteAsync(code);
@@ -38,8 +39,22 @@ namespace AARC.WebApi.Services.App.OpenApi
             return document;
         }
 
+        /// <summary>
+        /// 修复 Blob 的 type 问题
+        /// </summary>
+        public string ReplaceFixes(string code)
+        {
+            return code.Replace(
+                "new Blob([response.data], { type: response.headers[\"content-type\"] })",
+                "new Blob([response.data], { type: String(response.headers[\"content-type\"] || \"\") })"
+                );
+        }
+
         private const string unUsedImportFix
             = "let c:CancelToken|0=0;if(c){}";
+        /// <summary>
+        /// 修复 CancelToken 导入未使用的问题
+        /// </summary>
         public void AppendFixes(StreamWriter sw)
         {
             sw.WriteLine();

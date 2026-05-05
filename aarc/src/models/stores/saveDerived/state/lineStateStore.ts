@@ -11,7 +11,7 @@ export const useLineStateStore = defineStore('lineState', () => {
     const { save } = storeToRefs(saveStore)
     const { 
         accentuationLineIds, accentuationEnabled, accentuationConfig,
-        timeMoment, timeConfig,
+        effectiveTimeMoment, timeConfig,
         exporting 
     } = storeToRefs(useRenderOptionsStore())
     const configStore = useConfigStore()
@@ -69,10 +69,10 @@ export const useLineStateStore = defineStore('lineState', () => {
         
         // 根据“时间”设置，对该黑白化的线路进行黑白化
         const runDownplayByTime = 
-            typeof timeMoment.value == 'number'
+            typeof effectiveTimeMoment.value == 'number'
             && (exporting.value || timeConfig.value.enabledPreview)
         if(runDownplayByTime){
-            const t = timeMoment.value ?? 999999
+            const t = effectiveTimeMoment.value ?? 999999
             const notOpenLineIds = new Set<number>()
             for (const [lineId, { time, downplayed }] of res.entries()) {
                 if(downplayed)

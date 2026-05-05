@@ -24,6 +24,18 @@ export interface ExportAccentuationConfig{
 export interface ExportTimeConfig{
     enabledPreview?:boolean
 }
+export interface ExportMiniConfig{
+    sideLength: number,
+    lineWidth: number
+}
+export interface ExportAnimationConfig{
+    interval: number
+    hideNotOpened: boolean
+    fileFormat: 'gif'|'png'
+}
+export interface ExportAnimationMiniConfig extends ExportAnimationConfig{
+    mini: ExportMiniConfig
+}
 
 export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
     const fileNameStyle = ref<ExportFileNameStyle>('lineCount')
@@ -53,6 +65,15 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
     const time = ref<ExportTimeConfig>({
         enabledPreview: true
     })
+    const animationMini = ref<ExportAnimationMiniConfig>({
+        interval: 800,
+        fileFormat: 'gif',
+        hideNotOpened: true,
+        mini: {
+            sideLength: 256,
+            lineWidth: 2
+        }
+    })
 
     const bgRefImage = ref<boolean>(true)
 
@@ -68,6 +89,7 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
         waterMarkDefault,
         accentuation,
         time,
+        animationMini,
         bgRefImage
     }
 },

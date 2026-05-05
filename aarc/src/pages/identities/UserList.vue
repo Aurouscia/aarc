@@ -229,7 +229,7 @@ onMounted(async()=>{
 </SideBar>
 <SideBar ref="authGrantSidebar">
     <h1>授权管理</h1>
-    <SwitchingTabs :texts="['查看', '编辑', '复制']">
+    <SwitchingTabs :texts="['作品查看', '作品编辑', '作品另存']">
         <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="0" :type="AuthGrantTypeOfSave.View"/>
         <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="0" :type="AuthGrantTypeOfSave.Edit"/>
         <AuthGrantEdit :on="AuthGrantOn.Save" :on-id="0" :type="AuthGrantTypeOfSave.Fork"/>

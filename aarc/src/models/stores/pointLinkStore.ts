@@ -2,6 +2,7 @@ import { defineStore } from "pinia"
 import { useSaveStore } from "./saveStore"
 import { computed, ref } from "vue"
 import { ControlPoint, ControlPointLinkType } from "../save"
+import { useEnvStore } from "./envStore"
 
 export const usePointLinkStore = defineStore('pointLinkStore',()=>{
     const saveStore = useSaveStore()
@@ -15,6 +16,7 @@ export const usePointLinkStore = defineStore('pointLinkStore',()=>{
     })
     function startCreatingPtLink(){
         creatingLink.value = new Set<number>()
+        useEnvStore().rerender([])
     }
     function ptLinkClick(ptId:number){
         if(isCreating.value && saveStore.save){
@@ -41,7 +43,10 @@ export const usePointLinkStore = defineStore('pointLinkStore',()=>{
         }
     }
     function abortCreatingPtLink(){
-        creatingLink.value = undefined
+        if(creatingLink.value){
+            creatingLink.value = undefined
+            useEnvStore().rerender([])
+        }
     }
 
     function getLinkLinkedPts(excludeDot?:'excludeDot'){

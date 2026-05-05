@@ -62,6 +62,8 @@ namespace AARC.WebApi.Utils
         private static List<PinyinSegment> SplitToSegments(string text, Dictionary<string, string> rules)
         {
             List<PinyinSegment> res = [];
+            List<PinyinSegment> headSegments = [];
+            List<PinyinSegment> tailSegments = [];
             rules = rules
                 .Select(x => new KeyValuePair<string, string>(x.Key.Trim(), x.Value.Trim()))
                 .Where(x => x.Key.Length > 0) //排除长度为0的Key，否则会死循环
@@ -116,8 +118,30 @@ namespace AARC.WebApi.Utils
                         tempRaw.Clear();
                     }
                     var value = rules[matched.TargetRaw];
-                    res.Add(new(value, isFromRule: true, isChinese: false));
-                    cursor += matched.TargetText.Length;
+                    // 处理值中的^和$标记
+                    bool atHead = value.StartsWith('^');
+                    bool atTail = value.EndsWith('$');
+                    if (atHead || atTail)
+                    {
+                        int sliceFrom = 0;
+                        int sliceLength = value.Length;
+                        if (atHead)
+                        {
+                            sliceFrom = 1;
+                            sliceLength -= 1;
+                        }
+                        if (atTail)
+                            sliceLength -= 1;
+                        value = value.Substring(sliceFrom, sliceLength);
+                    }
+                    var segment = new PinyinSegment(value, isFromRule: true, isChinese: false);
+                    if (atHead)
+                        headSegments.Add(segment);
+                    else if (atTail)
+                        tailSegments.Add(segment);
+                    else
+                        res.Add(segment);
+                    cursor += matchedTarget.Value.TargetText.Length;
                 }
                 else
                 {
@@ -133,7 +157,10 @@ namespace AARC.WebApi.Utils
                 }
             }
             flushTempRaw();
-            return res;
+            // 合并：头部段 + 中间段 + 尾部段
+            headSegments.AddRange(res);
+            headSegments.AddRange(tailSegments);
+            return headSegments;
         }
 
         private static string ToPascal(this string input)

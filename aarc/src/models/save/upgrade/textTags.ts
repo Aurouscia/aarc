@@ -6,7 +6,8 @@ export function initFreshNewTextTags(s:Save, getNewId:()=>number){
         `${introHead}\n` +
         "点击左侧的“线路”按钮，创建第一条线路\n" + 
         "点击线路的车站，拖动延长手柄，延长线路\n" + 
-        "点击车站后，在顶部的输入框中输入站名\n" +
+        "要移动任何东西，先点击选中，再拖动它\n" +
+        "点击车站后，在顶部的输入框中输入站名（站名也可以拖）\n" +
         "点击左侧“画布”按钮，可调整画布尺寸\n" +
         "点击本标签，然后拖拽到屏幕左上角删除"
     const initialTTs:TextTag[] = [{
