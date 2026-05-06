@@ -1,7 +1,9 @@
 import { defineStore } from "pinia"
 import { useSaveStore } from "./saveStore"
 import { computed, ref } from "vue"
-import { LineSlice } from "../save"
+import { LineTimeInfo, StyleSlice, TimeSlice } from "../save"
+
+export type SliceType = 'style' | 'time'
 
 export const useLineSliceStore = defineStore('lineSliceStore',()=>{
     const saveStore = useSaveStore()
@@ -13,7 +15,9 @@ export const useLineSliceStore = defineStore('lineSliceStore',()=>{
     }
     
     const creatingSlice = ref<CreatingSliceState>()
+    const creatingType = ref<SliceType>()
     const creatingStyleId = ref<number>()
+    const creatingTimeInfo = ref<LineTimeInfo>()
     
     const isCreating = computed(()=>!!creatingSlice.value)
     
@@ -39,7 +43,8 @@ export const useLineSliceStore = defineStore('lineSliceStore',()=>{
         return ''
     })
 
-    function startCreatingSlice(){
+    function startCreatingSlice(type: SliceType){
+        creatingType.value = type
         creatingSlice.value = {
             ptIds: [],
             candidateLineIds: []
@@ -114,29 +119,49 @@ export const useLineSliceStore = defineStore('lineSliceStore',()=>{
     }
 
     function createSlice(lineId: number, fromPt: number, toPt: number){
-        if(!saveStore.save) return
+        if(!saveStore.save || !creatingType.value) return
         
-        if(!saveStore.save.lineSlices)
-            saveStore.save.lineSlices = []
+        const type = creatingType.value
         
-        // 检查是否已存在相同起止点的片段
-        if(!containExistingSliceBetween(lineId, fromPt, toPt)){
-            const newSlice: LineSlice = {
+        // 检查是否已存在相同起止点的同类片段
+        if(containExistingSliceBetween(lineId, fromPt, toPt, type)){
+            creatingSlice.value = undefined
+            return
+        }
+        
+        if(type === 'style'){
+            if(!saveStore.save.styleSlices)
+                saveStore.save.styleSlices = []
+            const newSlice: StyleSlice = {
                 id: saveStore.save.idIncre++,
                 line: lineId,
                 fromPt,
                 toPt,
-                style: creatingStyleId.value
+                style: creatingStyleId.value!
             }
-            saveStore.save.lineSlices.push(newSlice)
+            saveStore.save.styleSlices.push(newSlice)
+        } else {
+            if(!saveStore.save.timeSlices)
+                saveStore.save.timeSlices = []
+            const newSlice: TimeSlice = {
+                id: saveStore.save.idIncre++,
+                line: lineId,
+                fromPt,
+                toPt,
+                time: creatingTimeInfo.value ?? {}
+            }
+            saveStore.save.timeSlices.push(newSlice)
         }
         
         creatingSlice.value = undefined
     }
 
-    function containExistingSliceBetween(lineId: number, pt1: number, pt2: number){
-        if(!saveStore.save?.lineSlices) return undefined
-        return saveStore.save.lineSlices.find(
+    function containExistingSliceBetween(lineId: number, pt1: number, pt2: number, type: SliceType){
+        const slices = type === 'style' 
+            ? saveStore.save?.styleSlices 
+            : saveStore.save?.timeSlices
+        if(!slices) return undefined
+        return slices.find(
             slice => slice.line === lineId && 
             ((slice.fromPt === pt1 && slice.toPt === pt2) || 
              (slice.fromPt === pt2 && slice.toPt === pt1))
@@ -145,27 +170,41 @@ export const useLineSliceStore = defineStore('lineSliceStore',()=>{
 
     function abortCreatingSlice(){
         creatingSlice.value = undefined
+        creatingType.value = undefined
     }
 
-    function deleteSlice(sliceId: number){
-        if(!saveStore.save?.lineSlices) return
-        const idx = saveStore.save.lineSlices.findIndex(s => s.id === sliceId)
+    function deleteSlice(sliceId: number, type: SliceType){
+        const slices = type === 'style'
+            ? saveStore.save?.styleSlices
+            : saveStore.save?.timeSlices
+        if(!slices) return
+        const idx = slices.findIndex(s => s.id === sliceId)
         if(idx >= 0){
-            saveStore.save.lineSlices.splice(idx, 1)
+            slices.splice(idx, 1)
         }
     }
 
-    function updateSliceStyle(sliceId: number, styleId: number | undefined){
-        if(!saveStore.save?.lineSlices) return
-        const slice = saveStore.save.lineSlices.find(s => s.id === sliceId)
+    function updateSliceStyle(sliceId: number, styleId: number){
+        if(!saveStore.save?.styleSlices) return
+        const slice = saveStore.save.styleSlices.find(s => s.id === sliceId)
         if(slice){
             slice.style = styleId
         }
     }
 
+    function updateSliceTime(sliceId: number, time: LineTimeInfo){
+        if(!saveStore.save?.timeSlices) return
+        const slice = saveStore.save.timeSlices.find(s => s.id === sliceId)
+        if(slice){
+            slice.time = time
+        }
+    }
+
     return{
         creatingSlice,
+        creatingType,
         creatingStyleId,
+        creatingTimeInfo,
         isCreating,
         currentStep,
         helpText,
@@ -175,6 +214,7 @@ export const useLineSliceStore = defineStore('lineSliceStore',()=>{
         sliceLineClick,
         deleteSlice,
         updateSliceStyle,
+        updateSliceTime,
         clearItems: abortCreatingSlice,
     }
 })

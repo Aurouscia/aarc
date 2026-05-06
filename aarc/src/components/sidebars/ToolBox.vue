@@ -92,7 +92,8 @@ defineExpose({
         <button @click="end();pointLinkStore.startCreatingPtLink();fd()">创建车站间连线</button>
     </div>
     <div class="toolItem">
-        <button @click="end();lineSliceStore.startCreatingSlice();fd()">创建线路段</button>
+        <button @click="end();lineSliceStore.startCreatingSlice('style');fd()">创建样式片段</button>
+        <button @click="end();lineSliceStore.startCreatingSlice('time');fd()">创建时间片段</button>
     </div>
     <div class="toolItem">
         <div class="smallNote">可用于创建带折角/分叉的车站间连线</div>

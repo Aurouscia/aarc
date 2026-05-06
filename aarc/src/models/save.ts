@@ -8,7 +8,8 @@ export interface Save{
     lines: Line[]
     lineStyles?: LineStyle[]
     lineGroups?: LineGroup[]
-    lineSlices?: LineSlice[]
+    styleSlices?: StyleSlice[]
+    timeSlices?: TimeSlice[]
     textTags: TextTag[]
     textTagIcons?: TextTagIcon[]
     patterns?: Pattern[]
@@ -177,14 +178,21 @@ export interface Pattern{
     }
 }
 
-export interface LineSlice{
-    id:number
-    line:number
+export interface LineSliceBase {
+    id: number
+    line: number
     /** 起始点Id */
-    fromPt:number
+    fromPt: number
     /** 结束点Id */
-    toPt:number
-    style?:number
+    toPt: number
+}
+
+export interface StyleSlice extends LineSliceBase {
+    style: number
+}
+
+export interface TimeSlice extends LineSliceBase {
+    time: LineTimeInfo
 }
 
 export interface SaveMetaData{
