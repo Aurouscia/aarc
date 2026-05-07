@@ -2,6 +2,8 @@
 using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Repos.Identities;
 using AARC.WebApi.Services.App.ActionFilters;
+using AARC.WebApi.Services.App.Email;
+using AARC.WebApi.Services.App.HttpAuthInfo;
 using AARC.WebApi.Services.App.Turnstile;
 using AARC.WebApi.Services.Identities;
 using Microsoft.AspNetCore.Authorization;
@@ -15,7 +17,9 @@ namespace AARC.WebApi.Controllers.Identities
     public class UserController(
         UserRepo userRepo,
         UserHistoryService userHistoryService,
-        TurnstileVerifyService turnstileVerifyService
+        TurnstileVerifyService turnstileVerifyService,
+        EmailService emailService,
+        HttpUserIdProvider httpUserIdProvider
         ) : Controller
     {
         [AllowAnonymous]
@@ -104,6 +108,23 @@ namespace AARC.WebApi.Controllers.Identities
             var success = userRepo.FakeRemoveUser(id, out var errmsg);
             if (!success)
                 throw new RqEx(errmsg);
+            return true;
+        }
+
+        [HttpPost]
+        public async Task<bool> RequestBindEmail([FromForm] string email)
+        {
+            var userId = httpUserIdProvider.UserIdLazy.Value;
+            var code = userRepo.GenerateEmailVerificationCode(userId, email);
+            await emailService.SendEmailVerificationCodeAsync(email, code);
+            return true;
+        }
+
+        [HttpPost]
+        public bool ConfirmBindEmail([FromForm] string code, [FromForm] string email)
+        {
+            var userId = httpUserIdProvider.UserIdLazy.Value;
+            userRepo.BindEmailWithCode(userId, code.ToUpperInvariant(), email);
             return true;
         }
     }

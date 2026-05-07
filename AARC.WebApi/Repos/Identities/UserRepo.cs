@@ -247,6 +247,29 @@ namespace AARC.WebApi.Repos.Identities
             return true;
         }
 
+        public string GenerateEmailVerificationCode(int userId, string email)
+        {
+            var user = base.Get(userId);
+            if (user is null)
+                throw new RqEx("找不到指定用户");
+            var code = Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
+            user.Email = $"{email}:{code}".GetMD5();
+            base.Update(user, true);
+            return code;
+        }
+
+        public void BindEmailWithCode(int userId, string code, string email)
+        {
+            var user = base.Get(userId);
+            if (user is null)
+                throw new RqEx("找不到指定用户");
+            var expectedHash = $"{email}:{code}".GetMD5();
+            if (user.Email != expectedHash)
+                throw new RqEx("验证码不正确");
+            user.Email = email;
+            base.Update(user, true);
+        }
+
         /// <summary>
         /// 检查用户属性是否合法
         /// </summary>
@@ -284,6 +307,11 @@ namespace AARC.WebApi.Repos.Identities
             }
             return userQ;
         }
+
+        public IQueryable<User> FilterByEmailBinded(IQueryable<User> userQ)
+        {
+            return userQ.Where(x => x.Email != null && x.Email.Contains("@"));
+        }
     }
 
     public class UserDto
@@ -291,6 +319,7 @@ namespace AARC.WebApi.Repos.Identities
         public int Id { get; set; }
         public string? Name { get; set; }
         public string? Password { get; set; }
+        public bool EmailValidated { get; set; }
         public UserType Type { get; set; }
         public int AvatarFileId { get; set; }
         public string? AvatarUrl { get; set; }
@@ -311,6 +340,8 @@ namespace AARC.WebApi.Repos.Identities
         {
             CreateMap<User, UserDto>()
                 .ForMember(x => x.Password, mem => mem.Ignore())
+                .ForMember(x => x.EmailValidated,
+                    mem => mem.MapFrom(source => source.Email != null && source.Email.Contains("@")))
                 .ForMember(x => x.LastActive,
                     mem => mem.MapFrom(source => source.LastActive.ToString("yyyy-MM-dd HH:mm")));
             CreateMap<UserDto, User>()
