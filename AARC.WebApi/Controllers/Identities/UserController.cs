@@ -127,6 +127,12 @@ namespace AARC.WebApi.Controllers.Identities
             userRepo.BindEmailWithCode(userId, code.ToUpperInvariant(), email);
             return true;
         }
+
+        [HttpGet]
+        public string? MyMaskedEmail()
+        {
+            return userRepo.GetMyMaskedEmail();
+        }
     }
 
     public class UserUpdateRequest

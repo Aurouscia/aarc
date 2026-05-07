@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import Notice from '@/components/common/Notice.vue';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
+const route = useRoute()
+
+const isChange = computed<boolean>(() => route.query.isChange === '1')
 
 const email = ref<string>("");
 const code = ref<string>("");
@@ -89,6 +94,9 @@ onUnmounted(() => {
 <template>
     <div class="container">
         <h1>绑定邮箱</h1>
+        <Notice v-if="isChange" :type="'warn'">
+            如果已经绑定邮箱，获取验证码将导致解绑
+        </Notice>
         <div class="form">
             <div class="row">
                 <input v-model="email" type="email" placeholder="请输入邮箱地址" />
@@ -127,6 +135,7 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    margin-top: 20px;
 }
 .row {
     display: flex;

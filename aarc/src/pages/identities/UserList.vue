@@ -18,7 +18,7 @@ import SwitchingTabs from '@/components/common/SwitchingTabs.vue';
 const list = ref<WithIntroShow<UserDto>[]>()
 const api = useApiStore()
 const { someonesSavesRoute } = useSavesRoutesJump()
-const { loginRouteJump, userListRoute } = useIdentitiesRoutesJump()
+const { loginRouteJump, userListRoute, userEmailBindRoute } = useIdentitiesRoutesJump()
 const configStore = useUserListLocalConfigStore()
 const { orderby, openingSelfEdit } = storeToRefs(configStore)
 const orderbySave = computed(() => orderby.value === 'save')
@@ -39,6 +39,7 @@ const authGrantSidebar = useTemplateRef('authGrantSidebar')
 
 const editingUser = ref<UserDto>()
 const pwdRepeat = ref<string>()
+const myEmailMasked = ref<string>()
 const userInfoStore = useUserInfoStore()
 const { userInfo } = storeToRefs(userInfoStore)
 let originalNameAndPwd = ''
@@ -49,6 +50,13 @@ function startEditing(u:UserDto){
     originalNameAndPwd = summerizeNameAndPwd()
     originalType = u.type
     infoSidebar.value?.extend()
+    myEmailMasked.value = undefined
+    if(userInfo.value.id && userInfo.value.id == editingUser.value.id){
+        // 如果是编辑自己
+        api.user.myMaskedEmail().then(res=>{
+            myEmailMasked.value = res
+        })
+    }
 }
 async function doneEditing(){
     if(!editingUser.value)
@@ -207,6 +215,22 @@ onMounted(async()=>{
                 <td>简介</td>
                 <td>
                     <textarea v-model="editingUser.intro" placeholder="可提供自己的联系方式（不超过128个字符）"></textarea>
+                </td>
+            </tr>
+            <tr v-if="userInfo.id == editingUser.id">
+                <td>邮箱</td>
+                <td>
+                    <template v-if="myEmailMasked">
+                        <div>{{ myEmailMasked }}</div>
+                        <RouterLink :to="userEmailBindRoute(true)">
+                            <button class="lite confirm">更改绑定</button>
+                        </RouterLink>
+                    </template>
+                    <template v-else>
+                        <RouterLink :to="userEmailBindRoute()">
+                            <button class="lite confirm">绑定邮箱</button>
+                        </RouterLink>
+                    </template>
                 </td>
             </tr>
             <tr v-if="userInfoStore.isAdmin">

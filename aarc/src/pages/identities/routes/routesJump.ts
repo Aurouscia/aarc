@@ -27,9 +27,12 @@ export const useIdentitiesRoutesJump = ()=>{
             }
         }
     }
-    function userEmailBindRoute():RouteLocationRaw{
+    function userEmailBindRoute(isChange?:boolean):RouteLocationRaw{
         return {
-            name:userEmailBindName
+            name:userEmailBindName,
+            query:{
+                isChange: isChange ? '1' : undefined
+            }
         }
     }
     return { loginRoute, loginRouteJump, registerRoute, userListRoute, userEmailBindRoute }

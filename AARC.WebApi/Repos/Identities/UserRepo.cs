@@ -252,6 +252,9 @@ namespace AARC.WebApi.Repos.Identities
             var user = base.Get(userId);
             if (user is null)
                 throw new RqEx("找不到指定用户");
+            email = email.ToLowerInvariant();
+            if (Existing.Any(x => x.Id != userId && x.Email == email))
+                throw new RqEx("该邮箱已被占用");
             var code = Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
             user.Email = $"{email}:{code}".GetMD5();
             base.Update(user, true);
@@ -263,6 +266,7 @@ namespace AARC.WebApi.Repos.Identities
             var user = base.Get(userId);
             if (user is null)
                 throw new RqEx("找不到指定用户");
+            email = email.ToLowerInvariant();
             var expectedHash = $"{email}:{code}".GetMD5();
             if (user.Email != expectedHash)
                 throw new RqEx("验证码不正确");
@@ -311,6 +315,15 @@ namespace AARC.WebApi.Repos.Identities
         public IQueryable<User> FilterByEmailBinded(IQueryable<User> userQ)
         {
             return userQ.Where(x => x.Email != null && x.Email.Contains("@"));
+        }
+
+        public string? GetMyMaskedEmail()
+        {
+            var id = httpUserIdProvider.UserIdLazy.Value;
+            var user = base.Get(id);
+            if (user?.Email is not { } email || !email.Contains("@"))
+                return null;
+            return EmailMasker.Mask(email);
         }
     }
 
