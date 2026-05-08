@@ -8,6 +8,7 @@ import { computed, CSSProperties, onMounted, ref, useTemplateRef, watch } from '
 import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
 import ColorPickerForTerrain from '../shared/ColorPickerForTerrain.vue';
 import { useLineStateStore } from '@/models/stores/saveDerived/state/lineStateStore';
+import LineSliceOptions from './slices/LineSliceOptions.vue';
 
 const envStore = useEnvStore()
 const saveStore = useSaveStore()
@@ -108,10 +109,15 @@ function reportInfoChanged(staSizeChanged?:boolean){
 }
 
 const sidebar = useTemplateRef('sidebar')
+const sliceOptions = useTemplateRef('sliceOptions')
 defineExpose({
     open: ()=>{sidebar.value?.extend()}, 
     fold: ()=>{sidebar.value?.fold()}
 })
+
+function openSliceOptions(){
+    sliceOptions.value?.open()
+}
 const emit = defineEmits<{
     (e:'colorUpdated'):void
 }>()
@@ -324,6 +330,13 @@ onMounted(()=>{
             </div>
         </td>
     </tr>
+    <tr>
+        <td>片段</td>
+        <td>
+            <button @click="openSliceOptions" class="minor">管理片段</button>
+            <div class="smallNote">管理该线路的样式片段和时间片段</div>
+        </td>
+    </tr>
     </template>
     </tbody></table>
     <table v-if="haveParent" class="fullWidth"><tbody>
@@ -357,6 +370,7 @@ onMounted(()=>{
 <div class="smallNote" style="text-align: center;margin-bottom: 60px;"><b>
     提示：右键点击线路可直接打开本菜单
 </b></div>
+    <LineSliceOptions ref="sliceOptions" :line="line"></LineSliceOptions>
 </SideBar>
 </template>
 
