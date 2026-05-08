@@ -230,6 +230,12 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         return clutser
     }
     function getStaName(ptId: number) {
+        // 先尝试获取指定点本身的名称
+        const pt = saveStore.getPtById(ptId)
+        if (pt?.name) {
+            return pt.name.replaceAll('\n', '')
+        }
+        // 若该点本身无名称，再尝试从所在 cluster 中获取
         const cluster = getStaClusterById(ptId)
         let clusterHaveName = cluster.find(x => x.name)
         let res = clusterHaveName?.name

@@ -51,7 +51,7 @@ function confirm() {
     <div class="editorTitle">编辑时间片段</div>
     <table class="fullWidth"><tbody>
         <tr>
-            <th>建成</th>
+            <td>建成</td>
             <td>
                 <input v-model.lazy="translated.open" placeholder="YYYY-MM-DD" @blur="confirm"/>
             </td>

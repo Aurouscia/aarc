@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { LineSliceBase, LineStyle } from '@/models/save';
-import { useSaveStore } from '@/models/stores/saveStore';
+import { LineSliceBase, LineStyle, StyleSlice, TimeSlice } from '@/models/save';
+import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
 import { SliceType } from '@/models/stores/lineSliceStore';
 import { computed } from 'vue';
 
@@ -15,13 +15,14 @@ const emit = defineEmits<{
     (e: 'delete', sliceId: number): void
 }>()
 
-const saveStore = useSaveStore()
+const staClusterStore = useStaClusterStore()
 
 function getPtName(ptId: number) {
-    return saveStore.getPtById(ptId)?.name || `点#${ptId}`
+    return staClusterStore.getStaName(ptId) || `点#${ptId}`
 }
 
-function getStyleName(styleId: number) {
+function getStyleName(styleId: number | undefined) {
+    if (styleId === undefined) return '未设置样式'
     const style = props.lineStyles?.find(s => s.id === styleId)
     return style?.name || `样式#${styleId}`
 }
@@ -40,10 +41,10 @@ const sortedSlices = computed(() => {
         <div class="sliceInfo" @click="emit('edit', slice.id)">
             <span class="ptRange">{{ getPtName(slice.fromPt) }} — {{ getPtName(slice.toPt) }}</span>
             <span v-if="type === 'style'" class="sliceTag styleTag">
-                {{ getStyleName((slice as any).style) }}
+                {{ getStyleName((slice as StyleSlice).style) }}
             </span>
             <span v-else class="sliceTag timeTag">
-                {{ (slice as any).time?.open ? '已设时间' : '未设时间' }}
+                {{ (slice as TimeSlice).time?.open ? '已设时间' : '未设时间' }}
             </span>
         </div>
         <button class="delBtn" @click="emit('delete', slice.id)">×</button>
