@@ -30,7 +30,7 @@ onMounted(()=>{
             <a style="color:#cc88cc" href="/#/FAQ">常见问题</a>
         </b>
     </p>
-    <p v-if="guideInfo.findHelp">{{ guideInfo.findHelp }}</p>
+    <p v-if="guideInfo.findHelp">遇到问题：{{ guideInfo.findHelp }}</p>
     <p v-if="guideInfo.extra" class="guideExtra" v-html="guideInfo.extra"></p>
 </div>
 <Notice :type="'warn'" :title="'⚠️ 重大变动'">
@@ -163,13 +163,6 @@ onMounted(()=>{
             font-size: 14px;
             &:deep(a) {
                 color: cornflowerblue;
-                animation: linkFlash 2s ease-in-out;
-            }
-            @keyframes linkFlash {
-                0% { color: cornflowerblue; }
-                50% { color: darkblue; }
-                50.01% { color: cornflowerblue; }
-                100% { color: darkblue; }
             }
         }
     }
