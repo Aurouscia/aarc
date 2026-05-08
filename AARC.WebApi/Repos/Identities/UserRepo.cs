@@ -252,6 +252,8 @@ namespace AARC.WebApi.Repos.Identities
             var user = base.Get(userId);
             if (user is null)
                 throw new RqEx("找不到指定用户");
+            if (user.EmailBinded)
+                throw new RqEx("请联系管理员解绑已有邮箱");
             email = email.ToLowerInvariant();
             if (Existing.Any(x => x.Id != userId && x.Email == email))
                 throw new RqEx("该邮箱已被占用");

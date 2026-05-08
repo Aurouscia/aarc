@@ -94,8 +94,11 @@ onUnmounted(() => {
 <template>
     <div class="container">
         <h1>绑定邮箱</h1>
-        <Notice v-if="isChange" :type="'warn'">
+        <Notice v-if="isChange && false" :type="'warn'">
             如果已经绑定邮箱，获取验证码将导致解绑
+        </Notice>
+        <Notice :type="'success'">
+            本站会对邮箱严格保密且不会用来发送推广邮件
         </Notice>
         <div class="form">
             <div class="row">

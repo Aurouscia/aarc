@@ -34,7 +34,7 @@ onMounted(()=>{
     <p v-if="guideInfo.findHelp">遇到问题：{{ guideInfo.findHelp }}</p>
     <p v-if="guideInfo.extra" class="guideExtra" v-html="guideInfo.extra"></p>
 </div>
-<Notice :type="'info'" :title="'🎉 好消息'" v-if="userInfoStore.userInfo.id && userInfoStore.userInfo.isTourist">
+<Notice :type="'success'" :title="'🎉 好消息'" v-if="userInfoStore.userInfo.id && userInfoStore.userInfo.isTourist">
     现在无需加 qq 群即可免费转为正式用户，公开展示作品，使用多人协作功能：
     <RouterLink :to="{name:userUpgradeToMemberName}" style="color: white;text-decoration: underline;">立即转正</RouterLink>
 </Notice>

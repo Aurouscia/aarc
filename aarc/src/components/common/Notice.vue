@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue';
 
 const props = defineProps<{
-    type:"info"|"warn"|"danger",
+    type:"info"|"warn"|"danger"|"success",
     title?:string,
     maxWidth?:string
 }>();
@@ -47,6 +47,10 @@ onMounted(()=>{
 }
 .notice.info{
     background-color: #666;
+    color:white
+}
+.notice.success{
+    background-color: green;
     color:white
 }
 .notice{

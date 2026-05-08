@@ -223,9 +223,9 @@ onMounted(async()=>{
                 <td>
                     <template v-if="myEmailMasked">
                         <div>{{ myEmailMasked }}</div>
-                        <RouterLink :to="userEmailBindRoute(true)">
+                        <!-- <RouterLink :to="userEmailBindRoute(true)">
                             <button class="lite confirm">更改绑定</button>
-                        </RouterLink>
+                        </RouterLink> -->
                     </template>
                     <template v-else>
                         <RouterLink :to="userEmailBindRoute()">
