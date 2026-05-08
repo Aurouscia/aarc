@@ -17,7 +17,8 @@ http://aarc.jowei19.com
 
 ## 主要功能
 - 绘制线条角度为45度整数倍的线路图，以及车站、水体、出站换乘、线路列表等内容
-- 完全支持在所有类型设备（PC/平板/手机）上进行编辑，可双指或滚轮缩放视角
+- 客户端跨平台：支持在所有类型设备（PC/平板/手机）上进行编辑，可双指或滚轮缩放视角
+- 服务端跨平台：支持在 linux 或 windows 服务器部署
 
 ## Roadmap
 见 http://aarc.jowei19.com 的首页
@@ -29,7 +30,7 @@ http://aarc.jowei19.com
 - ORM：entityFrameworkCore
 - api文档和客户端代码生成：NSwag
 
-## 部署
+## 开发和部署
 ### 前提条件
 1. （必需）后端开发环境（二选一），确保`dotnet sdk 10.0`可用（ide一般会为你安装）
     - [Visual Studio](https://visualstudio.microsoft.com/zh-hans/) 尽可能新版+web应用开发负载
@@ -37,11 +38,9 @@ http://aarc.jowei19.com
 2. （必需）[node客户端](https://nodejs.org/en) 尽可能新版，并确认命令行中有npm命令可用
 3. [git客户端](https://git-scm.com/downloads) 用来下载代码和提交更新
 4. [visual studio code](https://code.visualstudio.com/download)（和第一条是两个东西）用来编辑前端代码
-5. 一台windows系统的服务器（照理说linux的也行，请自行研究.net网站部署方法）  
+5. 一台服务器，以及关于“如何开网站”的基本常识（docker+nginx 或 iis） 
 
-*TODO：dockerfile，谁需要linux部署可联系作者*
-
-### 步骤
+### 开发步骤
 过程中遇到任何问题，请看本文[帮助](#帮助)部分
 
 1. 下载代码文件  
@@ -59,15 +58,41 @@ http://aarc.jowei19.com
         - `appsettings.Production.json`（git忽略、仅生产环境）
         - `appsettingsLocal.json`（git忽略）
         上述四个文件格式完全一样
-6. 点击顶部绿色启动按钮启动调试，检查是否正常
-7. 停止调试，选择导出位置和方式
+6. 点击顶部绿色启动按钮启动调试
+7. 开发
+
+### 部署步骤（linux 服务器）
+1. 服务器上安装 [Docker](https://docs.docker.com/engine/install/) 
+2. 克隆代码到服务器
+    ```bash
+    git clone 【本仓库链接】
+    cd aarc
+    ```
+3. 构建镜像
+    ```bash
+    docker build -t aarc .
+    ```
+4. 启动容器（示例：映射到主机的 8080 端口）
+    ```bash
+    docker run -d \
+        --name aarc \
+        -p 8080:80 \
+        -v $(pwd)/data:/app/Data \
+        --restart unless-stopped \
+        aarc
+    ```
+   - `-v $(pwd)/data:/app/Data`：将数据库等数据持久化到主机目录（自行选择合适的位置）
+   - 首次启动后，必须进行一次[更新数据库架构](#更新数据库架构)
+5. 使用 nginx 反向代理到 80/443 端口，配置 SSL 证书
+
+### 部署步骤（windows 服务器）
+1. 停止调试，选择导出位置和方式
     - vs：点击顶部栏`生成-发布`
     - rider：资源管理器-右键AARC项目-发布
-8. windows服务器上安装`.net10.0 hosting bundle`（dotnet官网可以下载到）
-9. 把导出的程序移动到服务器上(建议使用webDeploy，也可以直接用远程桌面的复制粘贴)，并给予Users用户组该文件夹的控制权限，用IIS新建网站并指向该文件夹
-    - 第一次移动后需要手动放入`/Data`中的数据库(.db文件)
-    - 后续注意不要把数据库覆盖了，定期保存备份
-10. 尝试启动并进入网站
+2. windows服务器上安装`.net10.0 hosting bundle`（dotnet官网可以下载到）
+3. 把导出的程序移动到服务器上(建议使用webDeploy，也可以直接用远程桌面的复制粘贴)，并给予Users用户组该文件夹的控制权限，用IIS新建网站并指向该文件夹
+    - 服务器上第一次启动后，必须进行一次[更新数据库架构](#更新数据库架构)
+4. 尝试启动并进入网站
 
 ### 初始化账号
 1. 记住在`appsettings.json`（或其变体）中填写的`MasterKey`
@@ -105,4 +130,9 @@ http://aarc.jowei19.com
 **使用遇到问题，请加qq群 1083848751 联系作者或其他用户**
 
 ## 许可证
-Apache-2.0
+- **Apache-2.0**
+- 可修改源码
+- 无需开源衍生版本
+- 可商用
+- 必须保留版权信息
+- 作者免责
