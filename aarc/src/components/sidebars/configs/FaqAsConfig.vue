@@ -50,6 +50,13 @@ const showGuideInfos = guideInfo.findHelp || guideInfo.extra
         </div>
     </div>
     <div>
+        <h3>自由了，然后呢？</h3>
+        <div>
+            <p>这意味着：</p>
+            <p>如果某项功能不对你的胃口，你可以自行修改或添加源代码，并开私服给自己和其他人使用（这个私服是否开源、是否收费无所谓）</p>
+        </div>
+    </div>
+    <div>
         <h3>站点的坐标</h3>
         <div>
             <p>可右键点击站名，或点击车站后进入其设置菜单，输入坐标。</p>
@@ -137,7 +144,7 @@ const showGuideInfos = guideInfo.findHelp || guideInfo.extra
         <h3>更多问题：可问其他用户</h3>
         <div>
             <p>{{ guideInfo.findHelp }}</p>
-            <p>{{ guideInfo.extra }}</p>
+            <p v-html="guideInfo.extra?.replaceAll('\n', ' | ')"></p>
         </div>
     </div>
 </div>
