@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { useRouter } from 'vue-router';
 
 const api = useApiStore()
@@ -10,6 +11,7 @@ const { showPop } = useUniqueComponentsStore()
 async function upgradeToMember() {
     const res = await api.user.upgradeToMember()
     if(res){
+        await useUserInfoStore().getIdentityInfo(true)
         showPop('已成功转正', 'success')
         window.setTimeout(()=>{
             router.push('/')

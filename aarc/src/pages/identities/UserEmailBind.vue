@@ -3,11 +3,12 @@ import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import Notice from '@/components/common/Notice.vue';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
 const route = useRoute()
+const router = useRouter()
 
 const isChange = computed<boolean>(() => route.query.isChange === '1')
 
@@ -73,6 +74,9 @@ async function confirmBind() {
     const res = await api.user.confirmBindEmail(code.value, email.value)
     if (res) {
         showPop('绑定成功', 'success')
+        window.setTimeout(()=>{
+            router.push('/')
+        }, 1000)
     }
 }
 
