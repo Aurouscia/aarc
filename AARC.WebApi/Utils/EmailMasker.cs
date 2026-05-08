@@ -2,10 +2,10 @@ namespace AARC.WebApi.Utils
 {
     public static class EmailMasker
     {
-        public static string Mask(string email)
+        public static string? Mask(string? email)
         {
             if (string.IsNullOrWhiteSpace(email))
-                return string.Empty;
+                return null;
 
             var atIndex = email.IndexOf('@');
             if (atIndex <= 0)

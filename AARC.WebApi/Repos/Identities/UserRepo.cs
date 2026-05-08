@@ -314,16 +314,34 @@ namespace AARC.WebApi.Repos.Identities
 
         public IQueryable<User> FilterByEmailBinded(IQueryable<User> userQ)
         {
-            return userQ.Where(x => x.Email != null && x.Email.Contains("@"));
+            return userQ.Where(x => x.EmailBinded);
         }
 
         public string? GetMyMaskedEmail()
         {
             var id = httpUserIdProvider.UserIdLazy.Value;
             var user = base.Get(id);
-            if (user?.Email is not { } email || !email.Contains("@"))
+            if (user?.EmailBinded != true)
                 return null;
-            return EmailMasker.Mask(email);
+            return EmailMasker.Mask(user.Email);
+        }
+
+        public void UpgradeToMember(int userId)
+        {
+            var user = base.Get(userId);
+            if (user is null)
+                throw new RqEx("找不到指定用户");
+            if (user.Type != UserType.Tourist)
+                throw new RqEx("当前用户不是游客身份");
+            if (!user.EmailBinded)
+                throw new RqEx("请先验证邮箱");
+            var hasChangeTypeHistory = Context.UserHistories
+                .Any(x => x.TargetUserId == userId && x.UserHistoryType == UserHistoryType.ChangeType);
+            if (hasChangeTypeHistory)
+                throw new RqEx("请联系管理员");
+            user.Type = UserType.Member;
+            userHistoryService.RecordChangeType(userId, UserType.Member, "自助转正");
+            base.Update(user, true);
         }
     }
 

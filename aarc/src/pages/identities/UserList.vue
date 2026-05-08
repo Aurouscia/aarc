@@ -14,6 +14,7 @@ import { useIdentitiesRoutesJump } from './routes/routesJump';
 import { useRouter } from 'vue-router';
 import AuthGrantEdit from '../components/AuthGrantEdit.vue';
 import SwitchingTabs from '@/components/common/SwitchingTabs.vue';
+import { userUpgradeToMemberName } from './routes/routesNames';
 
 const list = ref<WithIntroShow<UserDto>[]>()
 const api = useApiStore()
@@ -231,6 +232,14 @@ onMounted(async()=>{
                             <button class="lite confirm">绑定邮箱</button>
                         </RouterLink>
                     </template>
+                </td>
+            </tr>
+            <tr v-if="userInfo.id == editingUser.id && userInfo.isTourist">
+                <td>转正</td>
+                <td>
+                    <RouterLink :to="{name:userUpgradeToMemberName}">
+                        <button class="lite confirm">免费转为正式用户</button>
+                    </RouterLink>
                 </td>
             </tr>
             <tr v-if="userInfoStore.isAdmin">

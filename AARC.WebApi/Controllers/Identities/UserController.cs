@@ -133,6 +133,14 @@ namespace AARC.WebApi.Controllers.Identities
         {
             return userRepo.GetMyMaskedEmail();
         }
+
+        [HttpPost]
+        public bool UpgradeToMember()
+        {
+            var userId = httpUserIdProvider.UserIdLazy.Value;
+            userRepo.UpgradeToMember(userId);
+            return true;
+        }
     }
 
     public class UserUpdateRequest
