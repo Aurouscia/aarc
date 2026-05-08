@@ -65,9 +65,12 @@ COPY --from=backend-build /app/publish .
 # 复制前端构建产物到 wwwroot（ASP.NET Core 默认静态文件目录）
 COPY --from=frontend-build /web/dist ./wwwroot
 
+# 显式设置 HTTP 监听端口（HTTPS 需在运行时配置证书后启用）
+ENV ASPNETCORE_HTTP_PORTS=8080
+
 # 暴露端口
-EXPOSE 80
-EXPOSE 443
+EXPOSE 8080
+EXPOSE 8081
 
 # 启动应用
 ENTRYPOINT ["dotnet", "AARC.WebApi.dll"]
