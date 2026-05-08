@@ -38,3 +38,6 @@ docker-compose*
 
 # Auto-generated API client
 **/apiGenerated.ts
+
+# Local data files
+AARC.WebApi/Data/
