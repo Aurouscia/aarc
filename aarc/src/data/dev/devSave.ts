@@ -353,7 +353,7 @@ export const devSave:Save = {
         {
             id: 10000001,
             line: 102,
-            fromPt: 7,
+            fromPt: 2,
             toPt: 35,
             time: {
                 open: new Date(2030, 1 - 1, 1).getTime()

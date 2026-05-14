@@ -1,7 +1,7 @@
 import { defineStore, storeToRefs } from "pinia";
 import { computed } from "vue";
 import { useSaveStore } from "../saveStore";
-import { Line, LineStyle, StyleSlice, TimeSlice } from "@/models/save";
+import { Line, LineStyle, LineTimeInfo, StyleSlice, TimeSlice } from "@/models/save";
 
 /** 扁平化后的原子区间 */
 export interface FlatSpan {
@@ -133,12 +133,21 @@ export const useLineSpanStore = defineStore('lineSpan', () => {
     })
 
     /**
+     * 所有扁平化结果的 Map 索引（lineId -> FlattenedLine）
+     */
+    const flattenedMap = computed<Map<number, FlattenedLine>>(() => {
+        const map = new Map<number, FlattenedLine>()
+        for (const fl of allFlattened.value) {
+            map.set(fl.lineId, fl)
+        }
+        return map
+    })
+
+    /**
      * 获取指定线路的扁平化结果
      */
     function getFlattenedLine(lineId: number): FlattenedLine | undefined {
-        const line = save.value?.lines.find(l => l.id === lineId)
-        if (!line) return undefined
-        return flattenLine(line)
+        return flattenedMap.value.get(lineId)
     }
 
     /**
@@ -179,7 +188,7 @@ export const useLineSpanStore = defineStore('lineSpan', () => {
      * 
      * 优先级：TimeSlice > Line.time（回退）
      */
-    function getSpanTime(lineId: number, spanIdx: number): { timeSlice?: TimeSlice, time?: import('@/models/save').LineTimeInfo, fromLine?: boolean } | undefined {
+    function getSpanTime(lineId: number, spanIdx: number): { timeSlice?: TimeSlice, time?: LineTimeInfo, fromLine?: boolean } | undefined {
         const flattened = getFlattenedLine(lineId)
         if (!flattened) return undefined
         const span = flattened.spans[spanIdx]
