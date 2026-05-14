@@ -93,28 +93,3 @@ GET /api/fileurls?path=colorsets&recursive=true
 |-------------|------|
 | `400 Bad Request` | `path` 参数尝试访问 wwwroot 以外的目录（路径穿越） |
 | `404 Not Found` | 指定目录不存在 |
-
----
-
-## 跨域（CORS）
-
-两个接口均启用了 `AllowMySubdomains` 策略，需在 `Program.cs` / `Startup.cs` 中配置对应的允许来源，例如：
-
-```csharp
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowMySubdomains", policy =>
-    {
-        policy.WithOrigins("http://aarc.jowei19.com", "https://aarc.jowei19.com")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
-```
-
----
-
-## 安全说明
-
-- 所有 `path` 参数均经过 `Path.GetFullPath` 规范化，并校验是否位于 wwwroot 目录内，防止路径穿越攻击。
-- 接口仅暴露 wwwroot 下的文件，不涉及服务器其他目录。
