@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createTestPinia } from '../../helpers/piniaTestHelper'
 import { useSaveStore } from '@/models/stores/saveStore'
-import { useFlatSliceStore } from '@/models/stores/saveDerived/flatSliceStore'
+import { useLineSpanStore } from '@/models/stores/saveDerived/lineSpanStore'
 import {
   resetIdCounter,
   createPoint,
@@ -12,7 +12,7 @@ import {
   createEmptySave
 } from '../../helpers/saveFactory'
 
-describe('flatSliceStore', () => {
+describe('lineSpanStore', () => {
   beforeEach(() => {
     resetIdCounter()
     createTestPinia()
@@ -33,7 +33,7 @@ describe('flatSliceStore', () => {
         lines: [createLine(pts)]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.flattenLine(save.lines[0])
 
@@ -48,7 +48,7 @@ describe('flatSliceStore', () => {
         lines: [createLine(pts)]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.flattenLine(save.lines[0])
 
@@ -62,7 +62,7 @@ describe('flatSliceStore', () => {
         lines: [createLine(pts)]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.flattenLine(save.lines[0])
 
@@ -83,7 +83,7 @@ describe('flatSliceStore', () => {
         styleSlices: [styleSlice]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.flattenLine(line)
 
@@ -103,7 +103,7 @@ describe('flatSliceStore', () => {
         styleSlices: [styleSlice]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.flattenLine(line)
 
@@ -124,7 +124,7 @@ describe('flatSliceStore', () => {
         styleSlices: [styleSlice]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.flattenLine(line)
 
@@ -151,7 +151,7 @@ describe('flatSliceStore', () => {
         timeSlices: [timeSlice]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.flattenLine(line)
 
@@ -183,7 +183,7 @@ describe('flatSliceStore', () => {
         timeSlices: [timeSlice]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.flattenLine(line)
 
@@ -226,7 +226,7 @@ describe('flatSliceStore', () => {
         styleSlices: [styleSlice1, styleSlice2]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.flattenLine(line)
 
@@ -252,7 +252,7 @@ describe('flatSliceStore', () => {
         styleSlices: [styleSlice]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.flattenLine(line)
 
@@ -277,7 +277,7 @@ describe('flatSliceStore', () => {
         styleSlices: [styleSlice]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const all = store.allFlattened
 
@@ -307,7 +307,7 @@ describe('flatSliceStore', () => {
         lineStyles: [lineStyle]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.getSpanStyle(line.id, 0)
 
@@ -326,7 +326,7 @@ describe('flatSliceStore', () => {
         lineStyles: [lineStyle]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.getSpanStyle(line.id, 0)
 
@@ -344,7 +344,7 @@ describe('flatSliceStore', () => {
         lines: [line]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.getSpanStyle(line.id, 0)
 
@@ -368,7 +368,7 @@ describe('flatSliceStore', () => {
         timeSlices: [timeSlice]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.getSpanTime(line.id, 0)
 
@@ -386,7 +386,7 @@ describe('flatSliceStore', () => {
         lines: [line]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.getSpanTime(line.id, 0)
 
@@ -404,7 +404,7 @@ describe('flatSliceStore', () => {
         lines: [line]
       })
       setupSaveStore(save)
-      const store = useFlatSliceStore()
+      const store = useLineSpanStore()
 
       const result = store.getSpanTime(line.id, 0)
 

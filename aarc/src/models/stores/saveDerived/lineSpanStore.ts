@@ -25,7 +25,7 @@ export interface FlattenedLine {
     spans: FlatSpan[]
 }
 
-export const useFlatSliceStore = defineStore('flatSlice', () => {
+export const useLineSpanStore = defineStore('lineSpan', () => {
     const { save } = storeToRefs(useSaveStore())
 
     /**

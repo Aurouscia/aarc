@@ -5,7 +5,7 @@ import { useConfigStore } from "../../configStore";
 import { Line, LineTimeInfo } from "@/models/save";
 import { useRenderOptionsStore } from "../../renderOptionsStore";
 import { useColorProcStore } from "../../utils/colorProcStore";
-import { useFlatSliceStore } from "../flatSliceStore";
+import { useLineSpanStore } from "../lineSpanStore";
 
 export const useLineStateStore = defineStore('lineState', () => {
     const saveStore = useSaveStore()
@@ -17,7 +17,7 @@ export const useLineStateStore = defineStore('lineState', () => {
     } = storeToRefs(useRenderOptionsStore())
     const configStore = useConfigStore()
     const colorProc = useColorProcStore()
-    const flatSliceStore = useFlatSliceStore()
+    const lineSpanStore = useLineSpanStore()
 
     const lineActualColors = computed<Map<number, {color:string, downplayed?:boolean, downplayedBy?: 'accentuation' | 'time'}>>(() => {
         const res: Map<number, {
@@ -152,7 +152,7 @@ export const useLineStateStore = defineStore('lineState', () => {
         }
 
         // 检查 span 的时间状态
-        const spanTimeInfo = flatSliceStore.getSpanTime(lineId, spanIdx)
+        const spanTimeInfo = lineSpanStore.getSpanTime(lineId, spanIdx)
         if (isTimeDownplayed(spanTimeInfo?.time)) {
             return colorProc.colorProcDownplay.convert(baseColor)
         }
@@ -166,7 +166,7 @@ export const useLineStateStore = defineStore('lineState', () => {
     function isSpanDownplayed(lineId: number, spanIdx: number): boolean {
         if (lineActualColors.value.get(lineId)?.downplayedBy === 'accentuation') return true
 
-        const spanTimeInfo = flatSliceStore.getSpanTime(lineId, spanIdx)
+        const spanTimeInfo = lineSpanStore.getSpanTime(lineId, spanIdx)
         return isTimeDownplayed(spanTimeInfo?.time)
     }
 
