@@ -1,5 +1,5 @@
 import { RouteLocationRaw, useRouter } from "vue-router"
-import { loginName, registerName, userListName } from "./routesNames"
+import { loginName, registerName, userEmailBindName, userListName } from "./routesNames"
 
 export const useIdentitiesRoutesJump = ()=>{
     const router = useRouter()
@@ -27,5 +27,13 @@ export const useIdentitiesRoutesJump = ()=>{
             }
         }
     }
-    return { loginRoute, loginRouteJump, registerRoute, userListRoute }
+    function userEmailBindRoute(isChange?:boolean):RouteLocationRaw{
+        return {
+            name:userEmailBindName,
+            query:{
+                isChange: isChange ? '1' : undefined
+            }
+        }
+    }
+    return { loginRoute, loginRouteJump, registerRoute, userListRoute, userEmailBindRoute }
 }

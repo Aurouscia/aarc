@@ -9,6 +9,7 @@ import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom'
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import RecentUpdates from '../components/RecentUpdates.vue';
 import Notice from '@/components/common/Notice.vue';
+import { userUpgradeToMemberName } from '../identities/routes/routesNames';
 
 const { setEnteredFrom } = useEnteredCanvasFromStore()
 const userInfoStore = useUserInfoStore()
@@ -30,11 +31,12 @@ onMounted(()=>{
             <a style="color:#cc88cc" href="/#/FAQ">常见问题</a>
         </b>
     </p>
-    <p v-if="guideInfo.findHelp">{{ guideInfo.findHelp }}</p>
+    <p v-if="guideInfo.findHelp">遇到问题：{{ guideInfo.findHelp }}</p>
     <p v-if="guideInfo.extra" class="guideExtra" v-html="guideInfo.extra"></p>
 </div>
-<Notice :type="'warn'" :title="'⚠️ 重大变动'">
-    🤝目前“公共存档”仅<b>正式用户</b>能参与，如果想参与多人合作，请参考“注册”处的引导转为正式用户💡
+<Notice :type="'success'" :title="'🎉 好消息'" v-if="userInfoStore.userInfo.id && userInfoStore.userInfo.isTourist">
+    现在无需加 qq 群即可免费转为正式用户，公开展示作品，使用多人协作功能：
+    <RouterLink :to="{name:userUpgradeToMemberName}" style="color: white;text-decoration: underline;">立即转正</RouterLink>
 </Notice>
 <div class="marginedSection">
     <NewestSaves></NewestSaves>
@@ -163,13 +165,6 @@ onMounted(()=>{
             font-size: 14px;
             &:deep(a) {
                 color: cornflowerblue;
-                animation: linkFlash 2s ease-in-out;
-            }
-            @keyframes linkFlash {
-                0% { color: cornflowerblue; }
-                50% { color: darkblue; }
-                50.01% { color: cornflowerblue; }
-                100% { color: darkblue; }
             }
         }
     }

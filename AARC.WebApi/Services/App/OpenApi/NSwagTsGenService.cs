@@ -7,9 +7,11 @@ namespace AARC.WebApi.Services.App.OpenApi
     public class NSwagTsGenService(
         IHttpContextAccessor httpContextAccessor)
     {
-        public const string outputPath
+        public const string defaultOutputPath
             = "../aarc/src/app/com/apiGenerated.ts";
-        public async Task<int> GenApiTsClient()
+        public const string hereOutputPath
+            = "./apiGenerated.ts";
+        public async Task<int> GenApiTsClient(bool writeHere = false)
         {
             var document = await GetOpenApiDocument();
             var settings = new TypeScriptClientGeneratorSettings();
@@ -20,6 +22,7 @@ namespace AARC.WebApi.Services.App.OpenApi
             var generator = new TypeScriptClientGenerator(document, settings);
             var code = generator.GenerateFile();
             code = ReplaceFixes(code);
+            var outputPath = writeHere ? hereOutputPath : defaultOutputPath;
             using var outputStream = File.Open(outputPath, FileMode.Create);
             using var writer = new StreamWriter(outputStream);
             await writer.WriteAsync(code);

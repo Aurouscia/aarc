@@ -50,16 +50,33 @@ const buttonAllowClick = computed(()=>{
 
 const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
-const contact = import.meta.env.VITE_GuideMemberApply
 
 const noticeRead = ref(false)
 const waitLong = ref(false)
+const noticeCountdown = ref(5)
+let noticeCountdownTimer: number | undefined
+function startNoticeCountdown(){
+    noticeCountdown.value = 6
+    noticeCountdownTimer = window.setInterval(()=>{
+        noticeCountdown.value--
+        if(noticeCountdown.value <= 0){
+            clearInterval(noticeCountdownTimer)
+            noticeCountdownTimer = undefined
+        }
+    }, 1000)
+}
 function noticeKnown(){
+    if(noticeCountdown.value > 0){
+        return
+    }
     noticeRead.value = true
     window.setTimeout(()=>{
         waitLong.value = true
     }, 8000)
 }
+onMounted(()=>{
+    startNoticeCountdown()
+})
 
 onMounted(async()=>{
 })
@@ -71,14 +88,12 @@ onMounted(async()=>{
     </div>
     <div>
         <Notice v-if="!noticeRead" :title="'注册须知'" :type="'info'">
-            <p><b>为了确保内容合规性，新账号为“游客”账号</b></p>
-            <p>“游客”不会显示在用户列表中，“游客”的作品也无法公开展示，
-            如果想要公开展示作品，需要由管理员将账号转为“正式用户”（转正）</p>
-            <ol>
-                <li>{{ contact || '暂不接收主动申请转正' }}</li>
-            </ol>
-            <button @click="noticeKnown" style="display: block; margin: 6px auto;">
-                我知道了
+            <p><b>1. 为了确保内容合规性，新账号为“游客”账号</b></p>
+            <p>2. “游客”不会显示在用户列表中，“游客”的作品也无法公开展示，
+            如果想要公开展示作品，需要成为“正式用户”（免费）</p>
+            <p>3. “转正”操作入口位于<b>顶部栏-用户-个人信息设置</b></p>
+            <button @click="noticeKnown" :class="{off: noticeCountdown > 0}" style="display: block; margin: 6px auto;">
+                我知道了{{ noticeCountdown > 0 ? `（${noticeCountdown}）` : '' }}
             </button>
         </Notice>
         <table v-else><tbody>
@@ -119,6 +134,7 @@ onMounted(async()=>{
 <style scoped lang="scss">
 p{
     margin: 4px 0px;
+    text-indent: 2em;
 }
 ol{
     margin: 8px 0px 0px 0px;

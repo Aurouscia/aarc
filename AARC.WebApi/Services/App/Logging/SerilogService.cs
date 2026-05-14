@@ -9,18 +9,72 @@ namespace AARC.WebApi.Services.App.Logging
         public static IServiceCollection AddSerilog(
             this IServiceCollection services, IConfiguration config, IWebHostEnvironment env)
         {
+            var logsPath = Path.Combine(env.ContentRootPath, "Logs");
+            var outputTemplate = "{Timestamp:HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}";
             var logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(config)
                 .WriteTo.Debug()
                 .WriteTo.Console()
-                .WriteTo.File(
-                    path: Path.Combine(env.ContentRootPath, "Logs", "log-.txt"),
-                    rollingInterval: RollingInterval.Day,
-                    outputTemplate: "{Timestamp:HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
-                    shared: true,
-                    rollOnFileSizeLimit: true,
-                    fileSizeLimitBytes: 500000,
-                    retainedFileCountLimit: 60)
+                .WriteTo.Logger(cfg => cfg
+                    .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Verbose)
+                    .WriteTo.File(
+                        path: Path.Combine(logsPath, "verbose-.txt"),
+                        rollingInterval: RollingInterval.Day,
+                        outputTemplate: outputTemplate,
+                        shared: true,
+                        rollOnFileSizeLimit: true,
+                        fileSizeLimitBytes: 500000,
+                        retainedFileCountLimit: 60))
+                .WriteTo.Logger(cfg => cfg
+                    .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Debug)
+                    .WriteTo.File(
+                        path: Path.Combine(logsPath, "debug-.txt"),
+                        rollingInterval: RollingInterval.Day,
+                        outputTemplate: outputTemplate,
+                        shared: true,
+                        rollOnFileSizeLimit: true,
+                        fileSizeLimitBytes: 500000,
+                        retainedFileCountLimit: 60))
+                .WriteTo.Logger(cfg => cfg
+                    .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Information)
+                    .WriteTo.File(
+                        path: Path.Combine(logsPath, "info-.txt"),
+                        rollingInterval: RollingInterval.Day,
+                        outputTemplate: outputTemplate,
+                        shared: true,
+                        rollOnFileSizeLimit: true,
+                        fileSizeLimitBytes: 500000,
+                        retainedFileCountLimit: 60))
+                .WriteTo.Logger(cfg => cfg
+                    .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Warning)
+                    .WriteTo.File(
+                        path: Path.Combine(logsPath, "warning-.txt"),
+                        rollingInterval: RollingInterval.Day,
+                        outputTemplate: outputTemplate,
+                        shared: true,
+                        rollOnFileSizeLimit: true,
+                        fileSizeLimitBytes: 500000,
+                        retainedFileCountLimit: 60))
+                .WriteTo.Logger(cfg => cfg
+                    .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Error)
+                    .WriteTo.File(
+                        path: Path.Combine(logsPath, "error-.txt"),
+                        rollingInterval: RollingInterval.Day,
+                        outputTemplate: outputTemplate,
+                        shared: true,
+                        rollOnFileSizeLimit: true,
+                        fileSizeLimitBytes: 500000,
+                        retainedFileCountLimit: 60))
+                .WriteTo.Logger(cfg => cfg
+                    .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Fatal)
+                    .WriteTo.File(
+                        path: Path.Combine(logsPath, "fatal-.txt"),
+                        rollingInterval: RollingInterval.Day,
+                        outputTemplate: outputTemplate,
+                        shared: true,
+                        rollOnFileSizeLimit: true,
+                        fileSizeLimitBytes: 500000,
+                        retainedFileCountLimit: 60))
                 .CreateLogger();
             services.AddSerilog(logger);
             Log.Logger = logger;

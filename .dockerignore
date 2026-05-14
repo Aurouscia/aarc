@@ -1,0 +1,43 @@
+# .NET
+**/bin/
+**/obj/
+**/*.user
+**/*.suo
+**/.vs/
+
+# Node.js
+**/node_modules/
+**/dist/
+**/.pnpm-store/
+
+# Git
+**/.git/
+**/.gitignore
+
+# IDE
+**/.idea/
+**/.vscode/
+**/*.swp
+**/*.swo
+
+# Logs
+**/Logs/
+**/*.log
+
+# OS
+**/.DS_Store
+**/Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Misc
+**/wwwroot/
+
+# Auto-generated API client
+**/apiGenerated.ts
+
+# Local data files
+AARC.WebApi/Data/

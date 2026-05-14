@@ -1,6 +1,7 @@
 ﻿using AARC.WebApi.Services.App.ActionFilters;
 using AARC.WebApi.Services.App.Authentication;
 using AARC.WebApi.Services.App.Config;
+using AARC.WebApi.Services.App.Email;
 using AARC.WebApi.Services.App.HttpAuthInfo;
 using AARC.WebApi.Services.App.Logging;
 using AARC.WebApi.Services.App.Mapping;
@@ -54,6 +55,7 @@ namespace AARC.WebApi.Services.App
             services.AddNSwagDocument();
             services.AddSingleton<NSwagTsGenService>();
             services.AddSingleton<TurnstileVerifyService>();
+            services.AddSingleton<EmailService>();
 
             services.SetupAutoMapper(config);
             return services;

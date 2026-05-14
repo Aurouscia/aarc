@@ -25,6 +25,8 @@ namespace AARC.WebApi.Models.DbModels.Identities
         public DateTime LastActive { get; set; }
         public bool Deleted { get; set; }
 
+        public bool EmailBinded => Email is not null && Email.Contains("@");
+
         public const int nameMaxLength = 16;
         public const int emailMaxLength = 64;
         public const int introMaxLength = 128;
