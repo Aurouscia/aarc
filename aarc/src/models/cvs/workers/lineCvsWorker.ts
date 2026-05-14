@@ -21,6 +21,9 @@ import { rayToCoordDist } from "@/utils/rayUtils/rayToCoordDist";
 import { numberCmpEpsilon } from "@/utils/consts";
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
+import { useLineSpanStore } from "@/models/stores/saveDerived/lineSpanStore";
+import { LineStyle } from "@/models/save";
+import { extractSpanFormalPts } from "@/utils/lineUtils/extractSpanFormalPts";
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill:number}
 type LineRenderType = 'both'|'body'|'carpet'
@@ -28,6 +31,7 @@ type LineRenderType = 'both'|'body'|'carpet'
 export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     const saveStore = useSaveStore();
     const lineStateStore = useLineStateStore()
+    const lineSpanStore = useLineSpanStore()
     const envStore = useEnvStore();
     const formalizedLineStore = useFormalizedLineStore()
     const cs = useConfigStore();
@@ -77,34 +81,27 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
 
         const includeCarpet = !rtype || rtype == 'carpet' || rtype == 'both'
 
-        const draw = (renderType: LineRenderType, strokeTarget?: LineStrokeTarget)=>{
+        // 1. Carpet 保持整线绘制
+        if(includeCarpet){
             for(const l of line){
-                if(strokeTarget == 'style' && !l.style)
-                    continue
                 ctx.beginPath()
                 const formalPts = formalizedLineStore.getLinesFormalPts(l.id) ?? []
                 linkPts(ctx, formalPts, l)
-                doRender(ctx, l, undefined, undefined, renderType, strokeTarget)
+                doRender(ctx, l, undefined, undefined, 'carpet')
             }
         }
-        if(includeCarpet)
-            draw('carpet')
-        const allStyles = new Set<number>()
-        line.forEach(l => allStyles.add(l.style ?? 0))
-        const allSameStyle = allStyles.size < 2 || (allStyles.size == 2 && allStyles.has(-1))
-        // 如果有不一样的样式（除了那同一个和-1之外），则使用新版渲染逻辑（样式逐个线路画）
-        if(!allSameStyle){
-            draw('body', 'base')
-            draw('body', 'style')
-        }
-        else{
-            // 如果样式都一样，则使用旧版逻辑（所有样式一笔画出来）
-            ctx.beginPath()
+
+        // 2. Body 按 span 拆分渲染
+        // 收集所有 line（含 children）的所有 spans，然后统一先画 base 再画 style
+        // 这样可以避免不同 line 之间的 base/style 覆盖问题（如支线分叉处）
+        const includeBody = !rtype || rtype == 'body' || rtype == 'both'
+        if(includeBody){
+            const allSpanInfos: SpanRenderInfo[] = []
             for(const l of line){
-                const formalPts = formalizedLineStore.getLinesFormalPts(l.id) ?? []
-                linkPts(ctx, formalPts, l)
+                allSpanInfos.push(...collectSpanRenderInfos(l))
             }
-            doRender(ctx, line[0], undefined, undefined, 'body', 'both')
+            renderAllSpansBase(ctx, allSpanInfos)
+            renderAllSpansStyle(ctx, allSpanInfos)
         }
     }
     function renderSegsAroundActivePt(ctx:CvsContext)
@@ -433,6 +430,146 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
         }
     }
+    interface SpanRenderOptions {
+        color?: string
+        downplayed?: boolean
+        style?: LineStyle
+        styleId?: number
+        strokeTarget?: LineStrokeTarget
+    }
+
+    /**
+     * 渲染单个 span 的 body
+     */
+    function doRenderSpan(
+        ctx: CvsContext,
+        lineInfo: Line,
+        options: SpanRenderOptions
+    ) {
+        const { color, downplayed, style, styleId, strokeTarget } = options
+        const lineColor = color ?? lineStateStore.getLineActualColor(lineInfo)
+
+        // 填充线路（如湖泊）
+        if (lineInfo.isFilled && lineInfo.type === LineType.terrain) {
+            ctx.fillStyle = lineColor
+            ctx.fill()
+            return
+        }
+
+        // 普通 stroke 线路
+        const lineWidth = cs.config.lineWidth * (lineInfo.width || 1)
+        ctx.lineJoin = 'round'
+        ctx.lineCap = 'round'
+
+        const lineDownplayed = downplayed ?? lineStateStore.isLineDownplayed(lineInfo.id)
+        const effectiveStyleId = styleId ?? lineInfo.style
+        const itsStyle = style ?? saveStore.save?.lineStyles?.find(x => x.id === effectiveStyleId)
+
+        if (itsStyle) {
+            const scale = ctx.getCurrentScale()
+            const offset = ctx.getCurrentOffset()
+            strokeStyledLine(ctx, {
+                target: strokeTarget ?? 'both',
+                scale,
+                offset,
+                lineStyle: itsStyle,
+                lineWidthBase: lineWidth,
+                dynaColor: lineColor,
+                fixedColorConverter: (c) => {
+                    if (lineDownplayed)
+                        return colorProc.colorProcDownplay.convert(c)
+                    return c
+                }
+            })
+        } else {
+            // 无 style 时，strokeTarget 为 'style' 则跳过（无 style 可画）
+            if (strokeTarget === 'style') return
+            ctx.lineWidth = lineWidth
+            ctx.strokeStyle = lineColor
+            ctx.stroke()
+        }
+    }
+
+    interface SpanRenderInfo {
+        line: Line
+        formalPts: FormalPt[]
+        color: string | undefined
+        downplayed: boolean
+        style: LineStyle | undefined
+        styleId: number | undefined
+    }
+
+    /**
+     * 收集单条线路的所有 span 渲染信息
+     */
+    function collectSpanRenderInfos(line: Line): SpanRenderInfo[] {
+        const flattened = lineSpanStore.getFlattenedLine(line.id)
+        if (!flattened || flattened.spans.length === 0) return []
+
+        const allFormalPts = formalizedLineStore.getLinesFormalPts(line.id) ?? []
+        const infos: SpanRenderInfo[] = []
+
+        for (let spanIdx = 0; spanIdx < flattened.spans.length; spanIdx++) {
+            const span = flattened.spans[spanIdx]
+            const spanFormalPts = extractSpanFormalPts(allFormalPts, span)
+            if (spanFormalPts.length < 2) continue
+
+            const spanStyleInfo = lineSpanStore.getSpanStyle(line.id, spanIdx)
+            const spanStyle = spanStyleInfo?.style
+            const spanStyleId = spanStyleInfo?.styleSlice?.style ?? line.style
+            const spanColor = lineStateStore.getSpanActualColor(line.id, spanIdx)
+            const spanDownplayed = lineStateStore.isSpanDownplayed(line.id, spanIdx)
+
+            infos.push({
+                line,
+                formalPts: spanFormalPts,
+                color: spanColor,
+                downplayed: spanDownplayed,
+                style: spanStyle,
+                styleId: spanStyleId
+            })
+        }
+        return infos
+    }
+
+    /**
+     * 统一绘制所有 span 的 base
+     */
+    function renderAllSpansBase(ctx: CvsContext, infos: SpanRenderInfo[]) {
+        for (const info of infos) {
+            ctx.beginPath()
+            linkPts(ctx, info.formalPts, info.line)
+            doRenderSpan(ctx, info.line, {
+                color: info.color,
+                downplayed: info.downplayed,
+                style: info.style,
+                styleId: info.styleId,
+                strokeTarget: 'base'
+            })
+        }
+    }
+
+    /**
+     * 统一绘制所有 span 的 style
+     */
+    function renderAllSpansStyle(ctx: CvsContext, infos: SpanRenderInfo[]) {
+        for (const info of infos) {
+            const effectiveStyleId = info.styleId ?? info.line.style
+            const hasStyle = info.style || saveStore.save?.lineStyles?.find(x => x.id === effectiveStyleId)
+            if (!hasStyle) continue
+
+            ctx.beginPath()
+            linkPts(ctx, info.formalPts, info.line)
+            doRenderSpan(ctx, info.line, {
+                color: info.color,
+                downplayed: info.downplayed,
+                style: info.style,
+                styleId: info.styleId,
+                strokeTarget: 'style'
+            })
+        }
+    }
+
     function doRender(
         ctx:CvsContext, lineInfo:Line, enforceNoFill?:boolean,
         enforceLineWidth?:number, type?:LineRenderType, strokeTarget?:LineStrokeTarget
