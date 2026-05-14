@@ -33,33 +33,87 @@ type ColorSetExtended = ColorSet & {
     keywords?: string,
     isFictional?: boolean
 }
-
 const cs = ref<ColorSetExtended[]>()
-colorSetsProm.then(x => {
-    //模块加载完成：赋值给cs
-    cs.value = x.default
-    //初始化“搜索关键词”和“是否架空”，其中“搜索关键词”特别注意性能
-    const EMPTY = new Set([' ', '\t', '\n']);
-    cs.value.forEach(s=>{
-        s.isFictional = s.pri >= 500 //pri大于500的是架空颜色集
+
+// 颜色库内容缓存：filename -> data string
+const colorSetDataCache = new Map<string, string>()
+
+// 解析 API 返回的文件名列表，构建 ColorSetExtended[]
+function buildCsFromFilenames(filenames: string[]): ColorSetExtended[] {
+    return filenames.map(filename => {
+        // 文件名格式：id-name.txt，例如 000-北京.txt
+        const withoutExt = filename.replace(/\.txt$/, '')
+        const dashIdx = withoutExt.indexOf('-')
+        const idStr = dashIdx >= 0 ? withoutExt.slice(0, dashIdx) : withoutExt
+        const name = dashIdx >= 0 ? withoutExt.slice(dashIdx + 1) : withoutExt
+        const pri = parseInt(idStr, 10) || 0
+        return {
+            name,
+            pri,
+            data: '',           // 懒加载，展开时再拉取
+            _filename: filename, // 存文件名供后续拉取用
+        } as ColorSetExtended & { _filename: string }
+    })
+}
+
+async function initColorSets() {
+    let useApi = false
+    try {
+        const resp = await fetch(
+            'http://binshu.jowei19.com/api/filenames?path=colorsets',
+            { signal: AbortSignal.timeout(5000) }
+        )
+        if (resp.ok) {
+            const filenames: string[] = await resp.json()
+            cs.value = buildCsFromFilenames(filenames)
+            useApi = true
+        }
+    } catch {
+        // 网络不通或超时，静默 fallback
+    }
+
+    if (!useApi) {
+        // Fallback：使用原来的静态数据
+        const x = await colorSetsProm
+        cs.value = x.default as ColorSetExtended[]
+        // 静态数据有完整 data，直接初始化 keywords
+        initKeywords(cs.value)
+    } else {
+        // API 模式下 keywords 等拿到 data 后再初始化，
+        // 但 name 已经有了，先用 name 作为 keywords 保证搜索可用
+        if (!cs.value){
+            return
+        }
+        cs.value.forEach(s => {
+            s.keywords = s.name
+            s.isFictional = s.pri >= 500
+        })
+    }
+
+    ensureSetsOrdered()
+}
+
+// 抽出 keywords 初始化逻辑（原来写在 colorSetsProm.then 里的那段）
+function initKeywords(sets: ColorSetExtended[]) {
+    const EMPTY = new Set([' ', '\t', '\n'])
+    sets.forEach(s => {
+        s.isFictional = s.pri >= 500
         if (s.data) {
-            const len = s.data.length;
-            let i = 0;
-            // ② 快速跳过空白
-            while (i < len && EMPTY.has(s.data[i])) 
-                ++i;
-            if (i < len) {                              // 找到了非空白
-                let nl = s.data.indexOf('\n', i);           // 第一个换行
-                if (nl === -1) 
-                    nl = len;                               // 可能没换行
-                s.keywords = s.data.slice(i, nl).trim();    // slice出这一段
+            const len = s.data.length
+            let i = 0
+            while (i < len && EMPTY.has(s.data[i])) ++i
+            if (i < len) {
+                let nl = s.data.indexOf('\n', i)
+                if (nl === -1) nl = len
+                s.keywords = s.data.slice(i, nl).trim()
+            } else {
+                s.keywords = '#'
             }
-            else 
-                s.keywords = '#';                       // 全是空白
         }
     })
-    ensureSetsOrdered()
-})
+}
+
+initColorSets()
 
 const searchFilter = ref('')
 const csFiltered = computed<ColorSetExtended[]>(()=>{
@@ -69,14 +123,35 @@ const csFiltered = computed<ColorSetExtended[]>(()=>{
     return cs.value.filter(c => c.keywords?.includes(filterStrLower)) ?? []
 })
 
-function toggleSetShowing(colorSet:ColorSetExtended){
-    if(colorSet.showing){
+async function toggleSetShowing(colorSet: ColorSetExtended & { _filename?: string }) {
+    if (colorSet.showing) {
         colorSet.showing = false
-    }else{
-        colorSet.showing = true
-        if(!colorSet.items){
-            colorSet.items = parseColorSetData(colorSet.data)
+        return
+    }
+    // 如果是 API 模式且还没有 data，先拉取
+    if (!colorSet.data && colorSet._filename) {
+        const cached = colorSetDataCache.get(colorSet._filename)
+        if (cached) {
+            colorSet.data = cached
+        } else {
+            try {
+                const resp = await fetch(
+                    `http://binshu.jowei19.com/colorsets/${colorSet._filename}`
+                )
+                if (resp.ok) {
+                    colorSet.data = await resp.text()
+                    colorSetDataCache.set(colorSet._filename, colorSet.data)
+                    // 拿到完整 data 后更新 keywords（让搜索更精确）
+                    initKeywords([colorSet])
+                }
+            } catch {
+                // 拉取失败，items 会是空，用户看到空列表
+            }
         }
+    }
+    colorSet.showing = true
+    if (!colorSet.items && colorSet.data) {
+        colorSet.items = parseColorSetData(colorSet.data)
     }
 }
 
