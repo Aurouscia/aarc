@@ -9,6 +9,7 @@ import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
 import ColorPickerForTerrain from '../shared/ColorPickerForTerrain.vue';
 import { useLineStateStore } from '@/models/stores/saveDerived/state/lineStateStore';
 import SliceEditorTable from './slices/SliceEditorTable.vue';
+import Notice from '@/components/common/Notice.vue';
 
 const envStore = useEnvStore()
 const saveStore = useSaveStore()
@@ -335,6 +336,9 @@ onMounted(()=>{
         <td>
             <button @click="openSliceOptions" class="minor">管理片段</button>
             <div class="smallNote">管理该线路的样式片段和时间片段</div>
+            <Notice :type="'warn'" style="width: 160px;margin: auto;">
+                试验性功能，效果不确定，请谨慎使用。几天后入口将不会在当前位置，搬去更方便的地方，请以“最近更新”为准。
+            </Notice>
         </td>
     </tr>
     </template>

@@ -41,6 +41,7 @@ function confirm() {
 <div class="editor">
     <div class="editorTitle">编辑样式片段</div>
     <select v-model.number="selectedStyleId" @change="confirm">
+        <option :value="undefined" :key="-1">同线路样式</option>
         <option v-for="style in selectableLineStyles" :value="style.id" :key="style.id">
             {{ style.name }}
         </option>

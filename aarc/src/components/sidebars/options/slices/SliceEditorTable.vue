@@ -3,7 +3,7 @@ import SideBar from '@/components/common/SideBar.vue';
 import { Line, StyleSlice, TimeSlice } from '@/models/save';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import TimeSliceEditor from './TimeSliceEditor.vue';
 import StyleSliceEditor from './StyleSliceEditor.vue';
 
@@ -43,20 +43,23 @@ interface CellInfo {
     sliceId?: number
 }
 
-/** 将 slice 的 fromPt/toPt（点ID）转换为在站点列表中的索引 */
-function getSliceIndices(slice: TimeSlice | StyleSlice): { fromIdx: number, toIdx: number } | undefined {
+/** 将 slice 的 fromPt/toPt（点ID）转换为在站点列表中的索引
+ * startIdx: 索引较小的（表格中靠上的）
+ * endIdx: 索引较大的（表格中靠下的）
+ */
+function getSliceIndices(slice: TimeSlice | StyleSlice): { startIdx: number, endIdx: number } | undefined {
     const fromIdx = props.line.pts.indexOf(slice.fromPt)
     const toIdx = props.line.pts.indexOf(slice.toPt)
     if (fromIdx === -1 || toIdx === -1) return undefined
-    return { fromIdx, toIdx }
+    return { startIdx: Math.min(fromIdx, toIdx), endIdx: Math.max(fromIdx, toIdx) }
 }
 
 function getCellInfo(slices: (TimeSlice | StyleSlice)[], rowIdx: number): CellInfo {
     for (const slice of slices) {
         const indices = getSliceIndices(slice)
         if (!indices) continue
-        const min = Math.min(indices.fromIdx, indices.toIdx)
-        const max = Math.max(indices.fromIdx, indices.toIdx)
+        const min = Math.min(indices.startIdx, indices.endIdx)
+        const max = Math.max(indices.startIdx, indices.endIdx)
         if (rowIdx < min || rowIdx > max) continue
         if (rowIdx === min) return { role: 'start', sliceId: slice.id }
         if (rowIdx === max) return { role: 'end', sliceId: slice.id }
@@ -73,7 +76,7 @@ function needTopBar(slices: (TimeSlice | StyleSlice)[], rowIdx: number): boolean
     if (!slice) return false
     const indices = getSliceIndices(slice)
     if (!indices) return false
-    return rowIdx === Math.max(indices.fromIdx, indices.toIdx)
+    return rowIdx === Math.max(indices.startIdx, indices.endIdx)
 }
 
 /** 判断某行单元格是否需要显示下半截 bar */
@@ -84,7 +87,7 @@ function needBottomBar(slices: (TimeSlice | StyleSlice)[], rowIdx: number): bool
     if (!slice) return false
     const indices = getSliceIndices(slice)
     if (!indices) return false
-    return rowIdx === Math.min(indices.fromIdx, indices.toIdx)
+    return rowIdx === Math.min(indices.startIdx, indices.endIdx)
 }
 
 // ========== 创建新 Slice 的交互 ==========
@@ -123,8 +126,8 @@ function onCellClick(col: 'time' | 'style', rowIdx: number) {
     const hasOverlap = slices.some(s => {
         const indices = getSliceIndices(s)
         if (!indices) return false
-        const sMin = Math.min(indices.fromIdx, indices.toIdx)
-        const sMax = Math.max(indices.fromIdx, indices.toIdx)
+        const sMin = Math.min(indices.startIdx, indices.endIdx)
+        const sMax = Math.max(indices.startIdx, indices.endIdx)
         return !(max < sMin || min > sMax)
     })
 
@@ -174,9 +177,35 @@ function isPending(col: 'time' | 'style', rowIdx: number): boolean {
 
 const editingSlice = ref<{ type: 'time' | 'style'; id: number } | null>(null)
 
+/** 重设端点状态：记录闪烁的点（要被替换的）和 slice 信息，等待用户选另一个点 */
+const resizingSlice = ref<{
+    type: 'time' | 'style'
+    sliceId: number
+    flashingRowIdx: number  // 闪烁的点（要被替换的）在站点列表中的索引
+} | null>(null)
+
 function onSliceCellClick(col: 'time' | 'style', rowIdx: number) {
     const slices = col === 'time' ? timeSlices.value : styleSlices.value
     const info = getCellInfo(slices, rowIdx)
+
+    // 如果正在重设端点
+    if (resizingSlice.value && resizingSlice.value.type === col) {
+        // 点击当前正在编辑的 slice 内部（非闪烁端点）：允许作为新端点
+        if (info.sliceId === resizingSlice.value.sliceId && rowIdx !== resizingSlice.value.flashingRowIdx) {
+            doResizeSlice(col, resizingSlice.value.sliceId, resizingSlice.value.flashingRowIdx, rowIdx)
+            resizingSlice.value = null
+            return
+        }
+        // 点击空位：完成重设
+        if (info.role === 'empty') {
+            doResizeSlice(col, resizingSlice.value.sliceId, resizingSlice.value.flashingRowIdx, rowIdx)
+            resizingSlice.value = null
+            return
+        }
+        // 点击其他 slice 或闪烁端点自身：abort
+        resizingSlice.value = null
+        return
+    }
 
     if (info.role === 'empty') {
         // 空位：走创建流程
@@ -188,6 +217,7 @@ function onSliceCellClick(col: 'time' | 'style', rowIdx: number) {
     if (info.sliceId) {
         // 已有 slice：切换编辑模式
         pendingFrom.value = null
+        resizingSlice.value = null
         if (editingSlice.value?.type === col && editingSlice.value?.id === info.sliceId) {
             // 再点一下关闭
             editingSlice.value = null
@@ -204,6 +234,11 @@ function isEditing(col: 'time' | 'style', rowIdx: number): boolean {
     return editingSlice.value?.type === col && editingSlice.value?.id === info.sliceId
 }
 
+/** 检查某行是否是重设端点时的闪烁点（要被替换的） */
+function isResizingFlashing(col: 'time' | 'style', rowIdx: number): boolean {
+    return resizingSlice.value?.type === col && resizingSlice.value?.flashingRowIdx === rowIdx
+}
+
 const editingTimeSlice = computed<TimeSlice | undefined>(() => {
     if (editingSlice.value?.type !== 'time') return undefined
     return timeSlices.value.find(s => s.id === editingSlice.value!.id)
@@ -214,10 +249,6 @@ const editingStyleSlice = computed<StyleSlice | undefined>(() => {
     return styleSlices.value.find(s => s.id === editingSlice.value!.id)
 })
 
-function onEditorDone() {
-    editingSlice.value = null
-}
-
 function deleteSlice(type: 'time' | 'style', sliceId: number) {
     if (!window.confirm('确认删除该片段？')) return
     const slices = type === 'time' ? saveStore.save?.timeSlices : saveStore.save?.styleSlices
@@ -227,7 +258,87 @@ function deleteSlice(type: 'time' | 'style', sliceId: number) {
         slices.splice(idx, 1)
     }
     editingSlice.value = null
+    resizingSlice.value = null
     pendingFrom.value = null
+}
+
+/** 开始重设端点：闪烁要被替换的点，固定另一个点
+ * whichEnd: 'top' 表示重设表格中靠前的点（索引小的）
+ * whichEnd: 'bottom' 表示重设表格中靠后的点（索引大的）
+ */
+function startResize(type: 'time' | 'style', sliceId: number, whichEnd: 'top' | 'bottom') {
+    const slices = type === 'time' ? timeSlices.value : styleSlices.value
+    const slice = slices.find(s => s.id === sliceId)
+    if (!slice) return
+    const indices = getSliceIndices(slice)
+    if (!indices) return
+
+    // 'top' = 重设靠上的点，闪烁靠上的点（startIdx）
+    // 'bottom' = 重设靠下的点，闪烁靠下的点（endIdx）
+    const flashingRowIdx = whichEnd === 'top' ? indices.startIdx : indices.endIdx
+    resizingSlice.value = { type, sliceId, flashingRowIdx }
+}
+
+/** 执行重设：修改 slice 的端点
+ * flashingRowIdx: 原来闪烁的点（要被替换的）
+ * newRowIdx: 用户点击的新点
+ */
+function doResizeSlice(type: 'time' | 'style', sliceId: number, flashingRowIdx: number, newRowIdx: number) {
+    const slices = type === 'time' ? saveStore.save?.timeSlices : saveStore.save?.styleSlices
+    if (!slices) return
+    const slice = slices.find(s => s.id === sliceId)
+    if (!slice) return
+
+    const flashingPt = props.line.pts[flashingRowIdx]
+    const newPt = props.line.pts[newRowIdx]
+
+    // 检查新范围是否与现有其他 slice 重叠
+    const allSlices = type === 'time' ? timeSlices.value : styleSlices.value
+    const newMin = Math.min(flashingRowIdx, newRowIdx)
+    const newMax = Math.max(flashingRowIdx, newRowIdx)
+    const hasOverlap = allSlices.some(s => {
+        if (s.id === sliceId) return false
+        const indices = getSliceIndices(s)
+        if (!indices) return false
+        const sMin = Math.min(indices.startIdx, indices.endIdx)
+        const sMax = Math.max(indices.startIdx, indices.endIdx)
+        return !(newMax < sMin || newMin > sMax)
+    })
+
+    if (hasOverlap) {
+        alert('与现有片段重叠')
+        return
+    }
+
+    // 更新 slice：用新点替换闪烁的点
+    if (flashingRowIdx === newRowIdx) {
+        // 同一点，无效
+        return
+    }
+
+    // 找到 slice 中原来等于闪烁点的那个端点，替换为新点
+    if (slice.fromPt === flashingPt) {
+        slice.fromPt = newPt
+    } else if (slice.toPt === flashingPt) {
+        slice.toPt = newPt
+    }
+}
+
+// ========== Sidebar 收起时 abort ==========
+
+watch(() => sidebar.value, (newVal) => {
+    if (!newVal) return
+    // SideBar 没有暴露 showing 状态，我们通过 fold 方法调用来处理
+})
+
+// 重写 fold 方法，在收起时 abort
+function extend() {
+    sidebar.value?.extend()
+}
+function fold() {
+    resizingSlice.value = null
+    pendingFrom.value = null
+    sidebar.value?.fold()
 }
 
 // ========== 表格行数据结构 ==========
@@ -252,7 +363,7 @@ const tableRows = computed<TableRow[]>(() => {
             const slice = timeSlices.value.find(s => s.id === timeInfo.sliceId)
             if (slice) {
                 const indices = getSliceIndices(slice)
-                if (indices && i === Math.max(indices.fromIdx, indices.toIdx)) {
+                if (indices && i === Math.max(indices.startIdx, indices.endIdx)) {
                     rows.push({ type: 'editor', stationIdx: i, editorType: 'time', editorSliceId: timeInfo.sliceId })
                 }
             }
@@ -262,7 +373,7 @@ const tableRows = computed<TableRow[]>(() => {
             const slice = styleSlices.value.find(s => s.id === styleInfo.sliceId)
             if (slice) {
                 const indices = getSliceIndices(slice)
-                if (indices && i === Math.max(indices.fromIdx, indices.toIdx)) {
+                if (indices && i === Math.max(indices.startIdx, indices.endIdx)) {
                     rows.push({ type: 'editor', stationIdx: i, editorType: 'style', editorSliceId: styleInfo.sliceId })
                 }
             }
@@ -272,8 +383,8 @@ const tableRows = computed<TableRow[]>(() => {
 })
 
 defineExpose({
-    open: () => { sidebar.value?.extend() },
-    fold: () => { sidebar.value?.fold() }
+    open: extend,
+    fold: fold
 })
 </script>
 
@@ -301,7 +412,8 @@ defineExpose({
               :class="[
                 getCellInfo(timeSlices, row.stationIdx).role,
                 { pending: isPending('time', row.stationIdx) },
-                { editing: isEditing('time', row.stationIdx) }
+                { editing: isEditing('time', row.stationIdx) },
+                { 'resizing-fixed': isResizingFlashing('time', row.stationIdx) }
               ]"
               @click="onSliceCellClick('time', row.stationIdx)"
             >
@@ -338,7 +450,8 @@ defineExpose({
               :class="[
                 getCellInfo(styleSlices, row.stationIdx).role,
                 { pending: isPending('style', row.stationIdx) },
-                { editing: isEditing('style', row.stationIdx) }
+                { editing: isEditing('style', row.stationIdx) },
+                { 'resizing-fixed': isResizingFlashing('style', row.stationIdx) }
               ]"
               @click="onSliceCellClick('style', row.stationIdx)"
             >
@@ -374,12 +487,28 @@ defineExpose({
           <tr v-else-if="row.type === 'editor'" class="editor-row">
             <td colspan="3" class="editor-cell">
               <div v-if="row.editorType === 'time' && editingTimeSlice" class="editor-panel time">
-                <TimeSliceEditor :slice="editingTimeSlice" @done="onEditorDone" />
-                <button class="delete-btn" @click="deleteSlice('time', editingTimeSlice.id)">删除片段</button>
+                <TimeSliceEditor :slice="editingTimeSlice"/>
+                <div v-if="resizingSlice?.sliceId === editingTimeSlice.id" class="resize-hint">
+                  <span>请选择新{{ resizingSlice?.flashingRowIdx === getSliceIndices(editingTimeSlice)?.startIdx ? '上' : '下' }}点</span>
+                  <button @click="resizingSlice = null">取消</button>
+                </div>
+                <div v-else class="editor-btns">
+                  <button @click="startResize('time', editingTimeSlice.id, 'top')">重设上点</button>
+                  <button @click="startResize('time', editingTimeSlice.id, 'bottom')">重设下点</button>
+                  <button @click="deleteSlice('time', editingTimeSlice.id)" class="cancel">删除片段</button>
+                </div>
               </div>
               <div v-if="row.editorType === 'style' && editingStyleSlice" class="editor-panel style">
-                <StyleSliceEditor :slice="editingStyleSlice" @done="onEditorDone" />
-                <button class="delete-btn" @click="deleteSlice('style', editingStyleSlice.id)">删除片段</button>
+                <StyleSliceEditor :slice="editingStyleSlice"/>
+                <div v-if="resizingSlice?.sliceId === editingStyleSlice.id" class="resize-hint">
+                  <span>请选择新{{ resizingSlice?.flashingRowIdx === getSliceIndices(editingStyleSlice)?.startIdx ? '上' : '下' }}点</span>
+                  <button @click="resizingSlice = null">取消</button>
+                </div>
+                <div v-else class="editor-btns">
+                  <button @click="startResize('style', editingStyleSlice.id, 'top')">重设上点</button>
+                  <button @click="startResize('style', editingStyleSlice.id, 'bottom')">重设下点</button>
+                  <button @click="deleteSlice('style', editingStyleSlice.id)" class="cancel">删除片段</button>
+                </div>
               </div>
             </td>
           </tr>
@@ -389,7 +518,10 @@ defineExpose({
 
     <!-- 提示 -->
     <div class="hint">
-      <span v-if="pendingFrom">
+      <span v-if="resizingSlice">
+        已选择 {{ stations[resizingSlice.flashingRowIdx]?.name }}，请点击另一个空位完成重设
+      </span>
+      <span v-else-if="pendingFrom">
         已选择 {{ stations[pendingFrom.rowIdx]?.name }}，请点击另一个站点完成创建
       </span>
       <span v-else-if="editingSlice">
@@ -412,6 +544,10 @@ table {
 
   th, td {
     text-align: center;
+  }
+
+  th {
+    background-color: gray;
   }
 }
 
@@ -466,11 +602,18 @@ td:nth-child(2) {
   }
 
   &.pending {
-    background: #e3f2fd;
+    .empty-dot {
+      border-color: #2196f3;
+    }
   }
 
   &.editing {
     background: #bbdefb;
+  }
+
+  &.resizing-fixed {
+    background: #90caf9;
+    animation: pulse 1s infinite;
   }
 }
 
@@ -492,11 +635,18 @@ td:nth-child(3) {
   }
 
   &.pending {
-    background: #e8f5e9;
+    .empty-dot {
+      border-color: #4caf50;
+    }
   }
 
   &.editing {
     background: #c8e6c9;
+  }
+
+  &.resizing-fixed {
+    background: #a5d6a7;
+    animation: pulse 1s infinite;
   }
 }
 
@@ -505,6 +655,11 @@ td:nth-child(3) {
   &:deep(.editorTitle) {
     color: #4caf50;
   }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 /* ========== 通用样式 ========== */
@@ -555,19 +710,20 @@ td:nth-child(3) {
   border-radius: 4px;
 }
 
-.delete-btn {
+.editor-btns {
+  display: flex;
   margin-top: 8px;
-  padding: 4px 12px;
-  font-size: 12px;
-  color: #c62828;
-  background: transparent;
-  border: 1px solid #ef9a9a;
-  border-radius: 4px;
-  cursor: pointer;
 
-  &:hover {
-    background: #ffebee;
+  button {
+    flex: 1;
   }
+}
+
+.resize-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
 }
 
 .hint {
