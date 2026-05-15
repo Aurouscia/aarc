@@ -28,53 +28,116 @@ interface ColorSetItem {
     colorInv: string
 }
 type ColorSetExtended = ColorSet & {
-    showing?:boolean, 
+    showing?: boolean,
     items?: ColorSetItem[],
     keywords?: string,
     isFictional?: boolean
 }
 
+// API 列表，每项包含请求地址和对应的 localStorage 缓存 key
+const API_LIST = [
+    {
+        url: 'http://binshu.jowei19.com/api/getcolorsets',
+        cacheKey: 'bscolorsets_cache_getcolorsets',
+        versionKey: 'bscolorsets_version_getcolorsets',
+    },
+]
+
 const cs = ref<ColorSetExtended[]>()
-colorSetsProm.then(x => {
-    //模块加载完成：赋值给cs
-    cs.value = x.default
-    //初始化“搜索关键词”和“是否架空”，其中“搜索关键词”特别注意性能
-    const EMPTY = new Set([' ', '\t', '\n']);
-    cs.value.forEach(s=>{
-        s.isFictional = s.pri >= 500 //pri大于500的是架空颜色集
-        if (s.data) {
-            const len = s.data.length;
-            let i = 0;
-            // ② 快速跳过空白
-            while (i < len && EMPTY.has(s.data[i])) 
-                ++i;
-            if (i < len) {                              // 找到了非空白
-                let nl = s.data.indexOf('\n', i);           // 第一个换行
-                if (nl === -1) 
-                    nl = len;                               // 可能没换行
-                s.keywords = s.data.slice(i, nl).trim();    // slice出这一段
+
+function loadCache(cacheKey: string): ColorSet[] | null {
+    try {
+        const raw = localStorage.getItem(cacheKey)
+        if (!raw) return null
+        return JSON.parse(raw) as ColorSet[]
+    } catch {
+        return null
+    }
+}
+
+function saveCache(cacheKey: string, versionKey: string, version: number, content: ColorSet[]) {
+    try {
+        localStorage.setItem(cacheKey, JSON.stringify(content))
+        localStorage.setItem(versionKey, String(version))
+    } catch {}
+}
+
+function mergeColorSets(base: ColorSet[], patch: ColorSet[]): ColorSet[] {
+    const map = new Map<string, ColorSet>()
+    for (const item of base) map.set(item.name.trim(), item)
+    for (const item of patch) map.set(item.name.trim(), item)
+    return Array.from(map.values()).sort((a, b) => a.pri - b.pri)
+}
+
+async function loadAllColorSets() {
+    const builtIn = (await colorSetsProm).default as ColorSet[]
+
+    const apiPatches: ColorSet[][] = []
+    for (const api of API_LIST) {
+        const clientVersion = parseInt(localStorage.getItem(api.versionKey) ?? '0', 10)
+        let patch: ColorSet[] | null = null
+        try {
+            const res = await fetch(`${api.url}?clientVersion=${clientVersion}`)
+            if (res.ok) {
+                const body = await res.json()
+                if (body === '' || body === null) {
+                    patch = loadCache(api.cacheKey)
+                } else {
+                    saveCache(api.cacheKey, api.versionKey, body.version, body.content)
+                    patch = body.content as ColorSet[]
+                }
+            } else {
+                patch = loadCache(api.cacheKey)
             }
-            else 
-                s.keywords = '#';                       // 全是空白
+        } catch {
+            patch = loadCache(api.cacheKey)
+        }
+        if (patch) apiPatches.push(patch)
+    }
+
+    let merged: ColorSet[] = [...builtIn]
+    for (const patch of apiPatches) {
+        merged = mergeColorSets(merged, patch)
+    }
+    return merged
+}
+
+loadAllColorSets().then(merged => {
+    const EMPTY = new Set([' ', '\t', '\n'])
+    const extended = merged as ColorSetExtended[]
+    extended.forEach(s => {
+        s.isFictional = s.pri >= 500
+        if (s.data) {
+            const len = s.data.length
+            let i = 0
+            while (i < len && EMPTY.has(s.data[i])) ++i
+            if (i < len) {
+                let nl = s.data.indexOf('\n', i)
+                if (nl === -1) nl = len
+                s.keywords = s.data.slice(i, nl).trim()
+            } else {
+                s.keywords = '#'
+            }
         }
     })
+    cs.value = extended
     ensureSetsOrdered()
 })
 
 const searchFilter = ref('')
-const csFiltered = computed<ColorSetExtended[]>(()=>{
+const csFiltered = computed<ColorSetExtended[]>(() => {
     const filterStrLower = searchFilter.value.toLocaleLowerCase()
-    if(!filterStrLower || !cs.value)
+    if (!filterStrLower || !cs.value)
         return cs.value ?? []
     return cs.value.filter(c => c.keywords?.includes(filterStrLower)) ?? []
 })
 
-function toggleSetShowing(colorSet:ColorSetExtended){
-    if(colorSet.showing){
+function toggleSetShowing(colorSet: ColorSetExtended) {
+    if (colorSet.showing) {
         colorSet.showing = false
-    }else{
+    } else {
         colorSet.showing = true
-        if(!colorSet.items){
+        if (!colorSet.items) {
             colorSet.items = parseColorSetData(colorSet.data)
         }
     }
@@ -82,74 +145,58 @@ function toggleSetShowing(colorSet:ColorSetExtended){
 
 const parenthesisAndContent = /\([^\(\)]*(?:\([^\(\)]*\)[^\(\)]*)*\)/
 const parenthesisContent = /(?<=\().*(?=\))/
-function parseColorSetData(data: string){
+function parseColorSetData(data: string) {
     let res: ColorSetItem[] = []
-    //去除(首尾)可能存在的空行
-    let rows = data.split('\n').filter(x=>!!x) 
-    //第一行是搜索词，所以从第二行开始收集颜色
-    for(let i = 1; i<rows.length; i++){
+    let rows = data.split('\n').filter(x => !!x)
+    for (let i = 1; i < rows.length; i++) {
         const row = rows.at(i)?.trim()
-        if(!row)
-            continue
+        if (!row) continue
         let [name, color] = row.split(':')
         if (name && color) {
             let isUnofficial = false
-            if(name.includes('*')){
+            if (name.includes('*')) {
                 isUnofficial = true
                 name = name.replace('*', '')
             }
             const nameMain = name.replace(parenthesisAndContent, '')
             const nameSub = name.match(parenthesisContent)?.at(0)
             const colorInv = colorProcStore.colorProcInvBinary.convertNoCache(color)
-            res.push({
-                name: nameMain,
-                subname: nameSub,
-                isUnofficial,
-                color,
-                colorInv
-            })
+            res.push({ name: nameMain, subname: nameSub, isUnofficial, color, colorInv })
         }
     }
     return res
 }
 
-const { 
-    strictMode, subnameMode, favoriteNames 
-} = storeToRefs(usePaletteLocalConfigStore())
-const fav = computed<Set<string>>(()=>new Set(favoriteNames.value)) 
-function isFavorite(cs:ColorSet|string){
-    const name = typeof cs =='string' ? cs : cs.name.trim()
+const { strictMode, subnameMode, favoriteNames } = storeToRefs(usePaletteLocalConfigStore())
+const fav = computed<Set<string>>(() => new Set(favoriteNames.value))
+function isFavorite(cs: ColorSet | string) {
+    const name = typeof cs == 'string' ? cs : cs.name.trim()
     return fav.value.has(name)
 }
-function toggleFavorite(cs:ColorSetExtended){
+function toggleFavorite(cs: ColorSetExtended) {
     const name = cs.name.trim()
-    if(isFavorite(name)){
+    if (isFavorite(name)) {
         removeAllByPred<string>(favoriteNames.value, x => x == name)
         cs.showing = false
-    }
-    else
+    } else {
         favoriteNames.value.push(name)
+    }
     ensureSetsOrdered()
 }
-function ensureSetsOrdered(){
-    if(!cs.value) return
-    keepOrderSort(cs.value, (a, b)=>{
+function ensureSetsOrdered() {
+    if (!cs.value) return
+    keepOrderSort(cs.value, (a, b) => {
         let aNum = isFavorite(a) ? 1 : 0
         let bNum = isFavorite(b) ? 1 : 0
-        if(aNum != bNum)
-            return bNum - aNum  //先按“是否顶置”排序
-        return a.pri - b.pri    //再按pri排序
+        if (aNum != bNum) return bNum - aNum
+        return a.pri - b.pri
     })
 }
 
 const picker = useTemplateRef('picker')
 const showPicker = ref(true)
-function closePickers() {
-    picker.value?.close()
-}
-const pickerEntryStyles: CSSProperties = {
-    width: '200px', height: '26px'
-}
+function closePickers() { picker.value?.close() }
+const pickerEntryStyles: CSSProperties = { width: '200px', height: '26px' }
 function chooseColor(color: string) {
     props.editingLine.color = color
     envStore.lineInfoChanged(props.editingLine)
@@ -157,12 +204,9 @@ function chooseColor(color: string) {
     picker.value?.enforceTo(color)
     emit('colorUpdated')
 }
-watch(()=>props.editingLine.id, ()=>{
-    //刷新一次颜色选择器（强制重新生成）
+watch(() => props.editingLine.id, () => {
     showPicker.value = false
-    nextTick(()=>{
-        showPicker.value = true
-    })
+    nextTick(() => { showPicker.value = true })
 })
 
 defineExpose({
