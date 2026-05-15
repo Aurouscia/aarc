@@ -8,7 +8,7 @@ import { computed, CSSProperties, onMounted, ref, useTemplateRef, watch } from '
 import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
 import ColorPickerForTerrain from '../shared/ColorPickerForTerrain.vue';
 import { useLineStateStore } from '@/models/stores/saveDerived/state/lineStateStore';
-import LineSliceOptions from './slices/LineSliceOptions.vue';
+import SliceEditorTable from './slices/SliceEditorTable.vue';
 
 const envStore = useEnvStore()
 const saveStore = useSaveStore()
@@ -109,14 +109,14 @@ function reportInfoChanged(staSizeChanged?:boolean){
 }
 
 const sidebar = useTemplateRef('sidebar')
-const sliceOptions = useTemplateRef('sliceOptions')
+const sliceEditor = useTemplateRef('sliceEditor')
 defineExpose({
     open: ()=>{sidebar.value?.extend()}, 
     fold: ()=>{sidebar.value?.fold()}
 })
 
 function openSliceOptions(){
-    sliceOptions.value?.open()
+    sliceEditor.value?.open()
 }
 const emit = defineEmits<{
     (e:'colorUpdated'):void
@@ -370,7 +370,7 @@ onMounted(()=>{
 <div class="smallNote" style="text-align: center;margin-bottom: 60px;"><b>
     提示：右键点击线路可直接打开本菜单
 </b></div>
-    <LineSliceOptions ref="sliceOptions" :line="line"></LineSliceOptions>
+<SliceEditorTable ref="sliceEditor" :line="line"></SliceEditorTable>
 </SideBar>
 </template>
 

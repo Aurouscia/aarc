@@ -240,7 +240,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         let clusterHaveName = cluster.find(x => x.name)
         let res = clusterHaveName?.name
         res = res?.replaceAll('\n', '')
-        return res ?? ''
+        return res ?? `#${ptId}`
     }
 
     function isPtSingle(ptId: number) {
