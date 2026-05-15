@@ -32,71 +32,46 @@ type ColorSetExtended = ColorSet & {
     items?: ColorSetItem[],
     keywords?: string,
     isFictional?: boolean,
-    _url?: string,      // 完整可访问 URL，API 模式下使用
 }
 
 const cs = ref<ColorSetExtended[]>()
 
-// 颜色库内容缓存：url -> data string
-const colorSetDataCache = new Map<string, string>()
+// ── localStorage key ──────────────────────────────────────────────────────────
+const LS_KEY = 'bsapi_colorsets_cache'
 
-// API 地址，不写死域名，通过变量统一管理
-const COLOR_SET_URLS_API = 'http://binshu.jowei19.com/api/fileurls?path=colorsets&recursive=true'
+// ── API ───────────────────────────────────────────────────────────────────────
+const COLOR_SET_VERSIONED_API =
+    'http://binshu.jowei19.com/api/filecontents/versioned?path=colorsets&recursive=true'
 
-// 从完整 URL 中解析出颜色集名称
-// URL 格式：http://xxx/colorsets/[subdir/]id-name.txt
-function parseNameFromUrl(url: string): { name: string; pri: number } {
-    const filename = url.split('/').pop() ?? url
-    const withoutExt = filename.replace(/\.txt$/, '')
-    const dashIdx = withoutExt.indexOf('-')
-    const idStr = dashIdx >= 0 ? withoutExt.slice(0, dashIdx) : withoutExt
-    const name = dashIdx >= 0 ? withoutExt.slice(dashIdx + 1) : withoutExt
-    const pri = parseInt(idStr, 10) || 0
-    return { name, pri }
+interface VersionedResponse {
+    version: number
+    content: { filename: string; content: string }[]
+}
+interface LocalCache {
+    version: number
+    content: { filename: string; content: string }[]
 }
 
-// 解析 API 返回的 URL 列表，构建 ColorSetExtended[]
-function buildCsFromUrls(urls: string[]): ColorSetExtended[] {
-    return urls.map(url => {
-        const { name, pri } = parseNameFromUrl(url)
-        return {
-            name,
-            pri,
-            data: '',
-            _url: url,
-        } as ColorSetExtended
+// ── 解析 filename（格式：[pri-]name）→ { pri, name } ──────────────────────────
+function parseFilename(filename: string): { pri: number; name: string } {
+    const dashIdx = filename.indexOf('-')
+    if (dashIdx < 0) return { pri: 0, name: filename }
+    const idStr = filename.slice(0, dashIdx)
+    const pri = parseInt(idStr, 10)
+    return isNaN(pri)
+        ? { pri: 0, name: filename }
+        : { pri, name: filename.slice(dashIdx + 1) }
+}
+
+// ── 将 [{filename, content}] 转成 ColorSetExtended[] ────────────────────────
+function buildCsFromRaw(raw: { filename: string; content: string }[]): ColorSetExtended[] {
+    return raw.map(({ filename, content }) => {
+        const { pri, name } = parseFilename(filename)
+        return { name, pri, data: content } as ColorSetExtended
     })
 }
 
-async function initColorSets() {
-    let useApi = false
-    try {
-        const resp = await fetch(COLOR_SET_URLS_API, { signal: AbortSignal.timeout(5000) })
-        if (resp.ok) {
-            const urls: string[] = await resp.json()
-            cs.value = buildCsFromUrls(urls)
-            useApi = true
-        }
-    } catch {
-        // 网络不通或超时，静默 fallback
-    }
-
-    if (!useApi) {
-        // Fallback：使用原来的静态数据
-        const x = await colorSetsProm
-        cs.value = x.default as ColorSetExtended[]
-        initKeywords(cs.value)
-    } else {
-        if (!cs.value) return
-        cs.value.forEach(s => {
-            s.keywords = s.name
-            s.isFictional = s.pri >= 500
-        })
-    }
-
-    ensureSetsOrdered()
-}
-
+// ── 初始化 keywords / isFictional ────────────────────────────────────────────
 function initKeywords(sets: ColorSetExtended[]) {
     const EMPTY = new Set([' ', '\t', '\n'])
     sets.forEach(s => {
@@ -116,52 +91,90 @@ function initKeywords(sets: ColorSetExtended[]) {
     })
 }
 
+// ── 主入口 ────────────────────────────────────────────────────────────────────
+async function initColorSets() {
+    // 1. 读 localStorage 里存的版本号，没有则默认 0
+    let cachedVersion = 0
+    let cachedData: LocalCache | null = null
+    try {
+        const raw = localStorage.getItem(LS_KEY)
+        if (raw) {
+            cachedData = JSON.parse(raw) as LocalCache
+            cachedVersion = cachedData.version ?? 0
+        }
+    } catch {
+        // 解析失败，当作没有缓存
+    }
+
+    // 2. 尝试从 API 拉取（带版本号，让服务器决定是否返回数据）
+    let fetchedFromApi = false
+    try {
+        const url = `${COLOR_SET_VERSIONED_API}&clientVersion=${cachedVersion}`
+        const resp = await fetch(url, { signal: AbortSignal.timeout(5000) })
+        if (resp.ok) {
+            const body = await resp.text()
+            // 服务器版本 >= cachedVersion → 返回空字符串，不需要更新
+            if (body === '""' || body.trim() === '""' || body.trim() === '') {
+                // 版本未落后，不更新，走缓存
+            } else {
+                const data: VersionedResponse = JSON.parse(body)
+                // 存入 localStorage
+                const toStore: LocalCache = { version: data.version, content: data.content }
+                try { localStorage.setItem(LS_KEY, JSON.stringify(toStore)) } catch { /* 存储失败忽略 */ }
+                cachedData = toStore
+                cachedVersion = data.version
+                fetchedFromApi = true
+            }
+        }
+    } catch {
+        // 网络不通或超时，静默 fallback
+    }
+
+    // 3. 用 localStorage 里的数据渲染
+    if (cachedData?.content?.length) {
+        cs.value = buildCsFromRaw(cachedData.content)
+        initKeywords(cs.value)
+        ensureSetsOrdered()
+        return
+    }
+
+    // 4. 最终兜底：项目内置静态数据
+    const x = await colorSetsProm
+    cs.value = x.default as ColorSetExtended[]
+    initKeywords(cs.value)
+    ensureSetsOrdered()
+}
+
 initColorSets()
 
-const searchFilter = ref('')
-const csFiltered = computed<ColorSetExtended[]>(() => {
-    const filterStrLower = searchFilter.value.toLocaleLowerCase()
-    if (!filterStrLower || !cs.value)
-        return cs.value ?? []
-    return cs.value.filter(c => c.keywords?.includes(filterStrLower)) ?? []
-})
-
-async function toggleSetShowing(colorSet: ColorSetExtended) {
+// ── 展开/收起（数据已全量加载，只需解析 items）────────────────────────────────
+function toggleSetShowing(colorSet: ColorSetExtended) {
     if (colorSet.showing) {
         colorSet.showing = false
         return
     }
-    // 如果是 API 模式且还没有 data，通过 _url 直接拉取
-    if (!colorSet.data && colorSet._url) {
-        const cached = colorSetDataCache.get(colorSet._url)
-        if (cached) {
-            colorSet.data = cached
-        } else {
-            try {
-                const resp = await fetch(colorSet._url)
-                if (resp.ok) {
-                    colorSet.data = await resp.text()
-                    colorSetDataCache.set(colorSet._url, colorSet.data)
-                    initKeywords([colorSet])
-                }
-            } catch {
-                // 拉取失败，items 会是空，用户看到空列表
-            }
-        }
-    }
-    colorSet.showing = true
     if (!colorSet.items && colorSet.data) {
         colorSet.items = parseColorSetData(colorSet.data)
     }
+    colorSet.showing = true
 }
 
+// ── 搜索 ─────────────────────────────────────────────────────────────────────
+const searchFilter = ref('')
+const csFiltered = computed<ColorSetExtended[]>(() => {
+    const filterStrLower = searchFilter.value.toLocaleLowerCase()
+    if (!filterStrLower || !cs.value) return cs.value ?? []
+    return cs.value.filter(c => c.keywords?.includes(filterStrLower)) ?? []
+})
+
+// ── 解析颜色集文本 ────────────────────────────────────────────────────────────
 const parenthesisAndContent = /\([^\(\)]*(?:\([^\(\)]*\)[^\(\)]*)*\)/
 const parenthesisContent = /(?<=\().*(?=\))/
-function parseColorSetData(data: string) {
-    let res: ColorSetItem[] = []
-    let rows = data.split('\n').filter(x => !!x)
+function parseColorSetData(data: string): ColorSetItem[] {
+    const res: ColorSetItem[] = []
+    const rows = data.split('\n').filter(x => !!x)
     for (let i = 1; i < rows.length; i++) {
-        const row = rows.at(i)?.trim()
+        const row = rows[i]?.trim()
         if (!row) continue
         let [name, color] = row.split(':')
         if (name && color) {
@@ -173,21 +186,14 @@ function parseColorSetData(data: string) {
             const nameMain = name.replace(parenthesisAndContent, '')
             const nameSub = name.match(parenthesisContent)?.at(0)
             const colorInv = colorProcStore.colorProcInvBinary.convertNoCache(color)
-            res.push({
-                name: nameMain,
-                subname: nameSub,
-                isUnofficial,
-                color,
-                colorInv
-            })
+            res.push({ name: nameMain, subname: nameSub, isUnofficial, color, colorInv })
         }
     }
     return res
 }
 
-const {
-    strictMode, subnameMode, favoriteNames
-} = storeToRefs(usePaletteLocalConfigStore())
+// ── 收藏 / 排序 ───────────────────────────────────────────────────────────────
+const { strictMode, subnameMode, favoriteNames } = storeToRefs(usePaletteLocalConfigStore())
 const fav = computed<Set<string>>(() => new Set(favoriteNames.value))
 function isFavorite(cs: ColorSet | string) {
     const name = typeof cs == 'string' ? cs : cs.name.trim()
@@ -198,29 +204,26 @@ function toggleFavorite(cs: ColorSetExtended) {
     if (isFavorite(name)) {
         removeAllByPred<string>(favoriteNames.value, x => x == name)
         cs.showing = false
-    } else
+    } else {
         favoriteNames.value.push(name)
+    }
     ensureSetsOrdered()
 }
 function ensureSetsOrdered() {
     if (!cs.value) return
     keepOrderSort(cs.value, (a, b) => {
-        let aNum = isFavorite(a) ? 1 : 0
-        let bNum = isFavorite(b) ? 1 : 0
-        if (aNum != bNum)
-            return bNum - aNum
+        const aFav = isFavorite(a) ? 1 : 0
+        const bFav = isFavorite(b) ? 1 : 0
+        if (aFav !== bFav) return bFav - aFav
         return a.pri - b.pri
     })
 }
 
+// ── 取色器 ────────────────────────────────────────────────────────────────────
 const picker = useTemplateRef('picker')
 const showPicker = ref(true)
-function closePickers() {
-    picker.value?.close()
-}
-const pickerEntryStyles: CSSProperties = {
-    width: '200px', height: '26px'
-}
+function closePickers() { picker.value?.close() }
+const pickerEntryStyles: CSSProperties = { width: '200px', height: '26px' }
 function chooseColor(color: string) {
     props.editingLine.color = color
     envStore.lineInfoChanged(props.editingLine)
@@ -230,9 +233,7 @@ function chooseColor(color: string) {
 }
 watch(() => props.editingLine.id, () => {
     showPicker.value = false
-    nextTick(() => {
-        showPicker.value = true
-    })
+    nextTick(() => { showPicker.value = true })
 })
 
 defineExpose({
