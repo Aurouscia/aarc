@@ -45,6 +45,8 @@ function startCountdown(seconds: number) {
     }, 1000);
 }
 
+const codeRequested = ref(false)
+
 async function requestCode() {
     if (countdown.value > 0) return;
     if (!email.value) {
@@ -59,6 +61,7 @@ async function requestCode() {
     if (res) {
         showPop('已发送', 'success')
         startCountdown(60);
+        codeRequested.value = true
     }
 }
 
@@ -79,6 +82,8 @@ async function confirmBind() {
         }, 1000)
     }
 }
+
+const help = import.meta.env.VITE_GuideFindHelp
 
 onMounted(() => {
     const remaining = getRemainingFromStorage();
@@ -101,7 +106,7 @@ onUnmounted(() => {
         <Notice v-if="isChange && false" :type="'warn'">
             如果已经绑定邮箱，获取验证码将导致解绑
         </Notice>
-        <Notice :type="'success'">
+        <Notice :type="'success'" :title="'承诺'">
             本站会对邮箱严格保密且不会用来发送推广邮件
         </Notice>
         <div class="form">
@@ -125,6 +130,9 @@ onUnmounted(() => {
                 <button @click="confirmBind" class="bind-btn">确认绑定</button>
             </div>
         </div>
+        <Notice v-if="codeRequested" :type="'info'" :title="'提示'">
+            如果确认邮箱正确但收不到邮件，请耐心等待一段时间。验证码不会过期，同一邮箱+验证码在数小时后仍能通过验证。如果遇到问题：{{ help }}
+        </Notice>
     </div>
 </template>
 
@@ -142,7 +150,7 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    margin-top: 20px;
+    margin: 20px 0px;
 }
 .row {
     display: flex;
