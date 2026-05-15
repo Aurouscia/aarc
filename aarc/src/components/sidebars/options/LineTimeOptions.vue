@@ -89,8 +89,7 @@ watch(()=>props.line, ()=>{
     </tr>
     <tr>
         <td colspan="2" class="smallNote">
-            为了更好收集使用需求<br/>
-            先推出功能有限的初步版本，敬请谅解
+            此处是线路整体的默认时间设置，如果需要设置某段的时间，请创建时间线路片段
         </td>
     </tr>
 </tbody></table>

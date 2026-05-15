@@ -42,7 +42,7 @@ function setToDark(){
 </script>
 
 <template>
-<ConfigSection :title="'颜色设置（新）'">
+<ConfigSection :title="'颜色设置'">
     <table class="fullWidth" @click="closeAllPickers"><tbody>
         <tr>
             <td colspan="2">
