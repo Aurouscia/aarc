@@ -14,10 +14,12 @@ import { useEditorLocalConfigStore } from '@/app/localConfig/editorLocalConfig';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import StringReplace from './StringReplace.vue';
 import ConfigSection from './configs/shared/ConfigSection.vue';
+import { useLineSliceStore } from '@/models/stores/lineSliceStore';
 
 const envStore = useEnvStore()
 const pointLinkStore = usePointLinkStore()
 const selectionStore = useSelectionStore()
+const lineSliceStore = useLineSliceStore()
 const { creatingLinkType } = storeToRefs(pointLinkStore)
 const stashStore = useStashStore()
 const nameSearchStore = useNameSearchStore()
@@ -88,6 +90,10 @@ defineExpose({
             <option :value="ControlPointLinkType.cluster">车站团</option>
         </select>
         <button @click="end();pointLinkStore.startCreatingPtLink();fd()">创建车站间连线</button>
+    </div>
+    <div class="toolItem">
+        <button @click="end();lineSliceStore.startCreatingSlice('style');fd()">创建样式片段</button>
+        <button @click="end();lineSliceStore.startCreatingSlice('time');fd()">创建时间片段</button>
     </div>
     <div class="toolItem">
         <div class="smallNote">可用于创建带折角/分叉的车站间连线</div>

@@ -19,7 +19,9 @@
     "type-check": "tsx build.ts --check-only",
     "toggleEnvLocal": "tsx env/toggleLocalEnvFile.ts",
     "gitInfoGen": "tsx src/utils/gitInfo/gitInfoGen.ts",
-    "colorSetsGen": "tsx src/data/palette/colorSetsGen.ts"
+    "colorSetsGen": "tsx src/data/palette/colorSetsGen.ts",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@anilkumarthakur/vue3-json-viewer": "^0.4.1",
@@ -55,6 +57,7 @@
     "typescript": "^6.0.3",
     "vite": "^7.3.1",
     "vite-plugin-full-reload": "^1.2.0",
+    "vitest": "^4.1.6",
     "vue-tsc": "^3.2.7"
   }
 }

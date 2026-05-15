@@ -340,6 +340,26 @@ export const devSave:Save = {
             lineType: LineType.common,
         }
     ],
+    styleSlices:[
+        {
+            id: 10000000,
+            line: 102,
+            fromPt: 5,
+            toPt: 6,
+            style: 100000
+        }
+    ],
+    timeSlices:[
+        {
+            id: 10000001,
+            line: 102,
+            fromPt: 2,
+            toPt: 35,
+            time: {
+                open: new Date(2030, 1 - 1, 1).getTime()
+            }
+        }
+    ],
     lineStyles:[
         {
             id: 100000,

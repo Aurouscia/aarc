@@ -8,6 +8,8 @@ export interface Save{
     lines: Line[]
     lineStyles?: LineStyle[]
     lineGroups?: LineGroup[]
+    styleSlices?: StyleSlice[]
+    timeSlices?: TimeSlice[]
     textTags: TextTag[]
     textTagIcons?: TextTagIcon[]
     patterns?: Pattern[]
@@ -174,6 +176,23 @@ export interface Pattern{
         fall45?: boolean
         fall63?: boolean
     }
+}
+
+export interface LineSliceBase {
+    id: number
+    line: number
+    /** 起始点Id */
+    fromPt: number
+    /** 结束点Id */
+    toPt: number
+}
+
+export interface StyleSlice extends LineSliceBase {
+    style: number
+}
+
+export interface TimeSlice extends LineSliceBase {
+    time: LineTimeInfo
 }
 
 export interface SaveMetaData{
