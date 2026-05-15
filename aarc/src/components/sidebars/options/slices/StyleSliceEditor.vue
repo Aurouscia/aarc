@@ -51,12 +51,14 @@ function confirm() {
 <style scoped lang="scss">
 .editor{
     padding: 8px;
-    background-color: #e3f2fd;
     border-radius: 4px;
     margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     .editorTitle{
-        font-size: 12px;
-        color: #1976d2;
+        text-align: center;
+        font-size: 14px;
         margin-bottom: 6px;
     }
     select{

@@ -66,17 +66,20 @@ function confirm() {
 <style scoped lang="scss">
 .editor{
     padding: 8px;
-    background-color: #fff3e0;
     border-radius: 4px;
     margin-top: 4px;
     .editorTitle{
-        font-size: 12px;
-        color: #e65100;
+        text-align: center;
+        font-size: 14px;
         margin-bottom: 6px;
     }
     input{
-        width: 100%;
+        display: block;
         padding: 4px;
+        width: 120px;
+    }
+    td{
+        white-space: nowrap;
     }
 }
 </style>
