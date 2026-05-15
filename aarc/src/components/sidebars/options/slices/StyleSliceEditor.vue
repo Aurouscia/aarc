@@ -9,7 +9,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-    (e: 'done'): void
+    (e: 'change'): void
 }>()
 
 const saveStore = useSaveStore()
@@ -31,16 +31,12 @@ const selectedStyleId = computed({
         lineSliceStore.updateSliceStyle(props.slice.id, val)
     }
 })
-
-function confirm() {
-    emit('done')
-}
 </script>
 
 <template>
 <div class="editor">
     <div class="editorTitle">编辑样式片段</div>
-    <select v-model.number="selectedStyleId" @change="confirm">
+    <select v-model.number="selectedStyleId" @change="emit('change')">
         <option :value="undefined" :key="-1">同线路样式</option>
         <option v-for="style in selectableLineStyles" :value="style.id" :key="style.id">
             {{ style.name }}

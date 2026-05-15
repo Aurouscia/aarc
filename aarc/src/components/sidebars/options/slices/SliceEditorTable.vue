@@ -3,9 +3,11 @@ import SideBar from '@/components/common/SideBar.vue';
 import { Line, StyleSlice, TimeSlice } from '@/models/save';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import TimeSliceEditor from './TimeSliceEditor.vue';
 import StyleSliceEditor from './StyleSliceEditor.vue';
+import { useEnvStore } from '@/models/stores/envStore';
+import Notice from '@/components/common/Notice.vue';
 
 const props = defineProps<{
     line: Line
@@ -14,6 +16,12 @@ const props = defineProps<{
 const saveStore = useSaveStore()
 const staClusterStore = useStaClusterStore()
 const sidebar = useTemplateRef('sidebar')
+
+/** 线路是否是环线（头尾站点相同） */
+const isRingLine = computed(() => {
+    if (props.line.pts.length < 2) return false
+    return props.line.pts.at(0) === props.line.pts.at(-1)
+})
 
 // ========== 站点列表（当前线路的点） ==========
 const stations = computed(() => {
@@ -194,12 +202,14 @@ function onSliceCellClick(col: 'time' | 'style', rowIdx: number) {
         if (info.sliceId === resizingSlice.value.sliceId && rowIdx !== resizingSlice.value.flashingRowIdx) {
             doResizeSlice(col, resizingSlice.value.sliceId, resizingSlice.value.flashingRowIdx, rowIdx)
             resizingSlice.value = null
+            rerenderIfSlicesChanged()
             return
         }
         // 点击空位：完成重设
         if (info.role === 'empty') {
             doResizeSlice(col, resizingSlice.value.sliceId, resizingSlice.value.flashingRowIdx, rowIdx)
             resizingSlice.value = null
+            rerenderIfSlicesChanged()
             return
         }
         // 点击其他 slice 或闪烁端点自身：abort
@@ -224,6 +234,7 @@ function onSliceCellClick(col: 'time' | 'style', rowIdx: number) {
         } else {
             editingSlice.value = { type: col, id: info.sliceId }
         }
+        rerenderIfSlicesChanged()
     }
 }
 
@@ -326,18 +337,34 @@ function doResizeSlice(type: 'time' | 'style', sliceId: number, flashingRowIdx: 
 
 // ========== Sidebar 收起时 abort ==========
 
-watch(() => sidebar.value, (newVal) => {
-    if (!newVal) return
-    // SideBar 没有暴露 showing 状态，我们通过 fold 方法调用来处理
-})
+let initialTimeSlicesJson = ''
+let initialStyleSlicesJson = ''
 
-// 重写 fold 方法，在收起时 abort
+function onSideBarExtend() {
+    initialTimeSlicesJson = JSON.stringify(timeSlices.value)
+    initialStyleSlicesJson = JSON.stringify(styleSlices.value)
+}
+
+function rerenderIfSlicesChanged() {
+    const currentTimeSlicesJson = JSON.stringify(timeSlices.value)
+    const currentStyleSlicesJson = JSON.stringify(styleSlices.value)
+    if (currentTimeSlicesJson !== initialTimeSlicesJson || currentStyleSlicesJson !== initialStyleSlicesJson) {
+        useEnvStore().rerender([], [])
+        initialTimeSlicesJson = currentTimeSlicesJson
+        initialStyleSlicesJson = currentStyleSlicesJson
+    }
+}
+
+function onSideBarFold() {
+    resizingSlice.value = null
+    pendingFrom.value = null
+    rerenderIfSlicesChanged()
+}
+
 function extend() {
     sidebar.value?.extend()
 }
 function fold() {
-    resizingSlice.value = null
-    pendingFrom.value = null
     sidebar.value?.fold()
 }
 
@@ -389,7 +416,7 @@ defineExpose({
 </script>
 
 <template>
-<SideBar ref="sidebar">
+<SideBar ref="sidebar" @extend="onSideBarExtend" @fold="onSideBarFold">
   <div class="slice-editor">
     <table>
       <thead>
@@ -487,7 +514,7 @@ defineExpose({
           <tr v-else-if="row.type === 'editor'" class="editor-row">
             <td colspan="3" class="editor-cell">
               <div v-if="row.editorType === 'time' && editingTimeSlice" class="editor-panel time">
-                <TimeSliceEditor :slice="editingTimeSlice"/>
+                <TimeSliceEditor :slice="editingTimeSlice" @change="rerenderIfSlicesChanged()"/>
                 <div v-if="resizingSlice?.sliceId === editingTimeSlice.id" class="resize-hint">
                   <span>请选择新{{ resizingSlice?.flashingRowIdx === getSliceIndices(editingTimeSlice)?.startIdx ? '上' : '下' }}点</span>
                   <button @click="resizingSlice = null">取消</button>
@@ -499,7 +526,7 @@ defineExpose({
                 </div>
               </div>
               <div v-if="row.editorType === 'style' && editingStyleSlice" class="editor-panel style">
-                <StyleSliceEditor :slice="editingStyleSlice"/>
+                <StyleSliceEditor :slice="editingStyleSlice" @change="rerenderIfSlicesChanged()"/>
                 <div v-if="resizingSlice?.sliceId === editingStyleSlice.id" class="resize-hint">
                   <span>请选择新{{ resizingSlice?.flashingRowIdx === getSliceIndices(editingStyleSlice)?.startIdx ? '上' : '下' }}点</span>
                   <button @click="resizingSlice = null">取消</button>
@@ -528,6 +555,9 @@ defineExpose({
         编辑中，再次点击该片段可关闭
       </span>
       <span v-else>点击空位开始创建片段，点击已有片段编辑</span>
+      <Notice v-if="isRingLine" :type="'info'" :title="'抱歉'">
+        当前对环线头尾点设置可能存在异常，请等待稍后更新修复
+      </Notice>
     </div>
   </div>
 </SideBar>

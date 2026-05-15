@@ -10,7 +10,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-    (e: 'done'): void
+    (e: 'change'): void
 }>()
 
 const lineSliceStore = useLineSliceStore()
@@ -40,9 +40,9 @@ watch(() => props.slice, () => {
     syncFrom()
 }, { immediate: true })
 
-function confirm() {
+function blur() {
     syncTo()
-    emit('done')
+    emit('change')
 }
 </script>
 
@@ -53,12 +53,15 @@ function confirm() {
         <tr>
             <td>建成</td>
             <td>
-                <input v-model.lazy="translated.open" placeholder="YYYY-MM-DD" @blur="confirm"/>
+                <input v-model.lazy="translated.open" placeholder="YYYY-MM-DD" @blur="blur"/>
             </td>
         </tr>
     </tbody></table>
     <div class="smallNote" style="margin-top: 4px;">
         可填写：2015 / 2015-3 / 2015-3-15
+    </div>
+    <div class="smallNote" style="margin-top: 4px;">
+        抱歉：当前未开通站点颜色可能显示异常
     </div>
 </div>
 </template>
