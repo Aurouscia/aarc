@@ -174,7 +174,13 @@ export const useLineSpanStore = defineStore('lineSpan', () => {
         // 回退到 Line 自身的 style
         const line = save.value?.lines.find(l => l.id === lineId)
         if (line?.style) {
-            const style = save.value?.lineStyles?.find(s => s.id === line.style)
+            let sid = line?.style
+            if(sid == -1 && line.parent){
+                // -1 表示跟随主线，从主线获取
+                const parent = useSaveStore().getLineById(line.parent)
+                sid = parent?.style || 0
+            }
+            const style = save.value?.lineStyles?.find(s => s.id === sid)
             if (style) {
                 return { style, fromLine: true }
             }

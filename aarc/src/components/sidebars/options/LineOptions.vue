@@ -355,7 +355,7 @@ onMounted(()=>{
                     </option>
                 </select>
                 <div class="smallNote">(可在设置-线路样式<br/>自定义更多选项)</div>
-                <div class="smallNote">注意：支线与主线样式不同时，半透明的样式颜色会重叠。如果要避免颜色重叠，请确保使用同一个样式，或设置样式透明度为1。</div>
+                <!-- <div class="smallNote">注意：支线与主线样式不同时，半透明的样式颜色会重叠。如果要避免颜色重叠，请确保使用同一个样式，或设置样式透明度为1。</div> -->
             </td>
         </tr>
         <tr>
@@ -367,7 +367,17 @@ onMounted(()=>{
             </td>
         </tr>
         <tr>
-            <td colspan="2" class="mediumNote">本线路为支线，不能单独设置<br/>请对其所属的主线进行设置</td>
+            <td>片段</td>
+            <td>
+                <button @click="openSliceOptions" class="minor">管理片段</button>
+                <div class="smallNote">管理该线路的样式片段和时间片段</div>
+                <Notice :type="'warn'" style="width: 160px;margin: auto;">
+                    试验性功能，效果不确定，请谨慎使用。稍后入口将不会在当前位置，搬去更方便的地方，请以“最近更新”为准。
+                </Notice>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" class="mediumNote">本线路为支线，大部分功能暂不支持单独设置<br/>请对其所属的主线进行设置</td>
         </tr>
     </tbody></table>
 </div>
