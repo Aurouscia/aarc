@@ -459,7 +459,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         // 普通 stroke 线路
         const lineWidth = cs.config.lineWidth * (lineInfo.width || 1)
         ctx.lineJoin = 'round'
-        ctx.lineCap = 'round'
+        ctx.lineCap = 'butt'
 
         const lineDownplayed = downplayed ?? lineStateStore.isLineDownplayed(lineInfo.id)
         const effectiveStyleId = styleId ?? lineInfo.style
