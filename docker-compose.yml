@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:18.4
+    container_name: aarc-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: aarc
+      POSTGRES_USER: aarc
+      POSTGRES_PASSWORD: aarc
+    volumes:
+      - aarc_postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aarc -d aarc"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aarc-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_HTTP_PORTS: 8080
+      Db__Type: pgsql
+      Db__ConnStr: Host=postgres;Database=aarc;Username=aarc;Password=aarc
+    volumes:
+      - aarc_data:/app/Data
+    ports:
+      - "8080:8080"
+
+volumes:
+  aarc_postgres:
+  aarc_data:
