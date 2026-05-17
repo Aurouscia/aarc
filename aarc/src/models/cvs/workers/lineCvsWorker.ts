@@ -503,20 +503,51 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
 
     /**
      * 统一绘制所有 span 的 style（新版渲染函数的包装器）
+     * 
+     * 将样式相同的 span 聚集后批量渲染，减少 canvas 状态切换次数。
+     * 
+     * 分组依据：(styleId, line.width, color, downplayed)
+     * 这四个参数决定了 strokeStyledLine 在 target='style' 时的全部视觉表现：
+     * - styleId/style → lineStyle.layers 决定每层 lineWidth 倍率、opacity、strokeStyle、lineCap、dash、pattern
+     * - line.width    → lineWidthBase，所有样式层宽度的计算基准
+     * - color         → dynaColor，当 layer.colorMode === 'line' 时的线条颜色
+     * - downplayed    → fixedColorConverter，当 layer.colorMode !== 'line' 时对固定颜色的淡化处理
+     * 
+     * 同组的 span 具有完全相同的 canvas 渲染状态，因此可以把它们的路径累积到同一条
+     * path 中（linkPts 内部使用 moveTo 开始每个 span，不会互相干扰），然后只需
+     * 调用一次 doRenderSpan → strokeStyledLine 即可完成该组所有 span 的样式渲染。
+     * 
+     * scale 和 offset 来自 ctx 本身，同一次渲染中对所有 span 相同，无需参与分组。
      */
     function renderAllSpansStyle(ctx: CvsContext, infos: SpanRenderInfo[]) {
+        // 按 (styleId, line.width, color, downplayed) 分组
+        const groups = new Map<string, SpanRenderInfo[]>()
         for (const info of infos) {
             const effectiveStyleId = info.styleId ?? info.line.style
-            const hasStyle = info.style || saveStore.save?.lineStyles?.find(x => x.id === effectiveStyleId)
-            if (!hasStyle) continue
+            const itsStyle = info.style || saveStore.save?.lineStyles?.find(x => x.id === effectiveStyleId)
+            if (!itsStyle) continue
 
+            const lineWidth = info.line.width || 1
+            const key = `${itsStyle.id}|${lineWidth}|${info.color ?? ''}|${info.downplayed}`
+            const existing = groups.get(key)
+            if (existing) {
+                existing.push(info)
+            } else {
+                groups.set(key, [info])
+            }
+        }
+
+        for (const groupInfos of groups.values()) {
+            const representative = groupInfos[0]
             ctx.beginPath()
-            linkPts(ctx, info.formalPts, info.line)
-            doRenderSpan(ctx, info.line, {
-                color: info.color,
-                downplayed: info.downplayed,
-                style: info.style,
-                styleId: info.styleId,
+            for (const info of groupInfos) {
+                linkPts(ctx, info.formalPts, info.line)
+            }
+            doRenderSpan(ctx, representative.line, {
+                color: representative.color,
+                downplayed: representative.downplayed,
+                style: representative.style,
+                styleId: representative.styleId,
                 strokeTarget: 'style'
             })
         }

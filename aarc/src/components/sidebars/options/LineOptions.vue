@@ -365,7 +365,7 @@ onMounted(()=>{
                     </option>
                 </select>
                 <div class="smallNote">(可在设置-线路样式<br/>自定义更多选项)</div>
-                <!-- <div class="smallNote">注意：支线与主线样式不同时，半透明的样式颜色会重叠。如果要避免颜色重叠，请确保使用同一个样式，或设置样式透明度为1。</div> -->
+                <div class="smallNote">注意：支线与主线样式不同时，<br/>分叉处的半透明的样式颜色会重叠。<br/>如果要避免颜色重叠变深，<br/>请确保使用同一个样式，<br/>或设置样式透明度为1。</div>
             </td>
         </tr>
         <tr>
@@ -387,7 +387,7 @@ onMounted(()=>{
             </td>
         </tr>
         <tr>
-            <td colspan="2" class="mediumNote">本线路为支线，大部分功能暂不支持单独设置<br/>请对其所属的主线进行设置</td>
+            <td colspan="2" class="mediumNote">本线路为支线<br/>大部分设置暂不支持单独调整<br/>请对其所属的主线进行设置</td>
         </tr>
     </tbody></table>
 </div>
