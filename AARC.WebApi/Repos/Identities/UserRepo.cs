@@ -342,7 +342,7 @@ namespace AARC.WebApi.Repos.Identities
             if (hasChangeTypeHistory)
                 throw new RqEx("请联系管理员");
             user.Type = UserType.Member;
-            userHistoryService.RecordChangeType(userId, UserType.Member, "自助转正");
+            userHistoryService.RecordChangeType(userId, UserType.Member, $"自助转正：{user.Email}");
             base.Update(user, true);
         }
     }
