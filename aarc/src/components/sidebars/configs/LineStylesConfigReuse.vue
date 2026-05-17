@@ -5,6 +5,7 @@ import { computed, ref, useTemplateRef, watch } from 'vue';
 import copy from 'copy-to-clipboard'
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { LineStyle } from '@/models/save';
+import { upgradeLineStyle } from '@/models/save/upgrade/lineStyles';
 import rfdc from 'rfdc';
 
 const saveStore = useSaveStore()
@@ -139,8 +140,11 @@ function mergeLineStyles(importedStyles: unknown[]) {
 
     for (const item of importedStyles) {
         if (!item || typeof item !== 'object') continue
-        const style = item as Partial<LineStyle>
+        const style = item as Partial<LineStyle> & Record<string, unknown>
         if (!Array.isArray(style.layers)) continue
+
+        // 升级旧版格式
+        upgradeLineStyle(style as LineStyle)
 
         if (save.value.lineStyles.length >= maxLineStyles) {
             skippedCount++
