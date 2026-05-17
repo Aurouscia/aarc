@@ -13,6 +13,7 @@ const { showPop } = useUniqueComponentsStore()
 const targetUserId = ref<number>()
 const operatorUserId = ref<number>()
 const type = ref<UserHistoryType>(UserHistoryType.Unknown)
+const comment = ref<string>()
 const nameMap = useNameMapStore()
 const userInfo = useUserInfoStore()
 
@@ -21,7 +22,7 @@ async function load(append?:'append') {
     if(!append){
         list.value = []
     }
-    const res = await api.user.loadHistory(targetUserId.value, operatorUserId.value, type.value, list.value.length)
+    const res = await api.user.loadHistory(targetUserId.value, operatorUserId.value, type.value, comment.value, list.value.length)
     if(res){
         const newUserIds0 = res.map(x => x.operatorUserId ?? 0)
         const newUserIds1 = res.map(x => x.targetUserId ?? 0)
@@ -73,7 +74,7 @@ function userSelected(forParam:'op'|'tar', u?:UserDto){
     }
 }
 
-watch(()=>[targetUserId.value, operatorUserId.value, type.value], ()=>{
+watch(()=>[targetUserId.value, operatorUserId.value, type.value, comment.value], ()=>{
     load()
 })
 
@@ -101,6 +102,7 @@ onMounted(()=>{
     <select v-else v-model.number="type">
         <option v-for="t in types" :value="t">{{ typeStr(t) }}</option>
     </select>
+    <input v-model.lazy.trim="comment" placeholder="筛选备注"/>
 </div>
 <UserSelect v-if="showOpSelect" @select="u=>userSelected('op', u)"></UserSelect>
 <UserSelect v-if="showTarSelect" @select="u=>userSelected('tar', u)"></UserSelect>

@@ -17,7 +17,8 @@ public class UserHistoryService(
     public const int userCreditBase = 10;
     private DbSet<UserHistory> UserHistories => context.UserHistories;
 
-    public List<UserHistoryDto> Load(int targetUserId, int operatorUserId, UserHistoryType type, int skip)
+    public List<UserHistoryDto> Load(
+        int targetUserId, int operatorUserId, UserHistoryType type, string? comment, int skip)
     {
         var q = UserHistories.AsQueryable();
         if (userInfoService.IsAdmin)
@@ -36,6 +37,10 @@ public class UserHistoryService(
         }
         if (type != UserHistoryType.Unknown)
             q = q.Where(x => x.UserHistoryType == type);
+        if (!string.IsNullOrWhiteSpace(comment))
+        {
+            q = q.Where(x => x.Comment != null && x.Comment.Contains(comment));
+        }
         return q
             .OrderByDescending(x => x.Id)
             .Skip(skip)

@@ -34,9 +34,9 @@ namespace AARC.WebApi.Controllers.Identities
         [AllowAnonymous]
         [HttpGet]
         public List<UserHistoryService.UserHistoryDto> LoadHistory(
-            int targetUserId, int operatorUserId, UserHistoryType type, int skip)
+            int targetUserId, int operatorUserId, UserHistoryType type, string? comment, int skip)
         {
-            return userHistoryService.Load(targetUserId, operatorUserId, type, skip);
+            return userHistoryService.Load(targetUserId, operatorUserId, type, comment, skip);
         }
 
         [AllowAnonymous]
