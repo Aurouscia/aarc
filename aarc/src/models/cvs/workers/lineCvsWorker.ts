@@ -439,7 +439,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     }
 
     /**
-     * 渲染单个 span 的 body
+     * 新版渲染函数（渲染单个 span，carpet 部分除外）
      */
     function doRenderSpan(
         ctx: CvsContext,
@@ -459,21 +459,21 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         // 普通 stroke 线路
         const lineWidth = cs.config.lineWidth * (lineInfo.width || 1)
         ctx.lineJoin = 'round'
-        ctx.lineCap = 'butt'
 
         const lineDownplayed = downplayed ?? lineStateStore.isLineDownplayed(lineInfo.id)
         const effectiveStyleId = styleId ?? lineInfo.style
         const itsStyle = style ?? saveStore.save?.lineStyles?.find(x => x.id === effectiveStyleId)
 
-        if (itsStyle) {
             const scale = ctx.getCurrentScale()
             const offset = ctx.getCurrentOffset()
+
             strokeStyledLine(ctx, {
                 target: strokeTarget ?? 'both',
                 scale,
                 offset,
                 lineStyle: itsStyle,
                 lineWidthBase: lineWidth,
+                baseCap: lineCapWithDefault(lineInfo),
                 dynaColor: lineColor,
                 fixedColorConverter: (c) => {
                     if (lineDownplayed)
@@ -481,13 +481,6 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                     return c
                 }
             })
-        } else {
-            // 无 style 时，strokeTarget 为 'style' 则跳过（无 style 可画）
-            if (strokeTarget === 'style') return
-            ctx.lineWidth = lineWidth
-            ctx.strokeStyle = lineColor
-            ctx.stroke()
-        }
     }
 
     interface SpanRenderInfo {
@@ -533,7 +526,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     }
 
     /**
-     * 统一绘制所有 span 的 base
+     * 统一绘制所有 span 的 base（新版渲染函数的包装器）
      */
     function renderAllSpansBase(ctx: CvsContext, infos: SpanRenderInfo[]) {
         for (const info of infos) {
@@ -550,7 +543,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     }
 
     /**
-     * 统一绘制所有 span 的 style
+     * 统一绘制所有 span 的 style（新版渲染函数的包装器）
      */
     function renderAllSpansStyle(ctx: CvsContext, infos: SpanRenderInfo[]) {
         for (const info of infos) {
@@ -570,6 +563,9 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         }
     }
 
+    /** 
+     * 旧版渲染函数（整条线，目前仅用于 carpet 和选中点局部）
+     */
     function doRender(
         ctx:CvsContext, lineInfo:Line, enforceNoFill?:boolean,
         enforceLineWidth?:number, type?:LineRenderType, strokeTarget?:LineStrokeTarget
@@ -604,6 +600,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                         offset,
                         lineStyle: itsStyle,
                         lineWidthBase: lineWidth,
+                        baseCap: lineCapWithDefault(lineInfo),
                         dynaColor: lineColor,
                         fixedColorConverter: (c)=>{
                             if(lineDownplayed)
@@ -632,5 +629,10 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
         }
     }
+
+    function lineCapWithDefault(lineInfo: Line){
+        return lineInfo.cap || (lineInfo.type == LineType.common ? 'butt' : 'round') // 线路默认用方头，地形默认用圆头
+    }
+
     return { renderAllLines, renderLine, renderSegsAroundActivePt }
 })

@@ -105,7 +105,8 @@ function renderPreviewCvsOf(lineStyle:LineStyle, dynaColor:string){
         lineStyle: lineStyle,
         lineWidthBase: cvsLineWidthBase,
         dynaColor: dynaColor,
-        fixedColorConverter: (c)=>c
+        fixedColorConverter: (c)=>c,
+        baseCap: 'butt'
     })
 }
 
@@ -205,14 +206,14 @@ onUnmounted(()=>{
                         <b>虚线</b>
                         <input v-model="layer.dash" class="dashConfigInput" placeholder="空格隔开的数字"/>
                     </div>
-                    <div v-if="layer.dash">
-                        <b>虚线端部</b>
-                        <select v-model="layer.dashCap">
+                    <div>
+                        <b>端部</b>
+                        <select v-model="layer.cap">
                             <option :value="undefined">方头</option>
                             <option :value="'round'">圆头</option>
                         </select>
                     </div>
-                    <div v-else>
+                    <div v-if="!layer.dash">
                         <b>纹理</b>
                         <select v-model="layer.pattern">
                             <option :value="undefined">无</option>

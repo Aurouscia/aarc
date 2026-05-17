@@ -84,6 +84,7 @@ export interface Line{
     isFake?:boolean
     removeCarpet?:boolean
     time?: LineTimeInfo
+    cap?: CanvasLineCap
 }
 export interface LineTimeInfo{
     propose?: number

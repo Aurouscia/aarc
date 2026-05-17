@@ -389,7 +389,8 @@ export const devSave:Save = {
                     color: '#ffffff',
                     colorMode: 'fixed',
                     opacity: 1,
-                    dash: '3 0.5 0.5 0.5'
+                    dash: '3 1.5',
+                    cap: 'round'
                 }
             ]
         },

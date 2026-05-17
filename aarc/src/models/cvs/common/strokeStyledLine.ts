@@ -11,22 +11,24 @@ export function strokeStyledLine(
         target?: LineStrokeTarget,
         scale?:number,
         offset?:Coord,
-        lineStyle:LineStyle,
+        lineStyle?:LineStyle,
         lineWidthBase:number,
+        baseCap:CanvasLineCap
         dynaColor:string,
         fixedColorConverter:(c:string)=>string
     }){
-    const { target, scale, offset, lineWidthBase, lineStyle, dynaColor, fixedColorConverter } = options
+    const { target, scale, offset, lineWidthBase, lineStyle, baseCap, dynaColor, fixedColorConverter } = options
     if(target != 'style'){
+        // target 为 base 或 both 时，渲染线路本体
         ctx.lineWidth = lineWidthBase
         ctx.globalAlpha = 1
         ctx.strokeStyle = dynaColor
         ctx.setLineDash([])
-        ctx.lineCap = 'butt'
+        ctx.lineCap = baseCap
         ctx.stroke()
     }
-    if(target == 'base')
-        return
+    if(target == 'base' || !lineStyle)
+        return // 如果接下来无需渲染样式，直接退出
     for(let i = lineStyle.layers.length - 1; i >= 0; i--){
         const layer = lineStyle.layers[i]
         //被input设置的width和opacity是字符串形式的数字，此处应该使用双等号判断是否为0，三等号判断将始终为false
@@ -50,6 +52,7 @@ export function strokeStyledLine(
         }
 
         ctx.strokeStyle = color
+        ctx.lineCap = layer.cap || 'butt'
 
         if(layer.dash){
             const dashNums = parseDash(layer.dash)
@@ -57,7 +60,6 @@ export function strokeStyledLine(
                 dashNums[i] = dashNums[i]*lineWidthBase
             }
             ctx.setLineDash(dashNums)
-            ctx.lineCap = layer.dashCap || 'butt'
         }
         else {
             ctx.setLineDash([])

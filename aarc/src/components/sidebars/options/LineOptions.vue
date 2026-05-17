@@ -321,6 +321,16 @@ onMounted(()=>{
         </td>
     </tr>
     <tr>
+        <td>端点</td>
+        <td>
+            <select v-model="line.cap" @change="reportInfoChanged(false)">
+                <option :value="undefined">默认</option>
+                <option :value="'butt'">方头</option>
+                <option :value="'round'">圆头</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
         <td>伪线</td>
         <td>
             <input v-model="line.isFake" type="checkbox" @change="reportInfoChanged(false)"/>
