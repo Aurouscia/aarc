@@ -101,7 +101,7 @@ export interface LineStyle{
         width?:number
         opacity?:number
         dash?:string
-        dashCap?:CanvasLineCap,
+        cap?:CanvasLineCap,
         pattern?:number
     }[]
 }

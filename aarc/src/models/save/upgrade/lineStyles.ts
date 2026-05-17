@@ -1,6 +1,6 @@
 import { Save } from "@/models/save";
 
-export const freshNewLineStylesVersion = 0
+export const freshNewLineStylesVersion = 1
 export function initFreshNewLineStyles(s:Save, getNewId:()=>number){
     s.lineStyles ??= []
     s.lineStyles.push(
@@ -23,6 +23,16 @@ export function initFreshNewLineStyles(s:Save, getNewId:()=>number){
 export function upgradeLineStyles(s:Save, _getNewId:()=>number){
     const ver = s.meta.lineStylesVersion ?? 0
     if(ver < 1){
-        //预留
+        s.lineStyles ??= []
+        for(const ls of s.lineStyles){
+            for(const layer of ls.layers){
+                if('dashCap' in layer){
+                    layer.cap = layer.dashCap as any
+                    delete (layer as any).dashCap
+                }
+            }
+        }
+        s.meta.lineStylesVersion = 1
+        console.log('[升级]线路样式:1')
     }
 }
