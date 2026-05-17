@@ -16,6 +16,8 @@ namespace AARC.WebApi.Models.Db.Context
 
             if (dbType == "sqlite")
                 services.AddDbContext<AarcContext, AarcSqliteContext>();
+            else if (dbType == "pgsql")
+                services.AddDbContext<AarcContext, AarcPgsqlContext>();
             else
                 throw new Exception("不支持的数据库类型(配置项Db:Type)");
 

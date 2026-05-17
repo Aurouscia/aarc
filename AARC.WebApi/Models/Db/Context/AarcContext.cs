@@ -7,6 +7,15 @@ namespace AARC.WebApi.Models.Db.Context
 {
     public abstract class AarcContext: DbContext
     {
+        protected readonly AarcContextOptions Options;
+        protected abstract string AcceptDbType { get; }
+        public AarcContext(AarcContextOptions options)
+        {
+            if (options.Type?.ToLower() != AcceptDbType)
+                throw new Exception($"数据库类型配置异常，应为:{AcceptDbType}");
+            Options = options;
+        }
+
         public DbSet<User> Users { get; set; }
         public DbSet<UserHistory> UserHistories { get; set; }
         public DbSet<AuthGrant> AuthGrants { get; set; }
