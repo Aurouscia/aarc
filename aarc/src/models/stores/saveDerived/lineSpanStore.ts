@@ -217,11 +217,30 @@ export const useLineSpanStore = defineStore('lineSpan', () => {
         return undefined
     }
 
+    /**
+     * 判断指定线路指定区间在当前 effectiveTimeMoment 下是否已开通
+     * 
+     * 逻辑：
+     * 1. 无时间信息（无 Line.time 也无 TimeSlice）→ 视为已开通（始终显示）
+     * 2. 有 time.open → 比较 open <= effectiveTimeMoment
+     * 3. 无 time.open → 视为已开通
+     * 
+     * 注意：此函数不读取 exporting / preview 开关，调用方自行判断是否需要过滤
+     */
+    function isSpanOpened(lineId: number, spanIdx: number, timeMoment: number): boolean {
+        const spanTime = getSpanTime(lineId, spanIdx)
+        const time = spanTime?.time
+        if (!time) return true
+        if (typeof time.open !== 'number') return true
+        return time.open <= timeMoment
+    }
+
     return {
         allFlattened,
         getFlattenedLine,
         getSpanStyle,
         getSpanTime,
+        isSpanOpened,
         flattenLine
     }
 })

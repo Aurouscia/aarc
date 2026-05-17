@@ -1,10 +1,24 @@
 import { Coord, FormalPt } from "@/models/coord";
 import { defineStore } from "pinia";
 import { useKvStoreCore } from "./common/kvStoreCore";
+import { Line, LineStyle } from "@/models/save";
+import { useLineSpanStore } from "./lineSpanStore";
+import { useLineStateStore } from "./state/lineStateStore";
+import { useRenderOptionsStore } from "../renderOptionsStore";
+import { extractSpanFormalPts } from "@/utils/lineUtils/extractSpanFormalPts";
 
 export interface FormalizedLine{
     lineId:number,
     pts:FormalPt[]
+}
+
+export interface SpanRenderInfo {
+    line: Line
+    formalPts: FormalPt[]
+    color: string | undefined
+    downplayed: boolean
+    style: LineStyle | undefined
+    styleId: number | undefined
 }
 
 export const useFormalizedLineStore = defineStore('formalizedLine', ()=>{
@@ -55,12 +69,60 @@ export const useFormalizedLineStore = defineStore('formalizedLine', ()=>{
         localFormalSegs = segs
     }
 
+    /**
+     * 收集单条线路的所有 span 渲染信息
+     * 
+     * @param line 线路
+     * @param filterNotOpened 是否过滤掉未开通的 span（用于导出时）
+     */
+    function collectSpanRenderInfos(line: Line, filterNotOpened?: boolean): SpanRenderInfo[] {
+        const lineSpanStore = useLineSpanStore()
+        const lineStateStore = useLineStateStore()
+        const { effectiveTimeMoment } = useRenderOptionsStore()
+        const flattened = lineSpanStore.getFlattenedLine(line.id)
+        if (!flattened || flattened.spans.length === 0) return []
+
+        const allFormalPts = getItem(line.id) ?? []
+        const infos: SpanRenderInfo[] = []
+        const timeMoment = typeof effectiveTimeMoment === 'number' ? effectiveTimeMoment : undefined
+
+        for (let spanIdx = 0; spanIdx < flattened.spans.length; spanIdx++) {
+            const span = flattened.spans[spanIdx]
+            const spanFormalPts = extractSpanFormalPts(allFormalPts, span)
+            if (spanFormalPts.length < 2) continue
+
+            // 导出模式下过滤未开通的 span
+            if (filterNotOpened && typeof timeMoment === 'number') {
+                if (!lineSpanStore.isSpanOpened(line.id, spanIdx, timeMoment)) {
+                    continue
+                }
+            }
+
+            const spanStyleInfo = lineSpanStore.getSpanStyle(line.id, spanIdx)
+            const spanStyle = spanStyleInfo?.style
+            const spanStyleId = spanStyleInfo?.styleSlice?.style ?? line.style
+            const spanColor = lineStateStore.getSpanActualColor(line.id, spanIdx)
+            const spanDownplayed = lineStateStore.isSpanDownplayed(line.id, spanIdx)
+
+            infos.push({
+                line,
+                formalPts: spanFormalPts,
+                color: spanColor,
+                downplayed: spanDownplayed,
+                style: spanStyle,
+                styleId: spanStyleId
+            })
+        }
+        return infos
+    }
+
     return { 
         setLinesFormalPts,
         getLinesFormalPts: getItem,
         enumerateFormalizedLines: enumerateItems,
         findAdjacentFormalPts,
         clearItems,
-        setLocalFormalSegs
+        setLocalFormalSegs,
+        collectSpanRenderInfos
     }
 })

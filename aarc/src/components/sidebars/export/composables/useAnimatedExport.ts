@@ -50,10 +50,10 @@ export function useAnimatedExport() {
      */
     function getAnimationTimePoints(): number[] | null {
         const { getUniqueTimeValues } = useLineTimeStore()
-        const timePoints = getUniqueTimeValues({
+        const timePoints = [...getUniqueTimeValues({
             types: ['open'],
             onlyOpened: true
-        })
+        })]
 
         if (timePoints.length < 2) {
             return null
@@ -88,8 +88,8 @@ export function useAnimatedExport() {
             lineWidth = 2
         lineWidth = clamp(lineWidth, ANIMATED_EXPORT_LIMITS.lineWidth.min, ANIMATED_EXPORT_LIMITS.lineWidth.max)
 
-        const { linesSortedByOpenState, linesFilteredByOpenState } = storeToRefs(useLineTimeStore())
-        const lines = animConfig.value.hideNotOpened ?  linesFilteredByOpenState : linesSortedByOpenState
+        const { linesSortedByOpenState } = storeToRefs(useLineTimeStore())
+        const lines = linesSortedByOpenState
 
         const timePoints = getAnimationTimePoints()
         if (!timePoints) {
@@ -108,7 +108,8 @@ export function useAnimatedExport() {
                 const cvs = miniatureCvsDispatcher.renderMiniatureCvs({
                     sideLength: canvasSize,
                     lineWidth,
-                    lines: lines.value
+                    lines: lines.value,
+                    filterNotOpened: animConfig.value.hideNotOpened
                 })
                 const ctx = cvs.getContext('2d')!
                 const imageData = ctx.getImageData(0, 0, cvs.width, cvs.height)

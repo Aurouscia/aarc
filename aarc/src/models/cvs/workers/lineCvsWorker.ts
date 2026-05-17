@@ -7,7 +7,7 @@ import { coordFill } from "@/utils/coordUtils/coordFill";
 import { coordDist } from "@/utils/coordUtils/coordDist";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useConfigStore } from "@/models/stores/configStore";
-import { FormalizedLine, useFormalizedLineStore } from "@/models/stores/saveDerived/formalizedLineStore";
+import { FormalizedLine, SpanRenderInfo, useFormalizedLineStore } from "@/models/stores/saveDerived/formalizedLineStore";
 import { rayIntersect } from "@/utils/rayUtils/rayIntersection";
 import { rayPerpendicular, rayRel } from "@/utils/rayUtils/rayParallel";
 import { rayRotate90 } from "@/utils/rayUtils/rayRotate";
@@ -21,9 +21,8 @@ import { rayToCoordDist } from "@/utils/rayUtils/rayToCoordDist";
 import { numberCmpEpsilon } from "@/utils/consts";
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
-import { useLineSpanStore } from "@/models/stores/saveDerived/lineSpanStore";
 import { LineStyle } from "@/models/save";
-import { extractSpanFormalPts } from "@/utils/lineUtils/extractSpanFormalPts";
+
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill:number}
 type LineRenderType = 'both'|'body'|'carpet'
@@ -31,7 +30,7 @@ type LineRenderType = 'both'|'body'|'carpet'
 export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     const saveStore = useSaveStore();
     const lineStateStore = useLineStateStore()
-    const lineSpanStore = useLineSpanStore()
+
     const envStore = useEnvStore();
     const formalizedLineStore = useFormalizedLineStore()
     const cs = useConfigStore();
@@ -98,7 +97,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         if(includeBody){
             const allSpanInfos: SpanRenderInfo[] = []
             for(const l of line){
-                allSpanInfos.push(...collectSpanRenderInfos(l))
+                allSpanInfos.push(...formalizedLineStore.collectSpanRenderInfos(l))
             }
             renderAllSpansBase(ctx, allSpanInfos)
             renderAllSpansStyle(ctx, allSpanInfos)
@@ -483,47 +482,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             })
     }
 
-    interface SpanRenderInfo {
-        line: Line
-        formalPts: FormalPt[]
-        color: string | undefined
-        downplayed: boolean
-        style: LineStyle | undefined
-        styleId: number | undefined
-    }
 
-    /**
-     * 收集单条线路的所有 span 渲染信息
-     */
-    function collectSpanRenderInfos(line: Line): SpanRenderInfo[] {
-        const flattened = lineSpanStore.getFlattenedLine(line.id)
-        if (!flattened || flattened.spans.length === 0) return []
-
-        const allFormalPts = formalizedLineStore.getLinesFormalPts(line.id) ?? []
-        const infos: SpanRenderInfo[] = []
-
-        for (let spanIdx = 0; spanIdx < flattened.spans.length; spanIdx++) {
-            const span = flattened.spans[spanIdx]
-            const spanFormalPts = extractSpanFormalPts(allFormalPts, span)
-            if (spanFormalPts.length < 2) continue
-
-            const spanStyleInfo = lineSpanStore.getSpanStyle(line.id, spanIdx)
-            const spanStyle = spanStyleInfo?.style
-            const spanStyleId = spanStyleInfo?.styleSlice?.style ?? line.style
-            const spanColor = lineStateStore.getSpanActualColor(line.id, spanIdx)
-            const spanDownplayed = lineStateStore.isSpanDownplayed(line.id, spanIdx)
-
-            infos.push({
-                line,
-                formalPts: spanFormalPts,
-                color: spanColor,
-                downplayed: spanDownplayed,
-                style: spanStyle,
-                styleId: spanStyleId
-            })
-        }
-        return infos
-    }
 
     /**
      * 统一绘制所有 span 的 base（新版渲染函数的包装器）

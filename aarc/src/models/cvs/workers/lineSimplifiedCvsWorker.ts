@@ -1,5 +1,5 @@
 import { Coord, FormalPt } from "@/models/coord";
-import { useFormalizedLineStore } from "@/models/stores/saveDerived/formalizedLineStore";
+import { SpanRenderInfo, useFormalizedLineStore } from "@/models/stores/saveDerived/formalizedLineStore";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { defineStore } from "pinia";
 import { CvsContext } from "../common/cvsContext";
@@ -13,17 +13,15 @@ export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker',
     const lineStateStore = useLineStateStore()
     const cs = useConfigStore()
     const formalizedLineStore = useFormalizedLineStore()
-    function renderAllLines(ctx:CvsContext, options:{lineWidth:number, lines?:Line[]}){
-        const render = (lineInfo:Line, pts:FormalPt[])=>{
-            if(!lineInfo)
-                return
-            const poss = pts.map(x=>x.pos)
-            let lineWidthHere = options.lineWidth
-            if(lineInfo.type === LineType.terrain){
-                const originalWidth = cs.config.lineWidth * (lineInfo.width||1)
-                lineWidthHere = Math.max(options.lineWidth, originalWidth)
+    function renderAllLines(ctx:CvsContext, options:{lineWidth:number, lines?:Line[], filterNotOpened?:boolean}){
+        const renderSpan = (info: SpanRenderInfo, lineWidth: number)=>{
+            const poss = info.formalPts.map(x=>x.pos)
+            let lineWidthHere = lineWidth
+            if(info.line.type === LineType.terrain){
+                const originalWidth = cs.config.lineWidth * (info.line.width||1)
+                lineWidthHere = Math.max(lineWidth, originalWidth)
             }
-            renderLine(ctx, lineInfo, poss, lineWidthHere)
+            renderLine(ctx, info.line, poss, lineWidthHere, info.color)
         }
         const formalizedLines:{lineId:number, pts:FormalPt[]}[] = []
         formalizedLineStore.enumerateFormalizedLines((lineId, pts)=>{
@@ -44,16 +42,19 @@ export const useLineSimplifiedCvsWorker = defineStore('lineSimplifiedCvsWorker',
         })
         keepOrderSort(targets, (a,b)=>b.lineInfo.type-a.lineInfo.type)
         for(const target of targets){
-            render(target.lineInfo, target.pts)
+            const spanInfos = formalizedLineStore.collectSpanRenderInfos(target.lineInfo, options.filterNotOpened)
+            for(const info of spanInfos){
+                renderSpan(info, options.lineWidth)
+            }
         }
     }
-    function renderLine(ctx:CvsContext, lineInfo:Line, pts:Coord[], lineWidth:number){
+    function renderLine(ctx:CvsContext, lineInfo:Line, pts:Coord[], lineWidth:number, overrideColor?: string){
         if(pts.length<=1)
             return
         ctx.lineCap = 'round'
         ctx.lineJoin = 'round'
         ctx.lineWidth = lineWidth
-        const color = lineStateStore.getLineActualColor(lineInfo)
+        const color = overrideColor ?? lineStateStore.getLineActualColor(lineInfo)
         ctx.strokeStyle = color
         ctx.fillStyle = color
         ctx.beginPath()

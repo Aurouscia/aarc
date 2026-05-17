@@ -2,7 +2,7 @@ import { defineStore, storeToRefs } from "pinia";
 import { useSaveStore } from "../saveStore";
 import { useRenderOptionsStore } from "../renderOptionsStore";
 import { computed } from "vue";
-import { Line, LineTimeInfo } from "@/models/save";
+import { Line, LineTimeInfo, TimeSlice } from "@/models/save";
 import { keepOrderSort } from "@/utils/lang/keepOrderSort";
 
 /** 时间点类型 */
@@ -54,20 +54,20 @@ export const useLineTimeStore = defineStore('lineTime', () => {
     /**
      * 从 LineTimeInfo 中提取所有时间点
      */
-    function extractTimePointsFromLine(line: Line): TimePoint[] {
+    function extractTimePointsFromLineTimeInfo(
+        time: LineTimeInfo,
+        lineId: number,
+        lineName: string
+    ): TimePoint[] {
         const points: TimePoint[] = []
-        const time = line.time
-        if (!time) {
-            return points
-        }
 
         // propose - 规划
         if (typeof time.propose === 'number') {
             points.push({
                 value: time.propose,
                 type: 'propose',
-                lineId: line.id,
-                lineName: line.name
+                lineId,
+                lineName
             })
         }
 
@@ -76,8 +76,8 @@ export const useLineTimeStore = defineStore('lineTime', () => {
             points.push({
                 value: time.construct,
                 type: 'construct',
-                lineId: line.id,
-                lineName: line.name
+                lineId,
+                lineName
             })
         }
 
@@ -86,8 +86,8 @@ export const useLineTimeStore = defineStore('lineTime', () => {
             points.push({
                 value: time.open,
                 type: 'open',
-                lineId: line.id,
-                lineName: line.name
+                lineId,
+                lineName
             })
         }
 
@@ -98,16 +98,16 @@ export const useLineTimeStore = defineStore('lineTime', () => {
                     points.push({
                         value: start,
                         type: 'suspendStart',
-                        lineId: line.id,
-                        lineName: line.name
+                        lineId,
+                        lineName
                     })
                 }
                 if (typeof end === 'number') {
                     points.push({
                         value: end,
                         type: 'suspendEnd',
-                        lineId: line.id,
-                        lineName: line.name
+                        lineId,
+                        lineName
                     })
                 }
             }
@@ -118,8 +118,8 @@ export const useLineTimeStore = defineStore('lineTime', () => {
             points.push({
                 value: time.abandon,
                 type: 'abandon',
-                lineId: line.id,
-                lineName: line.name
+                lineId,
+                lineName
             })
         }
 
@@ -127,7 +127,34 @@ export const useLineTimeStore = defineStore('lineTime', () => {
     }
 
     /**
+     * 从 Line 中提取所有时间点
+     */
+    function extractTimePointsFromLine(line: Line): TimePoint[] {
+        const time = line.time
+        if (!time) {
+            return []
+        }
+        return extractTimePointsFromLineTimeInfo(time, line.id, line.name)
+    }
+
+    /**
+     * 从 TimeSlice 中提取所有时间点
+     */
+    function extractTimePointsFromTimeSlice(timeSlice: TimeSlice): TimePoint[] {
+        const time = timeSlice.time
+        if (!time) {
+            return []
+        }
+
+        const line = save.value?.lines.find(l => l.id === timeSlice.line)
+        const lineName = line?.name ?? ''
+
+        return extractTimePointsFromLineTimeInfo(time, timeSlice.line, lineName)
+    }
+
+    /**
      * 获取所有原始时间点（未筛选、未排序）
+     * 包含 Line.time 和 TimeSlice.time 的时间点
      */
     const allTimePoints = computed<TimePoint[]>(() => {
         const lines = save.value?.lines
@@ -139,7 +166,23 @@ export const useLineTimeStore = defineStore('lineTime', () => {
         for (const line of lines) {
             points.push(...extractTimePointsFromLine(line))
         }
+
+        // 加入 TimeSlice 的时间点
+        const timeSlices = save.value?.timeSlices
+        if (timeSlices && timeSlices.length > 0) {
+            for (const timeSlice of timeSlices) {
+                points.push(...extractTimePointsFromTimeSlice(timeSlice))
+            }
+        }
+
         return points
+    })
+
+    /**
+     * 获取所有原始时间点，按时间排序
+     */
+    const allTimePointsOrdered = computed<TimePoint[]>(() => {
+        return [...allTimePoints.value].sort((a, b) => a.value - b.value)
     })
 
     /**
@@ -249,14 +292,13 @@ export const useLineTimeStore = defineStore('lineTime', () => {
     }
 
     /**
-     * 获取去重后的时间点值列表
+     * 获取去重后的时间点值列表（已按时间排序）
      * @param filter 筛选参数
-     * @param sort 是否排序（默认 true）
      */
-    function getUniqueTimeValues(filter?: TimePointFilter, sort: boolean = true): number[] {
-        const points = getTimePoints(filter, sort)
-        const uniqueValues = [...new Set(points.map(p => p.value))]
-        return sort ? uniqueValues.sort((a, b) => a - b) : uniqueValues
+    function getUniqueTimeValues(filter?: TimePointFilter): number[] {
+        let points = allTimePointsOrdered.value
+        points = filterTimePoints(points, filter)
+        return [...new Set(points.map(p => p.value))]
     }
 
     /**
@@ -264,7 +306,7 @@ export const useLineTimeStore = defineStore('lineTime', () => {
      * @param filter 筛选参数
      */
     function getTimeRange(filter?: TimePointFilter): TimeRange | null {
-        const values = getUniqueTimeValues(filter, false)
+        const values = getUniqueTimeValues(filter)
         if (values.length === 0) {
             return null
         }
@@ -390,6 +432,7 @@ export const useLineTimeStore = defineStore('lineTime', () => {
 
     return {
         allTimePoints,
+        allTimePointsOrdered,
         linesWithTime,
         linesSortedByOpenTime,
         linesSortedByOpenTimeDesc,

@@ -7,8 +7,8 @@ import { Line } from "@/models/save";
 export const useMiniatureCvsDispatcher = defineStore('miniatureCvsDispatcher', ()=>{
     const lineSimplifiedCvsWorker = useLineSimplifiedCvsWorker()
     const saveStore = useSaveStore()
-    function renderMiniatureCvs(options:{sideLength:number, lineWidth:number, lines?:Line[]}){
-        const { sideLength, lineWidth, lines} = options
+    function renderMiniatureCvs(options:{sideLength:number, lineWidth:number, lines?:Line[], filterNotOpened?:boolean}){
+        const { sideLength, lineWidth, lines, filterNotOpened} = options
         const cvs = new OffscreenCanvas(sideLength, sideLength)
         const ctx2d = cvs.getContext('2d')
         if(ctx2d === null)
@@ -33,10 +33,10 @@ export const useMiniatureCvsDispatcher = defineStore('miniatureCvsDispatcher', (
         )
         ctx.fillStyle = 'white'
         ctx.fillTotal()
-        lineSimplifiedCvsWorker.renderAllLines(ctx, {lineWidth: lineWidth/ratio, lines})
+        lineSimplifiedCvsWorker.renderAllLines(ctx, {lineWidth: lineWidth/ratio, lines, filterNotOpened})
         return cvs
     }
     return {
-        renderMiniatureCvs       
+        renderMiniatureCvs
     }
 })
