@@ -65,7 +65,7 @@ export const useLineStateStore = defineStore('lineState', () => {
                 const downplay = !inAccIds && !accBySpread && !accByTerrain && !accByParent
                 if(downplay){
                     const newColor = colorProc.colorProcDownplay.convert(color)
-                    res.set(lineId, {color:newColor, downplayed:true})
+                    res.set(lineId, {color:newColor, downplayed:true, downplayedBy: 'accentuation'})
                 }
             }
         }
