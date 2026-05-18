@@ -1,4 +1,5 @@
 ﻿using AARC.WebApi.Services.App.OpenApi;
+using AARC.WebApi.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AARC.WebApi.Controllers.System
@@ -16,6 +17,12 @@ namespace AARC.WebApi.Controllers.System
                 return "仅在开发环境可用";
             var codeLength = await nSwagTsGenService.GenApiTsClient(writeHere != 0);
             return $"生成成功，长度 {codeLength}";
+        }
+
+        [RateLimit(120, 120)]
+        public int CurrentRequestCount()
+        {
+            return RequestCounterMiddleware.CurrentRequests;
         }
     }
 }

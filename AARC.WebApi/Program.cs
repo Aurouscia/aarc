@@ -39,6 +39,7 @@ try
     app.UseFileServer();
     app.UseAppendedStaticFiles(e);
     app.UseRouting();
+    app.UseRequestCounter();
     app.UseIpRateLimit();
     app.UseAuthorization();
     app.UseSerilog();
