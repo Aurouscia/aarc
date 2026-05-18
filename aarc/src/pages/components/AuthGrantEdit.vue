@@ -34,7 +34,7 @@ const listDisplay = computed<AuthGrantDisplay[]>(() => {
     return list.value.map((ag) => {
         let toName = undefined
         if(ag.to == AuthGrantTo.User){
-            toName = nameMapStore.userNameMap.get(ag.toId ?? 0)
+            toName = nameMapStore.getName('userNameMap', ag.toId ?? 0)
         }
         return {
             ...ag,
@@ -137,7 +137,7 @@ async function load() {
         list.value = data
         const uids = data.filter(x=>x.to == AuthGrantTo.User).map(x=>x.toId ?? 0)
         if(uids.length > 0){
-            nameMapStore.ensureLoaded('userNameMap', uids)
+            await nameMapStore.ensureLoaded('userNameMap', uids)
         }
     }
 }

@@ -88,11 +88,11 @@ onMounted(()=>{
 <div class="conditions">
     <template v-if="userInfo.isAdmin">
         <button v-if="operatorUserId" class="off" @click="operatorUserId = 0">
-            筛选操作者：{{ nameMap.userNameMap.get(operatorUserId) }}
+            筛选操作者：{{ nameMap.getName('userNameMap', operatorUserId) }}
         </button>
         <button v-else @click="showOpSelect=true">筛选操作者</button>
         <button v-if="targetUserId" class="off" @click="targetUserId = 0">
-            筛选目标：{{ nameMap.userNameMap.get(targetUserId) }}
+            筛选目标：{{ nameMap.getName('userNameMap', targetUserId) }}
         </button>
         <button v-else @click="showTarSelect=true">筛选目标</button>
     </template>
@@ -121,12 +121,12 @@ onMounted(()=>{
         </td>
         <td>
             <button @click="operatorUserId = h.operatorUserId" class="lite">
-                {{ nameMap.userNameMap.get(h.operatorUserId ?? 0) ?? '---' }}
+                {{ nameMap.getName('userNameMap', h.operatorUserId ?? 0) ?? '---' }}
             </button>
         </td>
         <td>
             <button @click="targetUserId = h.targetUserId" class="lite">
-                {{ nameMap.userNameMap.get(h.targetUserId ?? 0) ?? '---' }}
+                {{ nameMap.getName('userNameMap', h.targetUserId ?? 0) ?? '---' }}
             </button>
         </td>
         <td>
