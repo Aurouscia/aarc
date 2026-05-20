@@ -8,6 +8,7 @@ export interface Save{
     lines: Line[]
     lineStyles?: LineStyle[]
     lineGroups?: LineGroup[]
+    // ⚠️ 新增 slice 类型后，必须在"规范化"相关逻辑中补充（如 saveNormalize.ts、sliceResolver.ts 等）
     styleSlices?: StyleSlice[]
     timeSlices?: TimeSlice[]
     textTags: TextTag[]
@@ -66,6 +67,13 @@ export enum LineType{
 }
 export interface Line{
     id:number
+    /**
+     * 线路经过的点ID序列，按线路走向顺序排列。
+     *
+     * ⚠️ **不能随意交换头尾！** 点的顺序决定了线路的绘制方向、
+     * 站点排列顺序以及 Slice 端点的解析结果（见 {@link resolveSliceEndpoints}）。
+     * 环线允许头尾相同（pts[0] === pts[last]）。
+     */
     pts:number[]
     name:string
     nameSub:string
@@ -179,12 +187,31 @@ export interface Pattern{
     }
 }
 
+/**
+ * 线路片段的基接口。
+ *
+ * ## 端点语义约定
+ * - `fromPt` 和 `toPt` 存储的是点ID，但**不代表唯一位置**
+ * - 实际位置由 {@link resolveSliceEndpoints} 根据线路点序列解析
+ * - 解析规则：
+ *   1. fromIdx 必须 < toIdx（若用户选反，自动交换）
+ *   2. from === to 的片段被禁止
+ *   3. from 和 to 不能同时为奇异点（在线路中出现多次的点）
+ *   4. 若一端为奇异点：非奇异端固定，奇异端按"最近"原则定向寻找
+ *      - from 非奇异 → to（奇异）向右找最近的 from
+ *      - to 非奇异 → from（奇异）向左找最近的 to
+ *
+ * ## 稳定性
+ * 除"新增/去除奇异点"外，线路的普通编辑（插入/删除其他点）不会改变片段范围。
+ *
+ * @see resolveSliceEndpoints 完整解析逻辑
+ */
 export interface LineSliceBase {
     id: number
     line: number
-    /** 起始点Id */
+    /** 起始点Id（解析规则见接口文档） */
     fromPt: number
-    /** 结束点Id */
+    /** 结束点Id（解析规则见接口文档） */
     toPt: number
 }
 

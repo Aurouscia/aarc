@@ -6,6 +6,7 @@ import { freshNewTextTagIconsVersion, upgradeTextTagIcons } from "./upgrade/text
 import { initFreshNewTextTags } from "./upgrade/textTags"
 import { ensureValidCvsSize } from "./valid/cvsSize"
 import { ensureValidIdIncre } from "./valid/idIncre"
+import { ensureValidSliceEndpoints } from "./valid/slices"
 
 export function normalizeSave(obj:any){
     let freshNew = false
@@ -58,6 +59,7 @@ export function normalizeSave(obj:any){
         fillDefault('meta', 'object', {})
     }
     ensureValidCvsSize(obj)
+    ensureValidSliceEndpoints(obj)
     upgradeLineStyles(obj, getNewId)
     upgradeConfig(obj)
     upgradeTextTagIcons(obj, getNewId)
