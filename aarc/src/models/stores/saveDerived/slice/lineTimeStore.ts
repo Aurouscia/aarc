@@ -1,6 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
-import { useSaveStore } from "../saveStore";
-import { useRenderOptionsStore } from "../renderOptionsStore";
+import { useSaveStore } from "../../saveStore";
+import { useRenderOptionsStore } from "../../renderOptionsStore";
 import { computed } from "vue";
 import { Line, LineTimeInfo, TimeSlice } from "@/models/save";
 import { keepOrderSort } from "@/utils/lang/keepOrderSort";

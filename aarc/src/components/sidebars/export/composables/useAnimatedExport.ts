@@ -1,5 +1,5 @@
 
-import { useLineTimeStore } from '@/models/stores/saveDerived/lineTimeStore';
+import { useLineTimeStore } from '@/models/stores/saveDerived/slice/lineTimeStore';
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
 import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
 import { useImageExport } from './useImageExport';

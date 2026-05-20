@@ -5,7 +5,7 @@ import { useConfigStore } from "../../configStore";
 import { Line, LineTimeInfo } from "@/models/save";
 import { useRenderOptionsStore } from "../../renderOptionsStore";
 import { useColorProcStore } from "../../utils/colorProcStore";
-import { useLineSpanStore } from "../lineSpanStore";
+import { useLineSpanStore } from "../slice/lineSpanStore";
 
 export const useLineStateStore = defineStore('lineState', () => {
     const saveStore = useSaveStore()

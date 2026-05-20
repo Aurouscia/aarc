@@ -1,5 +1,5 @@
 import { FormalPt } from "@/models/coord";
-import { FlatSpan } from "@/models/stores/saveDerived/lineSpanStore";
+import { FlatSpan } from "@/models/stores/saveDerived/slice/lineSpanStore";
 
 /**
  * 从整线 FormalPt[] 中截取指定 span 对应的子集

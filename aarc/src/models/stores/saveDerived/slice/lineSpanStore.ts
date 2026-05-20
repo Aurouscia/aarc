@@ -1,6 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
 import { computed } from "vue";
-import { useSaveStore } from "../saveStore";
+import { useSaveStore } from "../../saveStore";
 import { Line, LineStyle, LineTimeInfo, StyleSlice, TimeSlice } from "@/models/save";
 
 /** 扁平化后的原子区间 */

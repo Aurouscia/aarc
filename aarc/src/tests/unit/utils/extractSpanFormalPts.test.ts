@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { extractSpanFormalPts } from '@/utils/lineUtils/extractSpanFormalPts'
 import { FormalPt } from '@/models/coord'
-import { FlatSpan } from '@/models/stores/saveDerived/lineSpanStore'
+import { FlatSpan } from '@/models/stores/saveDerived/slice/lineSpanStore'
 
 describe('extractSpanFormalPts', () => {
   function makeFp(afterIdxEqv: number): FormalPt {

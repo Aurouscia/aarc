@@ -2,7 +2,7 @@ import { Coord, FormalPt } from "@/models/coord";
 import { defineStore } from "pinia";
 import { useKvStoreCore } from "./common/kvStoreCore";
 import { Line, LineStyle } from "@/models/save";
-import { useLineSpanStore } from "./lineSpanStore";
+import { useLineSpanStore } from "./slice/lineSpanStore";
 import { useLineStateStore } from "./state/lineStateStore";
 import { useRenderOptionsStore } from "../renderOptionsStore";
 import { extractSpanFormalPts } from "@/utils/lineUtils/extractSpanFormalPts";
