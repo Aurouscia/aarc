@@ -7,7 +7,8 @@ import { computed, ref, useTemplateRef } from 'vue'
 import TimeSliceEditor from './TimeSliceEditor.vue';
 import StyleSliceEditor from './StyleSliceEditor.vue';
 import { useEnvStore } from '@/models/stores/envStore';
-import Notice from '@/components/common/Notice.vue';
+import { useSliceResolverStore } from '@/models/stores/saveDerived/slice/sliceResolverStore';
+import { resolveSliceEndpoints } from '@/models/stores/saveDerived/slice/sliceResolver';
 
 const props = defineProps<{
     line: Line
@@ -15,13 +16,8 @@ const props = defineProps<{
 
 const saveStore = useSaveStore()
 const staClusterStore = useStaClusterStore()
+const sliceResolverStore = useSliceResolverStore()
 const sidebar = useTemplateRef('sidebar')
-
-/** 线路是否是环线（头尾站点相同） */
-const isRingLine = computed(() => {
-    if (props.line.pts.length < 2) return false
-    return props.line.pts.at(0) === props.line.pts.at(-1)
-})
 
 // ========== 站点列表（当前线路的点） ==========
 const stations = computed(() => {
@@ -51,15 +47,16 @@ interface CellInfo {
     sliceId?: number
 }
 
-/** 将 slice 的 fromPt/toPt（点ID）转换为在站点列表中的索引
+/** 从 sliceResolverStore 缓存中获取解析后的索引
  * startIdx: 索引较小的（表格中靠上的）
  * endIdx: 索引较大的（表格中靠下的）
  */
 function getSliceIndices(slice: TimeSlice | StyleSlice): { startIdx: number, endIdx: number } | undefined {
-    const fromIdx = props.line.pts.indexOf(slice.fromPt)
-    const toIdx = props.line.pts.indexOf(slice.toPt)
-    if (fromIdx === -1 || toIdx === -1) return undefined
-    return { startIdx: Math.min(fromIdx, toIdx), endIdx: Math.max(fromIdx, toIdx) }
+    const isTime = 'time' in slice
+    const cache = isTime ? sliceResolverStore.timeSliceIndices : sliceResolverStore.styleSliceIndices
+    const resolved = cache.get(slice.id)
+    if (!resolved) return undefined
+    return { startIdx: resolved.fromIdx, endIdx: resolved.toIdx }
 }
 
 function getCellInfo(slices: (TimeSlice | StyleSlice)[], rowIdx: number): CellInfo {
@@ -145,9 +142,36 @@ function onCellClick(col: 'time' | 'style', rowIdx: number) {
         return
     }
 
-    // 创建
-    const fromPt = props.line.pts[fromIdx]
-    const toPt = props.line.pts[toIdx]
+    // 创建：根据用户点击的索引位置，选择正确的 fromPt/toPt 存储方式
+    // 使得 sliceResolver 解析结果匹配用户意图
+    const ptAtFromIdx = props.line.pts[fromIdx]
+    const ptAtToIdx = props.line.pts[toIdx]
+
+    const userMin = Math.min(fromIdx, toIdx)
+    const userMax = Math.max(fromIdx, toIdx)
+
+    // 尝试两种存储方式
+    const opt1 = resolveSliceEndpoints(props.line, ptAtFromIdx, ptAtToIdx)
+    const opt2 = resolveSliceEndpoints(props.line, ptAtToIdx, ptAtFromIdx)
+
+    let fromPt: number
+    let toPt: number
+
+    if (opt1 && opt1.fromIdx === userMin && opt1.toIdx === userMax) {
+        // 原顺序解析正确
+        fromPt = ptAtFromIdx
+        toPt = ptAtToIdx
+    } else if (opt2 && opt2.fromIdx === userMin && opt2.toIdx === userMax) {
+        // 交换后解析正确
+        fromPt = ptAtToIdx
+        toPt = ptAtFromIdx
+    } else {
+        // 无法匹配用户意图（如双奇异等边界情况）
+        alert('无法创建片段：端点解析歧义')
+        pendingFrom.value = null
+        return
+    }
+
     const newId = saveStore.getNewId()
 
     if (col === 'time') {
@@ -300,20 +324,32 @@ function doResizeSlice(type: 'time' | 'style', sliceId: number, flashingRowIdx: 
     const slice = slices.find(s => s.id === sliceId)
     if (!slice) return
 
-    const flashingPt = props.line.pts[flashingRowIdx]
-    const newPt = props.line.pts[newRowIdx]
+    // 更新 slice：用新点替换闪烁的点
+    if (flashingRowIdx === newRowIdx) {
+        // 同一点，无效
+        return
+    }
+
+    // 获取当前解析结果，确定固定端点
+    const currentIndices = getSliceIndices(slice)
+    if (!currentIndices) return
+
+    const isFlashingStart = flashingRowIdx === currentIndices.startIdx
+    const fixedRowIdx = isFlashingStart ? currentIndices.endIdx : currentIndices.startIdx
+
+    // 用户意图的新范围
+    const userMin = Math.min(fixedRowIdx, newRowIdx)
+    const userMax = Math.max(fixedRowIdx, newRowIdx)
 
     // 检查新范围是否与现有其他 slice 重叠
     const allSlices = type === 'time' ? timeSlices.value : styleSlices.value
-    const newMin = Math.min(flashingRowIdx, newRowIdx)
-    const newMax = Math.max(flashingRowIdx, newRowIdx)
     const hasOverlap = allSlices.some(s => {
         if (s.id === sliceId) return false
         const indices = getSliceIndices(s)
         if (!indices) return false
         const sMin = Math.min(indices.startIdx, indices.endIdx)
         const sMax = Math.max(indices.startIdx, indices.endIdx)
-        return !(newMax < sMin || newMin > sMax)
+        return !(userMax < sMin || userMin > sMax)
     })
 
     if (hasOverlap) {
@@ -321,17 +357,22 @@ function doResizeSlice(type: 'time' | 'style', sliceId: number, flashingRowIdx: 
         return
     }
 
-    // 更新 slice：用新点替换闪烁的点
-    if (flashingRowIdx === newRowIdx) {
-        // 同一点，无效
-        return
-    }
+    // 两个端点的点ID
+    const fixedPt = props.line.pts[fixedRowIdx]
+    const newPt = props.line.pts[newRowIdx]
 
-    // 找到 slice 中原来等于闪烁点的那个端点，替换为新点
-    if (slice.fromPt === flashingPt) {
-        slice.fromPt = newPt
-    } else if (slice.toPt === flashingPt) {
+    // 尝试两种存储方式，选择解析结果匹配用户意图的
+    const opt1 = resolveSliceEndpoints(props.line, fixedPt, newPt)
+    const opt2 = resolveSliceEndpoints(props.line, newPt, fixedPt)
+
+    if (opt1 && opt1.fromIdx === userMin && opt1.toIdx === userMax) {
+        slice.fromPt = fixedPt
         slice.toPt = newPt
+    } else if (opt2 && opt2.fromIdx === userMin && opt2.toIdx === userMax) {
+        slice.fromPt = newPt
+        slice.toPt = fixedPt
+    } else {
+        alert('无法重设：端点解析歧义')
     }
 }
 
@@ -555,9 +596,6 @@ defineExpose({
         编辑中，再次点击该片段可关闭
       </span>
       <span v-else>点击空位开始创建片段，点击已有片段编辑</span>
-      <Notice v-if="isRingLine" :type="'info'" :title="'抱歉'">
-        当前对环线头尾点设置可能存在异常，请等待稍后更新修复
-      </Notice>
     </div>
   </div>
 </SideBar>

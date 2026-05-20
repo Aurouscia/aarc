@@ -1,6 +1,7 @@
 import { defineStore, storeToRefs } from "pinia";
 import { computed } from "vue";
 import { useSaveStore } from "../../saveStore";
+import { useSliceResolverStore } from "./sliceResolverStore";
 import { Line, LineStyle, LineTimeInfo, StyleSlice, TimeSlice } from "@/models/save";
 
 /** 扁平化后的原子区间 */
@@ -27,6 +28,7 @@ export interface FlattenedLine {
 
 export const useLineSpanStore = defineStore('lineSpan', () => {
     const { save } = storeToRefs(useSaveStore())
+    const sliceResolverStore = useSliceResolverStore()
 
     /**
      * 扁平化单条线路的所有 slice
@@ -60,22 +62,25 @@ export const useLineSpanStore = defineStore('lineSpan', () => {
             }
         }
 
-        // 收集所有切割点（slice 端点 + 线路端点）
-        const allCutPts = new Set<number>([pts[0], pts[pts.length - 1]])
+        // 收集所有切割点（slice 端点索引 + 线路端点）
+        const allCutIndices = new Set<number>([0, pts.length - 1])
         for (const ss of styleSlices) {
-            allCutPts.add(ss.fromPt)
-            allCutPts.add(ss.toPt)
+            const resolved = sliceResolverStore.styleSliceIndices.get(ss.id)
+            if (resolved) {
+                allCutIndices.add(resolved.fromIdx)
+                allCutIndices.add(resolved.toIdx)
+            }
         }
         for (const ts of timeSlices) {
-            allCutPts.add(ts.fromPt)
-            allCutPts.add(ts.toPt)
+            const resolved = sliceResolverStore.timeSliceIndices.get(ts.id)
+            if (resolved) {
+                allCutIndices.add(resolved.fromIdx)
+                allCutIndices.add(resolved.toIdx)
+            }
         }
 
         // 按线路上的顺序排列切割点索引
-        const sortedCutPtIndices = pts
-            .map((ptId, idx) => ({ ptId, idx }))
-            .filter(x => allCutPts.has(x.ptId))
-            .map(x => x.idx)
+        const sortedCutPtIndices = Array.from(allCutIndices).sort((a, b) => a - b)
 
         // 生成原子区间
         const spans: FlatSpan[] = []
@@ -88,11 +93,9 @@ export const useLineSpanStore = defineStore('lineSpan', () => {
             // 查找覆盖这个区间的 styleSlice
             let styleSliceId: number | undefined
             for (const ss of styleSlices) {
-                const ssFromIdx = pts.indexOf(ss.fromPt)
-                const ssToIdx = pts.indexOf(ss.toPt)
-                const ssMin = Math.min(ssFromIdx, ssToIdx)
-                const ssMax = Math.max(ssFromIdx, ssToIdx)
-                if (ssMin <= fromIdx && toIdx <= ssMax) {
+                const resolved = sliceResolverStore.styleSliceIndices.get(ss.id)
+                if (!resolved) continue
+                if (resolved.fromIdx <= fromIdx && toIdx <= resolved.toIdx) {
                     styleSliceId = ss.id
                     break // 同类 slice 不重叠，找到一个即可
                 }
@@ -101,11 +104,9 @@ export const useLineSpanStore = defineStore('lineSpan', () => {
             // 查找覆盖这个区间的 timeSlice
             let timeSliceId: number | undefined
             for (const ts of timeSlices) {
-                const tsFromIdx = pts.indexOf(ts.fromPt)
-                const tsToIdx = pts.indexOf(ts.toPt)
-                const tsMin = Math.min(tsFromIdx, tsToIdx)
-                const tsMax = Math.max(tsFromIdx, tsToIdx)
-                if (tsMin <= fromIdx && toIdx <= tsMax) {
+                const resolved = sliceResolverStore.timeSliceIndices.get(ts.id)
+                if (!resolved) continue
+                if (resolved.fromIdx <= fromIdx && toIdx <= resolved.toIdx) {
                     timeSliceId = ts.id
                     break
                 }

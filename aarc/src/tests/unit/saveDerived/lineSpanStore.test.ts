@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createTestPinia } from '../../helpers/piniaTestHelper'
 import { useSaveStore } from '@/models/stores/saveStore'
-import { useLineSpanStore } from '@/models/stores/saveDerived/lineSpanStore'
+import { useLineSpanStore } from '@/models/stores/saveDerived/slice/lineSpanStore'
 import {
   resetIdCounter,
   createPoint,
@@ -260,6 +260,109 @@ describe('lineSpanStore', () => {
       expect(result.spans).toHaveLength(2)
       expect(result.spans[0].styleSliceId).toBeUndefined()      // 10-20
       expect(result.spans[1].styleSliceId).toBe(styleSlice.id)  // 20-40
+    })
+  })
+
+  // ============ 奇异点场景 ============
+  describe('flattenLine - 奇异点', () => {
+    it('to 为奇异点时，切割点应使用解析后的正确索引', () => {
+      // pts: A(10) - B(20) - C(30) - A(10) - D(40)
+      // A 是奇异点（出现在 0 和 3）
+      // StyleSlice: from=B(20), to=A(10)
+      // 解析后：from=B(1), to=A(3)（A 向右找最近的 B）
+      const pts = [10, 20, 30, 10, 40]
+      const line = createLine(pts)
+      const styleSlice = createStyleSlice({ line: line.id, fromPt: 20, toPt: 10, style: 100 })
+      const save = createEmptySave({
+        points: pts.map(id => createPoint(id)),
+        lines: [line],
+        styleSlices: [styleSlice]
+      })
+      setupSaveStore(save)
+      const store = useLineSpanStore()
+
+      const result = store.flattenLine(line)
+
+      // 切割点应为: 0(A), 1(B), 3(A), 4(D)
+      // spans: [0-1], [1-3], [3-4]
+      expect(result.spans).toHaveLength(3)
+      expect(result.spans[0]).toEqual({ fromIdx: 0, toIdx: 1, fromPt: 10, toPt: 20, styleSliceId: undefined })
+      expect(result.spans[1]).toEqual({ fromIdx: 1, toIdx: 3, fromPt: 20, toPt: 10, styleSliceId: styleSlice.id })
+      expect(result.spans[2]).toEqual({ fromIdx: 3, toIdx: 4, fromPt: 10, toPt: 40, styleSliceId: undefined })
+    })
+
+    it('from 为奇异点时，切割点应使用解析后的正确索引', () => {
+      // pts: B(20) - C(30) - A(10) - D(40) - A(10)
+      // A 是奇异点（出现在 2 和 4）
+      // StyleSlice: from=A(10), to=D(40)
+      // 解析后：from=A(2), to=D(3)（A 向左找最近的 D）
+      const pts = [20, 30, 10, 40, 10]
+      const line = createLine(pts)
+      const styleSlice = createStyleSlice({ line: line.id, fromPt: 10, toPt: 40, style: 100 })
+      const save = createEmptySave({
+        points: pts.map(id => createPoint(id)),
+        lines: [line],
+        styleSlices: [styleSlice]
+      })
+      setupSaveStore(save)
+      const store = useLineSpanStore()
+
+      const result = store.flattenLine(line)
+
+      // 切割点应为: 0(B), 2(A), 3(D), 4(A)
+      // spans: [0-2], [2-3], [3-4]
+      expect(result.spans).toHaveLength(3)
+      expect(result.spans[0].styleSliceId).toBeUndefined()      // 0-2
+      expect(result.spans[1].styleSliceId).toBe(styleSlice.id)  // 2-3
+      expect(result.spans[2].styleSliceId).toBeUndefined()      // 3-4
+    })
+
+    it('双方奇异点应被忽略（不生成切割点，不覆盖任何区间）', () => {
+      // pts: A(10) - B(20) - A(10) - B(20)
+      // A 和 B 都是奇异点
+      // StyleSlice: from=A(10), to=B(20) — 双方奇异，应被忽略
+      const pts = [10, 20, 10, 20]
+      const line = createLine(pts)
+      const styleSlice = createStyleSlice({ line: line.id, fromPt: 10, toPt: 20, style: 100 })
+      const save = createEmptySave({
+        points: pts.map(id => createPoint(id)),
+        lines: [line],
+        styleSlices: [styleSlice]
+      })
+      setupSaveStore(save)
+      const store = useLineSpanStore()
+
+      const result = store.flattenLine(line)
+
+      // 双方奇异点被忽略，只有线路端点作为切割点
+      // spans: [0-3]
+      expect(result.spans).toHaveLength(1)
+      expect(result.spans[0].styleSliceId).toBeUndefined()
+    })
+
+    it('环线头尾相同（奇异点）应正确解析', () => {
+      // pts: A(10) - B(20) - C(30) - A(10)  环线
+      // A 是奇异点（头尾相同）
+      // StyleSlice: from=B(20), to=A(10)
+      // 解析后：from=B(1), to=A(3)（A 向右找最近的 B）
+      const pts = [10, 20, 30, 10]
+      const line = createLine(pts)
+      const styleSlice = createStyleSlice({ line: line.id, fromPt: 20, toPt: 10, style: 100 })
+      const save = createEmptySave({
+        points: pts.map(id => createPoint(id)),
+        lines: [line],
+        styleSlices: [styleSlice]
+      })
+      setupSaveStore(save)
+      const store = useLineSpanStore()
+
+      const result = store.flattenLine(line)
+
+      // 切割点: 0(A), 1(B), 3(A)
+      // spans: [0-1], [1-3]
+      expect(result.spans).toHaveLength(2)
+      expect(result.spans[0].styleSliceId).toBeUndefined()      // 0-1
+      expect(result.spans[1].styleSliceId).toBe(styleSlice.id)  // 1-3
     })
   })
 

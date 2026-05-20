@@ -524,7 +524,9 @@ export const useSaveStore = defineStore('save', () => {
     const deletedTextTag = ref<(ptId:number)=>void>(()=>{})
 
     watch(save, (newVal)=>{
-        console.log('存档加载', newVal)
+        if (!import.meta.env.VITEST) {
+            console.log('存档加载', newVal)
+        }
     })
     
     return { 
