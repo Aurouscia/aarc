@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { LineStyle, StyleSlice } from '@/models/save';
 import { useSaveStore } from '@/models/stores/saveStore';
-import { useLineSliceStore } from '@/models/stores/lineSliceStore';
 import { computed } from 'vue';
 
 const props = defineProps<{
@@ -13,7 +12,6 @@ const emit = defineEmits<{
 }>()
 
 const saveStore = useSaveStore()
-const lineSliceStore = useLineSliceStore()
 
 const selectableLineStyles = computed<LineStyle[]>(() => {
     return saveStore.save?.lineStyles?.map(x => {
@@ -28,7 +26,11 @@ const selectableLineStyles = computed<LineStyle[]>(() => {
 const selectedStyleId = computed({
     get: () => props.slice.style,
     set: (val: number) => {
-        lineSliceStore.updateSliceStyle(props.slice.id, val)
+        if (!saveStore.save?.styleSlices) return
+        const slice = saveStore.save.styleSlices.find(s => s.id === props.slice.id)
+        if (slice) {
+            slice.style = val
+        }
     }
 })
 </script>

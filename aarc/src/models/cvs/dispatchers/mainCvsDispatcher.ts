@@ -20,7 +20,7 @@ import { usePointLinkCvsWorker } from "../workers/pointLinkCvsWorker";
 import { useWatermarkCvsWorker } from "../workers/watermarkCvsWorker";
 import { useRenderOptionsStore } from "@/models/stores/renderOptionsStore";
 import { useBgRefImageCvsWorker } from "../workers/bgRefImageCvsWorker";
-import { useLineSliceStore } from "@/models/stores/lineSliceStore";
+
 
 export interface MainCvsRenderingOptions{
     /** 这次渲染前哪些站名位置移动了？不提供即为所有 */
@@ -43,7 +43,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const { getCtx: getCtx } = useCvs(canvasIdPrefix)
     const cvsBlocksControlStore = useCvsBlocksControlStore()
     const pointLinkStore = usePointLinkStore()
-    const lineSliceStore = useLineSliceStore()
+
     const { renderAllLines } = useLineCvsWorker()
     const { renderAllPoints } = usePointCvsWorker()
     const { renderClusters, getClustersRenderingData } = useClusterCvsWorker()
@@ -77,7 +77,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         if(!visitorMode.value)
             renderWatermark(ctx, 'beforeMain', forExport)
 
-        const creatingLinkOrSlice = pointLinkStore.isCreating || lineSliceStore.isCreating
+        const creatingLinkOrSlice = pointLinkStore.isCreating
         tic()
         renderAllLines(ctx, LineType.terrain, 'carpet')
         tic('地形-地毯')

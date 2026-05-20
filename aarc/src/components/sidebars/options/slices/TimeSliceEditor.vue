@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TimeSlice } from '@/models/save';
-import { useLineSliceStore } from '@/models/stores/lineSliceStore';
+import { useSaveStore } from '@/models/stores/saveStore';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { fromYMD, toYMD } from '@/utils/timeUtils/timeStr';
 import { ref, watch } from 'vue';
@@ -13,7 +13,7 @@ const emit = defineEmits<{
     (e: 'change'): void
 }>()
 
-const lineSliceStore = useLineSliceStore()
+const saveStore = useSaveStore()
 const { preventLeaving } = usePreventLeavingUnsavedStore()
 
 const translated = ref<{
@@ -30,10 +30,14 @@ function syncFrom() {
 function syncTo() {
     preventLeaving()
     const openTime = fromYMD(translated.value?.open)
-    lineSliceStore.updateSliceTime(props.slice.id, {
-        ...props.slice.time,
-        open: openTime
-    })
+    if (!saveStore.save?.timeSlices) return
+    const slice = saveStore.save.timeSlices.find(s => s.id === props.slice.id)
+    if (slice) {
+        slice.time = {
+            ...props.slice.time,
+            open: openTime
+        }
+    }
 }
 
 watch(() => props.slice, () => {
