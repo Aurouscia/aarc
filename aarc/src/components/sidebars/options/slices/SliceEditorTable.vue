@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SideBar from '@/components/common/SideBar.vue';
-import { Line, StyleSlice, TimeSlice } from '@/models/save';
+import { Line, TimeSlice, StyleSlice, AnySlice, SliceKind } from '@/models/save';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
 import { computed, ref, useTemplateRef } from 'vue'
@@ -15,7 +15,7 @@ import {
     checkOverlap,
     computeSliceEndpoints,
     computeResizeEndpoints,
-} from '@/utils/sliceEditor';
+} from './sliceEditor';
 
 
 const props = defineProps<{
@@ -59,7 +59,7 @@ interface CellInfo {
  * startIdx: 索引较小的（表格中靠上的）
  * endIdx: 索引较大的（表格中靠下的）
  */
-function getSliceIndices(slice: TimeSlice | StyleSlice): { startIdx: number, endIdx: number } | undefined {
+function getSliceIndices(slice: AnySlice): { startIdx: number, endIdx: number } | undefined {
     const isTime = 'time' in slice
     const cache = isTime ? sliceResolverStore.timeSliceIndices : sliceResolverStore.styleSliceIndices
     const resolved = cache.get(slice.id)
@@ -67,28 +67,28 @@ function getSliceIndices(slice: TimeSlice | StyleSlice): { startIdx: number, end
     return { startIdx: resolved.fromIdx, endIdx: resolved.toIdx }
 }
 
-function getCellInfo(slices: (TimeSlice | StyleSlice)[], rowIdx: number, col: 'time' | 'style'): CellInfo {
+function getCellInfo(slices: AnySlice[], rowIdx: number, col: SliceKind): CellInfo {
     const map = col === 'time' ? sliceResolverStore.timeSliceIndices : sliceResolverStore.styleSliceIndices
     return getCellInfoPure(slices, map, rowIdx)
 }
 
 /** 判断某行单元格是否需要显示上半截 bar */
-function needTopBar(slices: (TimeSlice | StyleSlice)[], rowIdx: number, col: 'time' | 'style'): boolean {
+function needTopBar(slices: AnySlice[], rowIdx: number, col: SliceKind): boolean {
     const map = col === 'time' ? sliceResolverStore.timeSliceIndices : sliceResolverStore.styleSliceIndices
     return needTopBarPure(slices, map, rowIdx)
 }
 
 /** 判断某行单元格是否需要显示下半截 bar */
-function needBottomBar(slices: (TimeSlice | StyleSlice)[], rowIdx: number, col: 'time' | 'style'): boolean {
+function needBottomBar(slices: AnySlice[], rowIdx: number, col: SliceKind): boolean {
     const map = col === 'time' ? sliceResolverStore.timeSliceIndices : sliceResolverStore.styleSliceIndices
     return needBottomBarPure(slices, map, rowIdx)
 }
 
 // ========== 创建新 Slice 的交互 ==========
 
-const pendingFrom = ref<{ col: 'time' | 'style'; rowIdx: number } | null>(null)
+const pendingFrom = ref<{ col: SliceKind; rowIdx: number } | null>(null)
 
-function onCellClick(col: 'time' | 'style', rowIdx: number) {
+function onCellClick(col: SliceKind, rowIdx: number) {
     const slices = col === 'time' ? timeSlices.value : styleSlices.value
     const info = getCellInfo(slices, rowIdx, col)
 
@@ -163,22 +163,22 @@ function onCellClick(col: 'time' | 'style', rowIdx: number) {
     pendingFrom.value = null
 }
 
-function isPending(col: 'time' | 'style', rowIdx: number): boolean {
+function isPending(col: SliceKind, rowIdx: number): boolean {
     return pendingFrom.value?.col === col && pendingFrom.value?.rowIdx === rowIdx
 }
 
 // ========== 编辑 Slice ==========
 
-const editingSlice = ref<{ type: 'time' | 'style'; id: number } | null>(null)
+const editingSlice = ref<{ type: SliceKind; id: number } | null>(null)
 
 /** 重设端点状态：记录闪烁的点（要被替换的）和 slice 信息，等待用户选另一个点 */
 const resizingSlice = ref<{
-    type: 'time' | 'style'
+    type: SliceKind
     sliceId: number
     flashingRowIdx: number  // 闪烁的点（要被替换的）在站点列表中的索引
 } | null>(null)
 
-function onSliceCellClick(col: 'time' | 'style', rowIdx: number) {
+function onSliceCellClick(col: SliceKind, rowIdx: number) {
     const slices = col === 'time' ? timeSlices.value : styleSlices.value
     const info = getCellInfo(slices, rowIdx, col)
 
@@ -224,7 +224,7 @@ function onSliceCellClick(col: 'time' | 'style', rowIdx: number) {
     }
 }
 
-function isEditing(col: 'time' | 'style', rowIdx: number): boolean {
+function isEditing(col: SliceKind, rowIdx: number): boolean {
     const slices = col === 'time' ? timeSlices.value : styleSlices.value
     const info = getCellInfo(slices, rowIdx, col)
     if (!info.sliceId) return false
@@ -232,7 +232,7 @@ function isEditing(col: 'time' | 'style', rowIdx: number): boolean {
 }
 
 /** 检查某行是否是重设端点时的闪烁点（要被替换的） */
-function isResizingFlashing(col: 'time' | 'style', rowIdx: number): boolean {
+function isResizingFlashing(col: SliceKind, rowIdx: number): boolean {
     return resizingSlice.value?.type === col && resizingSlice.value?.flashingRowIdx === rowIdx
 }
 
@@ -246,7 +246,7 @@ const editingStyleSlice = computed<StyleSlice | undefined>(() => {
     return styleSlices.value.find(s => s.id === editingSlice.value!.id)
 })
 
-function deleteSlice(type: 'time' | 'style', sliceId: number) {
+function deleteSlice(type: SliceKind, sliceId: number) {
     if (!window.confirm('确认删除该片段？')) return
     const slices = type === 'time' ? saveStore.save?.timeSlices : saveStore.save?.styleSlices
     if (!slices) return
@@ -263,7 +263,7 @@ function deleteSlice(type: 'time' | 'style', sliceId: number) {
  * whichEnd: 'top' 表示重设表格中靠前的点（索引小的）
  * whichEnd: 'bottom' 表示重设表格中靠后的点（索引大的）
  */
-function startResize(type: 'time' | 'style', sliceId: number, whichEnd: 'top' | 'bottom') {
+function startResize(type: SliceKind, sliceId: number, whichEnd: 'top' | 'bottom') {
     const slices = type === 'time' ? timeSlices.value : styleSlices.value
     const slice = slices.find(s => s.id === sliceId)
     if (!slice) return
@@ -280,7 +280,7 @@ function startResize(type: 'time' | 'style', sliceId: number, whichEnd: 'top' | 
  * flashingRowIdx: 原来闪烁的点（要被替换的）
  * newRowIdx: 用户点击的新点
  */
-function doResizeSlice(type: 'time' | 'style', sliceId: number, flashingRowIdx: number, newRowIdx: number) {
+function doResizeSlice(type: SliceKind, sliceId: number, flashingRowIdx: number, newRowIdx: number) {
     const slices = type === 'time' ? saveStore.save?.timeSlices : saveStore.save?.styleSlices
     if (!slices) return
     const slice = slices.find(s => s.id === sliceId)
@@ -361,7 +361,7 @@ type RowType = 'data' | 'editor'
 interface TableRow {
     type: RowType
     stationIdx: number  // 对应 stations 的索引
-    editorType?: 'time' | 'style'
+    editorType?: SliceKind
     editorSliceId?: number
 }
 

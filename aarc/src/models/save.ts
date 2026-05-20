@@ -223,6 +223,12 @@ export interface TimeSlice extends LineSliceBase {
     time: LineTimeInfo
 }
 
+/** Slice 种类标识 */
+export type SliceKind = 'time' | 'style'
+
+/** 任意一种 Slice 的联合类型 */
+export type AnySlice = TimeSlice | StyleSlice
+
 export interface SaveMetaData{
     lineStylesVersion?: number,
     textTagIconsVersion?: number,
