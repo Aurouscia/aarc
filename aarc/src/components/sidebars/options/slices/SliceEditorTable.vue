@@ -15,6 +15,8 @@ import {
     checkOverlap,
     computeSliceEndpoints,
     computeResizeEndpoints,
+    isSharedBoundary as isSharedBoundaryPure,
+    getSliceIdAtPosition as getSliceIdAtPositionPure,
     type CellInfo,
 } from './sliceEditor';
 
@@ -174,7 +176,17 @@ const resizingSlice = ref<{
     flashingRowIdx: number  // 闪烁的点（要被替换的）在站点列表中的索引
 } | null>(null)
 
-function onSliceCellClick(col: SliceKind, rowIdx: number) {
+function isSharedBoundary(slices: AnySlice[], rowIdx: number, col: SliceKind): boolean {
+    const map = col === 'time' ? sliceResolverStore.timeSliceIndices : sliceResolverStore.styleSliceIndices
+    return isSharedBoundaryPure(slices, map, rowIdx)
+}
+
+function getSliceIdAtPosition(slices: AnySlice[], rowIdx: number, col: SliceKind, clickYRatio: number): number | undefined {
+    const map = col === 'time' ? sliceResolverStore.timeSliceIndices : sliceResolverStore.styleSliceIndices
+    return getSliceIdAtPositionPure(slices, map, rowIdx, clickYRatio)
+}
+
+function onSliceCellClick(event: MouseEvent, col: SliceKind, rowIdx: number) {
     const slices = col === 'time' ? timeSlices.value : styleSlices.value
     const info = getCellInfo(slices, rowIdx, col)
 
@@ -206,25 +218,40 @@ function onSliceCellClick(col: SliceKind, rowIdx: number) {
         return
     }
 
-    if (info.sliceId) {
+    // 确定要操作的 sliceId（共享边界根据点击位置选择）
+    let targetSliceId: number | undefined
+    if (isSharedBoundary(slices, rowIdx, col)) {
+        const target = event.currentTarget as HTMLElement
+        const rect = target.getBoundingClientRect()
+        const clickYRatio = (event.clientY - rect.top) / rect.height
+        targetSliceId = getSliceIdAtPosition(slices, rowIdx, col, clickYRatio)
+    } else {
+        targetSliceId = info.sliceId
+    }
+
+    if (targetSliceId) {
         // 已有 slice：切换编辑模式
         pendingFrom.value = null
         resizingSlice.value = null
-        if (editingSlice.value?.type === col && editingSlice.value?.id === info.sliceId) {
+        if (editingSlice.value?.type === col && editingSlice.value?.id === targetSliceId) {
             // 再点一下关闭
             editingSlice.value = null
         } else {
-            editingSlice.value = { type: col, id: info.sliceId }
+            editingSlice.value = { type: col, id: targetSliceId }
         }
         rerenderIfSlicesChanged()
     }
 }
 
 function isEditing(col: SliceKind, rowIdx: number): boolean {
+    if (editingSlice.value?.type !== col) return false
     const slices = col === 'time' ? timeSlices.value : styleSlices.value
-    const info = getCellInfo(slices, rowIdx, col)
-    if (!info.sliceId) return false
-    return editingSlice.value?.type === col && editingSlice.value?.id === info.sliceId
+    // 检查当前编辑的 slice 是否覆盖了这个点
+    const editingSliceData = slices.find(s => s.id === editingSlice.value!.id)
+    if (!editingSliceData) return false
+    const indices = getSliceIndices(editingSliceData)
+    if (!indices) return false
+    return rowIdx >= indices.startIdx && rowIdx <= indices.endIdx
 }
 
 /** 检查某行是否是重设端点时的闪烁点（要被替换的） */
@@ -424,7 +451,7 @@ defineExpose({
                 { editing: isEditing('time', row.stationIdx) },
                 { 'resizing-fixed': isResizingFlashing('time', row.stationIdx) }
               ]"
-              @click="onSliceCellClick('time', row.stationIdx)"
+              @click="onSliceCellClick($event, 'time', row.stationIdx)"
             >
               <div class="slice-visual">
                 <div
@@ -459,7 +486,7 @@ defineExpose({
                 { editing: isEditing('style', row.stationIdx) },
                 { 'resizing-fixed': isResizingFlashing('style', row.stationIdx) }
               ]"
-              @click="onSliceCellClick('style', row.stationIdx)"
+              @click="onSliceCellClick($event, 'style', row.stationIdx)"
             >
               <div class="slice-visual">
                 <div

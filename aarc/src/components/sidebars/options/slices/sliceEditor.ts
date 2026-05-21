@@ -95,6 +95,52 @@ export function needBottomBar(
     })
 }
 
+/** 判断某行是否同时属于两个 slice（一个的 end 和另一个的 start） */
+export function isSharedBoundary(
+    slices: LineSliceBase[],
+    sliceIndicesMap: Map<number, SliceEndpointIndices | undefined>,
+    rowIdx: number
+): boolean {
+    let hasStart = false
+    let hasEnd = false
+    for (const slice of slices) {
+        const indices = getSliceIndicesFromMap(slice, sliceIndicesMap)
+        if (!indices) continue
+        if (rowIdx === indices.startIdx) hasStart = true
+        if (rowIdx === indices.endIdx) hasEnd = true
+        if (hasStart && hasEnd) return true
+    }
+    return false
+}
+
+/** 根据点击位置（上半/下半）选择对应的 sliceId
+ * 上半部分 → 返回 end slice 的 id（靠上的 slice）
+ * 下半部分 → 返回 start slice 的 id（靠下的 slice）
+ */
+export function getSliceIdAtPosition(
+    slices: LineSliceBase[],
+    sliceIndicesMap: Map<number, SliceEndpointIndices | undefined>,
+    rowIdx: number,
+    clickYRatio: number  // 0~1，0 表示顶部，1 表示底部
+): number | undefined {
+    let endSliceId: number | undefined
+    let startSliceId: number | undefined
+
+    for (const slice of slices) {
+        const indices = getSliceIndicesFromMap(slice, sliceIndicesMap)
+        if (!indices) continue
+        if (rowIdx === indices.endIdx) endSliceId = slice.id
+        if (rowIdx === indices.startIdx) startSliceId = slice.id
+    }
+
+    // 上半部分（< 0.5）优先选择 end slice，下半部分（>= 0.5）优先选择 start slice
+    if (clickYRatio < 0.5) {
+        return endSliceId ?? startSliceId
+    } else {
+        return startSliceId ?? endSliceId
+    }
+}
+
 /** 检查给定范围是否与现有 slice 重叠（排除自身） */
 export function checkOverlap(
     slices: LineSliceBase[],

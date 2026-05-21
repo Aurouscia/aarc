@@ -6,6 +6,8 @@ import {
     checkOverlap,
     computeSliceEndpoints,
     computeResizeEndpoints,
+    isSharedBoundary,
+    getSliceIdAtPosition,
 } from '@/components/sidebars/options/slices/sliceEditor'
 import { Line, LineSliceBase } from '@/models/save'
 import { SliceEndpointIndices } from '@/models/stores/saveDerived/slice/sliceResolverStore'
@@ -138,6 +140,66 @@ describe('needBottomBar', () => {
         const slices = [createSlice(1, 10, 10)]
         const map = createIndicesMap([[1, { fromIdx: 2, toIdx: 2 }]])
         expect(needBottomBar(slices, map, 2)).toBe(true)
+    })
+})
+
+// ========== isSharedBoundary / getSliceIdAtPosition ==========
+
+describe('isSharedBoundary', () => {
+    it('普通单元格返回 false', () => {
+        const slices = [createSlice(1, 10, 40)]
+        const map = createIndicesMap([[1, { fromIdx: 1, toIdx: 3 }]])
+        expect(isSharedBoundary(slices, map, 1)).toBe(false) // start
+        expect(isSharedBoundary(slices, map, 2)).toBe(false) // middle
+        expect(isSharedBoundary(slices, map, 3)).toBe(false) // end
+    })
+
+    it('首尾相接的共享边界返回 true', () => {
+        const slices = [createSlice(1, 10, 20), createSlice(2, 30, 40)]
+        const map = createIndicesMap([
+            [1, { fromIdx: 1, toIdx: 2 }],
+            [2, { fromIdx: 2, toIdx: 3 }],
+        ])
+        expect(isSharedBoundary(slices, map, 2)).toBe(true) // slice1 end + slice2 start
+    })
+
+    it('有间隙的相邻返回 false', () => {
+        const slices = [createSlice(1, 10, 20), createSlice(2, 30, 40)]
+        const map = createIndicesMap([
+            [1, { fromIdx: 1, toIdx: 2 }],
+            [2, { fromIdx: 3, toIdx: 4 }],
+        ])
+        expect(isSharedBoundary(slices, map, 2)).toBe(false) // slice1 end only
+        expect(isSharedBoundary(slices, map, 3)).toBe(false) // slice2 start only
+    })
+})
+
+describe('getSliceIdAtPosition', () => {
+    it('非共享边界返回唯一 slice 的 id（忽略 clickYRatio）', () => {
+        const slices = [createSlice(1, 10, 40)]
+        const map = createIndicesMap([[1, { fromIdx: 1, toIdx: 3 }]])
+        expect(getSliceIdAtPosition(slices, map, 1, 0.2)).toBe(1)
+        expect(getSliceIdAtPosition(slices, map, 1, 0.8)).toBe(1)
+    })
+
+    it('共享边界：上半部分返回 end slice，下半部分返回 start slice', () => {
+        const slices = [createSlice(1, 10, 20), createSlice(2, 30, 40)]
+        const map = createIndicesMap([
+            [1, { fromIdx: 1, toIdx: 2 }],
+            [2, { fromIdx: 2, toIdx: 3 }],
+        ])
+        // 索引2是 slice1(1) 的 end，也是 slice2(2) 的 start
+        expect(getSliceIdAtPosition(slices, map, 2, 0.2)).toBe(1) // 上半 → end slice
+        expect(getSliceIdAtPosition(slices, map, 2, 0.8)).toBe(2) // 下半 → start slice
+    })
+
+    it('共享边界：中点(0.5)返回 start slice', () => {
+        const slices = [createSlice(1, 10, 20), createSlice(2, 30, 40)]
+        const map = createIndicesMap([
+            [1, { fromIdx: 1, toIdx: 2 }],
+            [2, { fromIdx: 2, toIdx: 3 }],
+        ])
+        expect(getSliceIdAtPosition(slices, map, 2, 0.5)).toBe(2)
     })
 })
 
