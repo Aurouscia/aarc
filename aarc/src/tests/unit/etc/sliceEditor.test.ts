@@ -29,25 +29,26 @@ function createIndicesMap(entries: [number, SliceEndpointIndices | undefined][])
 describe('getCellInfo', () => {
     it('空 slice 列表时所有行都是 empty', () => {
         const map = createIndicesMap([])
-        expect(getCellInfo([], map, 0)).toEqual({ role: 'empty', isStartOrEnd: false })
-        expect(getCellInfo([], map, 5)).toEqual({ role: 'empty', isStartOrEnd: false })
+        expect(getCellInfo([], map, 0)).toEqual({ role: 'empty', isStartOrEnd: false, isPureStartOrEnd: false })
+        expect(getCellInfo([], map, 5)).toEqual({ role: 'empty', isStartOrEnd: false, isPureStartOrEnd: false })
     })
 
-    it('单行 slice（start=end）时该行同时是 start 和 end', () => {
+    it('单行 slice（from=to）时该行是 start（不是 startAndEnd）', () => {
         const slices = [createSlice(1, 10, 10)]
         const map = createIndicesMap([[1, { fromIdx: 2, toIdx: 2 }]])
-        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'startAndEnd', sliceId: 1, isStartOrEnd: true })
-        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'empty', isStartOrEnd: false })
+        // 同一 slice 的 from=to，不是两个 slice 的交界
+        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'start', sliceId: 1, isStartOrEnd: true, isPureStartOrEnd: true })
+        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'empty', isStartOrEnd: false, isPureStartOrEnd: false })
     })
 
     it('多行 slice 中正确识别 start/middle/end', () => {
         const slices = [createSlice(1, 10, 40)]
         const map = createIndicesMap([[1, { fromIdx: 1, toIdx: 3 }]])
-        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1, isStartOrEnd: true })
-        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'middle', sliceId: 1, isStartOrEnd: false })
-        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'end', sliceId: 1, isStartOrEnd: true })
-        expect(getCellInfo(slices, map, 0)).toEqual({ role: 'empty', isStartOrEnd: false })
-        expect(getCellInfo(slices, map, 4)).toEqual({ role: 'empty', isStartOrEnd: false })
+        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1, isStartOrEnd: true, isPureStartOrEnd: true })
+        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'middle', sliceId: 1, isStartOrEnd: false, isPureStartOrEnd: false })
+        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'end', sliceId: 1, isStartOrEnd: true, isPureStartOrEnd: true })
+        expect(getCellInfo(slices, map, 0)).toEqual({ role: 'empty', isStartOrEnd: false, isPureStartOrEnd: false })
+        expect(getCellInfo(slices, map, 4)).toEqual({ role: 'empty', isStartOrEnd: false, isPureStartOrEnd: false })
     })
 
     it('多个不重叠的 slice 各自范围正确', () => {
@@ -56,22 +57,47 @@ describe('getCellInfo', () => {
             [1, { fromIdx: 1, toIdx: 2 }],
             [2, { fromIdx: 5, toIdx: 6 }],
         ])
-        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1, isStartOrEnd: true })
-        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'end', sliceId: 1, isStartOrEnd: true })
-        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'empty', isStartOrEnd: false })
-        expect(getCellInfo(slices, map, 4)).toEqual({ role: 'empty', isStartOrEnd: false })
-        expect(getCellInfo(slices, map, 5)).toEqual({ role: 'start', sliceId: 2, isStartOrEnd: true })
-        expect(getCellInfo(slices, map, 6)).toEqual({ role: 'end', sliceId: 2, isStartOrEnd: true })
+        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1, isStartOrEnd: true, isPureStartOrEnd: true })
+        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'end', sliceId: 1, isStartOrEnd: true, isPureStartOrEnd: true })
+        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'empty', isStartOrEnd: false, isPureStartOrEnd: false })
+        expect(getCellInfo(slices, map, 4)).toEqual({ role: 'empty', isStartOrEnd: false, isPureStartOrEnd: false })
+        expect(getCellInfo(slices, map, 5)).toEqual({ role: 'start', sliceId: 2, isStartOrEnd: true, isPureStartOrEnd: true })
+        expect(getCellInfo(slices, map, 6)).toEqual({ role: 'end', sliceId: 2, isStartOrEnd: true, isPureStartOrEnd: true })
     })
 
-    it('多个相邻 slice 边界正确', () => {
+    it('多个相邻 slice 边界正确（有间隙）', () => {
         const slices = [createSlice(1, 10, 20), createSlice(2, 30, 40)]
         const map = createIndicesMap([
             [1, { fromIdx: 1, toIdx: 2 }],
             [2, { fromIdx: 3, toIdx: 4 }],
         ])
-        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'end', sliceId: 1, isStartOrEnd: true })
-        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'start', sliceId: 2, isStartOrEnd: true })
+        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'end', sliceId: 1, isStartOrEnd: true, isPureStartOrEnd: true })
+        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'start', sliceId: 2, isStartOrEnd: true, isPureStartOrEnd: true })
+    })
+
+    it('两个 slice 首尾相接时交界点为 startAndEnd', () => {
+        const slices = [createSlice(1, 10, 20), createSlice(2, 30, 40)]
+        const map = createIndicesMap([
+            [1, { fromIdx: 1, toIdx: 2 }],
+            [2, { fromIdx: 2, toIdx: 3 }],
+        ])
+        // 索引2：slice1 的 end，也是 slice2 的 start → startAndEnd
+        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1, isStartOrEnd: true, isPureStartOrEnd: true })
+        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'startAndEnd', sliceId: 1, isStartOrEnd: true, isPureStartOrEnd: false })
+        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'end', sliceId: 2, isStartOrEnd: true, isPureStartOrEnd: true })
+    })
+
+    it('三个 slice 连续相接时中间点为 startAndEnd', () => {
+        const slices = [createSlice(1, 10, 20), createSlice(2, 30, 40), createSlice(3, 50, 60)]
+        const map = createIndicesMap([
+            [1, { fromIdx: 1, toIdx: 3 }],
+            [2, { fromIdx: 3, toIdx: 5 }],
+            [3, { fromIdx: 5, toIdx: 7 }],
+        ])
+        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1, isStartOrEnd: true, isPureStartOrEnd: true })
+        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'startAndEnd', sliceId: 1, isStartOrEnd: true, isPureStartOrEnd: false })
+        expect(getCellInfo(slices, map, 5)).toEqual({ role: 'startAndEnd', sliceId: 2, isStartOrEnd: true, isPureStartOrEnd: false })
+        expect(getCellInfo(slices, map, 7)).toEqual({ role: 'end', sliceId: 3, isStartOrEnd: true, isPureStartOrEnd: true })
     })
 
     it('解析结果为 undefined 的 slice 被跳过', () => {
@@ -80,8 +106,8 @@ describe('getCellInfo', () => {
             [1, { fromIdx: 1, toIdx: 2 }],
             [2, undefined],
         ])
-        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1, isStartOrEnd: true })
-        expect(getCellInfo(slices, map, 5)).toEqual({ role: 'empty', isStartOrEnd: false })
+        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1, isStartOrEnd: true, isPureStartOrEnd: true })
+        expect(getCellInfo(slices, map, 5)).toEqual({ role: 'empty', isStartOrEnd: false, isPureStartOrEnd: false })
     })
 })
 
@@ -113,16 +139,16 @@ describe('needTopBar', () => {
         expect(needBottomBar(slices, map, 2)).toBe(true) // slice2 的 start
     })
 
-    it('首尾相接时 getCellInfo 返回 isStartOrEnd=true', () => {
+    it('首尾相接时 getCellInfo 返回 startAndEnd', () => {
         const slices = [createSlice(1, 10, 20), createSlice(2, 30, 40)]
         const map = createIndicesMap([
             [1, { fromIdx: 1, toIdx: 2 }],
             [2, { fromIdx: 2, toIdx: 3 }],
         ])
-        // 索引2：先遍历到 slice1 的 end，但 isStartOrEnd 应为 true（因为也是 slice2 的 start）
+        // 索引2：slice1 的 end，也是 slice2 的 start → startAndEnd
         const info = getCellInfo(slices, map, 2)
-        expect(info.role).toBe('end')
-        expect(info.sliceId).toBe(1)
+        expect(info.role).toBe('startAndEnd')
+        expect(info.sliceId).toBe(1)  // end slice 的 id
         expect(info.isStartOrEnd).toBe(true)
     })
 })
@@ -309,11 +335,11 @@ describe('computeResizeEndpoints', () => {
     it('非奇异点重设 → 正确计算新端点', () => {
         // pts: A(10) - B(20) - C(30) - D(40)
         // 当前 slice [B,D] = [1,3]，存储 fromPt=20, toPt=40
-        // 重设上点（startIdx=1）为 A（索引0）
+        // 重设上点（fromIdx=1）为 A（索引0）
         const line = createLine([10, 20, 30, 40])
-        const current = { startIdx: 1, endIdx: 3 }
+        const current = { fromIdx: 1, toIdx: 3 }
         const result = computeResizeEndpoints(line, current, 1, 0)
-        // 固定端是 endIdx=3(D=40)，新端点是 0(A=10)
+        // 固定端是 toIdx=3(D=40)，新端点是 0(A=10)
         // 意图 [0,3]，resolve(40,10) 和 resolve(10,40) 都返回 [0,3]
         // opt1 先匹配，返回 {fromPt: 40, toPt: 10}
         expect(result).toEqual({ fromPt: 40, toPt: 10 })
@@ -322,11 +348,11 @@ describe('computeResizeEndpoints', () => {
     it('奇异点固定端，重设另一端 → 正确保持固定端位置', () => {
         // pts: A(10) - B(20) - C(30) - A(10) - D(40)
         // 当前 slice [B,最后一个A] = [1,3]，存储 fromPt=20, toPt=10
-        // 重设上点（startIdx=1=B）为 C（索引2）
+        // 重设上点（fromIdx=1=B）为 C（索引2）
         const line = createLine([10, 20, 30, 10, 40])
-        const current = { startIdx: 1, endIdx: 3 }
+        const current = { fromIdx: 1, toIdx: 3 }
         const result = computeResizeEndpoints(line, current, 1, 2)
-        // 固定端是 endIdx=3(A)，新端点是 2(C)
+        // 固定端是 toIdx=3(A)，新端点是 2(C)
         // 意图 [2,3]，resolve(C,A) = from=2, to奇异向右找=3 → [2,3]
         // 但 resolve(A,C) = from奇异向左找=3, to=2 → [2,3] 也成立？
         // 实际上 resolve(30, 10): from非奇异=2, to奇异向右找A → i=3(A) → [2,3] ✅
@@ -340,11 +366,11 @@ describe('computeResizeEndpoints', () => {
     it('奇异点被重设，固定端非奇异 → 正确解析新位置', () => {
         // pts: A(10) - B(20) - C(30) - A(10) - D(40)
         // 当前 slice [B,最后一个A] = [1,3]，存储 fromPt=20, toPt=10
-        // 重设下点（endIdx=3=A）为 D（索引4）
+        // 重设下点（toIdx=3=A）为 D（索引4）
         const line = createLine([10, 20, 30, 10, 40])
-        const current = { startIdx: 1, endIdx: 3 }
+        const current = { fromIdx: 1, toIdx: 3 }
         const result = computeResizeEndpoints(line, current, 3, 4)
-        // 固定端是 startIdx=1(B)，新端点是 4(D)
+        // 固定端是 fromIdx=1(B)，新端点是 4(D)
         // 意图 [1,4]，resolve(B,D) = from=1, to=4 → [1,4] ✅
         expect(result).toEqual({ fromPt: 20, toPt: 40 })
     })
@@ -354,7 +380,7 @@ describe('computeResizeEndpoints', () => {
         // 当前 slice [B,C] = [1,3]，存储 fromPt=20, toPt=40
         // 重设上点为 A（索引0）
         const line = createLine([10, 20, 10, 40])
-        const current = { startIdx: 1, endIdx: 3 }
+        const current = { fromIdx: 1, toIdx: 3 }
         const result = computeResizeEndpoints(line, current, 1, 0)
         // 固定端是 3(C)，新端点是 0(A)
         // A 是奇异点，C 非奇异 → 不是双奇异
@@ -367,7 +393,7 @@ describe('computeResizeEndpoints', () => {
 
     it('重设后同点 → undefined', () => {
         const line = createLine([10, 20, 30])
-        const current = { startIdx: 1, endIdx: 2 }
+        const current = { fromIdx: 1, toIdx: 2 }
         const result = computeResizeEndpoints(line, current, 2, 1)
         // 固定端是 1(B)，新端点是 1(B) → 同点
         expect(result).toBeUndefined()

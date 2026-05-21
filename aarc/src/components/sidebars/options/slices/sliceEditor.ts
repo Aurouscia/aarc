@@ -6,67 +6,96 @@ export type CellRole = 'start' | 'middle' | 'end' | 'startAndEnd' | 'empty'
 
 export interface CellInfo {
     role: CellRole
+    /** 当 role 为 start/end/startAndEnd 时，表示该位置关联的 slice id；
+     * startAndEnd 时取 end slice 的 id（靠上的 slice） */
     sliceId?: number
     /** 该单元格是否作为任意 slice 的起点或终点（包括 startAndEnd） */
     isStartOrEnd: boolean
+    /** 该单元格是否作为某个 slice 的纯起点或纯终点（排除 startAndEnd） */
+    isPureStartOrEnd: boolean
 }
 
-export interface SliceIndices {
-    startIdx: number  // 解析后的较小索引（表格中靠上）
-    endIdx: number    // 解析后的较大索引（表格中靠下）
-}
 
-/** 从解析结果 Map 中获取 slice 的解析索引（已排序） */
-function getSliceIndicesFromMap(
-    slice: LineSliceBase,
-    sliceIndicesMap: Map<number, SliceEndpointIndices | undefined>
-): SliceIndices | undefined {
-    const resolved = sliceIndicesMap.get(slice.id)
-    if (!resolved) return undefined
-    return {
-        startIdx: Math.min(resolved.fromIdx, resolved.toIdx),
-        endIdx: Math.max(resolved.fromIdx, resolved.toIdx)
-    }
-}
 
-/** 判断某行单元格在 slice 列表中的角色 */
+/** 判断某行单元格在 slice 列表中的角色
+ *
+ * 角色语义：
+ * - 'start'    : 某 slice 的起点（且不是任何 slice 的终点）
+ * - 'end'      : 某 slice 的终点（且不是任何 slice 的起点）
+ * - 'startAndEnd': 同时是一个 slice 的终点和另一个 slice 的起点（交界）
+ * - 'middle'   : 位于某 slice 内部（非端点）
+ * - 'empty'    : 不属于任何 slice
+ *
+ * sliceId: 当 role 为 start/end/startAndEnd 时有效。
+ *   - start/end 时取对应 slice 的 id
+ *   - startAndEnd 时取 end slice 的 id（靠上的 slice）
+ */
 export function getCellInfo(
     slices: LineSliceBase[],
     sliceIndicesMap: Map<number, SliceEndpointIndices | undefined>,
     rowIdx: number
 ): CellInfo {
-    let isStartOrEnd = false
-    let firstMatch: CellInfo | undefined
+    let isStartOfSome = false
+    let isEndOfSome = false
+    let startSliceId: number | undefined
+    let endSliceId: number | undefined
+    let middleSliceId: number | undefined
 
     for (const slice of slices) {
-        const indices = getSliceIndicesFromMap(slice, sliceIndicesMap)
-        if (!indices) continue
-        if (rowIdx < indices.startIdx || rowIdx > indices.endIdx) continue
+        const resolved = sliceIndicesMap.get(slice.id)
+        if (!resolved) continue
+        if (rowIdx < resolved.fromIdx || rowIdx > resolved.toIdx) continue
 
-        const isStart = rowIdx === indices.startIdx
-        const isEnd = rowIdx === indices.endIdx
+        const isStart = rowIdx === resolved.fromIdx
+        const isEnd = rowIdx === resolved.toIdx
 
-        if (isStart || isEnd) {
-            isStartOrEnd = true
+        if (isStart) {
+            isStartOfSome = true
+            startSliceId = slice.id
         }
-
-        if (!firstMatch) {
-            if (isStart && isEnd) {
-                firstMatch = { role: 'startAndEnd', sliceId: slice.id, isStartOrEnd }
-            } else if (isStart) {
-                firstMatch = { role: 'start', sliceId: slice.id, isStartOrEnd }
-            } else if (isEnd) {
-                firstMatch = { role: 'end', sliceId: slice.id, isStartOrEnd }
-            } else {
-                firstMatch = { role: 'middle', sliceId: slice.id, isStartOrEnd }
-            }
+        if (isEnd) {
+            isEndOfSome = true
+            endSliceId = slice.id
+        }
+        if (!isStart && !isEnd) {
+            // middle
+            middleSliceId = slice.id
         }
     }
 
-    if (firstMatch) {
-        return { ...firstMatch, isStartOrEnd }
+    const isStartOrEnd = isStartOfSome || isEndOfSome
+
+    // 优先级：startAndEnd > start > end > middle > empty
+    // startAndEnd：同时是某个 slice 的 end 和另一个 slice 的 start
+    // 注意：同一 slice 的 from=to（单行 slice）不算 startAndEnd
+    if (isEndOfSome && isStartOfSome && endSliceId !== startSliceId) {
+        // sliceId 取 end slice 的 id（靠上的 slice）
+        return { role: 'startAndEnd', sliceId: endSliceId, isStartOrEnd, isPureStartOrEnd: false }
     }
-    return { role: 'empty', isStartOrEnd: false }
+    if (isStartOfSome) {
+        return { role: 'start', sliceId: startSliceId, isStartOrEnd, isPureStartOrEnd: true }
+    }
+    if (isEndOfSome) {
+        return { role: 'end', sliceId: endSliceId, isStartOrEnd, isPureStartOrEnd: true }
+    }
+    if (middleSliceId !== undefined) {
+        return { role: 'middle', sliceId: middleSliceId, isStartOrEnd: false, isPureStartOrEnd: false }
+    }
+    return { role: 'empty', isStartOrEnd: false, isPureStartOrEnd: false }
+}
+
+/** 预计算所有行的 CellInfo，返回 Map<rowIdx, CellInfo> */
+export function buildCellInfoMap(
+    slices: LineSliceBase[],
+    sliceIndicesMap: Map<number, SliceEndpointIndices | undefined>,
+    rowCount: number
+): Map<number, CellInfo> {
+    const map = new Map<number, CellInfo>()
+    for (let i = 0; i < rowCount; i++) {
+        map.set(i, getCellInfo(slices, sliceIndicesMap, i))
+    }
+    console.log(map)
+    return map
 }
 
 /** 判断某行单元格是否需要显示上半截 bar（任意 slice 的 end 点） */
@@ -76,9 +105,9 @@ export function needTopBar(
     rowIdx: number
 ): boolean {
     return slices.some(s => {
-        const indices = getSliceIndicesFromMap(s, sliceIndicesMap)
-        if (!indices) return false
-        return rowIdx === indices.endIdx
+        const resolved = sliceIndicesMap.get(s.id)
+        if (!resolved) return false
+        return rowIdx === resolved.toIdx
     })
 }
 
@@ -89,9 +118,9 @@ export function needBottomBar(
     rowIdx: number
 ): boolean {
     return slices.some(s => {
-        const indices = getSliceIndicesFromMap(s, sliceIndicesMap)
-        if (!indices) return false
-        return rowIdx === indices.startIdx
+        const resolved = sliceIndicesMap.get(s.id)
+        if (!resolved) return false
+        return rowIdx === resolved.fromIdx
     })
 }
 
@@ -104,10 +133,10 @@ export function isSharedBoundary(
     let hasStart = false
     let hasEnd = false
     for (const slice of slices) {
-        const indices = getSliceIndicesFromMap(slice, sliceIndicesMap)
-        if (!indices) continue
-        if (rowIdx === indices.startIdx) hasStart = true
-        if (rowIdx === indices.endIdx) hasEnd = true
+        const resolved = sliceIndicesMap.get(slice.id)
+        if (!resolved) continue
+        if (rowIdx === resolved.fromIdx) hasStart = true
+        if (rowIdx === resolved.toIdx) hasEnd = true
         if (hasStart && hasEnd) return true
     }
     return false
@@ -127,10 +156,10 @@ export function getSliceIdAtPosition(
     let startSliceId: number | undefined
 
     for (const slice of slices) {
-        const indices = getSliceIndicesFromMap(slice, sliceIndicesMap)
-        if (!indices) continue
-        if (rowIdx === indices.endIdx) endSliceId = slice.id
-        if (rowIdx === indices.startIdx) startSliceId = slice.id
+        const resolved = sliceIndicesMap.get(slice.id)
+        if (!resolved) continue
+        if (rowIdx === resolved.toIdx) endSliceId = slice.id
+        if (rowIdx === resolved.fromIdx) startSliceId = slice.id
     }
 
     // 上半部分（< 0.5）优先选择 end slice，下半部分（>= 0.5）优先选择 start slice
@@ -151,9 +180,9 @@ export function checkOverlap(
 ): boolean {
     return slices.some(s => {
         if (s.id === excludeSliceId) return false
-        const indices = getSliceIndicesFromMap(s, sliceIndicesMap)
-        if (!indices) return false
-        return max > indices.startIdx && min < indices.endIdx
+        const resolved = sliceIndicesMap.get(s.id)
+        if (!resolved) return false
+        return max > resolved.fromIdx && min < resolved.toIdx
     })
 }
 
@@ -184,12 +213,12 @@ export function computeSliceEndpoints(
 /** 重设 slice 端点时，计算新的 fromPt/toPt 存储方式 */
 export function computeResizeEndpoints(
     line: Line,
-    currentIndices: SliceIndices,
+    currentIndices: SliceEndpointIndices,
     flashingRowIdx: number,
     newRowIdx: number
 ): { fromPt: number; toPt: number } | undefined {
-    const isFlashingStart = flashingRowIdx === currentIndices.startIdx
-    const fixedRowIdx = isFlashingStart ? currentIndices.endIdx : currentIndices.startIdx
+    const isFlashingStart = flashingRowIdx === currentIndices.fromIdx
+    const fixedRowIdx = isFlashingStart ? currentIndices.toIdx : currentIndices.fromIdx
 
     const userMin = Math.min(fixedRowIdx, newRowIdx)
     const userMax = Math.max(fixedRowIdx, newRowIdx)
