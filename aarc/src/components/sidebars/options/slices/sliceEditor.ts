@@ -1,5 +1,5 @@
-import { Line, LineSliceBase } from "@/models/save";
-import { SliceEndpointIndices } from "@/models/stores/saveDerived/slice/sliceResolverStore";
+import { Line, LineSliceBase, AnySlice, SliceKind } from "@/models/save";
+import { SliceEndpointIndices, useSliceResolverStore } from "@/models/stores/saveDerived/slice/sliceResolverStore";
 import { resolveSliceEndpoints } from "@/models/stores/saveDerived/slice/sliceResolver";
 
 export type CellRole = 'start' | 'middle' | 'end' | 'startAndEnd' | 'empty'
@@ -94,7 +94,6 @@ export function buildCellInfoMap(
     for (let i = 0; i < rowCount; i++) {
         map.set(i, getCellInfo(slices, sliceIndicesMap, i))
     }
-    console.log(map)
     return map
 }
 
@@ -236,4 +235,15 @@ export function computeResizeEndpoints(
         return { fromPt: newPt, toPt: fixedPt }
     }
     return undefined
+}
+
+/** 从 sliceResolverStore 缓存中获取解析后的索引
+ * fromIdx: 索引较小的（表格中靠上）
+ * toIdx: 索引较大的（表格中靠下）
+ */
+export function getSliceIndices(slice: AnySlice, sliceKind: SliceKind): { fromIdx: number, toIdx: number } | undefined {
+    const cache = sliceKind === 'time' ? useSliceResolverStore().timeSliceIndices : useSliceResolverStore().styleSliceIndices
+    const resolved = cache.get(slice.id)
+    if (!resolved) return undefined
+    return { fromIdx: resolved.fromIdx, toIdx: resolved.toIdx }
 }

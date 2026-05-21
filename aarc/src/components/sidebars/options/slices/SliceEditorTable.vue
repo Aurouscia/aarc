@@ -3,22 +3,23 @@ import SideBar from '@/components/common/SideBar.vue';
 import { Line, TimeSlice, StyleSlice, AnySlice, SliceKind } from '@/models/save';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef, type Component, type ComputedRef } from 'vue'
 import TimeSliceEditor from './TimeSliceEditor.vue';
 import StyleSliceEditor from './StyleSliceEditor.vue';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useSliceResolverStore } from '@/models/stores/saveDerived/slice/sliceResolverStore';
 import {
     buildCellInfoMap,
-    needTopBar as needTopBarPure,
-    needBottomBar as needBottomBarPure,
     checkOverlap,
     computeSliceEndpoints,
     computeResizeEndpoints,
     isSharedBoundary as isSharedBoundaryPure,
     getSliceIdAtPosition as getSliceIdAtPositionPure,
+    getSliceIndices,
     type CellInfo,
 } from './sliceEditor';
+import SliceCell from './SliceCell.vue';
+import SliceEditorPanel from './SliceEditorPanel.vue';
 
 
 const props = defineProps<{
@@ -40,7 +41,18 @@ const stations = computed(() => {
     })
 })
 
-// ========== Slice 列表（过滤当前线路） ==========
+// ========== Slice 列配置 ==========
+
+interface SliceColConfig {
+    kind: SliceKind
+    label: string
+    slices: ComputedRef<AnySlice[]>
+    cellInfoMap: ComputedRef<Map<number, CellInfo>>
+    editorComponent: Component
+    editingSlice: ComputedRef<AnySlice | undefined>
+    panelClass: string
+}
+
 const timeSlices = computed<TimeSlice[]>(() =>
     saveStore.save?.timeSlices?.filter(s => s.line === props.line.id) || []
 )
@@ -48,8 +60,6 @@ const timeSlices = computed<TimeSlice[]>(() =>
 const styleSlices = computed<StyleSlice[]>(() =>
     saveStore.save?.styleSlices?.filter(s => s.line === props.line.id) || []
 )
-
-// ========== 单元格状态计算 ==========
 
 const timeCellInfoMap = computed(() =>
     buildCellInfoMap(timeSlices.value, sliceResolverStore.timeSliceIndices, stations.value.length)
@@ -59,34 +69,45 @@ const styleCellInfoMap = computed(() =>
     buildCellInfoMap(styleSlices.value, sliceResolverStore.styleSliceIndices, stations.value.length)
 )
 
+const editingSlice = ref<{ type: SliceKind; id: number } | null>(null)
+
+const editingTimeSlice = computed<TimeSlice | undefined>(() => {
+    if (editingSlice.value?.type !== 'time') return undefined
+    return timeSlices.value.find(s => s.id === editingSlice.value!.id)
+})
+
+const editingStyleSlice = computed<StyleSlice | undefined>(() => {
+    if (editingSlice.value?.type !== 'style') return undefined
+    return styleSlices.value.find(s => s.id === editingSlice.value!.id)
+})
+
+const sliceCols: SliceColConfig[] = [
+    {
+        kind: 'time',
+        label: '时间',
+        slices: timeSlices,
+        cellInfoMap: timeCellInfoMap,
+        editorComponent: TimeSliceEditor,
+        editingSlice: editingTimeSlice,
+        panelClass: 'time',
+    },
+    {
+        kind: 'style',
+        label: '样式',
+        slices: styleSlices,
+        cellInfoMap: styleCellInfoMap,
+        editorComponent: StyleSliceEditor,
+        editingSlice: editingStyleSlice,
+        panelClass: 'style',
+    },
+]
+
+function getColConfig(kind: SliceKind): SliceColConfig {
+    return sliceCols.find(c => c.kind === kind)!
+}
+
 function getCellInfoByCol(rowIdx: number, col: SliceKind): CellInfo {
-    return col === 'time'
-        ? timeCellInfoMap.value.get(rowIdx)!
-        : styleCellInfoMap.value.get(rowIdx)!
-}
-
-/** 从 sliceResolverStore 缓存中获取解析后的索引
- * fromIdx: 索引较小的（表格中靠上）
- * toIdx: 索引较大的（表格中靠下）
- */
-function getSliceIndices(slice: AnySlice): { fromIdx: number, toIdx: number } | undefined {
-    const isTime = 'time' in slice
-    const cache = isTime ? sliceResolverStore.timeSliceIndices : sliceResolverStore.styleSliceIndices
-    const resolved = cache.get(slice.id)
-    if (!resolved) return undefined
-    return { fromIdx: resolved.fromIdx, toIdx: resolved.toIdx }
-}
-
-/** 判断某行单元格是否需要显示上半截 bar */
-function needTopBar(slices: AnySlice[], rowIdx: number, col: SliceKind): boolean {
-    const map = col === 'time' ? sliceResolverStore.timeSliceIndices : sliceResolverStore.styleSliceIndices
-    return needTopBarPure(slices, map, rowIdx)
-}
-
-/** 判断某行单元格是否需要显示下半截 bar */
-function needBottomBar(slices: AnySlice[], rowIdx: number, col: SliceKind): boolean {
-    const map = col === 'time' ? sliceResolverStore.timeSliceIndices : sliceResolverStore.styleSliceIndices
-    return needBottomBarPure(slices, map, rowIdx)
+    return getColConfig(col).cellInfoMap.value.get(rowIdx)!
 }
 
 // ========== 创建新 Slice 的交互 ==========
@@ -174,8 +195,6 @@ function isPending(col: SliceKind, rowIdx: number): boolean {
 
 // ========== 编辑 Slice ==========
 
-const editingSlice = ref<{ type: SliceKind; id: number } | null>(null)
-
 /** 重设端点状态：记录闪烁的点（要被替换的）和 slice 信息，等待用户选另一个点 */
 const resizingSlice = ref<{
     type: SliceKind
@@ -261,7 +280,7 @@ function isEditing(col: SliceKind, rowIdx: number): boolean {
     // 检查当前编辑的 slice 是否覆盖了这个点
     const editingSliceData = slices.find(s => s.id === editingSlice.value!.id)
     if (!editingSliceData) return false
-    const indices = getSliceIndices(editingSliceData)
+    const indices = getSliceIndices(editingSliceData, col)
     if (!indices) return false
     return rowIdx >= indices.fromIdx && rowIdx <= indices.toIdx
 }
@@ -270,16 +289,6 @@ function isEditing(col: SliceKind, rowIdx: number): boolean {
 function isResizingFlashing(col: SliceKind, rowIdx: number): boolean {
     return resizingSlice.value?.type === col && resizingSlice.value?.flashingRowIdx === rowIdx
 }
-
-const editingTimeSlice = computed<TimeSlice | undefined>(() => {
-    if (editingSlice.value?.type !== 'time') return undefined
-    return timeSlices.value.find(s => s.id === editingSlice.value!.id)
-})
-
-const editingStyleSlice = computed<StyleSlice | undefined>(() => {
-    if (editingSlice.value?.type !== 'style') return undefined
-    return styleSlices.value.find(s => s.id === editingSlice.value!.id)
-})
 
 function deleteSlice(type: SliceKind, sliceId: number) {
     if (!window.confirm('确认删除该片段？')) return
@@ -302,7 +311,7 @@ function startResize(type: SliceKind, sliceId: number, whichEnd: 'top' | 'bottom
     const slices = type === 'time' ? timeSlices.value : styleSlices.value
     const slice = slices.find(s => s.id === sliceId)
     if (!slice) return
-    const indices = getSliceIndices(slice)
+    const indices = getSliceIndices(slice, type)
     if (!indices) return
 
     // 'top' = 重设靠上的点，闪烁靠上的点（fromIdx）
@@ -328,7 +337,7 @@ function doResizeSlice(type: SliceKind, sliceId: number, flashingRowIdx: number,
     }
 
     // 获取当前解析结果，确定固定端点
-    const currentIndices = getSliceIndices(slice)
+    const currentIndices = getSliceIndices(slice, type)
     if (!currentIndices) return
 
     const isFlashingStart = flashingRowIdx === currentIndices.fromIdx
@@ -405,24 +414,15 @@ const tableRows = computed<TableRow[]>(() => {
     for (let i = 0; i < stations.value.length; i++) {
         rows.push({ type: 'data', stationIdx: i })
         // 检查这一行后面是否需要插入编辑器行
-        const timeInfo = timeCellInfoMap.value.get(i)!
-        if (timeInfo.sliceId && editingSlice.value?.type === 'time' && editingSlice.value.id === timeInfo.sliceId) {
-            // 找到这个 slice 的终点行，在终点行下方插入编辑器
-            const slice = timeSlices.value.find(s => s.id === timeInfo.sliceId)
-            if (slice) {
-                const indices = getSliceIndices(slice)
-                if (indices && i === indices.toIdx) {
-                    rows.push({ type: 'editor', stationIdx: i, editorType: 'time', editorSliceId: timeInfo.sliceId })
-                }
-            }
-        }
-        const styleInfo = styleCellInfoMap.value.get(i)!
-        if (styleInfo.sliceId && editingSlice.value?.type === 'style' && editingSlice.value.id === styleInfo.sliceId) {
-            const slice = styleSlices.value.find(s => s.id === styleInfo.sliceId)
-            if (slice) {
-                const indices = getSliceIndices(slice)
-                if (indices && i === indices.toIdx) {
-                    rows.push({ type: 'editor', stationIdx: i, editorType: 'style', editorSliceId: styleInfo.sliceId })
+        for (const col of sliceCols) {
+            const info = col.cellInfoMap.value.get(i)!
+            if (info.sliceId && editingSlice.value?.type === col.kind && editingSlice.value.id === info.sliceId) {
+                const slice = col.slices.value.find(s => s.id === info.sliceId)
+                if (slice) {
+                    const indices = getSliceIndices(slice, col.kind)
+                    if (indices && i === indices.toIdx) {
+                        rows.push({ type: 'editor', stationIdx: i, editorType: col.kind, editorSliceId: info.sliceId })
+                    }
                 }
             }
         }
@@ -443,127 +443,49 @@ defineExpose({
       <thead>
         <tr>
           <th class="col-station">站点</th>
-          <th class="col-slice">时间</th>
-          <th class="col-slice">样式</th>
+          <th v-for="col in sliceCols" :key="col.kind" class="col-slice">{{ col.label }}</th>
         </tr>
       </thead>
       <tbody>
         <template v-for="(row, rowIdx) in tableRows" :key="rowIdx">
           <!-- 数据行 -->
-          <tr v-if="row.type === 'data'" :class="{ 'editing-row': isEditing('time', row.stationIdx) || isEditing('style', row.stationIdx) }">
+          <tr v-if="row.type === 'data'" :class="{ 'editing-row': sliceCols.some(c => isEditing(c.kind, row.stationIdx)) }">
             <!-- 站点名 -->
             <td class="cell-station">{{ stations[row.stationIdx].name }}</td>
 
-            <!-- 时间 slice 列 -->
-            <td
-              class="cell-slice"
-              :class="[
-                timeCellInfoMap.get(row.stationIdx)!.role,
-                { pending: isPending('time', row.stationIdx) },
-                { editing: isEditing('time', row.stationIdx) },
-                { 'resizing-fixed': isResizingFlashing('time', row.stationIdx) }
-              ]"
-              @click="onSliceCellClick($event, 'time', row.stationIdx)"
-            >
-              <div class="slice-visual">
-                <div
-                  v-if="timeCellInfoMap.get(row.stationIdx)!.role === 'middle' || timeCellInfoMap.get(row.stationIdx)!.role === 'startAndEnd'"
-                  class="bar"
-                />
-                <div
-                  v-if="needTopBar(timeSlices, row.stationIdx, 'time')"
-                  class="bar half-bar top"
-                />
-                <div
-                  v-if="needBottomBar(timeSlices, row.stationIdx, 'time')"
-                  class="bar half-bar bottom"
-                />
-                <div
-                  v-if="timeCellInfoMap.get(row.stationIdx)!.isStartOrEnd"
-                  class="dot"
-                />
-                <div
-                  v-if="timeCellInfoMap.get(row.stationIdx)!.role === 'empty'"
-                  class="empty-dot"
-                />
-                <div
-                  v-if="timeCellInfoMap.get(row.stationIdx)!.isPureStartOrEnd"
-                  class="empty-dot create-dot"
-                  @click.stop="onCellClick('time', row.stationIdx)"
-                  title="从此处开始创建"
-                />
-              </div>
-            </td>
-
-            <!-- 样式 slice 列 -->
-            <td
-              class="cell-slice"
-              :class="[
-                styleCellInfoMap.get(row.stationIdx)!.role,
-                { pending: isPending('style', row.stationIdx) },
-                { editing: isEditing('style', row.stationIdx) },
-                { 'resizing-fixed': isResizingFlashing('style', row.stationIdx) }
-              ]"
-              @click="onSliceCellClick($event, 'style', row.stationIdx)"
-            >
-              <div class="slice-visual">
-                <div
-                  v-if="styleCellInfoMap.get(row.stationIdx)!.role === 'middle' || styleCellInfoMap.get(row.stationIdx)!.role === 'startAndEnd'"
-                  class="bar"
-                />
-                <div
-                  v-if="needTopBar(styleSlices, row.stationIdx, 'style')"
-                  class="bar half-bar top"
-                />
-                <div
-                  v-if="needBottomBar(styleSlices, row.stationIdx, 'style')"
-                  class="bar half-bar bottom"
-                />
-                <div
-                  v-if="styleCellInfoMap.get(row.stationIdx)!.isStartOrEnd"
-                  class="dot"
-                />
-                <div
-                  v-if="styleCellInfoMap.get(row.stationIdx)!.role === 'empty'"
-                  class="empty-dot"
-                />
-                <div
-                  v-if="styleCellInfoMap.get(row.stationIdx)!.isPureStartOrEnd"
-                  class="empty-dot create-dot"
-                  @click.stop="onCellClick('style', row.stationIdx)"
-                  title="从此处开始创建"
-                />
-              </div>
-            </td>
+            <!-- slice 列 -->
+            <SliceCell
+              v-for="col in sliceCols"
+              :key="col.kind"
+              :cell-info="col.cellInfoMap.value.get(row.stationIdx)!"
+              :slices="col.slices.value"
+              :col="col.kind"
+              :station-idx="row.stationIdx"
+              :is-pending="isPending(col.kind, row.stationIdx)"
+              :is-editing="isEditing(col.kind, row.stationIdx)"
+              :is-resizing-flashing="isResizingFlashing(col.kind, row.stationIdx)"
+              @click="onSliceCellClick($event, col.kind, row.stationIdx)"
+              @create="onCellClick(col.kind, row.stationIdx)"
+            />
           </tr>
 
           <!-- 编辑器行 -->
           <tr v-else-if="row.type === 'editor'" class="editor-row">
-            <td colspan="3" class="editor-cell">
-              <div v-if="row.editorType === 'time' && editingTimeSlice" class="editor-panel time">
-                <TimeSliceEditor :slice="editingTimeSlice" @change="rerenderIfSlicesChanged()"/>
-                <div v-if="resizingSlice?.sliceId === editingTimeSlice.id" class="resize-hint">
-                  <span>请选择新{{ resizingSlice?.flashingRowIdx === getSliceIndices(editingTimeSlice)?.fromIdx ? '上' : '下' }}点</span>
-                  <button @click="resizingSlice = null">取消</button>
-                </div>
-                <div v-else class="editor-btns">
-                  <button @click="startResize('time', editingTimeSlice.id, 'top')">重设上点</button>
-                  <button @click="startResize('time', editingTimeSlice.id, 'bottom')">重设下点</button>
-                  <button @click="deleteSlice('time', editingTimeSlice.id)" class="cancel">删除片段</button>
-                </div>
-              </div>
-              <div v-if="row.editorType === 'style' && editingStyleSlice" class="editor-panel style">
-                <StyleSliceEditor :slice="editingStyleSlice" @change="rerenderIfSlicesChanged()"/>
-                <div v-if="resizingSlice?.sliceId === editingStyleSlice.id" class="resize-hint">
-                  <span>请选择新{{ resizingSlice?.flashingRowIdx === getSliceIndices(editingStyleSlice)?.fromIdx ? '上' : '下' }}点</span>
-                  <button @click="resizingSlice = null">取消</button>
-                </div>
-                <div v-else class="editor-btns">
-                  <button @click="startResize('style', editingStyleSlice.id, 'top')">重设上点</button>
-                  <button @click="startResize('style', editingStyleSlice.id, 'bottom')">重设下点</button>
-                  <button @click="deleteSlice('style', editingStyleSlice.id)" class="cancel">删除片段</button>
-                </div>
-              </div>
+            <td :colspan="1 + sliceCols.length" class="editor-cell">
+              <SliceEditorPanel
+                v-if="row.editorType && getColConfig(row.editorType).editingSlice.value"
+                :slice="getColConfig(row.editorType).editingSlice.value!"
+                :col="row.editorType"
+                :editor-component="getColConfig(row.editorType).editorComponent"
+                :panel-class="getColConfig(row.editorType).panelClass"
+                :resizing-slice-id="resizingSlice?.sliceId"
+                :flashing-row-idx="resizingSlice?.flashingRowIdx"
+                @change="rerenderIfSlicesChanged()"
+                @resize-top="startResize(row.editorType, row.editorSliceId!, 'top')"
+                @resize-bottom="startResize(row.editorType, row.editorSliceId!, 'bottom')"
+                @delete="deleteSlice(row.editorType, row.editorSliceId!)"
+                @cancel-resize="resizingSlice = null"
+              />
             </td>
           </tr>
         </template>
@@ -617,144 +539,11 @@ table {
   font-size: 14px;
 }
 
-.cell-slice {
-  height: 40px;
-  padding: 0;
-  cursor: pointer;
-  position: relative;
-  transition: 0.15s;
-
-  &.empty:hover {
-    background: #f0f0f0;
-  }
-
-  &.start, &.middle, &.end, &.startAndEnd {
-    cursor: pointer;
-  }
-}
-
 .editing-row {
   background: #fafafa;
 }
 
-.slice-visual {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  position: relative;
-}
-
-/* ========== 时间列色系（蓝色系） ========== */
-td:nth-child(2) {
-  .bar, .dot {
-    background: #2196f3;
-  }
-
-  &:hover .empty-dot {
-    border-color: #2196f3;
-  }
-
-  &.pending {
-    .empty-dot {
-      border-color: #2196f3;
-    }
-  }
-
-  &.editing {
-    background: #bbdefb;
-  }
-
-  &.resizing-fixed {
-    background: #90caf9;
-    animation: pulse 1s infinite;
-  }
-}
-
-.editor-panel.time {
-  background: #bbdefb;
-  &:deep(.editorTitle) {
-    color: #2196f3;
-  }
-}
-
-/* ========== 样式列色系（绿色系） ========== */
-td:nth-child(3) {
-  .bar, .dot {
-    background: #4caf50;
-  }
-
-  &:hover .empty-dot {
-    border-color: #4caf50;
-  }
-
-  &.pending {
-    .empty-dot {
-      border-color: #4caf50;
-    }
-  }
-
-  &.editing {
-    background: #c8e6c9;
-  }
-
-  &.resizing-fixed {
-    background: #a5d6a7;
-    animation: pulse 1s infinite;
-  }
-}
-
-.editor-panel.style {
-  background: #c8e6c9;
-  &:deep(.editorTitle) {
-    color: #4caf50;
-  }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
 /* ========== 通用样式 ========== */
-.bar {
-  width: 4px;
-  height: 100%;
-  position: absolute;
-
-  &.half-bar {
-    height: 50%;
-
-    &.top {
-      top: 0;
-    }
-
-    &.bottom {
-      bottom: 0;
-    }
-  }
-}
-
-.dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  z-index: 1;
-}
-
-.empty-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: 2px solid #ccc;
-  background: transparent;
-}
-
-.create-dot {
-  position: absolute;
-  right: 8px;
-  cursor: pointer;
-}
 
 .editor-row {
   background: #fafafa;
