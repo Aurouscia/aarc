@@ -358,6 +358,15 @@ export const devSave:Save = {
             time: {
                 open: new Date(2030, 1 - 1, 1).getTime()
             }
+        },
+        {
+            id: 10000002,
+            line: 102,
+            fromPt: 2,
+            toPt: 9,
+            time: {
+                open: new Date(2030, 8, 1).getTime()
+            }
         }
     ],
     lineStyles:[

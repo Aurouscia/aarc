@@ -15,6 +15,7 @@ import {
     checkOverlap,
     computeSliceEndpoints,
     computeResizeEndpoints,
+    type CellInfo,
 } from './sliceEditor';
 
 
@@ -48,12 +49,7 @@ const styleSlices = computed<StyleSlice[]>(() =>
 
 // ========== 单元格状态计算 ==========
 
-type CellRole = 'start' | 'middle' | 'end' | 'empty'
 
-interface CellInfo {
-    role: CellRole
-    sliceId?: number
-}
 
 /** 从 sliceResolverStore 缓存中获取解析后的索引
  * startIdx: 索引较小的（表格中靠上的）
@@ -444,10 +440,7 @@ defineExpose({
                   class="bar half-bar bottom"
                 />
                 <div
-                  v-if="
-                    getCellInfo(timeSlices, row.stationIdx, 'time').role === 'start' ||
-                    getCellInfo(timeSlices, row.stationIdx, 'time').role === 'end'
-                  "
+                  v-if="getCellInfo(timeSlices, row.stationIdx, 'time').isStartOrEnd"
                   class="dot"
                 />
                 <div
@@ -482,10 +475,7 @@ defineExpose({
                   class="bar half-bar bottom"
                 />
                 <div
-                  v-if="
-                    getCellInfo(styleSlices, row.stationIdx, 'style').role === 'start' ||
-                    getCellInfo(styleSlices, row.stationIdx, 'style').role === 'end'
-                  "
+                  v-if="getCellInfo(styleSlices, row.stationIdx, 'style').isStartOrEnd"
                   class="dot"
                 />
                 <div
@@ -587,7 +577,7 @@ table {
     background: #f0f0f0;
   }
 
-  &.start, &.middle, &.end {
+  &.start, &.middle, &.end, &.startAndEnd {
     cursor: pointer;
   }
 }

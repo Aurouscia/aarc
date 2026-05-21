@@ -2,11 +2,13 @@ import { Line, LineSliceBase } from "@/models/save";
 import { SliceEndpointIndices } from "@/models/stores/saveDerived/slice/sliceResolverStore";
 import { resolveSliceEndpoints } from "@/models/stores/saveDerived/slice/sliceResolver";
 
-export type CellRole = 'start' | 'middle' | 'end' | 'empty'
+export type CellRole = 'start' | 'middle' | 'end' | 'startAndEnd' | 'empty'
 
 export interface CellInfo {
     role: CellRole
     sliceId?: number
+    /** 该单元格是否作为任意 slice 的起点或终点（包括 startAndEnd） */
+    isStartOrEnd: boolean
 }
 
 export interface SliceIndices {
@@ -33,45 +35,64 @@ export function getCellInfo(
     sliceIndicesMap: Map<number, SliceEndpointIndices | undefined>,
     rowIdx: number
 ): CellInfo {
+    let isStartOrEnd = false
+    let firstMatch: CellInfo | undefined
+
     for (const slice of slices) {
         const indices = getSliceIndicesFromMap(slice, sliceIndicesMap)
         if (!indices) continue
         if (rowIdx < indices.startIdx || rowIdx > indices.endIdx) continue
-        if (rowIdx === indices.startIdx) return { role: 'start', sliceId: slice.id }
-        if (rowIdx === indices.endIdx) return { role: 'end', sliceId: slice.id }
-        return { role: 'middle', sliceId: slice.id }
+
+        const isStart = rowIdx === indices.startIdx
+        const isEnd = rowIdx === indices.endIdx
+
+        if (isStart || isEnd) {
+            isStartOrEnd = true
+        }
+
+        if (!firstMatch) {
+            if (isStart && isEnd) {
+                firstMatch = { role: 'startAndEnd', sliceId: slice.id, isStartOrEnd }
+            } else if (isStart) {
+                firstMatch = { role: 'start', sliceId: slice.id, isStartOrEnd }
+            } else if (isEnd) {
+                firstMatch = { role: 'end', sliceId: slice.id, isStartOrEnd }
+            } else {
+                firstMatch = { role: 'middle', sliceId: slice.id, isStartOrEnd }
+            }
+        }
     }
-    return { role: 'empty' }
+
+    if (firstMatch) {
+        return { ...firstMatch, isStartOrEnd }
+    }
+    return { role: 'empty', isStartOrEnd: false }
 }
 
-/** 判断某行单元格是否需要显示上半截 bar */
+/** 判断某行单元格是否需要显示上半截 bar（任意 slice 的 end 点） */
 export function needTopBar(
     slices: LineSliceBase[],
     sliceIndicesMap: Map<number, SliceEndpointIndices | undefined>,
     rowIdx: number
 ): boolean {
-    const info = getCellInfo(slices, sliceIndicesMap, rowIdx)
-    if (info.role !== 'start' && info.role !== 'end') return false
-    const slice = slices.find(s => s.id === info.sliceId)
-    if (!slice) return false
-    const indices = getSliceIndicesFromMap(slice, sliceIndicesMap)
-    if (!indices) return false
-    return rowIdx === indices.endIdx
+    return slices.some(s => {
+        const indices = getSliceIndicesFromMap(s, sliceIndicesMap)
+        if (!indices) return false
+        return rowIdx === indices.endIdx
+    })
 }
 
-/** 判断某行单元格是否需要显示下半截 bar */
+/** 判断某行单元格是否需要显示下半截 bar（任意 slice 的 start 点） */
 export function needBottomBar(
     slices: LineSliceBase[],
     sliceIndicesMap: Map<number, SliceEndpointIndices | undefined>,
     rowIdx: number
 ): boolean {
-    const info = getCellInfo(slices, sliceIndicesMap, rowIdx)
-    if (info.role !== 'start' && info.role !== 'end') return false
-    const slice = slices.find(s => s.id === info.sliceId)
-    if (!slice) return false
-    const indices = getSliceIndicesFromMap(slice, sliceIndicesMap)
-    if (!indices) return false
-    return rowIdx === indices.startIdx
+    return slices.some(s => {
+        const indices = getSliceIndicesFromMap(s, sliceIndicesMap)
+        if (!indices) return false
+        return rowIdx === indices.startIdx
+    })
 }
 
 /** 检查给定范围是否与现有 slice 重叠（排除自身） */
@@ -86,7 +107,7 @@ export function checkOverlap(
         if (s.id === excludeSliceId) return false
         const indices = getSliceIndicesFromMap(s, sliceIndicesMap)
         if (!indices) return false
-        return !(max < indices.startIdx || min > indices.endIdx)
+        return max > indices.startIdx && min < indices.endIdx
     })
 }
 

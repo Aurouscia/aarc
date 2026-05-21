@@ -27,25 +27,25 @@ function createIndicesMap(entries: [number, SliceEndpointIndices | undefined][])
 describe('getCellInfo', () => {
     it('空 slice 列表时所有行都是 empty', () => {
         const map = createIndicesMap([])
-        expect(getCellInfo([], map, 0)).toEqual({ role: 'empty' })
-        expect(getCellInfo([], map, 5)).toEqual({ role: 'empty' })
+        expect(getCellInfo([], map, 0)).toEqual({ role: 'empty', isStartOrEnd: false })
+        expect(getCellInfo([], map, 5)).toEqual({ role: 'empty', isStartOrEnd: false })
     })
 
     it('单行 slice（start=end）时该行同时是 start 和 end', () => {
         const slices = [createSlice(1, 10, 10)]
         const map = createIndicesMap([[1, { fromIdx: 2, toIdx: 2 }]])
-        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'start', sliceId: 1 })
-        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'empty' })
+        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'startAndEnd', sliceId: 1, isStartOrEnd: true })
+        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'empty', isStartOrEnd: false })
     })
 
     it('多行 slice 中正确识别 start/middle/end', () => {
         const slices = [createSlice(1, 10, 40)]
         const map = createIndicesMap([[1, { fromIdx: 1, toIdx: 3 }]])
-        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1 })
-        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'middle', sliceId: 1 })
-        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'end', sliceId: 1 })
-        expect(getCellInfo(slices, map, 0)).toEqual({ role: 'empty' })
-        expect(getCellInfo(slices, map, 4)).toEqual({ role: 'empty' })
+        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1, isStartOrEnd: true })
+        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'middle', sliceId: 1, isStartOrEnd: false })
+        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'end', sliceId: 1, isStartOrEnd: true })
+        expect(getCellInfo(slices, map, 0)).toEqual({ role: 'empty', isStartOrEnd: false })
+        expect(getCellInfo(slices, map, 4)).toEqual({ role: 'empty', isStartOrEnd: false })
     })
 
     it('多个不重叠的 slice 各自范围正确', () => {
@@ -54,12 +54,12 @@ describe('getCellInfo', () => {
             [1, { fromIdx: 1, toIdx: 2 }],
             [2, { fromIdx: 5, toIdx: 6 }],
         ])
-        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1 })
-        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'end', sliceId: 1 })
-        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'empty' })
-        expect(getCellInfo(slices, map, 4)).toEqual({ role: 'empty' })
-        expect(getCellInfo(slices, map, 5)).toEqual({ role: 'start', sliceId: 2 })
-        expect(getCellInfo(slices, map, 6)).toEqual({ role: 'end', sliceId: 2 })
+        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1, isStartOrEnd: true })
+        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'end', sliceId: 1, isStartOrEnd: true })
+        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'empty', isStartOrEnd: false })
+        expect(getCellInfo(slices, map, 4)).toEqual({ role: 'empty', isStartOrEnd: false })
+        expect(getCellInfo(slices, map, 5)).toEqual({ role: 'start', sliceId: 2, isStartOrEnd: true })
+        expect(getCellInfo(slices, map, 6)).toEqual({ role: 'end', sliceId: 2, isStartOrEnd: true })
     })
 
     it('多个相邻 slice 边界正确', () => {
@@ -68,8 +68,8 @@ describe('getCellInfo', () => {
             [1, { fromIdx: 1, toIdx: 2 }],
             [2, { fromIdx: 3, toIdx: 4 }],
         ])
-        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'end', sliceId: 1 })
-        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'start', sliceId: 2 })
+        expect(getCellInfo(slices, map, 2)).toEqual({ role: 'end', sliceId: 1, isStartOrEnd: true })
+        expect(getCellInfo(slices, map, 3)).toEqual({ role: 'start', sliceId: 2, isStartOrEnd: true })
     })
 
     it('解析结果为 undefined 的 slice 被跳过', () => {
@@ -78,8 +78,8 @@ describe('getCellInfo', () => {
             [1, { fromIdx: 1, toIdx: 2 }],
             [2, undefined],
         ])
-        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1 })
-        expect(getCellInfo(slices, map, 5)).toEqual({ role: 'empty' })
+        expect(getCellInfo(slices, map, 1)).toEqual({ role: 'start', sliceId: 1, isStartOrEnd: true })
+        expect(getCellInfo(slices, map, 5)).toEqual({ role: 'empty', isStartOrEnd: false })
     })
 })
 
@@ -98,6 +98,30 @@ describe('needTopBar', () => {
         const slices = [createSlice(1, 10, 10)]
         const map = createIndicesMap([[1, { fromIdx: 2, toIdx: 2 }]])
         expect(needTopBar(slices, map, 2)).toBe(true)
+    })
+
+    it('首尾相接时，共享边界点同时显示两个 slice 的 bar', () => {
+        // slice1: [1,2], slice2: [2,3]，索引2是 slice1 的 end 也是 slice2 的 start
+        const slices = [createSlice(1, 10, 20), createSlice(2, 30, 40)]
+        const map = createIndicesMap([
+            [1, { fromIdx: 1, toIdx: 2 }],
+            [2, { fromIdx: 2, toIdx: 3 }],
+        ])
+        expect(needTopBar(slices, map, 2)).toBe(true)    // slice1 的 end
+        expect(needBottomBar(slices, map, 2)).toBe(true) // slice2 的 start
+    })
+
+    it('首尾相接时 getCellInfo 返回 isStartOrEnd=true', () => {
+        const slices = [createSlice(1, 10, 20), createSlice(2, 30, 40)]
+        const map = createIndicesMap([
+            [1, { fromIdx: 1, toIdx: 2 }],
+            [2, { fromIdx: 2, toIdx: 3 }],
+        ])
+        // 索引2：先遍历到 slice1 的 end，但 isStartOrEnd 应为 true（因为也是 slice2 的 start）
+        const info = getCellInfo(slices, map, 2)
+        expect(info.role).toBe('end')
+        expect(info.sliceId).toBe(1)
+        expect(info.isStartOrEnd).toBe(true)
     })
 })
 
@@ -135,8 +159,24 @@ describe('checkOverlap', () => {
     })
 
     it('边界相邻时应返回 false（允许相邻）', () => {
-        expect(checkOverlap(slices, map, -1, 4, 4)).toBe(false)  // [4,4] 与 [1,3] 相邻
-        expect(checkOverlap(slices, map, -1, 4, 5)).toBe(true)   // [4,5] 与 [5,7] 重叠
+        expect(checkOverlap(slices, map, -1, 4, 4)).toBe(false)  // [4,4] 与 [1,3] 有间隙
+        expect(checkOverlap(slices, map, -1, 4, 5)).toBe(false)  // [4,5] 与 [5,7] 首尾相接
+    })
+
+    it('首尾相接时应返回 false（允许相接）', () => {
+        // slice1: [1,3], slice2: [5,7]
+        // [3,5] 与 [1,3] 在索引3处相接
+        expect(checkOverlap(slices, map, -1, 3, 5)).toBe(false)
+        // [5,7] 与 [5,7] 被排除自身，但测试与另一个的相接
+        // [3,3] 与 [1,3] 在索引3处相接
+        expect(checkOverlap(slices, map, -1, 3, 3)).toBe(false)
+    })
+
+    it('真正重叠时应返回 true', () => {
+        expect(checkOverlap(slices, map, -1, 2, 6)).toBe(true)   // [2,6] 覆盖 [1,3] 和 [5,7]
+        expect(checkOverlap(slices, map, -1, 3, 5)).toBe(false) // [3,5] 与 [1,3] 相接，与 [5,7] 相接
+        expect(checkOverlap(slices, map, -1, 2, 5)).toBe(true)  // [2,5] 与 [1,3] 重叠
+        expect(checkOverlap(slices, map, -1, 3, 6)).toBe(true)  // [3,6] 与 [5,7] 重叠
     })
 
     it('排除自身时应返回 false', () => {
