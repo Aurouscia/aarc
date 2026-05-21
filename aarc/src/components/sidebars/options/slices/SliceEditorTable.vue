@@ -8,6 +8,7 @@ import TimeSliceEditor from './TimeSliceEditor.vue';
 import StyleSliceEditor from './StyleSliceEditor.vue';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useSliceResolverStore } from '@/models/stores/saveDerived/slice/sliceResolverStore';
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import {
     buildCellInfoMap,
     checkOverlap,
@@ -146,15 +147,20 @@ function onCellClick(col: SliceKind, rowIdx: number) {
     const slices = col === 'time' ? timeSlices.value : styleSlices.value
     const sliceIndicesMap = col === 'time' ? sliceResolverStore.timeSliceIndices : sliceResolverStore.styleSliceIndices
     if (checkOverlap(slices, sliceIndicesMap, -1, min, max)) {
-        alert('与现有片段重叠')
+        useUniqueComponentsStore().showPop('与现有片段重叠', 'failed')
         pendingFrom.value = null
         return
     }
 
     // 创建：根据用户点击的索引位置计算正确的 fromPt/toPt 存储方式
     const endpoints = computeSliceEndpoints(props.line, fromIdx, toIdx)
+    if (endpoints === 'both-self-intersect') {
+        useUniqueComponentsStore().showPop('两端不能都是自交点', 'failed')
+        pendingFrom.value = null
+        return
+    }
     if (!endpoints) {
-        alert('无法创建片段：端点解析歧义')
+        useUniqueComponentsStore().showPop('无法创建片段：端点解析歧义', 'failed')
         pendingFrom.value = null
         return
     }
@@ -352,14 +358,18 @@ function doResizeSlice(type: SliceKind, sliceId: number, flashingRowIdx: number,
     const allSlices = type === 'time' ? timeSlices.value : styleSlices.value
     const sliceIndicesMap = type === 'time' ? sliceResolverStore.timeSliceIndices : sliceResolverStore.styleSliceIndices
     if (checkOverlap(allSlices, sliceIndicesMap, sliceId, userMin, userMax)) {
-        alert('与现有片段重叠')
+        useUniqueComponentsStore().showPop('与现有片段重叠', 'failed')
         return
     }
 
     // 计算新的端点存储方式
     const endpoints = computeResizeEndpoints(props.line, currentIndices, flashingRowIdx, newRowIdx)
+    if (endpoints === 'both-self-intersect') {
+        useUniqueComponentsStore().showPop('两端不能都是自交点', 'failed')
+        return
+    }
     if (!endpoints) {
-        alert('无法重设：端点解析歧义')
+        useUniqueComponentsStore().showPop('无法重设：端点解析歧义', 'failed')
         return
     }
     slice.fromPt = endpoints.fromPt

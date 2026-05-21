@@ -308,10 +308,10 @@ describe('computeSliceEndpoints', () => {
         expect(result).toEqual({ fromPt: 20, toPt: 10 })
     })
 
-    it('双奇异点 → undefined', () => {
+    it('双奇异点 → both-self-intersect', () => {
         const line = createLine([10, 20, 10, 20])
         const result = computeSliceEndpoints(line, 0, 3)
-        expect(result).toBeUndefined()
+        expect(result).toBe('both-self-intersect')
     })
 
     it('同点 → undefined', () => {

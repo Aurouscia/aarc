@@ -2,6 +2,23 @@ import { Line, LineSliceBase, AnySlice, SliceKind } from "@/models/save";
 import { SliceEndpointIndices, useSliceResolverStore } from "@/models/stores/saveDerived/slice/sliceResolverStore";
 import { resolveSliceEndpoints } from "@/models/stores/saveDerived/slice/sliceResolver";
 
+/** 判断某点在线路中是否为自交点（出现次数 > 1） */
+function isSelfIntersect(line: Line, ptId: number): boolean {
+    let count = 0;
+    for (const p of line.pts) {
+        if (p === ptId) {
+            count++;
+            if (count > 1) return true;
+        }
+    }
+    return false;
+}
+
+/** 检查两个端点是否都是自交点 */
+function bothEndsSelfIntersect(line: Line, fromPt: number, toPt: number): boolean {
+    return isSelfIntersect(line, fromPt) && isSelfIntersect(line, toPt);
+}
+
 export type CellRole = 'start' | 'middle' | 'end' | 'startAndEnd' | 'empty'
 
 export interface CellInfo {
@@ -185,14 +202,20 @@ export function checkOverlap(
     })
 }
 
-/** 创建 slice 时，根据用户点击的索引位置计算正确的 fromPt/toPt 存储方式 */
+/** 创建 slice 时，根据用户点击的索引位置计算正确的 fromPt/toPt 存储方式
+ * @returns 成功时返回端点，双自交点时返回 'both-self-intersect'，其他歧义返回 undefined
+ */
 export function computeSliceEndpoints(
     line: Line,
     fromIdx: number,
     toIdx: number
-): { fromPt: number; toPt: number } | undefined {
+): { fromPt: number; toPt: number } | 'both-self-intersect' | undefined {
     const ptAtFromIdx = line.pts[fromIdx]
     const ptAtToIdx = line.pts[toIdx]
+
+    if (bothEndsSelfIntersect(line, ptAtFromIdx, ptAtToIdx)) {
+        return 'both-self-intersect'
+    }
 
     const userMin = Math.min(fromIdx, toIdx)
     const userMax = Math.max(fromIdx, toIdx)
@@ -209,21 +232,27 @@ export function computeSliceEndpoints(
     return undefined
 }
 
-/** 重设 slice 端点时，计算新的 fromPt/toPt 存储方式 */
+/** 重设 slice 端点时，计算新的 fromPt/toPt 存储方式
+ * @returns 成功时返回端点，双自交点时返回 'both-self-intersect'，其他歧义返回 undefined
+ */
 export function computeResizeEndpoints(
     line: Line,
     currentIndices: SliceEndpointIndices,
     flashingRowIdx: number,
     newRowIdx: number
-): { fromPt: number; toPt: number } | undefined {
+): { fromPt: number; toPt: number } | 'both-self-intersect' | undefined {
     const isFlashingStart = flashingRowIdx === currentIndices.fromIdx
     const fixedRowIdx = isFlashingStart ? currentIndices.toIdx : currentIndices.fromIdx
 
-    const userMin = Math.min(fixedRowIdx, newRowIdx)
-    const userMax = Math.max(fixedRowIdx, newRowIdx)
-
     const fixedPt = line.pts[fixedRowIdx]
     const newPt = line.pts[newRowIdx]
+
+    if (bothEndsSelfIntersect(line, fixedPt, newPt)) {
+        return 'both-self-intersect'
+    }
+
+    const userMin = Math.min(fixedRowIdx, newRowIdx)
+    const userMax = Math.max(fixedRowIdx, newRowIdx)
 
     const opt1 = resolveSliceEndpoints(line, fixedPt, newPt)
     const opt2 = resolveSliceEndpoints(line, newPt, fixedPt)
