@@ -90,13 +90,13 @@ function onCellClick(col: SliceKind, rowIdx: number) {
     const slices = col === 'time' ? timeSlices.value : styleSlices.value
     const info = getCellInfo(slices, rowIdx, col)
 
-    // 点击已有片段：取消 pending，不处理（由 onSliceCellClick 处理编辑）
-    if (info.role !== 'empty') {
+    // 点击 slice 中间：取消 pending，不能作为端点
+    if (info.role === 'middle') {
         pendingFrom.value = null
         return
     }
 
-    // 第一次点击空位：记录起点
+    // 第一次点击有效位置（empty/start/end/startAndEnd）：记录起点
     if (!pendingFrom.value || pendingFrom.value.col !== col) {
         pendingFrom.value = { col, rowIdx }
         return
@@ -192,22 +192,27 @@ function onSliceCellClick(event: MouseEvent, col: SliceKind, rowIdx: number) {
 
     // 如果正在重设端点
     if (resizingSlice.value && resizingSlice.value.type === col) {
-        // 点击当前正在编辑的 slice 内部（非闪烁端点）：允许作为新端点
-        if (info.sliceId === resizingSlice.value.sliceId && rowIdx !== resizingSlice.value.flashingRowIdx) {
-            doResizeSlice(col, resizingSlice.value.sliceId, resizingSlice.value.flashingRowIdx, rowIdx)
+        // 点击闪烁端点自身：abort
+        if (rowIdx === resizingSlice.value.flashingRowIdx) {
             resizingSlice.value = null
-            rerenderIfSlicesChanged()
             return
         }
-        // 点击空位：完成重设
-        if (info.role === 'empty') {
-            doResizeSlice(col, resizingSlice.value.sliceId, resizingSlice.value.flashingRowIdx, rowIdx)
-            resizingSlice.value = null
-            rerenderIfSlicesChanged()
-            return
-        }
-        // 点击其他 slice 或闪烁端点自身：abort
+        // 其他情况：尝试重设（当前 slice 内部、空位、其他 slice 端点、共享边界等）
+        doResizeSlice(col, resizingSlice.value.sliceId, resizingSlice.value.flashingRowIdx, rowIdx)
         resizingSlice.value = null
+        rerenderIfSlicesChanged()
+        return
+    }
+
+    // 创建模式优先：如果已有 pendingFrom，继续创建流程
+    if (pendingFrom.value && pendingFrom.value.col === col) {
+        if (pendingFrom.value.rowIdx === rowIdx) {
+            // 点击同一点：取消创建
+            pendingFrom.value = null
+        } else {
+            editingSlice.value = null
+            onCellClick(col, rowIdx)
+        }
         return
     }
 
@@ -474,6 +479,12 @@ defineExpose({
                   v-if="getCellInfo(timeSlices, row.stationIdx, 'time').role === 'empty'"
                   class="empty-dot"
                 />
+                <div
+                  v-if="getCellInfo(timeSlices, row.stationIdx, 'time').isStartOrEnd"
+                  class="empty-dot create-dot"
+                  @click.stop="onCellClick('time', row.stationIdx)"
+                  title="从此处开始创建"
+                />
               </div>
             </td>
 
@@ -508,6 +519,12 @@ defineExpose({
                 <div
                   v-if="getCellInfo(styleSlices, row.stationIdx, 'style').role === 'empty'"
                   class="empty-dot"
+                />
+                <div
+                  v-if="getCellInfo(styleSlices, row.stationIdx, 'style').isStartOrEnd"
+                  class="empty-dot create-dot"
+                  @click.stop="onCellClick('style', row.stationIdx)"
+                  title="从此处开始创建"
                 />
               </div>
             </td>
@@ -627,7 +644,7 @@ td:nth-child(2) {
     background: #2196f3;
   }
 
-  &.empty:hover .empty-dot {
+  &:hover .empty-dot {
     border-color: #2196f3;
   }
 
@@ -660,7 +677,7 @@ td:nth-child(3) {
     background: #4caf50;
   }
 
-  &.empty:hover .empty-dot {
+  &:hover .empty-dot {
     border-color: #4caf50;
   }
 
@@ -724,6 +741,12 @@ td:nth-child(3) {
   border-radius: 50%;
   border: 2px solid #ccc;
   background: transparent;
+}
+
+.create-dot {
+  position: absolute;
+  right: 8px;
+  cursor: pointer;
 }
 
 .editor-row {
