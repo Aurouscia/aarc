@@ -11,6 +11,8 @@ const props = defineProps<{
     isPending: boolean
     isEditing: boolean
     isResizingFlashing: boolean
+    isFirstRow: boolean
+    isLastRow: boolean
 }>()
 
 
@@ -64,11 +66,11 @@ function needBottomBar(): boolean {
       />
       <div
         v-if="cellInfo.role === 'empty'"
-        class="empty-dot"
+        class="plus-dot"
       />
       <div
-        v-if="cellInfo.isPureStartOrEnd"
-        class="empty-dot create-dot"
+        v-if="cellInfo.isPureStartOrEnd && !isFirstRow && !isLastRow"
+        class="plus-dot create-dot"
         @click.stop="emit('create')"
         title="从此处开始创建"
       />
@@ -126,18 +128,47 @@ function needBottomBar(): boolean {
   z-index: 1;
 }
 
-.empty-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 1.5px solid #ccc;
-  background: transparent;
+.plus-dot {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  cursor: pointer;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    background: #ccc;
+    border-radius: 1px;
+  }
+
+  /* 竖线：视觉尺寸 14px，居中 */
+  &::before {
+    width: 2px;
+    height: 14px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* 横线：视觉尺寸 14px，居中 */
+  &::after {
+    width: 14px;
+    height: 2px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
 }
 
 .create-dot {
   position: absolute;
-  right: 8px;
-  cursor: pointer;
+  right: 2px;
+
+  &:hover::before,
+  &:hover::after {
+    background: #2196f3;
+  }
 }
 
 /* ========== 时间列色系（蓝色系） ========== */
@@ -146,13 +177,20 @@ function needBottomBar(): boolean {
     background: #2196f3;
   }
 
-  &:hover .empty-dot {
-    border-color: #2196f3;
+  &:hover .plus-dot:not(.create-dot)::before,
+  &:hover .plus-dot:not(.create-dot)::after {
+    background: #2196f3;
+  }
+
+  .create-dot:hover::before,
+  .create-dot:hover::after {
+    background: #2196f3;
   }
 
   &.pending {
-    .empty-dot {
-      border-color: #2196f3;
+    .plus-dot::before,
+    .plus-dot::after {
+      background: #2196f3;
     }
   }
 
@@ -172,13 +210,20 @@ function needBottomBar(): boolean {
     background: #4caf50;
   }
 
-  &:hover .empty-dot {
-    border-color: #4caf50;
+  &:hover .plus-dot:not(.create-dot)::before,
+  &:hover .plus-dot:not(.create-dot)::after {
+    background: #4caf50;
+  }
+
+  .create-dot:hover::before,
+  .create-dot:hover::after {
+    background: #4caf50;
   }
 
   &.pending {
-    .empty-dot {
-      border-color: #4caf50;
+    .plus-dot::before,
+    .plus-dot::after {
+      background: #4caf50;
     }
   }
 

@@ -225,6 +225,7 @@ function onSliceCellClick(event: MouseEvent, col: SliceKind, rowIdx: number) {
         // 其他情况：尝试重设（当前 slice 内部、空位、其他 slice 端点、共享边界等）
         doResizeSlice(col, resizingSlice.value.sliceId, resizingSlice.value.flashingRowIdx, rowIdx)
         resizingSlice.value = null
+        editingSlice.value = null
         rerenderIfSlicesChanged()
         return
     }
@@ -242,7 +243,7 @@ function onSliceCellClick(event: MouseEvent, col: SliceKind, rowIdx: number) {
     }
 
     if (info.role === 'empty') {
-        // 空位：走创建流程
+        // 空位：走创建流程，关闭编辑面板
         editingSlice.value = null
         onCellClick(col, rowIdx)
         return
@@ -464,6 +465,8 @@ defineExpose({
               :is-pending="isPending(col.kind, row.stationIdx)"
               :is-editing="isEditing(col.kind, row.stationIdx)"
               :is-resizing-flashing="isResizingFlashing(col.kind, row.stationIdx)"
+              :is-first-row="row.stationIdx === 0"
+              :is-last-row="row.stationIdx === stations.length - 1"
               @click="onSliceCellClick($event, col.kind, row.stationIdx)"
               @create="onCellClick(col.kind, row.stationIdx)"
             />
