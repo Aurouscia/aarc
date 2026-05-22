@@ -167,8 +167,20 @@ export const useLineSpanStore = defineStore('lineSpan', () => {
         if (span.styleSliceId) {
             const styleSlice = save.value?.styleSlices?.find(s => s.id === span.styleSliceId)
             if (styleSlice) {
-                const style = save.value?.lineStyles?.find(s => s.id === styleSlice.style)
-                return { styleSlice, style }
+                // style === 0 表示"无样式"，不回退
+                if (styleSlice.style === 0) {
+                    return { styleSlice }
+                }
+                // style === -1 表示"同线路样式"，回退到 Line.style
+                if (styleSlice.style === -1) {
+                    // 继续下面的 Line.style 回退逻辑
+                } else {
+                    const style = save.value?.lineStyles?.find(s => s.id === styleSlice.style)
+                    if (style) {
+                        return { styleSlice, style }
+                    }
+                    // 找不到对应的 lineStyle，回退到 Line.style
+                }
             }
         }
 
