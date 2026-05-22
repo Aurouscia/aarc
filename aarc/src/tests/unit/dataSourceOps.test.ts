@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { fetchDataSource, mergeDataSourceItems, autoUpdateDataSources } from '@/models/save/dataSourceOps'
+import { fetchDataSource, mergeDataSourceItems, mergeColorSourceItems, autoUpdateDataSources } from '@/models/save/dataSourceOps'
 import { DataSource, Save } from '@/models/save'
+import type { ExternalColorSetEntry, ExternalColorSetGroup } from '@/app/localConfig/externalColorSets'
 
 describe('fetchDataSource', () => {
   beforeEach(() => {
@@ -45,6 +46,32 @@ describe('fetchDataSource', () => {
     const result = await fetchDataSource('https://example.com/huge.json')
     expect(result.ok).toBe(false)
     expect(result.errmsg).toContain('响应过大')
+    expect(result.errmsg).toContain('64')
+  })
+
+  it('颜色集响应超过128KB应拒绝', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      text: async () => 'x'.repeat(128 * 1024 + 1),
+    } as Response)
+
+    const result = await fetchDataSource('https://example.com/colors.json', { isColorSet: true })
+    expect(result.ok).toBe(false)
+    expect(result.errmsg).toContain('响应过大')
+    expect(result.errmsg).toContain('128')
+  })
+
+  it('颜色集响应在128KB内应通过', async () => {
+    const mockFetch = vi.mocked(fetch)
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify([{ name: 'test', pri: 0, content: 'x' }]).padEnd(128 * 1024, ' '),
+    } as Response)
+
+    const result = await fetchDataSource('https://example.com/colors.json', { isColorSet: true })
+    expect(result.ok).toBe(true)
+    expect(result.data).toEqual([{ name: 'test', pri: 0, content: 'x' }])
   })
 
   it('网络异常应返回 errmsg', async () => {
@@ -280,5 +307,104 @@ describe('autoUpdateDataSources', () => {
 
     expect(onLoad).toHaveBeenCalledTimes(1)
     expect(onLoad).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }))
+  })
+})
+
+describe('mergeColorSourceItems', () => {
+  function makeGroup(items: ExternalColorSetEntry[]): ExternalColorSetGroup {
+    return { url: 'https://a.com/colors.json', items, lastAccessed: 0 }
+  }
+
+  it('应添加颜色集到 store', () => {
+    const ds: DataSource = { id: 1, url: 'https://a.com/colors.json', type: 'colorSets' }
+    const report = mergeColorSourceItems(ds, [
+      { name: '北京', pri: 0, content: '北京地铁\n1:#ff0000' },
+      { name: '上海', pri: 1, content: '上海地铁\n2:#00ff00' },
+    ], undefined)
+    expect(report.added).toBe(2)
+    expect(report.skipped).toBe(0)
+    expect(report.overwritten).toBe(0)
+    const items = (report as typeof report & { _items?: unknown[] })._items
+    expect(items?.length).toBe(2)
+  })
+
+  it('非对象条目应跳过', () => {
+    const ds: DataSource = { id: 1, url: 'https://a.com/colors.json', type: 'colorSets' }
+    const report = mergeColorSourceItems(ds, [
+      null,
+      'invalid',
+      { name: 'Test', pri: 0, content: 'keywords\nred:#ff0000' },
+    ], undefined)
+    expect(report.skipped).toBe(2)
+    expect(report.added).toBe(1)
+  })
+
+  it('缺少必要字段应跳过', () => {
+    const ds: DataSource = { id: 1, url: 'https://a.com/colors.json', type: 'colorSets' }
+    const report = mergeColorSourceItems(ds, [
+      { name: 'OnlyName', pri: 0 },
+      { pri: 1, content: 'no name' },
+      { name: 'Valid', pri: 2, content: 'ok\nred:#ff0000' },
+    ], undefined)
+    expect(report.skipped).toBe(2)
+    expect(report.added).toBe(1)
+  })
+
+  it('pri 为字符串时应解析为数字', () => {
+    const ds: DataSource = { id: 1, url: 'https://a.com/colors.json', type: 'colorSets' }
+    const report = mergeColorSourceItems(ds, [
+      { name: 'Test', pri: '42', content: 'keywords\nred:#ff0000' },
+    ], undefined)
+    expect(report.added).toBe(1)
+    expect(report.skipped).toBe(0)
+  })
+
+  it('非数组数据应报错', () => {
+    const ds: DataSource = { id: 1, url: 'https://a.com/colors.json', type: 'colorSets' }
+    const report = mergeColorSourceItems(ds, { name: 'test' }, undefined)
+    expect(report.errors.length).toBeGreaterThan(0)
+    expect(report.added).toBe(0)
+  })
+
+  it('颜色集条目超过512个应拒绝', () => {
+    const ds: DataSource = { id: 1, url: 'https://a.com/colors.json', type: 'colorSets' }
+    const items = Array.from({ length: 513 }, (_, i) => ({ name: `item${i}`, pri: i, content: 'k\nred:#ff0000' }))
+    const report = mergeColorSourceItems(ds, items, undefined)
+    expect(report.errors.length).toBeGreaterThan(0)
+    expect(report.errors[0]).toContain('条目过多')
+    expect(report.errors[0]).toContain('512')
+    expect(report.added).toBe(0)
+  })
+
+  it('颜色集条目512个应通过', () => {
+    const ds: DataSource = { id: 1, url: 'https://a.com/colors.json', type: 'colorSets' }
+    const items = Array.from({ length: 512 }, (_, i) => ({ name: `item${i}`, pri: i, content: 'k\nred:#ff0000' }))
+    const report = mergeColorSourceItems(ds, items, undefined)
+    expect(report.errors.length).toBe(0)
+    expect(report.added).toBe(512)
+  })
+
+  it('overwriteSameName=false 时应覆盖全部', () => {
+    const ds: DataSource = { id: 1, url: 'https://a.com/colors.json', type: 'colorSets', overwriteSameName: false }
+    const existing = makeGroup([{ name: '北京', pri: 0, data: 'old' }])
+    const report = mergeColorSourceItems(ds, [
+      { name: '北京', pri: 0, content: 'new content' },
+    ], existing)
+    expect(report.added).toBe(0)
+    expect(report.skipped).toBe(0)
+    expect(report.overwritten).toBe(1)
+  })
+
+  it('overwriteSameName=true 时应覆盖同名', () => {
+    const ds: DataSource = { id: 1, url: 'https://a.com/colors.json', type: 'colorSets', overwriteSameName: true }
+    const existing = makeGroup([{ name: '北京', pri: 0, data: 'old' }])
+    const report = mergeColorSourceItems(ds, [
+      { name: '北京', pri: 0, content: 'new content' },
+    ], existing)
+    expect(report.added).toBe(0)
+    expect(report.skipped).toBe(0)
+    expect(report.overwritten).toBe(1)
+    const items = (report as typeof report & { _items?: unknown[] })._items
+    expect(items?.length).toBe(1)
   })
 })

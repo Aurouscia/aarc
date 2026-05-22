@@ -201,7 +201,7 @@ export interface DataSource{
     id: number
     name?: string
     url: string
-    type: 'lineStyles'|'textTagIcons'|'patterns'
+    type: 'lineStyles'|'textTagIcons'|'patterns'|'colorSets'
     autoUpdate?: boolean
     overwriteSameName?: boolean
 }

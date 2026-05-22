@@ -144,7 +144,14 @@ async function load() {
 
 async function runAutoUpdateDataSources() {
     if(!saveStore.save) return
+    console.log('[Editor] 开始自动更新数据源, count:', saveStore.save.dataSources?.length)
     await autoUpdateDataSources(saveStore.save, saveStore.getNewId, {
+        onLoad: (ds) => {
+            console.log('[Editor] 自动更新加载:', ds.name, 'type:', ds.type)
+        },
+        onDone: (ds, report) => {
+            console.log('[Editor] 自动更新完成:', ds.name, 'report:', report)
+        },
         onError: (ds, errmsg)=>{
             console.warn(`[数据源自动更新]"${ds.name}"失败: ${errmsg}`)
         }

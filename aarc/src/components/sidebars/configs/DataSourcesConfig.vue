@@ -7,7 +7,8 @@ import ConfigSection from './shared/ConfigSection.vue';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useIconStore } from '@/models/stores/iconStore';
 import { useEnvStore } from '@/models/stores/envStore';
-import { fetchDataSource, mergeDataSourceItems } from '@/models/save/dataSourceOps';
+import { fetchDataSource, mergeDataSourceItems, mergeColorSourceItems, applyColorSourceMerges } from '@/models/save/dataSourceOps';
+import { useExternalColorSetsStore, type ExternalColorSetEntry } from '@/app/localConfig/externalColorSets';
 
 const saveStore = useSaveStore()
 const { save } = storeToRefs(saveStore)
@@ -18,9 +19,11 @@ const envStore = useEnvStore()
 const typeLabel: Record<DataSource['type'], string> = {
     lineStyles: '线路样式',
     textTagIcons: '文本标签图标',
-    patterns: '纹理'
+    patterns: '纹理',
+    colorSets: '颜色集'
 }
 
+const externalColorSetsStore = useExternalColorSetsStore()
 const creating = ref<DataSource>({ id: 0, url: '', type: 'lineStyles' })
 const createAllowed = ref(false)
 
@@ -31,13 +34,21 @@ function validateCreating() {
 
 function addDataSource() {
     if (!createAllowed.value || !save.value) return
+    const url = creating.value.url.trim()
+    const type = creating.value.type
+    save.value.dataSources ??= []
+    // 不允许 URL 重复
+    const existing = save.value.dataSources.find(x => x.url === url)
+    if (existing) {
+        showPop('已存在相同链接的数据源', 'warning')
+        return
+    }
     const ds: DataSource = {
         id: saveStore.getNewId(),
         name: creating.value.name?.trim(),
-        url: creating.value.url.trim(),
-        type: creating.value.type
+        url,
+        type
     }
-    save.value.dataSources ??= []
     save.value.dataSources.push(ds)
     creating.value = { id: 0, url: '', type: 'lineStyles' }
     createAllowed.value = false
@@ -86,12 +97,27 @@ async function loadDataSource(ds: DataSource) {
     loadingIds.value.add(ds.id)
     clearDsResult(ds.id)
     try {
+        console.log('[loadDataSource] 开始加载:', ds.name, 'type:', ds.type, 'url:', ds.url)
         const result = await fetchDataSource(ds.url)
+        console.log('[loadDataSource] fetch 结果:', { ok: result.ok, hasData: result.data !== undefined, errmsg: result.errmsg })
         if (!result.ok || result.data === undefined) {
             setDsResult(ds.id, result.errmsg || '加载失败', 'error')
             return
         }
-        const report = mergeDataSourceItems(save.value, saveStore.getNewId, ds, result.data)
+        let report: { added: number, overwritten: number, skipped: number, errors: string[] }
+        if (ds.type === 'colorSets') {
+            console.log('[loadDataSource] 处理 colorSets 类型')
+            const mergeReport = mergeColorSourceItems(ds, result.data, externalColorSetsStore.getGroup(ds.url))
+            const items = (mergeReport as typeof mergeReport & { _items?: ExternalColorSetEntry[] })._items
+            const url = (mergeReport as typeof mergeReport & { _url?: string })._url
+            console.log('[loadDataSource] items:', items?.length, 'url:', url)
+            if (items && url) {
+                applyColorSourceMerges(url, items)
+            }
+            report = mergeReport
+        } else {
+            report = mergeDataSourceItems(save.value, saveStore.getNewId, ds, result.data)
+        }
         const detailMsgs: string[] = []
         if (report.added > 0) detailMsgs.push(`新增 ${report.added} 项`)
         if (report.overwritten > 0) detailMsgs.push(`覆盖 ${report.overwritten} 项`)
@@ -139,7 +165,7 @@ async function loadAll() {
 </script>
 
 <template>
-<ConfigSection :title="'数据源'">
+<ConfigSection :title="'数据源（测试功能）'">
 <div class="dataSources">
     <div class="smallNote" style="text-align: center;">
         添加返回 JSON 数组的 URL，可一键导入线路样式、图标或纹理
@@ -196,6 +222,7 @@ async function loadAll() {
                 <option value="lineStyles">线路样式</option>
                 <option value="textTagIcons">文本标签图标</option>
                 <option value="patterns">纹理</option>
+                <option value="colorSets">颜色集</option>
             </select>
         </div>
         <div class="dsChecks">

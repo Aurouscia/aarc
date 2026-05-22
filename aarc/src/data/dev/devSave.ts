@@ -466,6 +466,14 @@ export const devSave:Save = {
             type: 'patterns',
             autoUpdate: true,
             overwriteSameName: false
+        },
+        {
+            id: 3000003,
+            name: 'demo-颜色集',
+            url: '/demoDataSource/colorSets.json',
+            type: 'colorSets',
+            autoUpdate: true,
+            overwriteSameName: true
         }
     ],
     config:{},

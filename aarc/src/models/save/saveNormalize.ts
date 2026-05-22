@@ -1,4 +1,5 @@
 import { Save, SaveMetaData } from "../save"
+import { defaultDataSources } from "./defaultDataSources"
 import { initFreshNewConfig, upgradeConfig } from "./upgrade/config"
 import { freshNewLineStylesVersion, initFreshNewLineStyles, upgradeLineStyles } from "./upgrade/lineStyles"
 import { freshNewPatternsVersion, initFreshNewPatterns, upgradePatterns } from "./upgrade/patterns"
@@ -7,6 +8,7 @@ import { freshNewTextTagIconsVersion, upgradeTextTagIcons } from "./upgrade/text
 import { initFreshNewTextTags } from "./upgrade/textTags"
 import { ensureValidCvsSize } from "./valid/cvsSize"
 import { ensureValidIdIncre } from "./valid/idIncre"
+import { ensureValidDataSources } from "./valid/dataSources"
 
 export function normalizeSave(obj:any){
     let freshNew = false
@@ -46,9 +48,13 @@ export function normalizeSave(obj:any){
     fillDefault('textTags', 'array', [])
     fillDefault('config', 'object', {})
     fillDefault('idIncre', 'number', 1)
+    ensureValidDataSources(obj)
     ensureValidIdIncre(obj)
     //确认了idIncre有值后，才能进行下面的“全新存档初始化”步骤（会使idIncre自增）
     const getNewId = ()=>obj.idIncre++
+
+    fillDefault('dataSources', 'array', defaultDataSources(getNewId)) // 添加默认的数据源
+
     if(freshNew){
         fillDefault('meta', 'object', getFreshNewMeta())
         initFreshNewLineStyles(obj, getNewId)
