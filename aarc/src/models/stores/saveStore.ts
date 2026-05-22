@@ -522,15 +522,43 @@ export const useSaveStore = defineStore('save', () => {
     const disposedStaNameOf = ref<(ptId:number)=>void>(()=>{})
     const deletedPoint = ref<(ptId:number)=>void>(()=>{})
     const deletedTextTag = ref<(ptId:number)=>void>(()=>{})
+    /** 线路点序列发生变化时触发（如删除点、插入点），参数为受影响的线路ID列表 */
+    const linePtsChanged = ref<(lineIds:number[])=>void>(()=>{})
 
-    watch(save, (newVal)=>{
-        if (!import.meta.env.VITEST) {
-            console.log('存档加载', newVal)
+    // 监听线路点序列变化，触发 slice 清理回调
+    let prevLinePtsSnapshots: Map<number, number[]> = new Map()
+    watch(()=>save.value?.lines, (lines)=>{
+        if(!lines){
+            prevLinePtsSnapshots = new Map()
+            return
         }
-    })
+        const changedLineIds: number[] = []
+        for(const line of lines){
+            const prev = prevLinePtsSnapshots.get(line.id)
+            const curr = line.pts
+            if(prev === undefined){
+                // 新增线路，记录快照
+                prevLinePtsSnapshots.set(line.id, [...curr])
+            } else if(prev.length !== curr.length || prev.some((pt, i)=>pt !== curr[i])){
+                // pts 发生变化
+                changedLineIds.push(line.id)
+                prevLinePtsSnapshots.set(line.id, [...curr])
+            }
+        }
+        // 清理已不存在的线路快照
+        const existingIds = new Set(lines.map(l=>l.id))
+        for(const id of prevLinePtsSnapshots.keys()){
+            if(!existingIds.has(id)){
+                prevLinePtsSnapshots.delete(id)
+            }
+        }
+        if(changedLineIds.length > 0){
+            linePtsChanged.value(changedLineIds)
+        }
+    }, { deep: true })
     
     return { 
-        save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint, deletedTextTag,
+        save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint, deletedTextTag, linePtsChanged,
         getPtById, getPtsByIds, getLineById, getLinesByIds, linesSortedByZIndex,
         getLinesDecidedPtSize, getLinesDecidedPtSizes, getLinesDecidedPtNameSize,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getLinesByParent, getTextTagById, getPointLinksByPt,

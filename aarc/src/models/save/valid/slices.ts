@@ -1,5 +1,6 @@
 import { Save, Line, LineSliceBase } from "@/models/save";
 import { indicesInArray } from "@/utils/lang/indicesInArray";
+import { resolveSliceEndpoints } from "@/models/stores/saveDerived/slice/sliceResolver";
 
 /**
  * 矫正 Slice 端点，确保符合 fromIdx < toIdx 的约定。
@@ -93,4 +94,76 @@ function fixSliceIfReversed(
         slice.fromPt = slice.toPt;
         slice.toPt = tmp;
     }
+}
+
+// ========== 异常 Slice 清除 ==========
+
+/** 判断一个 slice 是否有效（端点存在于线路中、非双奇异、能解析出有效范围） */
+function isSliceValid(slice: LineSliceBase, lineMap: Map<number, Line>): boolean {
+    const line = lineMap.get(slice.line);
+    if (!line) return false;
+
+    const pts = line.pts;
+    const fromIndices = indicesInArray(pts, slice.fromPt);
+    const toIndices = indicesInArray(pts, slice.toPt);
+
+    // 端点不存在于线路中
+    if (fromIndices.length === 0 || toIndices.length === 0) return false;
+
+    // 双奇异点
+    const fromSingular = fromIndices.length > 1;
+    const toSingular = toIndices.length > 1;
+    if (fromSingular && toSingular) return false;
+
+    // 无法解析出有效范围
+    const resolved = resolveSliceEndpoints(line, slice.fromPt, slice.toPt);
+    if (!resolved) return false;
+
+    return true;
+}
+
+/**
+ * 清除所有异常 slice（端点不存在、双奇异、无法解析）。
+ * 可选择只检查指定线路（如点删除后只检查受影响线路）。
+ * @returns 被删除的 slice 信息列表
+ */
+export function removeInvalidSlices(save: Save, lineIds?: number[]): { id: number; type: 'time' | 'style' }[] {
+    const lineMap = new Map<number, Line>();
+    for (const line of save.lines) {
+        lineMap.set(line.id, line);
+    }
+
+    const lineIdSet = lineIds ? new Set(lineIds) : undefined;
+    const removed: { id: number; type: 'time' | 'style' }[] = [];
+
+    function shouldCheck(slice: LineSliceBase): boolean {
+        if (!lineIdSet) return true;
+        return lineIdSet.has(slice.line);
+    }
+
+    if (save.timeSlices) {
+        for (let i = save.timeSlices.length - 1; i >= 0; i--) {
+            const slice = save.timeSlices[i];
+            if (shouldCheck(slice) && !isSliceValid(slice, lineMap)) {
+                removed.push({ id: slice.id, type: 'time' });
+                save.timeSlices.splice(i, 1);
+            }
+        }
+    }
+
+    if (save.styleSlices) {
+        for (let i = save.styleSlices.length - 1; i >= 0; i--) {
+            const slice = save.styleSlices[i];
+            if (shouldCheck(slice) && !isSliceValid(slice, lineMap)) {
+                removed.push({ id: slice.id, type: 'style' });
+                save.styleSlices.splice(i, 1);
+            }
+        }
+    }
+
+    if (removed.length > 0) {
+        console.warn(`[slice清理]已删除 ${removed.length} 个异常片段`, removed);
+    }
+
+    return removed;
 }

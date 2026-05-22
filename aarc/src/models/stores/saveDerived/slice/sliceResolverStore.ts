@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useSaveStore } from "../../saveStore";
 import { resolveSliceEndpoints } from "./sliceResolver";
 import { Line } from "../../../save";
+import { removeInvalidSlices } from "@/models/save/valid/slices";
 
 export interface SliceEndpointIndices {
     fromIdx: number
@@ -10,7 +11,14 @@ export interface SliceEndpointIndices {
 }
 
 export const useSliceResolverStore = defineStore('sliceResolver', () => {
-    const { save } = storeToRefs(useSaveStore())
+    const saveStore = useSaveStore()
+    const { save } = storeToRefs(saveStore)
+
+    // 注册线路点序列变化回调：清除异常 slice
+    saveStore.linePtsChanged = (lineIds: number[]) => {
+        if (!save.value) return
+        removeInvalidSlices(save.value, lineIds)
+    }
 
     const lineMap = computed<Map<number, Line>>(() => {
         const map = new Map<number, Line>()
