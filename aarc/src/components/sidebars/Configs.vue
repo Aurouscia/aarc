@@ -16,6 +16,7 @@ import PatternsConfig from './configs/PatternsConfig.vue';
 import LineWidthMappedConfig from './configs/LineWidthMappedConfig.vue';
 import EtcConfig from './configs/EtcConfig.vue';
 import ColorsConfig from './configs/ColorsConfig.vue';
+import DataSourcesConfig from './configs/DataSourcesConfig.vue';
 
 const sidebar = useTemplateRef('sidebar')
 defineExpose({
@@ -47,6 +48,8 @@ defineExpose({
 <PinyinConvertConfig></PinyinConvertConfig>
 
 <BgRefImageConfig></BgRefImageConfig>
+
+<DataSourcesConfig></DataSourcesConfig>
 
 <SaveConfigReuse></SaveConfigReuse>
 

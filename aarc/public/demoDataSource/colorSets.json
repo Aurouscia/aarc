@@ -1,0 +1,12 @@
+[
+    {
+      "name": "北京",
+      "pri": "000",
+      "content": "北京地铁/bjdt/beijing/bj/auv/京/jing/北平/beiping/幽州/顺天/youzhou/shuntian\n1:#C23A30\n2:#006098"
+    },
+    {
+      "name": "上海",
+      "pri": "001",
+      "content": "上海地铁/上海轨道交通/申通/shdt/shgdjt/shanghaiguidaojiaotong/shanghaiditie/shentong/st/沪/hu/dfmz/dongfangmingzhu/mxbc/mixuebingcheng\n1:#E3002B\n2:#82BF25"
+    }
+]

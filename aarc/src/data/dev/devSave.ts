@@ -451,6 +451,40 @@ export const devSave:Save = {
             }
         }
     ],
+    dataSources:[
+        {
+            id: 3000000,
+            name: 'demo-线路样式',
+            url: '/demoDataSource/lineStyles.json',
+            type: 'lineStyles',
+            autoUpdate: true,
+            overwriteSameName: false
+        },
+        {
+            id: 3000001,
+            name: 'demo-图标',
+            url: '/demoDataSource/textTagIcons.json',
+            type: 'textTagIcons',
+            autoUpdate: true,
+            overwriteSameName: false
+        },
+        {
+            id: 3000002,
+            name: 'demo-纹理',
+            url: '/demoDataSource/patterns.json',
+            type: 'patterns',
+            autoUpdate: true,
+            overwriteSameName: false
+        },
+        {
+            id: 3000003,
+            name: 'demo-颜色集',
+            url: '/demoDataSource/colorSets.json',
+            type: 'colorSets',
+            autoUpdate: true,
+            overwriteSameName: true
+        }
+    ],
     config:{},
     meta:{}
 }

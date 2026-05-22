@@ -15,3 +15,10 @@ pnpm install --frozen-lockfile
 ```sh
 pnpm type-check
 ```
+
+## vue 组件
+
+任何 vue 组件，全部使用 `script-template-style` 的顺序
+
+- script 统一使用 `<script setup lang="ts">`
+- style 统一使用 `<style scoped lang="scss">` 嵌套语法

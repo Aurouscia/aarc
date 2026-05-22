@@ -14,6 +14,7 @@ export interface Save{
     textTags: TextTag[]
     textTagIcons?: TextTagIcon[]
     patterns?: Pattern[]
+    dataSources?: DataSource[]
     cvsSize: Coord
     config: ConfigInSave
     meta: SaveMetaData
@@ -229,10 +230,20 @@ export type SliceKind = 'time' | 'style'
 /** 任意一种 Slice 的联合类型 */
 export type AnySlice = TimeSlice | StyleSlice
 
+export interface DataSource{
+    id: number
+    name?: string
+    url: string
+    type: 'lineStyles'|'textTagIcons'|'patterns'|'colorSets'
+    autoUpdate?: boolean
+    overwriteSameName?: boolean
+}
+
 export interface SaveMetaData{
     lineStylesVersion?: number,
     textTagIconsVersion?: number,
-    patternsVersion?: number
+    patternsVersion?: number,
+    dataSourcesVersion?: number
 }
 
 export function saveStaCount(save:Save){
