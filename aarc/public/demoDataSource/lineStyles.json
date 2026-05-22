@@ -1,0 +1,25 @@
+[
+  {
+    "name": "demo-快线",
+    "layers": [
+      {
+        "width": 0.2,
+        "color": "#ffffff",
+        "colorMode": "fixed",
+        "opacity": 1
+      }
+    ]
+  },
+  {
+    "name": "demo-铁路",
+    "layers": [
+      {
+        "width": 0.6,
+        "color": "#ffffff",
+        "colorMode": "fixed",
+        "opacity": 1,
+        "dash": "4 4"
+      }
+    ]
+  }
+]

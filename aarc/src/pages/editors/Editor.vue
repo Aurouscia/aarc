@@ -22,6 +22,7 @@ import { useCachePreventer } from '@/utils/timeUtils/cachePreventer';
 import { DocumentHiddenLongWatcher } from '@/utils/eventUtils/documentHiddenLong';
 import HiddenLongWarnPrompt from './components/HiddenLongWarnPrompt.vue';
 import { useIconStore } from '@/models/stores/iconStore';
+import { autoUpdateDataSources } from '@/models/save/dataSourceOps';
 import { compressObjectToGzip } from '@/utils/dataUtils/compressObjectToGzip';
 import { useLoadedSave } from '@/models/stores/utils/loadedSave';
 import { HttpUserInfo, SavePreflightStatus } from '@/app/com/apiGenerated';
@@ -109,6 +110,7 @@ async function load() {
             saveStore.save = normalizeSave(obj)
             resetterStore.resetDerivedStores()
             saveStore.ensureLinesOrdered()
+            await runAutoUpdateDataSources()
             await iconStore.ensureAllLoaded()
             loadComplete.value = true
         }catch{
@@ -126,6 +128,7 @@ async function load() {
         saveStore.save = normalizeSave(deepClone(devSave))
         resetterStore.resetDerivedStores()
         saveStore.ensureLinesOrdered()
+        await runAutoUpdateDataSources()
         await iconStore.ensureAllLoaded()
         mainCvsDispatcher.visitorMode = false
         loadComplete.value = true
@@ -137,6 +140,15 @@ async function load() {
         undoStore.clear()
         undoStore.push(saveStore.save)
     }
+}
+
+async function runAutoUpdateDataSources() {
+    if(!saveStore.save) return
+    await autoUpdateDataSources(saveStore.save, saveStore.getNewId, {
+        onError: (ds, errmsg)=>{
+            console.warn(`[数据源自动更新]"${ds.name}"失败: ${errmsg}`)
+        }
+    })
 }
 
 const deepClone = rfdc()

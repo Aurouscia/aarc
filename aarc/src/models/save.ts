@@ -13,6 +13,7 @@ export interface Save{
     textTags: TextTag[]
     textTagIcons?: TextTagIcon[]
     patterns?: Pattern[]
+    dataSources?: DataSource[]
     cvsSize: Coord
     config: ConfigInSave
     meta: SaveMetaData
@@ -196,10 +197,20 @@ export interface TimeSlice extends LineSliceBase {
     time: LineTimeInfo
 }
 
+export interface DataSource{
+    id: number
+    name?: string
+    url: string
+    type: 'lineStyles'|'textTagIcons'|'patterns'
+    autoUpdate?: boolean
+    overwriteSameName?: boolean
+}
+
 export interface SaveMetaData{
     lineStylesVersion?: number,
     textTagIconsVersion?: number,
-    patternsVersion?: number
+    patternsVersion?: number,
+    dataSourcesVersion?: number
 }
 
 export function saveStaCount(save:Save){
