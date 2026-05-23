@@ -5,7 +5,7 @@
  * @param type 代理类型
  * @returns 代理url
  */
-export function convertToProxyUrlIfNeeded(url: string, type:'icon') {
+export function convertToProxyUrlIfNeeded(url: string, type:'icon'|'json') {
     if (url.startsWith('/'))
         return url
     const origin = window.location.origin

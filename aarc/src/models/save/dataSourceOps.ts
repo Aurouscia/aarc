@@ -1,5 +1,6 @@
 import { DataSource, LineStyle, Pattern, Save, TextTagIcon } from "../save"
 import { useExternalColorSetsStore, type ExternalColorSetEntry, type ExternalColorSetGroup } from "@/app/localConfig/externalColorSets"
+import { convertToProxyUrlIfNeeded } from "@/utils/urlUtils/proxyUrl"
 
 export interface DataSourceFetchResult {
     ok: boolean
@@ -14,7 +15,8 @@ const maxDataSourceColorSetItemCount = 512
 
 export async function fetchDataSource(url: string, opts?: { isColorSet?: boolean }): Promise<DataSourceFetchResult> {
     try {
-        const res = await fetch(url, { cache: 'no-cache' })
+        const proxiedUrl = convertToProxyUrlIfNeeded(url, 'json')
+        const res = await fetch(proxiedUrl, { cache: 'no-cache' })
         if (!res.ok) {
             return { ok: false, errmsg: `HTTP ${res.status}` }
         }

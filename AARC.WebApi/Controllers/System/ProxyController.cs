@@ -13,28 +13,73 @@ namespace AARC.WebApi.Controllers.System
         public async Task Icon(string url)
         {
             url = WebUtility.UrlDecode(url);
-            if (!IsUrlAllowed(url))            
+            if (!IsUrlAllowed(url))
+            {
                 await Response.WriteAsync("不允许代理该url");
-            else
-                await this.HttpProxyAsync(url, _httpOptions);
+                return;
+            }
+            var options = HttpProxyOptionsBuilder.Instance
+                .WithShouldAddForwardedHeaders(false)
+                .WithBeforeSend((c, hrm) =>
+                {
+                    hrm.Headers.Remove("Authorization");
+                    hrm.Headers.Remove("Cookie");
+                    hrm.Headers.Remove("Proxy-Authorization");
+                    return Task.CompletedTask;
+                })
+                .WithAfterReceive((c, hrm) =>
+                {
+                    var contentType = hrm.Content?.Headers?.ContentType?.MediaType;
+                    if (contentType == null || !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                    {
+                        c.Response.StatusCode = 403;
+                        return Task.CompletedTask;
+                    }
+                    return Task.CompletedTask;
+                })
+                .WithHandleFailure((c, e) =>
+                {
+                    c.Response.StatusCode = 403;
+                    return Task.CompletedTask;
+                }).Build();
+            await this.HttpProxyAsync(url, options);
         }
 
-        #region httpProxy配置
-        private static readonly HttpProxyOptions _httpOptions = HttpProxyOptionsBuilder.Instance
-            .WithShouldAddForwardedHeaders(false)
-            .WithBeforeSend((c, hrm) =>
+        [Route("/proxy/json/{url}")]
+        public async Task Json(string url)
+        {
+            url = WebUtility.UrlDecode(url);
+            if (!IsUrlAllowed(url))
             {
-                hrm.Headers.Remove("Authorization");
-                hrm.Headers.Remove("Cookie");
-                hrm.Headers.Remove("Proxy-Authorization");
-                return Task.CompletedTask;
-            })
-            .WithHandleFailure((c, e) =>
-            {
-                c.Response.StatusCode = 403;
-                return Task.CompletedTask;
-            }).Build();
-        #endregion
+                await Response.WriteAsync("不允许代理该url");
+                return;
+            }
+            var options = HttpProxyOptionsBuilder.Instance
+                .WithShouldAddForwardedHeaders(false)
+                .WithBeforeSend((c, hrm) =>
+                {
+                    hrm.Headers.Remove("Authorization");
+                    hrm.Headers.Remove("Cookie");
+                    hrm.Headers.Remove("Proxy-Authorization");
+                    return Task.CompletedTask;
+                })
+                .WithAfterReceive((c, hrm) =>
+                {
+                    var contentType = hrm.Content?.Headers?.ContentType?.MediaType;
+                    if (contentType != "application/json")
+                    {
+                        c.Response.StatusCode = 403;
+                        return Task.CompletedTask;
+                    }
+                    return Task.CompletedTask;
+                })
+                .WithHandleFailure((c, e) =>
+                {
+                    c.Response.StatusCode = 403;
+                    return Task.CompletedTask;
+                }).Build();
+            await this.HttpProxyAsync(url, options);
+        }
 
         #region 确保url为http(s)且指向公网
         private static bool IsUrlAllowed(string url)
