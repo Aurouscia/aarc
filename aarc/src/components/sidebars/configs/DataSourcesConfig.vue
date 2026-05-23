@@ -47,18 +47,23 @@ function addDataSource() {
         id: saveStore.getNewId(),
         name: creating.value.name?.trim(),
         url,
-        type
+        type,
+        autoUpdate: creating.value.autoUpdate,
+        overwriteSameName: creating.value.overwriteSameName
     }
     save.value.dataSources.push(ds)
     creating.value = { id: 0, url: '', type: 'lineStyles' }
     createAllowed.value = false
+    setTimeout(() => loadDataSource(ds), 500)
 }
 
 function removeDataSource(id: number) {
     if (!save.value?.dataSources) return
     const idx = save.value.dataSources.findIndex(x => x.id === id)
     if (idx >= 0) {
+        if (!window.confirm('确定要删除这个数据源吗？')) return
         save.value.dataSources.splice(idx, 1)
+        showPop('删除成功', 'success')
     }
 }
 
@@ -119,13 +124,20 @@ async function loadDataSource(ds: DataSource) {
             report = mergeDataSourceItems(save.value, saveStore.getNewId, ds, result.data)
         }
         const detailMsgs: string[] = []
-        if (report.added > 0) detailMsgs.push(`新增 ${report.added} 项`)
-        if (report.overwritten > 0) detailMsgs.push(`覆盖 ${report.overwritten} 项`)
+        if (ds.type === 'colorSets') {
+            const total = report.added + report.overwritten
+            if (total > 0) detailMsgs.push(`共 ${total} 个颜色集`)
+        } else {
+            if (report.added > 0) detailMsgs.push(`新增 ${report.added} 项`)
+            if (report.overwritten > 0) detailMsgs.push(`覆盖 ${report.overwritten} 项`)
+        }
         if (report.skipped > 0) detailMsgs.push(`跳过 ${report.skipped} 项`)
         if (report.errors.length > 0) detailMsgs.push(...report.errors)
 
         const hasError = report.errors.length > 0
-        const hasChange = report.added > 0 || report.overwritten > 0
+        const hasChange = ds.type === 'colorSets'
+            ? (report.added + report.overwritten) > 0
+            : report.added > 0 || report.overwritten > 0
         if (hasError) {
             setDsResult(ds.id, detailMsgs.join('，'), 'error')
         } else if (hasChange) {
