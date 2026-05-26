@@ -71,13 +71,10 @@ namespace AARC.WebApi.Repos.Files
             // TODO: 清理失去引用的文件
         }
 
-        private const int pageSize = 50;
         public List<UserFileDto> GetUserFiles(
-            int pageIdx, int ownerId, string? nameSearch)
+            int skip, int take, string? nameSearch)
         {
             var q = Existing;
-            //if (ownerId > 0)
-                //q = q.Where(x => x.OwnerUserId == ownerId);
                 
             //暂时只能看自己的
             var uid = httpUserIdProvider.RequireUserId();
@@ -85,9 +82,10 @@ namespace AARC.WebApi.Repos.Files
             
             if (!string.IsNullOrWhiteSpace(nameSearch))
                 q = q.Where(x => x.DisplayName.Contains(nameSearch));
-            int skip = pageIdx * pageSize;
-            int take = pageSize;
-            q = q.Skip(skip).Take(take);
+            if (skip > 0)
+                q = q.Skip(skip);
+            take = Math.Clamp(take, 1, 50);
+            q = q.Take(take);
             var temp = (
                 from f in q 
                 join u in Context.Users

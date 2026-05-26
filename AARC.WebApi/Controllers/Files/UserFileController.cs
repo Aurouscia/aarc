@@ -45,9 +45,9 @@ namespace AARC.WebApi.Controllers.Files
         }
         
         [HttpGet]
-        public List<UserFileDto> Get()
+        public List<UserFileDto> Get(int skip = 0, int take = 50)
         {
-            return userFileRepo.GetUserFiles(0, 0, null);
+            return userFileRepo.GetUserFiles(skip, take, null);
         }
     }
 }

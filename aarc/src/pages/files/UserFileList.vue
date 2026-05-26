@@ -18,12 +18,36 @@ const { showPop } = useUniqueComponentsStore()
 const { userInfo } = useUserInfoStore()
 const urlBase = import.meta.env.VITE_ApiUrlBase
 
-async function loadFileList(){
-    fileList.value = undefined
-    const res = await api.userFile.get()
-    if(res){
-        fileList.value = res
+const pageSize = 50
+const skip = ref(0)
+const noMore = ref(false)
+const loadingMore = ref(false)
+
+async function loadFileList(reset = false){
+    if(reset){
+        fileList.value = undefined
+        skip.value = 0
+        noMore.value = false
     }
+    const res = await api.userFile.get(skip.value, pageSize)
+    if(res){
+        if(reset || !fileList.value){
+            fileList.value = res
+        }else{
+            fileList.value.push(...res)
+        }
+        if(res.length < pageSize){
+            noMore.value = true
+        }
+        skip.value += res.length
+    }
+}
+
+async function loadMore(){
+    if(loadingMore.value || noMore.value) return
+    loadingMore.value = true
+    await loadFileList()
+    loadingMore.value = false
 }
 
 const sidebar = useTemplateRef('sidebar')
@@ -72,7 +96,7 @@ async function done(){
         resetEditing()
         showPop('上传成功', 'success')
         sidebar.value?.fold()
-        await loadFileList()
+        await loadFileList(true)
     }
 }
 function resetEditing(){
@@ -104,13 +128,13 @@ function deleteFile(fileId:number){
         if(res){
             showPop('删除成功','success')
             sidebar.value?.fold()
-            loadFileList()
+            loadFileList(true)
         }
     })
 }
 
 onMounted(async() => {
-    await loadFileList();
+    await loadFileList(true);
 })
 </script>
 
@@ -154,8 +178,11 @@ onMounted(async() => {
                 </div>
             </div>
         </div>
-        <div class="beta-notice">
-            新功能测试完善中，遇到问题请及时联系管理员。
+        <div class="load-more">
+            <button v-if="!noMore || true" @click="loadMore" :disabled="loadingMore">
+                {{ loadingMore ? '加载中...' : '加载更多' }}
+            </button>
+            <span v-else class="no-more">没有更多了</span>
         </div>
     </div>
     <div v-else class="user-file-list-container">
@@ -209,11 +236,13 @@ onMounted(async() => {
 </template>
 
 <style scoped lang="scss">
-.beta-notice{
-    color: #666;
+.load-more{
     text-align: center;
     margin: 20px 0px;
-    font-size: 14px;
+    .no-more{
+        color: #999;
+        font-size: 14px;
+    }
 }
 .create-notice{
     display: flex;
