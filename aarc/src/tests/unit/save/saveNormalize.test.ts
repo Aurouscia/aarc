@@ -44,8 +44,8 @@ describe('normalizeSave', () => {
     }
     const result = normalizeSave(existing) as Save
     // existing.idIncre=5 大于 ensureValidIdIncre 计算的 shouldBe=3，不会被修改
-    // upgradeTextTagIcons 调用 2 次 getNewId()，5 + 2 = 7
-    expect(result.idIncre).toBe(7)
+    // upgradeTextTagIcons 调用 2 次 getNewId()，还添加了 defaultDataSources，导致数字+1，5 + 3 = 8
+    expect(result.idIncre).toBe(8)
     expect(result.points.length).toBe(1)
     expect(result.lines.length).toBe(1)
     expect(result.cvsSize).toEqual([200, 200])
@@ -76,8 +76,8 @@ describe('normalizeSave', () => {
       meta: {}
     }
     const result = normalizeSave(existing) as Save
-    // ensureValidIdIncre 修复为 11，然后 upgradeTextTagIcons 调用两次 getNewId()，变为 13
-    expect(result.idIncre).toBe(13)
+    // ensureValidIdIncre 修复为 11，然后 upgradeTextTagIcons 调用两次 getNewId()，还添加了 defaultDataSources，导致数字+1，变为 14
+    expect(result.idIncre).toBe(14)
   })
 
   it('cvsSize 小于最小值时应被限制', () => {

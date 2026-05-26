@@ -8,6 +8,10 @@
 export function convertToProxyUrlIfNeeded(url: string, type:'icon'|'json') {
     if (url.startsWith('/'))
         return url
+    // 单元测试在 Node.js 环境运行，window 不存在，直接返回原 url
+    if (typeof window === 'undefined') {
+        return url
+    }
     const origin = window.location.origin
     if (url.startsWith(origin)) {
         return url
