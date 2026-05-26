@@ -73,7 +73,7 @@ namespace AARC.WebApi.Repos.Files
         }
 
         public List<UserFileDto> GetUserFiles(
-            int skip, int take, string? nameSearch)
+            int skip, int take, string? nameSearch, string? orderby = null)
         {
             var q = Existing;
                 
@@ -88,6 +88,12 @@ namespace AARC.WebApi.Repos.Files
                     ? q.Where(x => x.DisplayName.ToLower().Contains(nameSearch.ToLower()))
                     : q.Where(x => x.DisplayName.Contains(nameSearch));
             }
+            q = orderby?.ToLower() switch
+            {
+                "time" => q.OrderByDescending(x => x.LastActive),
+                "name" => q.OrderBy(x => x.DisplayName),
+                _ => q
+            };
             if (skip > 0)
                 q = q.Skip(skip);
             take = Math.Clamp(take, 1, 50);

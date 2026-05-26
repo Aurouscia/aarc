@@ -11,12 +11,14 @@ import copy from 'copy-to-clipboard';
 import Notice from '@/components/common/Notice.vue';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { isSvg } from '@/utils/fileUtils/ext';
+import { useUserFileListLocalConfigStore } from '@/app/localConfig/userFileListLocalConfig';
 
 const fileList = ref<UserFileDto[]>();
 const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
 const { userInfo } = useUserInfoStore()
 const urlBase = import.meta.env.VITE_ApiUrlBase
+const userFileListLocalConfig = useUserFileListLocalConfigStore()
 
 const pageSize = 50
 const skip = ref(0)
@@ -26,6 +28,7 @@ const search = ref('')
 const activeSearch = ref('')
 const prefixes = ref<string[]>([])
 const selectedPrefix = ref('')
+const orderby = ref(userFileListLocalConfig.orderby)
 
 async function loadFileList(reset = false){
     if(reset){
@@ -34,7 +37,7 @@ async function loadFileList(reset = false){
         noMore.value = false
         activeSearch.value = search.value
     }
-    const res = await api.userFile.get(skip.value, pageSize, activeSearch.value || undefined)
+    const res = await api.userFile.get(skip.value, pageSize, activeSearch.value || undefined, orderby.value)
     if(res){
         if(reset || !fileList.value){
             fileList.value = res
@@ -177,6 +180,10 @@ onMounted(async() => {
     </h1>
     <div v-if="!userInfo.isTourist" class="user-file-list-container">
         <div class="search-bar">
+            <select v-model="orderby" @change="userFileListLocalConfig.orderby = orderby; loadFileList(true)">
+                <option value="time">更新</option>
+                <option value="name">名称</option>
+            </select>
             <select v-model="selectedPrefix">
                 <option value="">全部</option>
                 <option v-for="prefix in prefixes" :key="prefix" :value="prefix">{{ prefix }}</option>
@@ -284,14 +291,18 @@ onMounted(async() => {
     justify-content: flex-end;
     margin: 10px 0px;
     gap: 8px;
-    select{
+    select {
         max-width: 100px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
     input{
-        width: 140px;
+        width: 120px;
+    }
+    select, input {
+        margin-left: 0px;
+        margin-right: 0px;
     }
 }
 .load-more{
