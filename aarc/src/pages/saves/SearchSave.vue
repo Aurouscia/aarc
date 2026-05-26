@@ -68,7 +68,7 @@ onMounted(()=>{
     <div class="searchControl">
         <div>
             <button v-show="search" class="lite" @click="search=undefined;load()">清空</button>
-            <input v-model="search" class="saveSearchInput" placeholder="搜索存档名或id" @blur="load"/>
+            <input v-model="search" class="saveSearchInput" placeholder="搜索存档名或id" @blur="load" @keyup.enter="load"/>
         </div>
         <select v-model="orderBy" @change="load">
             <option :value="'active'">最新更新</option>

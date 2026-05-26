@@ -22,14 +22,17 @@ const pageSize = 50
 const skip = ref(0)
 const noMore = ref(false)
 const loadingMore = ref(false)
+const search = ref('')
+const activeSearch = ref('')
 
 async function loadFileList(reset = false){
     if(reset){
         fileList.value = undefined
         skip.value = 0
         noMore.value = false
+        activeSearch.value = search.value
     }
-    const res = await api.userFile.get(skip.value, pageSize)
+    const res = await api.userFile.get(skip.value, pageSize, activeSearch.value || undefined)
     if(res){
         if(reset || !fileList.value){
             fileList.value = res
@@ -146,9 +149,12 @@ onMounted(async() => {
         </div>
     </h1>
     <div v-if="!userInfo.isTourist" class="user-file-list-container">
+        <div class="search-bar">
+            <input v-model="search" @blur="loadFileList(true)" @keyup.enter="loadFileList(true)" placeholder="搜索资源名" />
+        </div>
         <Loading v-if="!fileList"></Loading>
         <div v-else-if="fileList.length === 0" class="empty-state">
-            <p>暂无文件</p>
+            <p>{{ activeSearch ? '未搜索到相关资源' : '暂无资源' }}</p>
         </div>
         <div v-else class="file-list">
             <div v-for="file in fileList" :key="file.id" class="file-item">
@@ -179,10 +185,13 @@ onMounted(async() => {
             </div>
         </div>
         <div class="load-more">
-            <button v-if="!noMore || true" @click="loadMore" :disabled="loadingMore">
+            <button v-if="!noMore" @click="loadMore" :disabled="loadingMore">
                 {{ loadingMore ? '加载中...' : '加载更多' }}
             </button>
-            <span v-else class="no-more">没有更多了</span>
+            <span v-else class="no-more">
+                {{ activeSearch ? `没有更多关于"${activeSearch}"的了` : '没有更多了' }}
+                <button v-if="activeSearch" class="lite" @click="search='';loadFileList(true)">清空搜索</button>
+            </span>
         </div>
     </div>
     <div v-else class="user-file-list-container">
@@ -236,6 +245,11 @@ onMounted(async() => {
 </template>
 
 <style scoped lang="scss">
+.search-bar{
+    display: flex;
+    justify-content: flex-end;
+    margin: 10px 0px;
+}
 .load-more{
     text-align: center;
     margin: 20px 0px;

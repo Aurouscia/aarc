@@ -19,7 +19,7 @@ const recommendList = [
 <template>
 <div class="searchSave">
     <div class="inputContainer">
-        <input v-model="search" placeholder="搜索存档名称"/>
+        <input v-model="search" placeholder="搜索存档名称" @keyup.enter="jump"/>
         <button @click="jump">搜索</button>
     </div>
     <div class="recommend">

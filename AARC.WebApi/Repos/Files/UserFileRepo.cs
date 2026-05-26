@@ -1,4 +1,5 @@
 ﻿using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.Db.Context.Specific;
 using AARC.WebApi.Models.DbModels.Files;
 using AARC.WebApi.Models.DbModels.Saves;
 using AARC.WebApi.Services.App.HttpAuthInfo;
@@ -81,7 +82,12 @@ namespace AARC.WebApi.Repos.Files
             q = q.Where(x => x.OwnerUserId == uid);
             
             if (!string.IsNullOrWhiteSpace(nameSearch))
-                q = q.Where(x => x.DisplayName.Contains(nameSearch));
+            {
+                //sqlite默认大小写敏感，此处强制转为不敏感的（应该不怎么影响性能）
+                q = Context is AarcSqliteContext
+                    ? q.Where(x => x.DisplayName.ToLower().Contains(nameSearch.ToLower()))
+                    : q.Where(x => x.DisplayName.Contains(nameSearch));
+            }
             if (skip > 0)
                 q = q.Skip(skip);
             take = Math.Clamp(take, 1, 50);
