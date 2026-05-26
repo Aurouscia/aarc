@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted, useTemplateRef } from 'vue';
+import { ref, onMounted, useTemplateRef, watch } from 'vue';
 import { UserFileDto } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import Loading from '@/components/common/Loading.vue';
@@ -24,6 +24,8 @@ const noMore = ref(false)
 const loadingMore = ref(false)
 const search = ref('')
 const activeSearch = ref('')
+const prefixes = ref<string[]>([])
+const selectedPrefix = ref('')
 
 async function loadFileList(reset = false){
     if(reset){
@@ -52,6 +54,30 @@ async function loadMore(){
     await loadFileList()
     loadingMore.value = false
 }
+
+async function loadPrefixes() {
+    const res = await api.userFile.getPrefixes()
+    if(res){
+        prefixes.value = res
+    }
+}
+
+watch(selectedPrefix, (newVal, oldVal) => {
+    if(newVal !== oldVal){
+        search.value = newVal ? newVal + '-' : ''
+        loadFileList(true)
+    }
+})
+
+watch(search, (newVal, oldVal) => {
+    if(newVal !== oldVal){
+        // 如果搜索框内容不再以当前选中的prefix开头，重置select
+        const prefix = selectedPrefix.value
+        if(prefix && !newVal.startsWith(prefix + '-')){
+            selectedPrefix.value = ''
+        }
+    }
+})
 
 const sidebar = useTemplateRef('sidebar')
 const isCreating = ref(false)
@@ -138,6 +164,7 @@ function deleteFile(fileId:number){
 
 onMounted(async() => {
     await loadFileList(true);
+    await loadPrefixes();
 })
 </script>
 
@@ -150,7 +177,11 @@ onMounted(async() => {
     </h1>
     <div v-if="!userInfo.isTourist" class="user-file-list-container">
         <div class="search-bar">
-            <input v-model="search" @blur="loadFileList(true)" @keyup.enter="loadFileList(true)" placeholder="搜索资源名" />
+            <select v-model="selectedPrefix">
+                <option value="">全部</option>
+                <option v-for="prefix in prefixes" :key="prefix" :value="prefix">{{ prefix }}</option>
+            </select>
+            <input v-model="search" @input="selectedPrefix = ''" @blur="loadFileList(true)" @keyup.enter="loadFileList(true)" placeholder="搜索资源名" />
         </div>
         <Loading v-if="!fileList"></Loading>
         <div v-else-if="fileList.length === 0" class="empty-state">
@@ -184,7 +215,7 @@ onMounted(async() => {
                 </div>
             </div>
         </div>
-        <div class="load-more">
+        <div v-if="fileList && fileList.length > 0" class="load-more">
             <button v-if="!noMore" @click="loadMore" :disabled="loadingMore">
                 {{ loadingMore ? '加载中...' : '加载更多' }}
             </button>
@@ -238,6 +269,9 @@ onMounted(async() => {
                 <p>如果图片过大，请使用 <a href="https://imageresizer.com/">https://imageresizer.com</a> 缩小你的图片到限制以下。</p>
             </div>
         </Notice>
+        <Notice v-if="isCreating" :title="'名称建议'" type="info">
+            建议使用“A-B”格式的名称，中间用连字符隔开，A表示分类名，这样可以让资源更便于筛选和使用
+        </Notice>
         <div v-if="!isCreating" class="delete-btn-container">
             <button @click="deleteFile(editingId)" class="minor">删除资源</button>
         </div>
@@ -249,6 +283,16 @@ onMounted(async() => {
     display: flex;
     justify-content: flex-end;
     margin: 10px 0px;
+    gap: 8px;
+    select{
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    input{
+        width: 140px;
+    }
 }
 .load-more{
     text-align: center;

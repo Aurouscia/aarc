@@ -49,5 +49,11 @@ namespace AARC.WebApi.Controllers.Files
         {
             return userFileRepo.GetUserFiles(skip, take, search);
         }
+
+        [HttpGet]
+        public List<string> GetPrefixes()
+        {
+            return userFileRepo.GetPrefixes();
+        }
     }
 }

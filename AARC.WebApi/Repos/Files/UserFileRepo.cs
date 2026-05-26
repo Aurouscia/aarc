@@ -113,6 +113,25 @@ namespace AARC.WebApi.Repos.Files
             return res;
         }
 
+        public List<string> GetPrefixes()
+        {
+            var uid = httpUserIdProvider.RequireUserId();
+            var names = Existing
+                .Where(x => x.OwnerUserId == uid)
+                .Select(x => x.DisplayName)
+                .Where(x => !string.IsNullOrWhiteSpace(x) && x.Contains('-'))
+                .ToList();
+            return names
+                .Select(x => x!.Split('-'))
+                .Where(x => x.Length >= 2)
+                .Select(x => x[0])
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => x!)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+        }
+
         private static void CheckModel(string? displayName, string? intro)
         {
             if (displayName is null)
