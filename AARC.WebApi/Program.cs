@@ -9,6 +9,11 @@ using AARC.WebApi.Services.Saves;
 using AARC.WebApi.Utils;
 using Serilog;
 
+// 先初始化一个最基础的 logger，确保启动异常能被记录
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateLogger();
+
 try
 { 
     var builder = WebApplication.CreateBuilder(args);
@@ -52,7 +57,11 @@ try
 catch (Exception ex)
 {
     if (ex is not HostAbortedException)
+    {
+        Console.WriteLine($"[FATAL] AARC启动失败: {ex.Message}");
+        Console.WriteLine(ex.StackTrace);
         Log.Error(ex, "AARC启动失败=============================================");
+    }
 }
 finally
 {
