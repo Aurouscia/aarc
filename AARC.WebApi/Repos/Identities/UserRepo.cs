@@ -25,14 +25,12 @@ namespace AARC.WebApi.Repos.Identities
             {
                 if (httpUserInfoService.IsAdmin)
                     return Existing;
-                var res = Existing.Where(x => x.Type > UserType.Tourist);
                 if (httpUserInfoService.IsTourist)
                 {
                     var myId = httpUserIdProvider.UserIdLazy.Value;
-                    var me = Existing.Where(x => x.Id == myId);
-                    res = res.Union(me);
+                    return Existing.Where(x => x.Type > UserType.Tourist || x.Id == myId);
                 }
-                return res;
+                return Existing.Where(x => x.Type > UserType.Tourist);
             }
         }
 
@@ -61,20 +59,31 @@ namespace AARC.WebApi.Repos.Identities
                         UserId = x.Key,
                         Count = x.Count()
                     });
-                var userCountList = (
+                var topUserIds = (
                     from u in userQ
-                    from uc in userIdCountQ
-                    where uc.UserId == u.Id
+                    join uc in userIdCountQ on u.Id equals uc.UserId
                     select new
                     {
-                        User = mapper.Map<UserDto>(u),
+                        u.Id,
                         uc.Count
                     })
                     .OrderByDescending(x => x.Count)
                     .Take(takeCount)
                     .ToList();
-                userCountList.ForEach(x => x.User.SaveCount = x.Count);
-                finalList = userCountList.ConvertAll(x => x.User);
+                var topUserIdList = topUserIds.Select(x => x.Id).ToList();
+                var users = userQ
+                    .Where(x => topUserIdList.Contains(x.Id))
+                    .ProjectTo<UserDto>(mapper.ConfigurationProvider)
+                    .ToList();
+                var userCountDict = topUserIds.ToDictionary(x => x.Id, x => x.Count);
+                finalList = topUserIdList
+                    .Select(id =>
+                    {
+                        var user = users.First(x => x.Id == id);
+                        user.SaveCount = userCountDict[id];
+                        return user;
+                    })
+                    .ToList();
             }
             else
             {
