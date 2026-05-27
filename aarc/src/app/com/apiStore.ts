@@ -161,7 +161,7 @@ export const useApiStore = defineStore('api', () => {
     const authGrant = w(new api.AuthGrantClient(baseUrl, instance))
     const save = w(new api.SaveClient(baseUrl, instance), {
         throwOnErrorForActions: ['loadData'],
-        noShowWaitForActions: ['heartbeatRenewal', 'heartbeatRelease', 'loadStatus']
+        noShowWaitForActions: ['heartbeatRenewal', 'heartbeatRelease', 'loadStatus', 'getNewestSaves', 'getNewestSavesAudit']
     })
     const userFile = w(new api.UserFileClient(baseUrl, instance))
     const saveUtils = w(new api.SaveUtilsClient(baseUrl, instance))

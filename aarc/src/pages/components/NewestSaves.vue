@@ -4,6 +4,7 @@ import { onMounted, ref } from 'vue';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { SaveDto } from '@/app/com/apiGenerated';
 import SaveAvatar from './SaveAvatar.vue';
+import Loading from '@/components/common/Loading.vue';
 
 const props = defineProps<{
     forAuditor?: boolean
@@ -12,6 +13,7 @@ const api = useApiStore()
 const { someonesSavesRoute } = useSavesRoutesJump()
 const list = ref<SaveDto[]>([])
 async function load(){
+    loaded.value = false
     let resp:SaveDto[]|undefined
     if(props.forAuditor)
         resp = await api.save.getNewestSavesAudit()
@@ -19,6 +21,7 @@ async function load(){
         resp = await api.save.getNewestSaves()
     if(resp){
         list.value = resp
+        loaded.value = true
     }
 }
 
@@ -48,13 +51,15 @@ function lastActiveFromNow(time?: string){
     return Math.floor(diff / oneSec) + '秒前'
 }
 
+const loaded = ref(false)
+
 onMounted(async()=>{
     await load()
 })
 </script>
 
 <template>
-<div class="newestSaves">
+<div v-if="loaded" class="newestSaves">
     <div v-for="s in list" :key="s.id">
         <SaveAvatar :s="s" :size="120"></SaveAvatar>
         <div class="cvsName">{{ s.name }}</div>
@@ -65,6 +70,7 @@ onMounted(async()=>{
         <div class="cvsData">{{ lastActiveFromNow(s.lastActive) }}</div>
     </div>
 </div>
+<Loading v-else></Loading>
 </template>
 
 <style scoped lang="scss">
