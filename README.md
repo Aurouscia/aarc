@@ -48,7 +48,10 @@ http://aarc.jowei19.com
 2. 进入前端目录(`/aarc`)，按照该目录下的`README.md`文件进行操作，编译前端代码
     - 编译完成后，会自动输出到后端的`wwwroot`目录下
 3. 双击项目根目录的sln文件，进入vs或rider
-4. 在本地的`/Data`目录中生成/更新数据库架构
+4. 生成/更新数据库架构
+    - 使用ef工具更新数据库架构之前，必须先将配置中的`Db:Type`和`Db:ConnStr`设置好
+        - 默认使用 sqlite 无需动配置
+        - db 文件会创建到 /Data 目录
     - vs：顶部栏-工具-Nuget包管理器-包管理器控制台，在控制台中输入`update-database`
     - rider：资源管理器-右键AARC项目（注意是项目不是解决方案）-EntityFrameworkCore-更新数据库
 5. 修改配置（资源管理器中找到`appsettings.json`）
