@@ -27,17 +27,10 @@ namespace AARC.WebApi.Repos.Saves
         private static TimeSpan HeartbeatValidSpan => TimeSpan.FromMinutes(10);
         private IQueryable<Save> GetOwnerTypedSaves(bool isTourist = false)
         {
-            var userQ = base.Context.Users.Existing();
-            if (isTourist)
-                userQ = userQ.Where(x => x.Type == UserType.Tourist);
-            else
-                userQ = userQ.Where(x => x.Type > UserType.Tourist);
-            var filteredByUserType =
-                from u in userQ
-                join s in base.Existing
-                on u.Id equals s.OwnerUserId
-                select s;
-            return filteredByUserType;
+            var userIds = base.Context.Users.Existing()
+                .Where(x => isTourist ? x.Type == UserType.Tourist : x.Type > UserType.Tourist)
+                .Select(x => x.Id);
+            return base.Existing.Where(x => userIds.Contains(x.OwnerUserId));
         }
         private IQueryable<Save> Viewable
         {
@@ -52,7 +45,7 @@ namespace AARC.WebApi.Repos.Saves
                 if(uid > 0)
                 {
                     var mine = Existing.Where(x => x.OwnerUserId == uid);
-                    res = res.Union(mine); //游客：可查看非游客+自己的
+                    res = res.Concat(mine); //游客：可查看非游客+自己的（无重叠，用Concat更快）
                 }
                 return res;
             }
