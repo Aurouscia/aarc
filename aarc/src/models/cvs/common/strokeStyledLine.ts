@@ -18,7 +18,7 @@ export function strokeStyledLine(
         fixedColorConverter:(c:string)=>string
     }){
     const { target, scale, offset, lineWidthBase, lineStyle, baseCap, dynaColor, fixedColorConverter } = options
-    if(target != 'style'){
+    if(target != 'style' && !lineStyle?.noBase){
         // target 为 base 或 both 时，渲染线路本体
         ctx.lineWidth = lineWidthBase
         ctx.globalAlpha = 1

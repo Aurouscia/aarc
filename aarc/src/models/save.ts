@@ -105,6 +105,7 @@ export interface LineTimeInfo{
 export interface LineStyle{
     id:number
     name?:string
+    noBase?: boolean
     layers:{
         color?:string
         colorMode?:'fixed'|'line' //undefined默认为fixed

@@ -152,6 +152,9 @@ onUnmounted(()=>{
             <div class="name">
                 <h3>风格名</h3><input v-model="s.name" placeholder="必填" @blur="checkStyleName(s)"/>
             </div>
+            <div class="noBase">
+                <label><input type="checkbox" v-model="s.noBase"/> 隐藏线路本体</label>
+            </div>
             <div class="layersOps">
                 <button class="ok" @click="addLayer(s)">+层级</button>
                 <button v-if="sIdx>0" class="minor" @click="moveUpInArray(save?.lineStyles, sIdx)">上移风格</button>
@@ -298,6 +301,22 @@ onUnmounted(()=>{
                     width: 120px;
                     border-radius: 0px;
                     border-width: 0px 0px 1px 0px;
+                }
+            }
+            .noBase{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-top: 6px;
+                label{
+                    display: flex;
+                    align-items: center;
+                    font-size: 14px;
+                    color: #666;
+                    cursor: pointer;
+                    input{
+                        margin-right: 4px;
+                    }
                 }
             }
             .layers{
