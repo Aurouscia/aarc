@@ -25,12 +25,11 @@ async function load(){
     }
 }
 
-function lastActiveFromNow(time?: string){
-    if(!time)
+function lastActiveFromNow(unix?: number){
+    if(!unix)
         return ''
-    const now = new Date()
-    const lastActive = new Date(time)
-    const diff = now.getTime() - lastActive.getTime()
+    const now = Date.now()
+    const diff = now - unix
     //如果超过三天，返回空字符串
     //如果超过24小时，返回x天
     //如果超过1小时，显示x小时
@@ -67,7 +66,7 @@ onMounted(async()=>{
         <RouterLink :to="someonesSavesRoute(s.ownerUserId||0)" class="cvsOwner">
             {{ s.ownerName }}
         </RouterLink>
-        <div class="cvsData">{{ lastActiveFromNow(s.lastActive) }}</div>
+        <div class="cvsData">{{ lastActiveFromNow(s.lastActiveUnix) }}</div>
     </div>
 </div>
 <Loading v-else></Loading>

@@ -417,6 +417,7 @@ namespace AARC.WebApi.Repos.Saves
         public int LineCount { get; set; }
         public byte Priority { get; set; }
         public string? LastActive { get; set; }
+        public long LastActiveUnix { get; set; }
         public bool AllowRequesterView { get; set; }
         public bool AllowRequesterEdit { get; set; }
         public bool AllowRequesterFork { get; set; }
@@ -437,7 +438,10 @@ namespace AARC.WebApi.Repos.Saves
             CreateMap<Save, SaveDto>()
                 .ForMember(
                     destinationMember: x => x.LastActive,
-                    memberOptions: mem => mem.MapFrom(source => source.LastActive.ToString("yyyy-MM-dd HH:mm")));
+                    memberOptions: mem => mem.MapFrom(source => source.LastActive.ToString("yyyy-MM-dd HH:mm")))
+                .ForMember(
+                    destinationMember: x => x.LastActiveUnix,
+                    memberOptions: mem => mem.MapFrom(source => new DateTimeOffset(source.LastActive).ToUnixTimeMilliseconds()));
             CreateMap<Save, Save>();
         }
     }
