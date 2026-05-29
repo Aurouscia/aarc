@@ -5,6 +5,7 @@ import { ensureValidCvsSize } from "../save/valid/cvsSize";
 import { Coord } from "../coord";
 import { isSameCoord } from "@/utils/sgn";
 import { useConfigStore } from "./configStore";
+import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
 import { indicesInArray, pullAllByPred, removeAllByIndices, removeAllByPred } from "@/utils/lang/indicesInArray";
 import { coordAdd } from "@/utils/coordUtils/coordMath";
 import { getMayRingLinePtIds } from "@/utils/lineUtils/isRing";
@@ -15,6 +16,7 @@ export const useSaveStore = defineStore('save', () => {
     //不应直接在此删除/添加车站/线路，应通过envStore进行，避免数据不一致
     const save = ref<Save>()
     const configStore = useConfigStore()
+    const editorLocalConfig = useEditorLocalConfigStore()
     const ptDict = computed<Record<number, ControlPoint|undefined>>(()=>{
         const res:Record<number, ControlPoint|undefined> = {}
         if(!save.value?.points)
@@ -407,7 +409,7 @@ export const useSaveStore = defineStore('save', () => {
         const thatLines = getLinesByPt(thatPt.id)
         const thisLinesContainsNoneCommon = thisLines.some(x=>x.type!==LineType.common)
         const thatLinesContainsNoneCommon = thatLines.some(x=>x.type!==LineType.common)
-        if(thisLinesContainsNoneCommon !== thatLinesContainsNoneCommon)
+        if(!editorLocalConfig.allowMergePtAndTerrain && thisLinesContainsNoneCommon !== thatLinesContainsNoneCommon)
             return
         //本体保留名称更长的那个
         let keepThis  = (thisPt.name?.trim().length || 0) >= (thatPt?.name?.trim().length || 0)

@@ -5,7 +5,7 @@ import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 
 const configStore = useEditorLocalConfigStore()
-const { staNameFob, duplicateNameDistThrs } = storeToRefs(configStore)
+const { staNameFob, duplicateNameDistThrs, allowMergePtAndTerrain } = storeToRefs(configStore)
 
 onMounted(()=>{
     configStore.backCompat()
@@ -26,6 +26,18 @@ onMounted(()=>{
                 </div>
                 <div class="explain">
                     <p>当两个站的距离小于该值时，不会对“站名重复”作出警告，允许“靠近的地铁站与电车站同名”这种设计。</p>
+                </div>
+            </td>
+        </tr>
+        <tr><th>线路点与地形点合并</th></tr>
+        <tr>
+            <td>
+                <select v-model="allowMergePtAndTerrain">
+                    <option :value="false">不允许</option>
+                    <option :value="true">允许</option>
+                </select>
+                <div class="explain">
+                    <p>是否允许普通线路点与地形点在同坐标时自动合并。</p>
                 </div>
             </td>
         </tr>
