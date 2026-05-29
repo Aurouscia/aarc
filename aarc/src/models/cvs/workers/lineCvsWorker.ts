@@ -22,6 +22,7 @@ import { numberCmpEpsilon } from "@/utils/consts";
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { LineStyle } from "@/models/save";
+import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
 
 
 interface FormalSeg{a:Coord, itp:Coord[], b:Coord, ill:number}
@@ -79,6 +80,17 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         }
 
         const includeCarpet = !rtype || rtype == 'carpet' || rtype == 'both'
+
+        // 简化模式：无视样式和分段，整线统一绘制
+        if(useEditorLocalConfigStore().ignoreStyleAndSpan){
+            for(const l of line){
+                ctx.beginPath()
+                const formalPts = formalizedLineStore.getLinesFormalPts(l.id) ?? []
+                linkPts(ctx, formalPts, l)
+                doRender(ctx, l, undefined, undefined, 'both', 'base')
+            }
+            return
+        }
 
         // 1. Carpet 保持整线绘制
         if(includeCarpet){

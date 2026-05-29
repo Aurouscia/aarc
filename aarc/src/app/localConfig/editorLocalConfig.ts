@@ -7,6 +7,7 @@ export const useEditorLocalConfigStore = defineStore('editorLocalConfig',()=>{
     const tabForPinyinConvert = ref<boolean>(false)
     const duplicateNameDistThrs = ref<number|string>(200)
     const allowMergePtAndTerrain = ref<boolean>(true)
+    const ignoreStyleAndSpan = ref<boolean>(false)
 
     //旧版兼容性
     function backCompat(){
@@ -23,6 +24,7 @@ export const useEditorLocalConfigStore = defineStore('editorLocalConfig',()=>{
         tabForPinyinConvert,
         duplicateNameDistThrs,
         allowMergePtAndTerrain,
+        ignoreStyleAndSpan,
         backCompat
     }
 },

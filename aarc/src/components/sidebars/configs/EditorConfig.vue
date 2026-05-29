@@ -5,7 +5,7 @@ import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 
 const configStore = useEditorLocalConfigStore()
-const { staNameFob, duplicateNameDistThrs, allowMergePtAndTerrain } = storeToRefs(configStore)
+const { staNameFob, duplicateNameDistThrs, allowMergePtAndTerrain, ignoreStyleAndSpan } = storeToRefs(configStore)
 
 onMounted(()=>{
     configStore.backCompat()
@@ -13,7 +13,7 @@ onMounted(()=>{
 </script>
 
 <template>
-<ConfigSection :title="'编辑器'">
+<ConfigSection :title="'编辑器（新）'">
     <table><tbody>
         <tr><th>重复站名检测</th></tr>
         <tr>
@@ -38,6 +38,18 @@ onMounted(()=>{
                 </select>
                 <div class="explain">
                     <p>是否允许普通线路点与地形点在同坐标时自动合并。</p>
+                </div>
+            </td>
+        </tr>
+        <tr><th>无视样式和分段</th></tr>
+        <tr>
+            <td>
+                <select v-model="ignoreStyleAndSpan">
+                    <option :value="false">关闭</option>
+                    <option :value="true">开启</option>
+                </select>
+                <div class="explain">
+                    <p>如果卡顿，可以考虑关闭分段计算+隐藏线路样式，提高渲染效率，导出/预览时再恢复即可</p>
                 </div>
             </td>
         </tr>
