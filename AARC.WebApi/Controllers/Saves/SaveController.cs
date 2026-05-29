@@ -29,6 +29,7 @@ namespace AARC.WebApi.Controllers.Saves
         SaveBackupFileService saveBackupFileService,
         AuthGrantCheckService authGrantCheckService,
         HttpUserInfoService httpUserInfoService,
+        NewestSavesCacheService newestSavesCache,
         ILogger<SaveController> logger
         ) : Controller
     {
@@ -36,7 +37,8 @@ namespace AARC.WebApi.Controllers.Saves
         [HttpGet]
         public List<SaveDto> GetNewestSaves()
         {
-            var list = saveRepo.GetNewestSaves(forAuditor: false);
+            var cachedIds = newestSavesCache.GetNewestSaveIds(forAuditor: false)?.ToList();
+            var list = saveRepo.GetNewestSaves(forAuditor: false, cachedIds);
             EnrichSaveMini(list);
             EnrichUserName(list);
             EnrichPrivilege(list);
@@ -46,7 +48,8 @@ namespace AARC.WebApi.Controllers.Saves
         [UserCheck(UserType.Admin)]
         public List<SaveDto> GetNewestSavesAudit()
         {
-            var list = saveRepo.GetNewestSaves(forAuditor: true);
+            var cachedIds = newestSavesCache.GetNewestSaveIds(forAuditor: true)?.ToList();
+            var list = saveRepo.GetNewestSaves(forAuditor: true, cachedIds);
             EnrichSaveMini(list);
             EnrichUserName(list);
             EnrichPrivilege(list);
@@ -372,7 +375,7 @@ namespace AARC.WebApi.Controllers.Saves
                 saveRepo.UpdateDataAndDiff(id, data, staCount, lineCount);
             }
             
-            // 更新当前用户的“上次活跃”
+            // 更新当前用户的"上次活跃"
             userRepo.UpdateCurrentUserLastActive();
             try {
                 saveBackupFileService.Write(data, id, mustBackup);
@@ -380,8 +383,25 @@ namespace AARC.WebApi.Controllers.Saves
             catch(Exception ex)
             { 
                 logger.LogError(ex, "{id}号画布备份失败，长度{length}", id, data.Length);
-            } 
+            }
+            // 数据库操作和备份都完成后，再更新缓存
+            NotifyCacheUpdated(id);
             return true;
+        }
+
+        [NonAction]
+        private void NotifyCacheUpdated(int saveId)
+        {
+            var owner = (
+                from s in saveRepo.Existing
+                join u in userRepo.Existing on s.OwnerUserId equals u.Id
+                where s.Id == saveId
+                select new { u.Type }
+            ).FirstOrDefault();
+            if (owner is not null)
+            {
+                newestSavesCache.Touch(saveId, owner.Type == UserType.Tourist);
+            }
         }
     }
 

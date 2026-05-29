@@ -6,6 +6,7 @@ using AARC.WebApi.Models.DbModels.Saves;
 using AARC.WebApi.Services.App.HttpAuthInfo;
 using AARC.WebApi.Services.App.Mapping;
 using AARC.WebApi.Services.Saves;
+using AARC.WebApi.Utils;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +21,8 @@ namespace AARC.WebApi.Repos.Saves
         HttpUserIdProvider httpUserIdProvider,
         HttpUserInfoService httpUserInfoService,
         IMapper mapper,
-        ILogger<SaveRepo> logger
+        ILogger<SaveRepo> logger,
+        NewestSavesCacheService newestSavesCache
         ) : Repo<Save>(context)
     {
         // 心跳有效期10分钟，超过10分钟允许其他人进来
@@ -51,13 +53,60 @@ namespace AARC.WebApi.Repos.Saves
             }
         }
 
-        public List<SaveDto> GetNewestSaves(bool forAuditor)
+        /// <summary>
+        /// 直接从数据库查询最新存档（用于缓存初始化或回退）。
+        /// </summary>
+        public List<SaveDto> GetNewestSavesFromDb(bool forAuditor)
         {
             var res = GetOwnerTypedSaves(isTourist: forAuditor)
                 .OrderByDescending(x => x.LastActive)
                 .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
                 .Take(10)
                 .ToList();
+            EnrichEditingBy(res);
+            return res;
+        }
+
+        /// <summary>
+        /// 根据缓存的 ID 列表查询最新存档；若缓存未命中则回退到数据库查询并初始化缓存。
+        /// </summary>
+        public List<SaveDto> GetNewestSaves(bool forAuditor, List<int>? cachedIds = null)
+        {
+            List<SaveDto> QueryByCachedIds(List<int> ids)
+            {
+                var list = base.Existing
+                    .Where(x => ids.Contains(x.Id))
+                    .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
+                    .ToList();
+                list.OrderByKeyList(x => x.Id, ids);
+                return list;
+            }
+
+            List<SaveDto> res;
+            if (cachedIds is { Count: > 0 })
+            {
+                res = QueryByCachedIds(cachedIds);
+            }
+            else
+            {
+                var initLock = forAuditor
+                    ? NewestSavesCacheService.TouristInitLock
+                    : NewestSavesCacheService.MemberInitLock;
+                lock (initLock)
+                {
+                    // 双重检查：其他线程可能已初始化缓存
+                    var refreshedIds = newestSavesCache.GetNewestSaveIds(forAuditor)?.ToList();
+                    if (refreshedIds is { Count: > 0 })
+                    {
+                        res = QueryByCachedIds(refreshedIds);
+                    }
+                    else
+                    {
+                        res = GetNewestSavesFromDb(forAuditor);
+                        newestSavesCache.Initialize(forAuditor, res.Select(x => x.Id).ToList());
+                    }
+                }
+            }
             EnrichEditingBy(res);
             return res;
         }

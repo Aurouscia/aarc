@@ -5,6 +5,7 @@ public static class SavesServices
     public static IServiceCollection AddSavesServices(this IServiceCollection services)
     {
         services.AddScoped<SaveDiffService>();
+        services.AddSingleton<NewestSavesCacheService>();
         return services;
     }
 }
