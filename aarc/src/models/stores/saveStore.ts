@@ -47,8 +47,11 @@ export const useSaveStore = defineStore('save', () => {
         for(const pt of save.value.points){
             const belongLines = ptBelongLineDict.value[pt.id] || []
             const sizes = belongLines
-                .filter(x=>x.type===LineType.common)
+                .filter(x=>x.type===LineType.common || x.type===LineType.terrain)
                 .map(x=>{
+                    if(x.type===LineType.terrain){
+                        return Math.min(x.width || 1, 1)
+                    }
                     if(x.ptSize && x.ptSize>0){
                         return x.ptSize
                     }
