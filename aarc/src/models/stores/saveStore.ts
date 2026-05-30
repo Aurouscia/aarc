@@ -42,6 +42,15 @@ export const useSaveStore = defineStore('save', () => {
         }
         return res
     })
+    /**
+     * 每个点对应的所有连接线路的 staSize（车站渲染尺寸）列表
+     * 数据来源优先级（单条线路）：
+     *   1. 地形线：固定取 min(width, 1)
+     *   2. 线路单独设置的 ptSize（若 > 0）
+     *   3. config.lineWidthMapped[width].staSize（线宽全局映射）
+     *   4. 线路自身的 width
+     *   5. 默认值 1
+     */
     const ptSizes = computed<Record<number, number[]|undefined>>(()=>{
         const res:Record<number, number[]> = {}
         if(!save.value?.points)
@@ -76,6 +85,15 @@ export const useSaveStore = defineStore('save', () => {
         })
         return res
     })
+    /**
+     * 每个点对应的所有连接普通线路的 staNameSize（站名渲染尺寸）列表
+     * 最终取最大值作为该点的 ptNameSize
+     * 数据来源优先级（单条线路）：
+     *   1. 线路单独设置的 ptNameSize（若 > 0）
+     *   2. config.lineWidthMapped[width].staNameSize（线宽全局映射）
+     *   3. 线路自身的 width
+     *   4. 默认值 1
+     */
     const ptNameSize = computed<Record<number, number|undefined>>(()=>{
         const res:Record<number, number> = {}
         if(!save.value?.points)
@@ -96,6 +114,47 @@ export const useSaveStore = defineStore('save', () => {
             if(sizes.length>0)
                 maxSize = Math.max(...sizes)
             res[pt.id] = maxSize
+        }
+        return res
+    })
+    /**
+     * 每个点对应的所有连接线路的 staSnapSize（吸附距离计算尺寸）列表
+     * 与 ptSizes 分离，允许吸附距离和车站渲染尺寸独立配置
+     * 数据来源优先级（单条线路）：
+     *   1. 地形线：固定取 min(width, 1)
+     *   2. 线路单独设置的 ptSnapSize（若不为 undefined）
+     *   3. config.lineWidthMapped[width].staSnapSize（线宽全局映射的吸附专用值）
+     *   4. 线路单独设置的 ptSize（若 > 0）
+     *   5. config.lineWidthMapped[width].staSize（线宽全局映射的车站尺寸）
+     *   6. 线路自身的 width
+     *   7. 默认值 1
+     */
+    const ptSnapSizes = computed<Record<number, number[]|undefined>>(()=>{
+        const res:Record<number, number[]> = {}
+        if(!save.value?.points)
+            return res
+        for(const pt of save.value.points){
+            const belongLines = ptBelongLineDict.value[pt.id] || []
+            const sizes = belongLines
+                .filter(x=>x.type===LineType.common || x.type===LineType.terrain)
+                .map(x=>{
+                    if(x.type===LineType.terrain){
+                        return Math.min(x.width || 1, 1)
+                    }
+                    if(x.ptSnapSize && x.ptSnapSize>0){
+                        return x.ptSnapSize
+                    }
+                    const configMapped = readNumKeyedRecord(
+                        configStore.config.lineWidthMapped, x.width||1)
+                    if(configMapped?.staSnapSize !== undefined){
+                        return configMapped.staSnapSize
+                    }
+                    if(x.ptSize && x.ptSize>0){
+                        return x.ptSize
+                    }
+                    return configMapped?.staSize || x.width || 1
+                })
+            res[pt.id] = sizes
         }
         return res
     })
@@ -199,6 +258,15 @@ export const useSaveStore = defineStore('save', () => {
     }
     function getLinesDecidedPtNameSize(ptId:number){
         return ptNameSize.value[ptId] || 1
+    }
+    function getLinesDecidedPtSnapSizes(ptId:number){
+        return ptSnapSizes.value[ptId]
+    }
+    function getLinesDecidedPtSnapSize(ptId:number){
+        const sizes = ptSnapSizes.value[ptId]
+        if(sizes && sizes.length>0)
+            return Math.max(...sizes)
+        return 1
     }
     function getLinesByType(lineType:LineType){
         if(!save.value)
@@ -565,7 +633,7 @@ export const useSaveStore = defineStore('save', () => {
     return { 
         save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint, deletedTextTag, linePtsChanged,
         getPtById, getPtsByIds, getLineById, getLinesByIds, linesSortedByZIndex,
-        getLinesDecidedPtSize, getLinesDecidedPtSizes, getLinesDecidedPtNameSize,
+        getLinesDecidedPtSize, getLinesDecidedPtSizes, getLinesDecidedPtNameSize, getLinesDecidedPtSnapSizes, getLinesDecidedPtSnapSize,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getLinesByParent, getTextTagById, getPointLinksByPt,
         insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType, ensureLinesOrdered,
         removePt, removePtFromLine, removeNoLinePoints, removePointLinkByPt, removeDanglingPointLinks, tryMergePt, isNamedPt,

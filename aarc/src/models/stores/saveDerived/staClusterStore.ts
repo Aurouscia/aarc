@@ -149,8 +149,8 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     }
 
     function ptClinging(a:ControlPoint, b:ControlPoint):boolean{
-        const sizeA = saveStore.getLinesDecidedPtSize(a.id)
-        const sizeB = saveStore.getLinesDecidedPtSize(b.id)
+        const sizeA = saveStore.getLinesDecidedPtSnapSize(a.id)
+        const sizeB = saveStore.getLinesDecidedPtSnapSize(b.id)
         const distMut = (sizeA + sizeB)/2
         const clingingDist = configClingingDist * distMut
         const clingingDistSqrBiggerByEpsilon = (clingingDist+numberCmpEpsilon*10)**2 //判断条件应该宽松一些（避免浮点数误差）所以eps*10

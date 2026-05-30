@@ -8,7 +8,7 @@ import { onMounted } from 'vue';
 
 const envStore = useEnvStore()
 const { config } = storeToRefs(useConfigStore())
-function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize', value?:string){
+function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize'|'staSnapSize', value?:string){
     config.value.lineWidthMapped ??= {}
     const valueNum = value ? parseFloat(value) : NaN
     const lwm = config.value.lineWidthMapped
@@ -40,6 +40,7 @@ onMounted(()=>{
             <th></th>
             <th>车站</th>
             <th>站名</th>
+            <th>吸附</th>
         </tr>
         <tr v-for="width in ['0.5', '0.75', '1', '1.25', '1.5', '1.75', '2']">
             <td>{{ width }}</td>
@@ -50,6 +51,10 @@ onMounted(()=>{
             <td>
                 <input :value="config.lineWidthMapped[width]?.staNameSize" :placeholder="width"
                     @blur="e=>applyLineWidthMapped(width, 'staNameSize', (e.target as HTMLInputElement).value)"/>
+            </td>
+            <td>
+                <input :value="config.lineWidthMapped[width]?.staSnapSize" :placeholder="width"
+                    @blur="e=>applyLineWidthMapped(width, 'staSnapSize', (e.target as HTMLInputElement).value)"/>
             </td>
         </tr>
         <tr>

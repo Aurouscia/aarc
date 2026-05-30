@@ -84,6 +84,7 @@ export interface Line{
     width?:number
     ptNameSize?:number
     ptSize?:number
+    ptSnapSize?:number
     type:LineType
     isFilled?:boolean
     style?:number

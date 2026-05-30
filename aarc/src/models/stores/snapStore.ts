@@ -15,6 +15,7 @@ import { crossAddNums } from "@/utils/lang/crossAddNums";
 export const useSnapStore = defineStore('snap',()=>{
     const cs = useConfigStore()
     const saveStore = useSaveStore()
+    const { getLinesDecidedPtSnapSizes } = saveStore
     const staClusterStore = useStaClusterStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const snapLines = ref<FormalRay[]>([])
@@ -193,9 +194,9 @@ export const useSnapStore = defineStore('snap',()=>{
         return {}
     }
     function snapInterPt(pt:ControlPoint, noBias:boolean):Coord|undefined{
-        const ptSizes = saveStore.getLinesDecidedPtSizes(pt.id) || [1]
-        const ptSizeLargets = Math.max(...ptSizes)
-        const snapDistLargest = ptSizeLargets * cs.config.snapOctaClingPtPtDist
+        const ptSnapSizes = getLinesDecidedPtSnapSizes(pt.id) || [1]
+        const ptSnapSizeLargest = Math.max(...ptSnapSizes)
+        const snapDistLargest = ptSnapSizeLargest * cs.config.snapOctaClingPtPtDist
         const snapThrs = cs.config.snapOctaClingPtPtThrs;
         snapInterPtTargets.value = {snapPoss:[], snapToPts:[]}
         const pts = saveStore.getPtsInRange(pt.pos, (snapDistLargest + snapThrs)*2, pt.id)
@@ -214,8 +215,8 @@ export const useSnapStore = defineStore('snap',()=>{
                     biases.push([0,-1],[0,1],[1,0],[-1,0])
                 }
             }
-            const optSizes = saveStore.getLinesDecidedPtSizes(opt.id) || [1]
-            const sizesAdded = crossAddNums(ptSizes, optSizes).sort()
+            const optSnapSizes = getLinesDecidedPtSnapSizes(opt.id) || [1]
+            const sizesAdded = crossAddNums(ptSnapSizes, optSnapSizes).sort()
             const snapDists = sizesAdded.map(x=>x/2*cs.config.snapOctaClingPtPtDist)
             snapInterPtTargets.value?.snapToPts.push(opt)
             snapDists.forEach(snapDist=>{
