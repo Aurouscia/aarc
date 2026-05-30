@@ -27,12 +27,13 @@ onMounted(()=>{
 </script>
 
 <template>
-<ConfigSection :title="'线宽对应车站尺寸'">
+<ConfigSection :title="'线宽对应参数（新）'">
+<div class="lineWidthMappedOuter">
     <table class="fullWidth lineWidthMapped">
         <tbody>
         <tr>
-            <td class="explain" colspan="4">
-                设置特定宽度的线路对应的<br/>车站尺寸/站名大小<br/>
+            <td class="explain" colspan="5">
+                设置特定宽度的线路对应的<br/>车站尺寸/站名/吸附大小<br/>
                 (会被线路单独设置覆盖)
             </td>
         </tr>
@@ -63,22 +64,31 @@ onMounted(()=>{
             </td>
         </tr>
         <tr>
-            <td class="explain" colspan="3">
-                调小车站尺寸可能会造成<br/>
+            <td class="explain" colspan="5">
+                调小车站尺寸和吸附距离可能会造成<br/>
                 换乘站脱离，请手动拼合脱离处
             </td>
         </tr>
     </tbody></table>
+</div>
 </ConfigSection>
 </template>
 
 <style lang="scss" scoped>
+.lineWidthMappedOuter{
+    width: 100%;
+    overflow-x: auto;
+}
 .lineWidthMapped{
     input{
-        width: 80px;
+        width: 75px;
+        margin: 0px;
         &::placeholder {
             color: #aaa;
         }
     }
+}
+.explain{
+    text-align: left;
 }
 </style>

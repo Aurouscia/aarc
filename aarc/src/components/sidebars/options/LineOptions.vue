@@ -289,7 +289,7 @@ onMounted(()=>{
         </td>
     </tr>
     <tr v-if="line.type===LineType.common">
-        <td>站名吸附</td>
+        <td>站名<br/>吸附</td>
         <td class="viewableRange">
             <input type="range" v-model.number="props.line.ptNameSnapSize"
                 :min="0"
