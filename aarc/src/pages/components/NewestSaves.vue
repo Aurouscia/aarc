@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useApiStore } from '@/app/com/apiStore';
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { SaveDto } from '@/app/com/apiGenerated';
 import SaveAvatar from './SaveAvatar.vue';
@@ -25,28 +25,26 @@ async function load(){
     }
 }
 
+const now = ref(Date.now())
+let timer: ReturnType<typeof setInterval> | null = null
+let loadTimer: ReturnType<typeof setInterval> | null = null
+
 function lastActiveFromNow(unix?: number){
     if(!unix)
         return ''
-    const now = Date.now()
-    const diff = now - unix
-    //如果超过三天，返回空字符串
-    //如果超过24小时，返回x天
-    //如果超过1小时，显示x小时
-    //如果超过1分钟，显示x分钟
-    //如果不足1分钟，显示x秒
-    const oneDaySecs = 24 * 60 * 60 * 1000
-    const oneHourSecs = 60 * 60 * 1000
-    const oneMinSecs = 60 * 1000
+    const diff = now.value - unix
+    const oneDayMs = 24 * 60 * 60 * 1000
+    const oneHourMs = 60 * 60 * 1000
+    const oneMinMs = 60 * 1000
     const oneSec = 1000
-    if(diff >= oneDaySecs * 4)
-        return '' 
-    if(diff > oneDaySecs)
-        return Math.floor(diff / oneDaySecs) + '天前' 
-    if(diff > oneHourSecs)
-        return Math.floor(diff / oneHourSecs) + '小时前'
-    if(diff > oneMinSecs)
-        return Math.floor(diff / oneMinSecs) + '分钟前'
+    if(diff >= oneDayMs * 4)
+        return ''
+    if(diff > oneDayMs)
+        return Math.floor(diff / oneDayMs) + '天前'
+    if(diff > oneHourMs)
+        return Math.floor(diff / oneHourMs) + '小时前'
+    if(diff > oneMinMs)
+        return Math.floor(diff / oneMinMs) + '分钟前'
     return Math.floor(diff / oneSec) + '秒前'
 }
 
@@ -54,6 +52,23 @@ const loaded = ref(false)
 
 onMounted(async()=>{
     await load()
+    timer = setInterval(() => {
+        now.value = Date.now()
+    }, 1000)
+    loadTimer = setInterval(() => {
+        load()
+    }, 10000)
+})
+
+onUnmounted(()=>{
+    if(timer){
+        clearInterval(timer)
+        timer = null
+    }
+    if(loadTimer){
+        clearInterval(loadTimer)
+        loadTimer = null
+    }
 })
 </script>
 
