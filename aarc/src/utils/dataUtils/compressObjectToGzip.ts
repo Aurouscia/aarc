@@ -41,6 +41,9 @@ export async function compressObjectToGzip(data: object):Promise<Blob|'notSuppor
 
     // 使用收集到的数据创建 Blob 对象
     const blob = new Blob(chunks, { type: 'application/gzip' });
+    if (blob.size === 0) {
+        throw new Error('Compressed blob is empty');
+    }
 
     return blob;
 }

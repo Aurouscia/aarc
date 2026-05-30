@@ -192,11 +192,11 @@ async function saveData(mustBackup:boolean){
     try{  
         blob = await compressObjectToGzip(saveStore.save??{})
     }
-    catch{
+    catch(err){
         blob = 'notSupported'
-        console.warn('存档数据压缩失败，使用原版保存机制')
+        console.warn('存档数据压缩失败，使用原版保存机制', err)
     }
-    if(blob instanceof Blob){
+    if(blob instanceof Blob && blob.size > 0){
         resp = await api.save.updateDataCompressed(saveIdNum.value, {fileName:'data', data:blob}, staCount, lineCount, mustBackup)
     }
     else{
