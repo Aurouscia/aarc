@@ -27,8 +27,9 @@ export const useSnapStore = defineStore('snap',()=>{
         const snd = cs.config.snapOctaClingPtNameDist * distRatio;
         const sndh = snd * sqrt2half;
         return [
-            [snd,0],[-snd,0],[0,snd],[0,-snd],
-            [sndh,sndh],[sndh,-sndh],[-sndh,sndh],[-sndh,-sndh]
+            [snd,0],[-snd,0],[0,snd],[0,-snd],           // 正交 4 方向
+            [sndh,sndh],[sndh,-sndh],[-sndh,sndh],[-sndh,-sndh],  // 对角 4 方向（距离 = snd）
+            [snd,snd],[snd,-snd],[-snd,snd],[-snd,-snd]   // 新增长对角 4 方向（距离 = snd*√2）
         ]
     })
     const snapNeighborExtendsOnlySameDir = ref<boolean>(false)

@@ -13,6 +13,7 @@ import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore"
 import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
 import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
 import { drawRect } from "@/utils/drawUtils/drawRect";
+import { sqrt2 } from "@/utils/consts";
 
 //糊弄阈值
 const staNameFobThrsBase = 0.000001
@@ -84,7 +85,7 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             const dist = Math.sqrt(pt.nameP[0] ** 2 + pt.nameP[1] ** 2)
             const snapDistRatio = staClusterStore.getMaxSizePtWithinCluster(pt.id, 'ptNameSnapSize')
             const snapDist = cs.config.snapOctaClingPtNameDist * snapDistRatio
-            drawLeader = dist > snapDist + 0.01
+            drawLeader = dist > (snapDist * sqrt2 + 0.01)
         }
          
         if(drawLeader){
