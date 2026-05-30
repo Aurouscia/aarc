@@ -118,6 +118,44 @@ export const useSaveStore = defineStore('save', () => {
         return res
     })
     /**
+     * 每个点对应的所有连接普通线路的 staNameSnapSize（站名吸附距离计算尺寸）列表
+     * 与 ptSizes 分离，允许站名吸附距离和车站渲染尺寸独立配置
+     * 注意：站名吸附距离取决于车站大小（ptSize），而非站名字体大小（ptNameSize）
+     * 数据来源优先级（单条线路）：
+     *   1. 线路单独设置的 ptNameSnapSize（若 > 0）
+     *   2. config.lineWidthMapped[width].staNameSnapSize（线宽全局映射的站名吸附专用值）
+     *   3. 线路单独设置的 ptSize（若 > 0）
+     *   4. config.lineWidthMapped[width].staSize（线宽全局映射的车站尺寸）
+     *   5. 线路自身的 width
+     *   6. 默认值 1
+     */
+    const ptNameSnapSizes = computed<Record<number, number[]|undefined>>(()=>{
+        const res:Record<number, number[]> = {}
+        if(!save.value?.points)
+            return res
+        for(const pt of save.value.points){
+            const belongLines = ptBelongLineDict.value[pt.id] || []
+            const sizes = belongLines
+                .filter(x=>x.type===LineType.common)
+                .map(x=>{
+                    if(x.ptNameSnapSize && x.ptNameSnapSize>0){
+                        return x.ptNameSnapSize
+                    }
+                    const configMapped = readNumKeyedRecord(
+                        configStore.config.lineWidthMapped, x.width||1)
+                    if(configMapped?.staNameSnapSize !== undefined){
+                        return configMapped.staNameSnapSize
+                    }
+                    if(x.ptSize && x.ptSize>0){
+                        return x.ptSize
+                    }
+                    return configMapped?.staSize || x.width || 1
+                })
+            res[pt.id] = sizes
+        }
+        return res
+    })
+    /**
      * 每个点对应的所有连接线路的 staSnapSize（吸附距离计算尺寸）列表
      * 与 ptSizes 分离，允许吸附距离和车站渲染尺寸独立配置
      * 数据来源优先级（单条线路）：
@@ -258,6 +296,12 @@ export const useSaveStore = defineStore('save', () => {
     }
     function getLinesDecidedPtNameSize(ptId:number){
         return ptNameSize.value[ptId] || 1
+    }
+    function getLinesDecidedPtNameSnapSize(ptId:number){
+        const sizes = ptNameSnapSizes.value[ptId]
+        if(sizes && sizes.length>0)
+            return Math.max(...sizes)
+        return 1
     }
     function getLinesDecidedPtSnapSizes(ptId:number){
         return ptSnapSizes.value[ptId]
@@ -633,7 +677,7 @@ export const useSaveStore = defineStore('save', () => {
     return { 
         save, getNewId, cvsWidth, cvsHeight, disposedStaNameOf, deletedPoint, deletedTextTag, linePtsChanged,
         getPtById, getPtsByIds, getLineById, getLinesByIds, linesSortedByZIndex,
-        getLinesDecidedPtSize, getLinesDecidedPtSizes, getLinesDecidedPtNameSize, getLinesDecidedPtSnapSizes, getLinesDecidedPtSnapSize,
+        getLinesDecidedPtSize, getLinesDecidedPtSizes, getLinesDecidedPtNameSize, getLinesDecidedPtNameSnapSize, getLinesDecidedPtSnapSizes, getLinesDecidedPtSnapSize,
         getNeighborByPt, getPtsInRange, adjacentSegs, getLinesByPt, getLinesByType, getLinesByParent, getTextTagById, getPointLinksByPt,
         insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType, ensureLinesOrdered,
         removePt, removePtFromLine, removeNoLinePoints, removePointLinkByPt, removeDanglingPointLinks, tryMergePt, isNamedPt,

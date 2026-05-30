@@ -82,7 +82,9 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
             drawLeader = !pt.noLeader
         } else {
             const dist = Math.sqrt(pt.nameP[0] ** 2 + pt.nameP[1] ** 2)
-            drawLeader = dist > ptRadius*3
+            const snapDistRatio = staClusterStore.getMaxSizePtWithinCluster(pt.id, 'ptNameSnapSize')
+            const snapDist = cs.config.snapOctaClingPtNameDist * snapDistRatio
+            drawLeader = dist > snapDist + 0.01
         }
          
         if(drawLeader){

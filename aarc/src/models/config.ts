@@ -86,7 +86,8 @@ export interface Config{
 export type LineWidthMappedConfig = Record<string, {
     staSize?:number,
     staNameSize?:number,
-    staSnapSize?:number
+    staSnapSize?:number,
+    staNameSnapSize?:number
 }|undefined>
 export type BgRefImageConfig = {
     url?: string,

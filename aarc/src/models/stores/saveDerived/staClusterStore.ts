@@ -186,10 +186,12 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             return closestPt
         }
     }
-    function getMaxSizePtWithinCluster(ptId:number, sizeType:'ptSize'|'ptNameSize'){
+    function getMaxSizePtWithinCluster(ptId:number, sizeType:'ptSize'|'ptNameSize'|'ptNameSnapSize'){
         const get = sizeType === 'ptSize' 
             ? (id:number)=>saveStore.getLinesDecidedPtSize(id)
-            : (id:number)=>saveStore.getLinesDecidedPtNameSize(id)
+            : sizeType === 'ptNameSize'
+            ? (id:number)=>saveStore.getLinesDecidedPtNameSize(id)
+            : (id:number)=>saveStore.getLinesDecidedPtNameSnapSize(id)
         const cluster = staBelongToCluster.value[ptId]
         if(!cluster)
             return get(ptId)

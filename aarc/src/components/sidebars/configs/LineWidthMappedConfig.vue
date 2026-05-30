@@ -8,7 +8,7 @@ import { onMounted } from 'vue';
 
 const envStore = useEnvStore()
 const { config } = storeToRefs(useConfigStore())
-function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize'|'staSnapSize', value?:string){
+function applyLineWidthMapped(width:string, setItem:'staSize'|'staNameSize'|'staSnapSize'|'staNameSnapSize', value?:string){
     config.value.lineWidthMapped ??= {}
     const valueNum = value ? parseFloat(value) : NaN
     const lwm = config.value.lineWidthMapped
@@ -31,7 +31,7 @@ onMounted(()=>{
     <table class="fullWidth lineWidthMapped">
         <tbody>
         <tr>
-            <td class="explain" colspan="3">
+            <td class="explain" colspan="4">
                 设置特定宽度的线路对应的<br/>车站尺寸/站名大小<br/>
                 (会被线路单独设置覆盖)
             </td>
@@ -41,6 +41,7 @@ onMounted(()=>{
             <th>车站</th>
             <th>站名</th>
             <th>吸附</th>
+            <th>站名吸附</th>
         </tr>
         <tr v-for="width in ['0.5', '0.75', '1', '1.25', '1.5', '1.75', '2']">
             <td>{{ width }}</td>
@@ -55,6 +56,10 @@ onMounted(()=>{
             <td>
                 <input :value="config.lineWidthMapped[width]?.staSnapSize" :placeholder="width"
                     @blur="e=>applyLineWidthMapped(width, 'staSnapSize', (e.target as HTMLInputElement).value)"/>
+            </td>
+            <td>
+                <input :value="config.lineWidthMapped[width]?.staNameSnapSize" :placeholder="width"
+                    @blur="e=>applyLineWidthMapped(width, 'staNameSnapSize', (e.target as HTMLInputElement).value)"/>
             </td>
         </tr>
         <tr>

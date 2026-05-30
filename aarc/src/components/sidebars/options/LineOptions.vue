@@ -103,7 +103,7 @@ const pickerEntryStyles:CSSProperties = {
  */
 let reportExecTimer = 0
 let reportExecSizeChanged = false
-const sizeRelatedFields = new Set<keyof Line>(['width', 'style', 'ptSize', 'ptSnapSize'])
+const sizeRelatedFields = new Set<keyof Line>(['width', 'style', 'ptSize', 'ptSnapSize', 'ptNameSnapSize'])
 watch(() => {
     const l = props.line
     return {
@@ -112,6 +112,7 @@ watch(() => {
         width: l.width,
         style: l.style,
         ptNameSize: l.ptNameSize,
+        ptNameSnapSize: l.ptNameSnapSize,
         ptSize: l.ptSize,
         ptSnapSize: l.ptSnapSize,
         isFilled: l.isFilled,
@@ -163,6 +164,7 @@ function ensureLineNumOptionsNum(){
     props.line.width ||= 1
     props.line.style ||= 0
     props.line.ptNameSize ||= 0
+    props.line.ptNameSnapSize ||= 0
     props.line.ptSnapSize ||= 0
     props.line.ptSize ||= 0
     props.line.zIndex ||= 0
@@ -279,6 +281,22 @@ onMounted(()=>{
                 :step="0.25"
                 />
             <input type="number" v-model.number.lazy="props.line.ptSnapSize"
+                :min="0"
+                :max="2"
+                :step="0.05"
+                />
+            <div class="smallNote">(设为0使用"设置-线宽对应<br/>车站尺寸"中的全局设置)</div>
+        </td>
+    </tr>
+    <tr v-if="line.type===LineType.common">
+        <td>站名吸附</td>
+        <td class="viewableRange">
+            <input type="range" v-model.number="props.line.ptNameSnapSize"
+                :min="0"
+                :max="2"
+                :step="0.25"
+                />
+            <input type="number" v-model.number.lazy="props.line.ptNameSnapSize"
                 :min="0"
                 :max="2"
                 :step="0.05"

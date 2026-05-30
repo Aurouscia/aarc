@@ -83,6 +83,7 @@ export interface Line{
     group?:number
     width?:number
     ptNameSize?:number
+    ptNameSnapSize?:number
     ptSize?:number
     ptSnapSize?:number
     type:LineType
