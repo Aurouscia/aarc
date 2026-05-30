@@ -11,12 +11,14 @@ import { useConfigStore } from "./configStore";
 import { numberCmpEpsilon, sqrt2half } from "@/utils/consts";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
 import { crossAddNums } from "@/utils/lang/crossAddNums";
+import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
 
 export const useSnapStore = defineStore('snap',()=>{
     const cs = useConfigStore()
     const saveStore = useSaveStore()
     const { getLinesDecidedPtSnapSizes } = saveStore
     const staClusterStore = useStaClusterStore()
+    const editorLocalConfig = useEditorLocalConfigStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const snapLines = ref<FormalRay[]>([])
     const snapGridIntv = ref<number>()
@@ -26,11 +28,21 @@ export const useSnapStore = defineStore('snap',()=>{
         const distRatio = staClusterStore.getMaxSizePtWithinCluster(ptId, 'ptNameSnapSize')
         const snd = cs.config.snapOctaClingPtNameDist * distRatio;
         const sndh = snd * sqrt2half;
-        return [
+        const diagonal = editorLocalConfig.staNameSnapDiagonal;
+        const res: Coord[] = [
             [snd,0],[-snd,0],[0,snd],[0,-snd],           // 正交 4 方向
-            [sndh,sndh],[sndh,-sndh],[-sndh,sndh],[-sndh,-sndh],  // 对角 4 方向（距离 = snd）
-            [snd,snd],[snd,-snd],[-snd,snd],[-snd,-snd]   // 新增长对角 4 方向（距离 = snd*√2）
-        ]
+        ];
+        if (diagonal === 'inner' || diagonal === 'both') {
+            res.push(
+                [sndh,sndh],[sndh,-sndh],[-sndh,sndh],[-sndh,-sndh]  // 内侧对角 4 方向（距离 = snd）
+            );
+        }
+        if (diagonal === 'outer' || diagonal === 'both') {
+            res.push(
+                [snd,snd],[snd,-snd],[-snd,snd],[-snd,-snd]   // 外侧对角 4 方向（距离 = snd*√2）
+            );
+        }
+        return res;
     })
     const snapNeighborExtendsOnlySameDir = ref<boolean>(false)
     const snapInterPtTargets = ref<{snapPoss:Coord[], snapToPts:ControlPoint[], matched?:Coord}>()

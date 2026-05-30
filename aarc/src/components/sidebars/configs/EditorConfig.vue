@@ -5,7 +5,7 @@ import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 
 const configStore = useEditorLocalConfigStore()
-const { staNameFob, duplicateNameDistThrs, allowMergePtAndTerrain, ignoreStyleAndSpan } = storeToRefs(configStore)
+const { staNameFob, duplicateNameDistThrs, allowMergePtAndTerrain, ignoreStyleAndSpan, staNameSnapDiagonal } = storeToRefs(configStore)
 
 onMounted(()=>{
     configStore.backCompat()
@@ -50,6 +50,19 @@ onMounted(()=>{
                 </select>
                 <div class="explain">
                     <p>如果卡顿，可以考虑关闭分段计算+隐藏线路样式，提高渲染效率，导出/预览时再恢复即可</p>
+                </div>
+            </td>
+        </tr>
+        <tr><th>斜向站名吸附</th></tr>
+        <tr>
+            <td>
+                <select v-model="staNameSnapDiagonal">
+                    <option value="inner">仅启用内侧</option>
+                    <option value="outer">仅启用外侧</option>
+                    <option value="both">同时启用</option>
+                </select>
+                <div class="explain">
+                    <p>控制斜向站名吸附的位置：内侧（距离=正交距离）、外侧（距离=正交距离×√2）、或两者同时启用。</p>
                 </div>
             </td>
         </tr>

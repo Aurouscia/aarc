@@ -65,6 +65,11 @@ onMounted(()=>{
         </tr>
         <tr>
             <td class="explain" colspan="5">
+                站名在斜角的吸附行为<br/>可在“编辑器-斜向站名吸附”中调整
+            </td>
+        </tr>
+        <tr>
+            <td class="explain" colspan="5">
                 调小车站尺寸和吸附距离可能会造成<br/>
                 换乘站脱离，请手动拼合脱离处
             </td>

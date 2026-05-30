@@ -8,6 +8,7 @@ export const useEditorLocalConfigStore = defineStore('editorLocalConfig',()=>{
     const duplicateNameDistThrs = ref<number|string>(200)
     const allowMergePtAndTerrain = ref<boolean>(true)
     const ignoreStyleAndSpan = ref<boolean>(false)
+    const staNameSnapDiagonal = ref<'inner'|'outer'|'both'>('both')
 
     //旧版兼容性
     function backCompat(){
@@ -25,6 +26,7 @@ export const useEditorLocalConfigStore = defineStore('editorLocalConfig',()=>{
         duplicateNameDistThrs,
         allowMergePtAndTerrain,
         ignoreStyleAndSpan,
+        staNameSnapDiagonal,
         backCompat
     }
 },
