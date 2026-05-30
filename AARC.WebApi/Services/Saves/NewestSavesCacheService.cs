@@ -17,7 +17,7 @@ public class NewestSavesCacheService
     private readonly LinkedList<int> _touristOrder = new();
 
     /// <summary>每个队列的最大容量。</summary>
-    private const int Capacity = 10;
+    private const int Capacity = 16;
     /// <summary>保护会员队列的线程安全锁。</summary>
     private static readonly Lock MemberLock = new();
     /// <summary>保护游客队列的线程安全锁。</summary>
