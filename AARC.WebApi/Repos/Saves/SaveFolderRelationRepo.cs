@@ -48,6 +48,7 @@ namespace AARC.WebApi.Repos.Saves
                 Priority = (byte)(maxPriority + 1)
             };
             Set.Add(relation);
+            UpdateFolderLastActive(folder);
             Context.SaveChanges();
         }
 
@@ -67,6 +68,7 @@ namespace AARC.WebApi.Repos.Saves
             Set.Remove(relation);
             // 重新排列剩余优先级
             RearrangePriorities(folderId);
+            UpdateFolderLastActive(folder);
             Context.SaveChanges();
         }
 
@@ -132,6 +134,7 @@ namespace AARC.WebApi.Repos.Saves
                 Priority = (byte)(maxPriority + 1)
             };
             Set.Add(newRelation);
+            UpdateFolderLastActive(toFolder);
             Context.SaveChanges();
         }
 
@@ -168,6 +171,7 @@ namespace AARC.WebApi.Repos.Saves
                 p++;
                 Context.Update(r);
             }
+            UpdateFolderLastActive(folder);
             Context.SaveChanges();
         }
 
@@ -191,7 +195,7 @@ namespace AARC.WebApi.Repos.Saves
         /// <summary>
         /// 获取目录内的存档详情列表
         /// </summary>
-        public List<SaveDto> GetSavesInFolder(int folderId)
+        public List<SaveDto> GetSavesInFolder(int folderId, string orderBy = "custom")
         {
             var uid = httpUserIdProvider.RequireUserId();
             // 验证目录归属
@@ -210,16 +214,32 @@ namespace AARC.WebApi.Repos.Saves
                 .Where(x => saveIds.Contains(x.Id))
                 .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
                 .ToList();
-            // 按优先级排序
-            var idOrderDict = saveIds
-                .Select((id, index) => (id, index))
-                .ToDictionary(x => x.id, x => x.index);
-            saves.Sort((x, y) =>
+            if (orderBy == "active")
             {
-                int ox = idOrderDict.TryGetValue(x.Id, out var ix) ? ix : int.MaxValue;
-                int oy = idOrderDict.TryGetValue(y.Id, out var iy) ? iy : int.MaxValue;
-                return ox.CompareTo(oy);
-            });
+                saves.Sort((x, y) =>
+                {
+                    var dx = DateTime.TryParse(x.LastActive, out var tx) ? tx : DateTime.MinValue;
+                    var dy = DateTime.TryParse(y.LastActive, out var ty) ? ty : DateTime.MinValue;
+                    return dy.CompareTo(dx);
+                });
+            }
+            else if (orderBy == "name")
+            {
+                saves.Sort((x, y) => string.Compare(x.Name, y.Name, StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                // 按优先级排序（custom 默认）
+                var idOrderDict = saveIds
+                    .Select((id, index) => (id, index))
+                    .ToDictionary(x => x.id, x => x.index);
+                saves.Sort((x, y) =>
+                {
+                    int ox = idOrderDict.TryGetValue(x.Id, out var ix) ? ix : int.MaxValue;
+                    int oy = idOrderDict.TryGetValue(y.Id, out var iy) ? iy : int.MaxValue;
+                    return ox.CompareTo(oy);
+                });
+            }
             return saves;
         }
 
@@ -245,9 +265,22 @@ namespace AARC.WebApi.Repos.Saves
                 .Where(x => x.FolderId == folderId)
                 .OrderBy(x => x.Priority)
                 .ToList();
-            relations.RearrangePriority();
-            foreach (var r in relations)
+            // 排除已被标记为删除的实体
+            var activeRelations = relations
+                .Where(r => Context.Entry(r).State != EntityState.Deleted)
+                .ToList();
+            activeRelations.RearrangePriority();
+            foreach (var r in activeRelations)
                 Context.Update(r);
+        }
+
+        private void UpdateFolderLastActive(SaveFolder? folder)
+        {
+            if (folder is not null)
+            {
+                folder.LastActive = DateTime.Now;
+                Context.Update(folder);
+            }
         }
     }
 }

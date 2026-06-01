@@ -26,15 +26,28 @@ namespace AARC.WebApi.Repos.Saves
             }
         }
 
-        public List<SaveFolderDto> GetMyFolders(int? parentFolderId = null)
+        public List<SaveFolderDto> GetMyFolders(int? parentFolderId = null, string orderBy = "custom")
         {
             var q = MyFolders;
             if (parentFolderId.HasValue)
                 q = q.Where(x => x.ParentFolderId == parentFolderId.Value);
             else
                 q = q.Where(x => x.ParentFolderId == 0);
+            q = orderBy switch
+            {
+                "active" => q.OrderByDescending(x => x.LastActive),
+                "name" => q.OrderBy(x => x.Name),
+                _ => q.OrderBy(x => x.Priority)
+            };
             return q
-                .OrderBy(x => x.Priority)
+                .ProjectTo<SaveFolderDto>(mapper.ConfigurationProvider)
+                .ToList();
+        }
+
+        public List<SaveFolderDto> GetAllMyFolders()
+        {
+            return MyFolders
+                .OrderByDescending(x => x.LastActive)
                 .ProjectTo<SaveFolderDto>(mapper.ConfigurationProvider)
                 .ToList();
         }

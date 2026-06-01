@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, useTemplateRef } from 'vue';
+import { ref, nextTick, useTemplateRef, computed } from 'vue';
 import { useApiStore } from '@/app/com/apiStore';
 import SideBar from '@/components/common/SideBar.vue';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
@@ -7,7 +7,7 @@ import fileDownload from 'js-file-download';
 import Loading from '@/components/common/Loading.vue';
 import { Save, saveLineCount, saveStaCount } from '@/models/save';
 import defaultMini from '@/assets/defaultMini.svg'
-import { SaveDto } from '@/app/com/apiGenerated';
+import { SaveDto, SaveFolderDto } from '@/app/com/apiGenerated';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
 
 import AuthGrantEdit from '../../components/AuthGrantEdit.vue';
@@ -17,6 +17,7 @@ import SaveAvatar from '../../components/SaveAvatar.vue';
 import { useSavesRoutesJump } from '../routes/routesJump';
 import SaveBackups from '../../components/SaveBackups.vue';
 import ConvertToRailChess from '../../components/ConvertToRailChess.vue';
+import FolderSelect from './FolderSelect.vue';
 
 const props = defineProps<{
     saves: WithIntroShow<SaveDto>[] | undefined
@@ -47,6 +48,7 @@ function startCreating() {
 function startEditingInfo(s: SaveDto) {
     isCreatingSave.value = false
     editingSave.value = s
+    loadFolderInfo()
     nextTick(() => saveInfoSb.value?.extend())
 }
 
@@ -159,6 +161,50 @@ const authGrantSb = useTemplateRef('authGrantSb')
 const backupSb = useTemplateRef('backupSb')
 const rcConvert = useTemplateRef('rcConvert')
 
+// 目录管理
+const myFolders = ref<SaveFolderDto[]>([])
+const saveFolderIds = ref<number[]>([])
+const showFolderSelect = ref(false)
+
+async function loadFolderInfo() {
+    if (!editingSave.value || isCreatingSave.value) return
+    const [folders, folderIds] = await Promise.all([
+        api.saveFolder.getAllMyFolders(),
+        api.saveFolder.getFolderIdsOfSave(editingSave.value.id)
+    ])
+    myFolders.value = folders || []
+    saveFolderIds.value = folderIds || []
+}
+
+const currentFolders = computed(() => {
+    return myFolders.value.filter(f => saveFolderIds.value.includes(f.id || 0))
+})
+
+async function removeSaveFromFolderInSidebar(folderId: number) {
+    if (!editingSave.value) return
+    const res = await api.saveFolder.removeSaveFromFolder(editingSave.value.id, folderId)
+    if (res) {
+        showPop('已移出', 'success')
+        await loadFolderInfo()
+        emit('refresh')
+    }
+}
+
+async function addSaveToFolderInSidebar(folder: SaveFolderDto | undefined) {
+    showFolderSelect.value = false
+    if (!folder || !folder.id || !editingSave.value) return
+    if (saveFolderIds.value.includes(folder.id)) {
+        showPop('存档已在该目录中', 'failed')
+        return
+    }
+    const res = await api.saveFolder.addSaveToFolder(editingSave.value.id, folder.id)
+    if (res) {
+        showPop('移入成功', 'success')
+        await loadFolderInfo()
+        emit('refresh')
+    }
+}
+
 defineExpose({ startCreating })
 </script>
 
@@ -245,6 +291,22 @@ defineExpose({ startCreating })
                     <td>备份</td>
                     <td>
                         <button class="lite confirm" @click="backupSb?.extend">打开备份列表</button>
+                    </td>
+                </tr>
+                <tr v-if="!isCreatingSave">
+                    <td>所属目录</td>
+                    <td>
+                        <div v-if="currentFolders.length > 0" class="folder-belong-list">
+                            <div v-for="f in currentFolders" :key="f.id" class="folder-belong-item">
+                                <span class="folder-name">{{ f.name }}</span>
+                                <button class="lite danger-text" @click="f.id && removeSaveFromFolderInSidebar(f.id)">移出</button>
+                            </div>
+                        </div>
+                        <div v-else class="folder-belong-empty">未归入任何目录</div>
+                        <button class="lite confirm" @click="showFolderSelect = true">+ 添加到目录</button>
+                        <FolderSelect v-if="showFolderSelect" :exclude-ids="saveFolderIds"
+                            @select="addSaveToFolderInSidebar" @loaded="myFolders = $event">
+                        </FolderSelect>
                     </td>
                 </tr>
                 <tr>
@@ -364,5 +426,38 @@ defineExpose({ startCreating })
 
 .globalAgNote {
     margin-top: 10px;
+}
+
+.folder-belong-list {
+    margin-bottom: 8px;
+
+    .folder-belong-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 6px;
+        border-radius: 4px;
+        background-color: #f5f5f5;
+        margin-bottom: 4px;
+
+        .folder-name {
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+
+        button {
+            font-size: 12px;
+            padding: 2px 6px;
+        }
+    }
+}
+
+.folder-belong-empty {
+    color: #999;
+    font-size: 14px;
+    margin-bottom: 8px;
 }
 </style>

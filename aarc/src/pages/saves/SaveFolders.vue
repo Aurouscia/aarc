@@ -11,12 +11,14 @@ import folderIcon from '@/assets/ui/folder.svg';
 import { useSavesRoutesJump } from './routes/routesJump';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
 import SaveList from './components/SaveList.vue';
+import { useSaveListLocalConfigStore } from '@/app/localConfig/saveListLocalConfig';
 
 const api = useApiStore()
 const router = useRouter()
 const route = useRoute()
 const { showPop } = useUniqueComponentsStore()
 const { userInfo } = useUserInfoStore()
+const { folderOrderby } = useSaveListLocalConfigStore()
 useSavesRoutesJump()
 
 const folderId = computed(() => {
@@ -32,14 +34,14 @@ const loading = ref(false)
 async function load() {
     loading.value = true
     const [f, p] = await Promise.all([
-        api.saveFolder.getMyFolders(folderId.value),
+        api.saveFolder.getMyFolders(folderId.value, folderOrderby),
         api.saveFolder.getPath(folderId.value)
     ])
     folders.value = f
     path.value = p || []
 
     if (folderId.value > 0) {
-        const saveList = await api.saveFolder.getSavesInFolder(folderId.value)
+        const saveList = await api.saveFolder.getSavesInFolder(folderId.value, folderOrderby)
         saves.value = (saveList || []).map(s => ({ ...s, introShow: false }))
     } else {
         saves.value = []
@@ -147,7 +149,12 @@ watch(() => route.params.folderId, () => {
             </template>
             <span v-if="!folderId" class="breadcrumb-item active">我的文件夹</span>
         </div>
-        <div v-if="!userInfo.isTourist">
+        <div v-if="!userInfo.isTourist" class="folder-ops">
+            <select v-model="folderOrderby" @change="load()">
+                <option value="custom">自定义</option>
+                <option value="active">活跃</option>
+                <option value="name">名称</option>
+            </select>
             <button v-if="folderId > 0" @click="startEditingCurrentFolder">编辑目录</button>
             <button @click="startCreatingFolder">新建文件夹</button>
         </div>
@@ -217,13 +224,13 @@ watch(() => route.params.folderId, () => {
 
     .breadcrumb-sep {
         color: #999;
-        margin: 0 2px;
+        margin: 0;
     }
 
     .breadcrumb-item {
         cursor: pointer;
         color: #666;
-        padding: 2px 6px;
+        padding: 0px;
         border-radius: 4px;
 
         &:hover {
@@ -241,6 +248,13 @@ watch(() => route.params.folderId, () => {
                 text-decoration: none;
             }
         }
+    }
+}
+
+.folder-ops {
+    margin-left: auto;
+    button, select{
+        font-size: 16px;
     }
 }
 
@@ -303,5 +317,11 @@ watch(() => route.params.folderId, () => {
     &:hover {
         color: darkred !important;
     }
+}
+
+.empty-saves-tip {
+    text-align: center;
+    color: #666;
+    margin: 20px 0;
 }
 </style>

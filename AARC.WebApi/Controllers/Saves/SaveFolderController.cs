@@ -14,9 +14,15 @@ namespace AARC.WebApi.Controllers.Saves
         ) : Controller
     {
         [HttpGet]
-        public List<SaveFolderDto> GetMyFolders(int parentFolderId = 0)
+        public List<SaveFolderDto> GetMyFolders(int parentFolderId = 0, string orderBy = "custom")
         {
-            return saveFolderRepo.GetMyFolders(parentFolderId == 0 ? null : parentFolderId);
+            return saveFolderRepo.GetMyFolders(parentFolderId == 0 ? null : parentFolderId, orderBy);
+        }
+
+        [HttpGet]
+        public List<SaveFolderDto> GetAllMyFolders()
+        {
+            return saveFolderRepo.GetAllMyFolders();
         }
 
         [HttpPost]
@@ -116,9 +122,9 @@ namespace AARC.WebApi.Controllers.Saves
         }
 
         [HttpGet]
-        public List<SaveDto> GetSavesInFolder(int folderId)
+        public List<SaveDto> GetSavesInFolder(int folderId, string orderBy = "custom")
         {
-            return saveFolderRelationRepo.GetSavesInFolder(folderId);
+            return saveFolderRelationRepo.GetSavesInFolder(folderId, orderBy);
         }
     }
 }
