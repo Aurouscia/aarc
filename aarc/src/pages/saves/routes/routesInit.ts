@@ -1,10 +1,11 @@
 import { Router } from "vue-router";
 import MySaves from "../MySaves.vue";
 import { addToRouter } from "@/app/router/addToRouter";
-import { mySavesName, saveDiffsName, saveToolsName, searchSaveName } from "./routesNames";
+import { mySavesName, saveDiffsName, saveToolsName, searchSaveName, saveFoldersName } from "./routesNames";
 import SearchSave from "../SearchSave.vue";
 import SaveTools from "../SaveTools.vue";
 import SaveDiffs from "../SaveDiffs.vue";
+import SaveFolders from "../SaveFolders.vue";
 
 export function addSavesPages(r:Router){
     addToRouter(r, routes);
@@ -31,5 +32,11 @@ const routes = [
         path:"/Saves/SaveDiffs",
         component:SaveDiffs,
         name:saveDiffsName
+    },
+    {
+        path:"/Saves/Folders/:folderId?",
+        component:SaveFolders,
+        name:saveFoldersName,
+        props:true
     }
 ]

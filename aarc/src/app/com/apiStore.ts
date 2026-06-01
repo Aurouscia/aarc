@@ -165,6 +165,7 @@ export const useApiStore = defineStore('api', () => {
     })
     const userFile = w(new api.UserFileClient(baseUrl, instance))
     const saveUtils = w(new api.SaveUtilsClient(baseUrl, instance))
+    const saveFolder = w(new api.SaveFolderClient(baseUrl, instance))
 
     return {
         abortAll,
@@ -176,6 +177,7 @@ export const useApiStore = defineStore('api', () => {
         authGrant,
         save,
         userFile,
-        saveUtils
+        saveUtils,
+        saveFolder
     }
 })

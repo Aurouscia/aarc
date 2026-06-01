@@ -18,6 +18,7 @@ import { AuthGrantOn, AuthGrantTypeOfSave } from '@/app/com/apiGenerated';
 import SwitchingTabs from '@/components/common/SwitchingTabs.vue';
 import SaveAvatar from '../components/SaveAvatar.vue';
 import { useSavesRoutesJump } from './routes/routesJump';
+import folderIcon from '@/assets/ui/folder.svg';
 import SaveBackups from '../components/SaveBackups.vue';
 import { useRouter } from 'vue-router';
 import ConvertToRailChess from '../components/ConvertToRailChess.vue';
@@ -25,7 +26,7 @@ import ConvertToRailChess from '../components/ConvertToRailChess.vue';
 const saveList = ref<WithIntroShow<SaveDto>[]>()
 const api = useApiStore();
 const router = useRouter()
-const { mySavesRoute, saveDiffsRoute } = useSavesRoutesJump()
+const { mySavesRoute, saveDiffsRoute, saveFoldersRoute } = useSavesRoutesJump()
 const { showPop } = useUniqueComponentsStore()
 const userInfoStore = useUserInfoStore()
 const props = defineProps<{
@@ -195,6 +196,9 @@ const rcConvert = useTemplateRef('rcConvert')
     <span v-if="isMine">我的存档</span>
     <span v-else><span class="ownerNameInH1">{{ ownerName }}</span>的存档</span>
     <div v-if="isMine">
+        <RouterLink :to="saveFoldersRoute()">
+            <img :src="folderIcon" class="folder-nav-icon" title="我的文件夹"/>
+        </RouterLink>
         <button @click="startCreating">新建</button>
     </div>
 </h1>
@@ -343,6 +347,17 @@ const rcConvert = useTemplateRef('rcConvert')
 .ownerNameInH1{
     letter-spacing: normal;
     margin-right: 0.1em;
+}
+.folder-nav-icon{
+    width: 28px;
+    height: 28px;
+    color: #f0c040;
+    cursor: pointer;
+    margin-right: 8px;
+    vertical-align: middle;
+    &:hover{
+        opacity: 0.8;
+    }
 }
 
 .miniInSidebar{

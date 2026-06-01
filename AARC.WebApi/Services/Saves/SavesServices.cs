@@ -6,6 +6,7 @@ public static class SavesServices
     {
         services.AddScoped<SaveDiffService>();
         services.AddSingleton<NewestSavesCacheService>();
+        services.AddSingleton<SaveFolderTreeCacheService>();
         return services;
     }
 }
