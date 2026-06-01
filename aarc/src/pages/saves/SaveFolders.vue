@@ -7,11 +7,10 @@ import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { useRouter, useRoute } from 'vue-router';
 import { saveFoldersName } from './routes/routesNames';
 import SideBar from '@/components/common/SideBar.vue';
-import Loading from '@/components/common/Loading.vue';
-import SaveAvatar from '../components/SaveAvatar.vue';
 import folderIcon from '@/assets/ui/folder.svg';
 import { useSavesRoutesJump } from './routes/routesJump';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
+import SaveList from './components/SaveList.vue';
 
 const api = useApiStore()
 const router = useRouter()
@@ -38,8 +37,7 @@ async function load() {
     ])
     folders.value = f
     path.value = p || []
-    
-    // 根目录(folderId=0)不请求存档列表
+
     if (folderId.value > 0) {
         const saveList = await api.saveFolder.getSavesInFolder(folderId.value)
         saves.value = (saveList || []).map(s => ({ ...s, introShow: false }))
@@ -89,8 +87,6 @@ async function startEditingCurrentFolder() {
     nextTick(() => folderSb.value?.extend())
 }
 
-
-
 async function doneFolder() {
     if (!editingFolder.value?.name) {
         showPop('名称不能为空', 'failed')
@@ -109,19 +105,15 @@ async function doneFolder() {
     }
 }
 
-async function removeFolder(id?: number) {
-    const targetId = id || editingFolder.value?.id
+async function removeFolder() {
+    const targetId = editingFolder.value?.id
     if (!targetId) return
     if (!window.confirm('删除文件夹将同时清空其中的存档归类，是否继续？')) return
     const res = await api.saveFolder.remove(targetId)
     if (res) {
         folderSb.value?.fold()
         showPop('删除成功', 'success')
-        if (id) {
-            await load()
-        } else {
-            goToRoot()
-        }
+        goToRoot()
     }
 }
 
@@ -167,48 +159,16 @@ watch(() => route.params.folderId, () => {
             <img :src="folderIcon" class="folder-icon" />
             <div class="folder-name">{{ f.name }}</div>
             <div v-if="f.intro" class="folder-intro">{{ f.intro }}</div>
-
         </div>
     </div>
 
-    <!-- 存档列表（根目录不显示，无存档时显示提示） -->
-    <div v-if="folderId > 0" style="overflow-x: auto;">
-        <table v-if="saves && saves.length > 0" class="fullWidth index saveList">
-            <tbody>
-                <tr>
-                    <th style="width: 100px;min-width: 100px">点击进入</th>
-                    <th style="min-width: 200px;">
-                        名称
-                        <span class="introNote">简介点击展开</span>
-                    </th>
-                    <th style="width: 130px;min-width: 130px">上次更新</th>
-                    <th style="width: 100px;min-width: 100px"></th>
-                </tr>
-                <tr v-for="s in saves" :key="s.id">
-                    <td>
-                        <SaveAvatar :s="s" :definitely-editable="true"></SaveAvatar>
-                    </td>
-                    <td>
-                        {{ s.name }}
-                        <div v-if="s.intro" class="itemIntro" :class="{ nowrapEllipsis: !s.introShow }"
-                            @click="s.introShow = !s.introShow">
-                            {{ s.intro }}
-                        </div>
-                        <div class="dataInfo">—{{ s.lineCount }}线 {{ s.staCount }}站—</div>
-                    </td>
-                    <td>
-                        <div class="lastActive">{{ s.lastActive }}</div>
-                    </td>
-                    <td>
-                        <button class="minor" @click="removeSaveFromFolder(s.id)">移出</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div v-else-if="saves && saves.length === 0" class="empty-saves-tip">
-            当前目录暂无存档
-        </div>
-        <Loading v-else></Loading>
+    <!-- 存档列表（根目录不显示） -->
+    <div v-if="folderId > 0">
+        <SaveList v-if="saves && saves.length > 0" :saves="saves" :is-mine="true"
+            :extra-action="[{ label: '移出', onClick: (s) => removeSaveFromFolder(s.id) }]"
+            @refresh="load">
+        </SaveList>
+        <div v-else-if="saves" class="empty-saves-tip">当前目录暂无存档</div>
     </div>
 
     <SideBar ref="folderSb">
@@ -334,17 +294,6 @@ watch(() => route.params.folderId, () => {
             text-overflow: ellipsis;
             max-width: 100%;
         }
-
-        .folder-ops {
-            display: flex;
-            gap: 4px;
-            margin-top: 6px;
-
-            button {
-                font-size: 12px;
-                padding: 2px 6px;
-            }
-        }
     }
 }
 
@@ -354,12 +303,5 @@ watch(() => route.params.folderId, () => {
     &:hover {
         color: darkred !important;
     }
-}
-
-.empty-saves-tip {
-    text-align: center;
-    padding: 40px 0;
-    color: #666;
-    font-size: 16px;
 }
 </style>
