@@ -1,4 +1,5 @@
-﻿using AARC.WebApi.Models.DbModels.Identities;
+
+using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Repos.Identities;
 using AARC.WebApi.Repos.Saves;
 using AARC.WebApi.Services.App.ActionFilters;
@@ -30,6 +31,7 @@ namespace AARC.WebApi.Controllers.Saves
         AuthGrantCheckService authGrantCheckService,
         HttpUserInfoService httpUserInfoService,
         NewestSavesCacheService newestSavesCache,
+        SaveDtoEnrichService saveDtoEnrichService,
         ILogger<SaveController> logger
         ) : Controller
     {
@@ -39,9 +41,9 @@ namespace AARC.WebApi.Controllers.Saves
         {
             var cachedIds = newestSavesCache.GetNewestSaveIds(forAuditor: false)?.ToList();
             var list = saveRepo.GetNewestSaves(forAuditor: false, cachedIds);
-            EnrichSaveMini(list);
-            EnrichUserName(list);
-            EnrichPrivilege(list);
+            saveDtoEnrichService.EnrichSaveMini(list);
+            saveDtoEnrichService.EnrichUserName(list);
+            saveDtoEnrichService.EnrichPrivilege(list);
             return list;
         }
         [HttpGet]
@@ -50,9 +52,9 @@ namespace AARC.WebApi.Controllers.Saves
         {
             var cachedIds = newestSavesCache.GetNewestSaveIds(forAuditor: true)?.ToList();
             var list = saveRepo.GetNewestSaves(forAuditor: true, cachedIds);
-            EnrichSaveMini(list);
-            EnrichUserName(list);
-            EnrichPrivilege(list);
+            saveDtoEnrichService.EnrichSaveMini(list);
+            saveDtoEnrichService.EnrichUserName(list);
+            saveDtoEnrichService.EnrichPrivilege(list);
             return list;
         }
         [AllowAnonymous]
@@ -60,9 +62,9 @@ namespace AARC.WebApi.Controllers.Saves
         public List<SaveDto> GetMySaves(int uid)
         {
             var list = saveRepo.GetMySaves(uid);
-            EnrichSaveMini(list);
-            EnrichUserName(list, isForMySaves: true);
-            EnrichPrivilege(list, true);
+            saveDtoEnrichService.EnrichSaveMini(list);
+            saveDtoEnrichService.EnrichUserName(list, isForMySaves: true);
+            saveDtoEnrichService.EnrichPrivilege(list, true);
             return list;
         }
         [AllowAnonymous]
@@ -72,9 +74,9 @@ namespace AARC.WebApi.Controllers.Saves
             if (string.IsNullOrWhiteSpace(search))
                 return [];
             var list = saveRepo.Search(search, orderBy, pageIdx);
-            EnrichSaveMini(list);
-            EnrichUserName(list);
-            EnrichPrivilege(list, true);
+            saveDtoEnrichService.EnrichSaveMini(list);
+            saveDtoEnrichService.EnrichUserName(list);
+            saveDtoEnrichService.EnrichPrivilege(list, true);
             return list;
         }
         [HttpPost]
@@ -151,7 +153,7 @@ namespace AARC.WebApi.Controllers.Saves
         public SaveDto? LoadStatus(int id)
         {
             var data = saveRepo.LoadStatus(id);
-            EnrichPrivilege([data]);
+            saveDtoEnrichService.EnrichPrivilege([data]);
             return data;
         }
         [AllowAnonymous]
@@ -247,7 +249,7 @@ namespace AARC.WebApi.Controllers.Saves
                 return res;
             }
             res.OwnerUserId = owner.Id; 
-            res.OwnerUserName = owner.Name;
+            res.OwnerName = owner.Name;
             var viewable = authGrantCheckService.CalculateFor(
                 AuthGrantOn.Save, [id], (byte)AuthGrantTypeOfSave.View, true).FirstOrDefault();
             if (!viewable)
@@ -265,7 +267,7 @@ namespace AARC.WebApi.Controllers.Saves
             var status = saveRepo.LoadStatus(id);
             if (status.EditingByUserId > 0 && status.EditingByUserId != uid)
             {
-                EnrichUserName([status]);
+                saveDtoEnrichService.EnrichUserName([status]);
                 res.Status = SavePreflightStatus.Occupied;
                 res.EditingByUserId = status.EditingByUserId;
                 res.EditingByUserName = status.EditingByUserName;
@@ -296,64 +298,6 @@ namespace AARC.WebApi.Controllers.Saves
         {
             if(!IsOwner(saveId))
                 throw new RqEx("非本存档所有者");
-        }
-        [NonAction]
-        private void EnrichSaveMini(List<SaveDto> saves)
-        {
-            foreach (var s in saves)
-            {
-                var url = saveMiniatureFileService.GetUrl(s.Id);
-                s.MiniUrl = url;
-            }
-        }
-        [NonAction]
-        private void EnrichUserName(List<SaveDto> saves, bool isForMySaves = false)
-        {
-            var userIds = new HashSet<int>();
-            saves.ForEach(s =>
-            {
-                userIds.Add(s.OwnerUserId);
-                userIds.Add(s.EditingByUserId);
-            });
-            userIds.Remove(0);
-            if (isForMySaves)
-            {
-                var uid = httpUserInfoService.UserInfo.Value.Id;
-                userIds.Remove(uid);
-            }
-            if (userIds.Count == 0)
-                return;
-            var users = userRepo.Existing
-                .Where(x => userIds.Contains(x.Id))
-                .Select(x => new { x.Id, x.Name })
-                .ToList();
-            foreach (var s in saves)
-            {
-                var ownerName = users.Find(u => u.Id == s.OwnerUserId)?.Name;
-                s.OwnerName = ownerName;
-                if (s.EditingByUserId > 0)
-                {
-                    var editingName = users.Find(u => u.Id == s.EditingByUserId)?.Name;
-                    s.EditingByUserName = editingName;
-                }
-            }
-        }
-        [NonAction]
-        private void EnrichPrivilege(List<SaveDto> saves, bool needFork = false)
-        {
-            var ids = saves.ConvertAll(x => x.Id);
-            var allowEdit = authGrantCheckService
-                .CalculateFor(AuthGrantOn.Save, ids, (byte)AuthGrantTypeOfSave.Edit, false);
-            var allowView = authGrantCheckService
-                .CalculateFor(AuthGrantOn.Save, ids, (byte)AuthGrantTypeOfSave.View, true);
-            var allowFork = needFork ? authGrantCheckService
-                .CalculateFor(AuthGrantOn.Save, ids, (byte)AuthGrantTypeOfSave.Fork, false) : [];
-            for (int i = 0; i < saves.Count; i++)
-            {
-                saves[i].AllowRequesterEdit = allowEdit.ElementAtOrDefault(i);
-                saves[i].AllowRequesterView = allowView.ElementAtOrDefault(i);
-                saves[i].AllowRequesterFork = allowFork.ElementAtOrDefault(i);
-            }
         }
         [NonAction]
         private bool SaveDataToDbAndBackup(
@@ -409,7 +353,7 @@ namespace AARC.WebApi.Controllers.Saves
     {
         public SavePreflightStatus Status { get; set; }
         public int OwnerUserId { get; set; }
-        public string? OwnerUserName { get; set; }
+        public string? OwnerName { get; set; }
         public int EditingByUserId { get; set; }
         public string? EditingByUserName { get; set; }
     }

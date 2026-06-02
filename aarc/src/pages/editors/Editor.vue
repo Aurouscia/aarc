@@ -71,7 +71,7 @@ async function load() {
         const preRes = await api.save.preflight(saveIdNum.value)
         if(!preRes)
             return
-        ownerUserInfo.value = { userId: preRes.ownerUserId ?? 0, userName: preRes.ownerUserName ?? ''}
+        ownerUserInfo.value = { userId: preRes.ownerUserId ?? 0, userName: preRes.ownerName ?? ''}
         if(preRes.status == SavePreflightStatus.NotFound){
             loadError.value = '未找到指定存档，请核对链接是否正确'
             return

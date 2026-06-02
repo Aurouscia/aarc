@@ -22,7 +22,7 @@ export async function getTopbarData(): Promise<TopbarModel> {
                     link: { name: mySavesName }
                 },
                 {
-                    title: "我的文件夹",
+                    title: "我的目录",
                     link: { name: saveFoldersName }
                 },
                 {

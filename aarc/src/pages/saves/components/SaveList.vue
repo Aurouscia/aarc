@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, useTemplateRef, computed } from 'vue';
+import { ref, nextTick, useTemplateRef, computed, watch } from 'vue';
 import { useApiStore } from '@/app/com/apiStore';
 import SideBar from '@/components/common/SideBar.vue';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
@@ -24,11 +24,15 @@ const props = defineProps<{
     isMine: boolean
     showFork?: boolean
     extraAction?: { label: string, onClick: (save: SaveDto) => void }[]
+    folderMode?: boolean
+    folderId?: number
+    orderBy?: string
 }>()
 
 const emit = defineEmits<{
     refresh: []
     fork: [id?: number]
+    orderChanged: [ids: number[]]
 }>()
 
 const api = useApiStore();
@@ -38,6 +42,47 @@ const { saveDiffsRoute } = useSavesRoutesJump()
 const saveInfoSb = useTemplateRef('saveInfoSb')
 const editingSave = ref<SaveDto>()
 const isCreatingSave = ref(false)
+
+// 本地顺序管理（目录模式）
+const localSaves = ref<WithIntroShow<SaveDto>[]>([])
+const initialOrder = ref<number[]>([])
+const orderDirty = computed(() => {
+    if (localSaves.value.length !== initialOrder.value.length) return false
+    for (let i = 0; i < localSaves.value.length; i++) {
+        if (localSaves.value[i].id !== initialOrder.value[i]) return true
+    }
+    return false
+})
+
+watch(() => props.saves, (val: WithIntroShow<SaveDto>[] | undefined) => {
+    if (val) {
+        localSaves.value = [...val]
+        initialOrder.value = val.map((s: WithIntroShow<SaveDto>) => s.id).filter((id): id is number => id !== undefined)
+    } else {
+        localSaves.value = []
+        initialOrder.value = []
+    }
+}, { immediate: true })
+
+function moveUp(index: number) {
+    if (index <= 0) return
+    const arr = [...localSaves.value]
+    const temp = arr[index]
+    arr[index] = arr[index - 1]
+    arr[index - 1] = temp
+    localSaves.value = arr
+}
+
+async function saveOrder() {
+    if (!props.folderId) return
+    const ids = localSaves.value.map(s => s.id).filter((id): id is number => id !== undefined)
+    const res = await api.saveFolder.rearrangeSavesInFolder(props.folderId, ids)
+    if (res) {
+        initialOrder.value = ids
+        showPop('顺序已保存', 'success')
+        emit('orderChanged', ids)
+    }
+}
 
 function startCreating() {
     isCreatingSave.value = true
@@ -221,7 +266,7 @@ defineExpose({ startCreating })
                     <th style="width: 130px;min-width: 130px">上次更新</th>
                     <th style="width: 100px;min-width: 100px"></th>
                 </tr>
-                <tr v-for="s in saves" :key="s.id">
+                <tr v-for="(s, idx) in (folderMode ? localSaves : saves)" :key="s.id">
                     <td>
                         <SaveAvatar :s="s" :definitely-editable="isMine"></SaveAvatar>
                     </td>
@@ -239,11 +284,14 @@ defineExpose({ startCreating })
                     <td>
                         <button v-if="isMine" class="minor" @click="startEditingInfo(s)">信息设置</button>
                         <button v-else-if="showFork && s.allowRequesterFork" class="minor" @click="$emit('fork', s.id)">另存为我的</button>
-                        <template v-if="extraAction">
-                            <button v-for="action in extraAction" :key="action.label" class="minor" @click="action.onClick(s)">
-                                {{ action.label }}
-                            </button>
-                        </template>
+                        <div class="other-ops">
+                            <template v-if="extraAction">
+                                <button v-for="action in extraAction" :key="action.label" class="lite" @click="action.onClick(s)">
+                                    {{ action.label }}
+                                </button>
+                            </template>
+                            <button v-if="folderMode && orderBy === 'custom' && idx > 0" class="lite" @click="moveUp(idx)">上移</button>
+                        </div>
                     </td>
                 </tr>
                 <tr v-if="saves.length == 0" style="color: #666; font-size: 16px;">
@@ -253,6 +301,8 @@ defineExpose({ startCreating })
         </table>
         <Loading v-else></Loading>
     </div>
+
+    <button v-if="folderMode && orderDirty" class="save-order-btn" @click="saveOrder">保存顺序</button>
 
     <SideBar ref="saveInfoSb" @extend="resetDangerZone" class="saveInfoSb">
         <h1>{{ isCreatingSave ? '创建存档' : '信息设置' }}</h1>
@@ -459,5 +509,36 @@ defineExpose({ startCreating })
     color: #999;
     font-size: 14px;
     margin-bottom: 8px;
+}
+
+.save-order-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    font-size: 16px;
+    padding: 8px 24px;
+    background-color: cornflowerblue;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    cursor: pointer;
+    animation: saveOrderPulse 0.5s ease-in-out infinite alternate;
+
+    &:hover {
+        background-color: #4a7fd4;
+        animation-play-state: paused;
+    }
+}
+
+@keyframes saveOrderPulse {
+    from {
+        background-color: cornflowerblue;
+    }
+    to {
+        background-color: #2a5db0;
+    }
 }
 </style>

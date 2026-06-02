@@ -72,7 +72,7 @@ onMounted(async () => {
         <span v-else><span class="ownerNameInH1">{{ ownerName }}</span>的存档</span>
         <div v-if="isMine">
             <RouterLink :to="saveFoldersRoute()">
-                <img :src="folderIcon" class="folder-nav-icon" title="我的文件夹" />
+                <img :src="folderIcon" class="folder-nav-icon" title="我的目录" />
             </RouterLink>
             <button @click="saveListRef?.startCreating">新建</button>
         </div>

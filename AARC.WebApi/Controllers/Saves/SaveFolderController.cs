@@ -1,5 +1,6 @@
 using AARC.WebApi.Repos.Saves;
 using AARC.WebApi.Services.App.ActionFilters;
+using AARC.WebApi.Services.Saves;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,8 @@ namespace AARC.WebApi.Controllers.Saves
     [Route(ApiConsts.routePattern)]
     public class SaveFolderController(
         SaveFolderRepo saveFolderRepo,
-        SaveFolderRelationRepo saveFolderRelationRepo
+        SaveFolderRelationRepo saveFolderRelationRepo,
+        SaveDtoEnrichService saveDtoEnrichService
         ) : Controller
     {
         [HttpGet]
@@ -124,7 +126,11 @@ namespace AARC.WebApi.Controllers.Saves
         [HttpGet]
         public List<SaveDto> GetSavesInFolder(int folderId, string orderBy = "custom")
         {
-            return saveFolderRelationRepo.GetSavesInFolder(folderId, orderBy);
+            var list = saveFolderRelationRepo.GetSavesInFolder(folderId, orderBy);
+            saveDtoEnrichService.EnrichSaveMini(list);
+            saveDtoEnrichService.EnrichUserName(list, isForMySaves: true);
+            saveDtoEnrichService.EnrichPrivilege(list, true);
+            return list;
         }
     }
 }

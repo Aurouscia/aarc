@@ -18,7 +18,7 @@ const router = useRouter()
 const route = useRoute()
 const { showPop } = useUniqueComponentsStore()
 const { userInfo } = useUserInfoStore()
-const { folderOrderby } = useSaveListLocalConfigStore()
+const saveListLocalConfig = useSaveListLocalConfigStore()
 useSavesRoutesJump()
 
 const folderId = computed(() => {
@@ -34,14 +34,14 @@ const loading = ref(false)
 async function load() {
     loading.value = true
     const [f, p] = await Promise.all([
-        api.saveFolder.getMyFolders(folderId.value, folderOrderby),
+        api.saveFolder.getMyFolders(folderId.value, saveListLocalConfig.folderOrderby),
         api.saveFolder.getPath(folderId.value)
     ])
     folders.value = f
     path.value = p || []
 
     if (folderId.value > 0) {
-        const saveList = await api.saveFolder.getSavesInFolder(folderId.value, folderOrderby)
+        const saveList = await api.saveFolder.getSavesInFolder(folderId.value, saveListLocalConfig.folderOrderby)
         saves.value = (saveList || []).map(s => ({ ...s, introShow: false }))
     } else {
         saves.value = []
@@ -67,7 +67,7 @@ function goToFolderByIndex(index: number) {
     router.push({ name: saveFoldersName, params: { folderId: target.id } })
 }
 
-// 新建/编辑文件夹
+// 新建/编辑目录
 const folderSb = useTemplateRef('folderSb')
 const isCreatingFolder = ref(false)
 const editingFolder = ref<SaveFolderDto>({ id: 0, name: '' })
@@ -110,7 +110,7 @@ async function doneFolder() {
 async function removeFolder() {
     const targetId = editingFolder.value?.id
     if (!targetId) return
-    if (!window.confirm('删除文件夹将同时清空其中的存档归类，是否继续？')) return
+    if (!window.confirm('删除目录将同时清空其中的存档归类，是否继续？')) return
     const res = await api.saveFolder.remove(targetId)
     if (res) {
         folderSb.value?.fold()
@@ -147,20 +147,20 @@ watch(() => route.params.folderId, () => {
                     {{ p.name }}
                 </span>
             </template>
-            <span v-if="!folderId" class="breadcrumb-item active">我的文件夹</span>
+            <span v-if="!folderId" class="breadcrumb-item active">我的目录</span>
         </div>
         <div v-if="!userInfo.isTourist" class="folder-ops">
-            <select v-model="folderOrderby" @change="load()">
+            <select v-model="saveListLocalConfig.folderOrderby" @change="load()">
                 <option value="custom">自定义</option>
                 <option value="active">活跃</option>
                 <option value="name">名称</option>
             </select>
             <button v-if="folderId > 0" @click="startEditingCurrentFolder">编辑目录</button>
-            <button @click="startCreatingFolder">新建文件夹</button>
+            <button @click="startCreatingFolder">新建目录</button>
         </div>
     </h1>
 
-    <!-- 子文件夹网格 -->
+    <!-- 子目录网格 -->
     <div v-if="folders && folders.length > 0" class="folder-grid">
         <div v-for="f in folders" :key="f.id" class="folder-card" @click="enterFolder(f.id || 0)">
             <img :src="folderIcon" class="folder-icon" />
@@ -173,13 +173,14 @@ watch(() => route.params.folderId, () => {
     <div v-if="folderId > 0">
         <SaveList v-if="saves && saves.length > 0" :saves="saves" :is-mine="true"
             :extra-action="[{ label: '移出', onClick: (s) => removeSaveFromFolder(s.id) }]"
+            folder-mode :folder-id="folderId" :order-by="saveListLocalConfig.folderOrderby"
             @refresh="load">
         </SaveList>
         <div v-else-if="saves" class="empty-saves-tip">当前目录暂无存档</div>
     </div>
 
     <SideBar ref="folderSb">
-        <h1>{{ isCreatingFolder ? '新建文件夹' : '编辑文件夹' }}</h1>
+        <h1>{{ isCreatingFolder ? '新建目录' : '编辑目录' }}</h1>
         <table class="fullWidth">
             <tbody>
                 <tr>
