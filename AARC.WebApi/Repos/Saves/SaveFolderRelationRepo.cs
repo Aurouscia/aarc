@@ -198,8 +198,8 @@ namespace AARC.WebApi.Repos.Saves
         public List<SaveDto> GetSavesInFolder(int folderId, string orderBy = "custom")
         {
             var uid = httpUserIdProvider.RequireUserId();
-            // 验证目录归属
-            var folder = saveFolderRepo.Existing.FirstOrDefault(x => x.Id == folderId && x.OwnerUserId == uid);
+            // 验证目录可访问性（自己的或他人公开的）
+            var folder = saveFolderRepo.AccessibleFolders.FirstOrDefault(x => x.Id == folderId);
             if (folder is null)
                 throw new RqEx("目录不存在或无权访问");
             var saveIds = All

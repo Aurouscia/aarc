@@ -26,9 +26,19 @@ namespace AARC.WebApi.Repos.Saves
             }
         }
 
+        public IQueryable<SaveFolder> AccessibleFolders
+        {
+            get
+            {
+                var uid = httpUserIdProvider.RequireUserId();
+                // 目前只返回自己的目录，未来可扩展为包含他人公开的目录
+                return Existing.Where(x => x.OwnerUserId == uid);
+            }
+        }
+
         public List<SaveFolderDto> GetMyFolders(int? parentFolderId = null, string orderBy = "custom")
         {
-            var q = MyFolders;
+            var q = AccessibleFolders;
             if (parentFolderId.HasValue)
                 q = q.Where(x => x.ParentFolderId == parentFolderId.Value);
             else
@@ -186,7 +196,7 @@ namespace AARC.WebApi.Repos.Saves
             var currentId = folderId;
             while (currentId != 0)
             {
-                var folder = MyFolders
+                var folder = AccessibleFolders
                     .Select(x => new { x.Id, x.Name, x.ParentFolderId })
                     .FirstOrDefault(x => x.Id == currentId);
                 if (folder is null)
@@ -205,7 +215,7 @@ namespace AARC.WebApi.Repos.Saves
         {
             if (folderId == 0)
                 return null;
-            return MyFolders
+            return AccessibleFolders
                 .Where(x => x.Id == folderId)
                 .ProjectTo<SaveFolderDto>(mapper.ConfigurationProvider)
                 .FirstOrDefault();
