@@ -7,7 +7,7 @@ import { computed } from 'vue';
 import settingsIcon from '@/assets/ui/settings.svg';
 import branchIcon from '@/assets/ui/editor/branch.svg';
 import branchSeperateIcon from '@/assets/ui/editor/branchSeperate.svg';
-import calendarIcon from '@/assets/ui/calendar.svg';
+import slicesIcon from '@/assets/ui/slices.svg';
 import searchIcon from '@/assets/ui/search.svg';
 
 const envStore = useEnvStore()
@@ -18,7 +18,7 @@ const props = withDefaults(defineProps<{
     mouseDownLineArrange: (e: MouseEvent | TouchEvent, id: number) => void,
     delLineStart: (l: Line) => void,
     editInfoOfLine: (l: Line) => void,
-    editTimeOfLine?: (l: Line) => void,
+    editSlicesOfLine?: (l: Line) => void,
     showChildrenOf: (l: Line) => void,
     leaveParent: (l: Line) => void,
     arrangingId: number,
@@ -27,7 +27,7 @@ const props = withDefaults(defineProps<{
     showingBtns?:'children'|'arrange'
     isInChildrenList?:boolean
 }>(), {
-    editTimeOfLine: ()=>{}
+    editSlicesOfLine: ()=>{}
 })
 
 const emit = defineEmits<{
@@ -67,8 +67,8 @@ const mode = computed<'A'|'B'>(()=>{
     <div v-if="mode==='A' && isInChildrenList" class="sqrBtn" @click="leaveParent(l)">
         <img class="btn-icon" :src="branchSeperateIcon"/>
     </div>
-    <div v-if="mode==='A'" class="sqrBtn" @click="editTimeOfLine(l)">
-        <img class="btn-icon" :src="calendarIcon"/>
+    <div v-if="mode==='A'" class="sqrBtn" @click="editSlicesOfLine(l)">
+        <img class="btn-icon" :src="slicesIcon"/>
     </div>
     <div v-if="mode==='B'" class="sqrBtn moveBtn" :class="{ sqrActive: arrangingId === l.id }" @mousedown="e => mouseDownLineArrange(e, l.id)"
         @touchstart="e => mouseDownLineArrange(e, l.id)">

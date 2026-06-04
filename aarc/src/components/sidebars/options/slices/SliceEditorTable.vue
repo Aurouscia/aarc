@@ -21,6 +21,7 @@ import {
 } from './sliceEditor';
 import SliceCell from './SliceCell.vue';
 import SliceEditorPanel from './SliceEditorPanel.vue';
+import LineTimeOptions from '../LineTimeOptions.vue';
 
 
 const props = defineProps<{
@@ -31,6 +32,11 @@ const saveStore = useSaveStore()
 const staClusterStore = useStaClusterStore()
 const sliceResolverStore = useSliceResolverStore()
 const sidebar = useTemplateRef('sidebar')
+const lineTimeOptions = useTemplateRef('lineTimeOptions')
+
+function openLineTimeOptions() {
+    lineTimeOptions.value?.open()
+}
 
 // ========== 站点列表（当前线路的点） ==========
 const stations = computed(() => {
@@ -516,10 +522,14 @@ defineExpose({
       <span v-else-if="editingSlice">
         编辑中，再次点击该片段可关闭
       </span>
-      <span v-else>点击空位开始创建片段，点击已有片段编辑</span>
+      <span v-else>点击空位开始创建片段，点击已有片段编辑<br/>你可以在此设置某一段线路的样式或时间</span>
+    </div>
+    <div class="time-options-btn">
+      <button @click="openLineTimeOptions" class="minor">全线时间设置</button>
     </div>
   </div>
 </SideBar>
+<LineTimeOptions ref="lineTimeOptions" :line="line"></LineTimeOptions>
 </template>
 
 <style scoped lang="scss">
@@ -592,6 +602,11 @@ table {
   margin-top: 12px;
   font-size: 12px;
   color: #666;
+  text-align: center;
+}
+
+.time-options-btn {
+  margin-top: 12px;
   text-align: center;
 }
 </style>

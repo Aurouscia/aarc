@@ -8,8 +8,7 @@ import { computed, CSSProperties, onMounted, ref, useTemplateRef, watch } from '
 import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
 import ColorPickerForTerrain from '../shared/ColorPickerForTerrain.vue';
 import { useLineStateStore } from '@/models/stores/saveDerived/state/lineStateStore';
-import SliceEditorTable from './slices/SliceEditorTable.vue';
-import Notice from '@/components/common/Notice.vue';
+
 
 const envStore = useEnvStore()
 const saveStore = useSaveStore()
@@ -137,17 +136,13 @@ watch(() => {
 }, { deep: false })
 
 const sidebar = useTemplateRef('sidebar')
-const sliceEditor = useTemplateRef('sliceEditor')
 defineExpose({
     open: ()=>{sidebar.value?.extend()}, 
     fold: ()=>{sidebar.value?.fold()}
 })
-
-function openSliceOptions(){
-    sliceEditor.value?.open()
-}
 const emit = defineEmits<{
     (e:'colorUpdated'):void
+    (e:'openSliceEditor'):void
 }>()
 
 function init(){
@@ -360,6 +355,13 @@ onMounted(()=>{
             </div>
         </td>
     </tr>
+    <tr>
+        <td>片段</td>
+        <td>
+            <button @click="emit('openSliceEditor')" class="minor">管理片段</button>
+            <div class="smallNote">管理该线路的样式片段和时间片段</div>
+        </td>
+    </tr>
     <tr v-if="!line.parent && line.type===LineType.common">
         <td>归为<br/>支线</td>
         <td v-if="!haveChildren">
@@ -395,16 +397,6 @@ onMounted(()=>{
             </div>
         </td>
     </tr>
-    <tr>
-        <td>片段</td>
-        <td>
-            <button @click="openSliceOptions" class="minor">管理片段</button>
-            <div class="smallNote">管理该线路的样式片段和时间片段</div>
-            <Notice :type="'warn'" style="width: 160px;margin: auto;">
-                试验性功能，效果不确定，请谨慎使用。稍后入口将不会在当前位置，搬去更方便的地方，请以“最近更新”为准。
-            </Notice>
-        </td>
-    </tr>
     </template>
     </tbody></table>
     <table v-if="haveParent" class="fullWidth"><tbody>
@@ -433,11 +425,8 @@ onMounted(()=>{
         <tr>
             <td>片段</td>
             <td>
-                <button @click="openSliceOptions" class="minor">管理片段</button>
+                <button @click="emit('openSliceEditor')" class="minor">管理片段</button>
                 <div class="smallNote">管理该线路的样式片段和时间片段</div>
-                <Notice :type="'warn'" style="width: 160px;margin: auto;">
-                    试验性功能，效果不确定，请谨慎使用。稍后入口将不会在当前位置，搬去更方便的地方，请以“最近更新”为准。
-                </Notice>
             </td>
         </tr>
         <tr>
@@ -448,7 +437,6 @@ onMounted(()=>{
 <div class="smallNote" style="text-align: center;margin-bottom: 60px;"><b>
     提示：右键点击线路可直接打开本菜单
 </b></div>
-<SliceEditorTable ref="sliceEditor" :line="line"></SliceEditorTable>
 </SideBar>
 </template>
 

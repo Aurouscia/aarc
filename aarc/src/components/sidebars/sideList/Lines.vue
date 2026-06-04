@@ -12,14 +12,14 @@ import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contex
 import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
 import ColorPalette from '../ColorPalette.vue';
 import boxIcon from '@/assets/ui/box.svg'
-import LineTimeOptions from '../options/LineTimeOptions.vue';
+import SliceEditorTable from '../options/slices/SliceEditorTable.vue';
 
 const props = defineProps<{isChildrenList?:boolean}>()
 const { showPop } = useUniqueComponentsStore()
 const sidebar = useTemplateRef('sidebar')
 const lineOptions = useTemplateRef('lineOptions')
 const childrenLines = useTemplateRef('childrenLines')
-const lineTimeOptions = useTemplateRef('lineTimeOptions')
+const sliceEditorTable = useTemplateRef('sliceEditorTable')
 
 const { 
     lines,
@@ -31,7 +31,7 @@ const {
     showingBtns, showingChildrenOfInfo,
     showChildrenOf, leaveParent,
     showListSidebar, hideListSidebar
-} = useSideListShared(LineType.common, sidebar, lineOptions, childrenLines, lineTimeOptions)
+} = useSideListShared(LineType.common, sidebar, lineOptions, childrenLines)
 
 const colorPalette = useTemplateRef('colorPalette')
 const editingColorByPaletteLine = ref<Line>()
@@ -42,15 +42,11 @@ function editColorByPalette(line:Line){
     }, 1)
 }
 
-const editingTimeLine = ref<Line>()
-function editTimeOfLine(line:Line){
-    if(props.isChildrenList){
-        showPop('暂不支持支线设置', 'failed')
-        return
-    }
-    editingTimeLine.value = line
+const editingSlicesLine = ref<Line>()
+function editSlicesOfLine(line:Line){
+    editingSlicesLine.value = line
     window.setTimeout(()=>{
-        lineTimeOptions.value?.open()
+        sliceEditorTable.value?.open()
     }, 1)
 }
 
@@ -109,7 +105,7 @@ onUnmounted(()=>{
                     :mouse-down-line-arrange="mouseDownLineArrange"
                     :del-line-start="delLineStart"
                     :edit-info-of-line="editInfoOfLine"
-                    :edit-time-of-line="editTimeOfLine"
+                    :edit-slices-of-line="editSlicesOfLine"
                     :show-children-of="showChildrenOf"
                     :is-in-children-list="isChildrenList"
                     :leave-parent="leaveParent"
@@ -127,11 +123,12 @@ onUnmounted(()=>{
     <LineDelPrompt :line="wantDelLine" :line-called="'线路'" :pt-called="'车站'" :with-sta-default="false"
         @abort="delLineAbort" @exe="delLineExe"></LineDelPrompt>
     <LineOptions ref="lineOptions" v-if="editingInfoLine" :line="editingInfoLine"
-        :line-type-called="'线路'" :line-width-range="{min:0.5, max:2, step:0.25}"></LineOptions>
+        :line-type-called="'线路'" :line-width-range="{min:0.5, max:2, step:0.25}"
+        @open-slice-editor="editSlicesOfLine(editingInfoLine)"></LineOptions>
     <ColorPalette ref="colorPalette" v-if="editingColorByPaletteLine"
         :editing-line="editingColorByPaletteLine"></ColorPalette>
-    <LineTimeOptions ref="lineTimeOptions" v-if="editingTimeLine"
-        :line="editingTimeLine"></LineTimeOptions>
+    <SliceEditorTable ref="sliceEditorTable" v-if="editingSlicesLine"
+        :line="editingSlicesLine"></SliceEditorTable>
     <Lines v-if="!isChildrenList" ref="childrenLines" :is-children-list="true"></Lines>
 </template>
 
