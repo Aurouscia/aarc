@@ -22,6 +22,7 @@ import {
 import SliceCell from './SliceCell.vue';
 import SliceEditorPanel from './SliceEditorPanel.vue';
 import LineTimeOptions from '../LineTimeOptions.vue';
+import foldIcon from '@/assets/ui/fold.svg';
 
 
 const props = defineProps<{
@@ -31,6 +32,7 @@ const props = defineProps<{
 const saveStore = useSaveStore()
 const staClusterStore = useStaClusterStore()
 const sliceResolverStore = useSliceResolverStore()
+const envStore = useEnvStore()
 const sidebar = useTemplateRef('sidebar')
 const lineTimeOptions = useTemplateRef('lineTimeOptions')
 
@@ -41,12 +43,35 @@ function openLineTimeOptions() {
 // ========== 站点列表（当前线路的点） ==========
 const stations = computed(() => {
     return props.line.pts.map(ptId => {
+        const staNameInfo = staClusterStore.getStaName(ptId)
         return {
             id: ptId,
-            name: staClusterStore.getStaName(ptId)
+            name: staNameInfo.name,
+            nameSub: staNameInfo.nameSub,
+            namePtId: staNameInfo.ptId
         }
     })
 })
+
+const showNameSub = ref(false)
+
+function updateStaName(stationIdx: number, newName: string) {
+    const ptId = stations.value[stationIdx].namePtId
+    const pt = saveStore.getPtById(ptId)
+    if (pt) {
+        pt.name = newName
+        envStore.lineInfoChanged(props.line)
+    }
+}
+
+function updateStaNameSub(stationIdx: number, newNameSub: string) {
+    const ptId = stations.value[stationIdx].namePtId
+    const pt = saveStore.getPtById(ptId)
+    if (pt) {
+        pt.nameS = newNameSub
+        envStore.lineInfoChanged(props.line)
+    }
+}
 
 // ========== Slice 列配置 ==========
 
@@ -459,7 +484,10 @@ defineExpose({
     <table>
       <thead>
         <tr>
-          <th class="col-station">站点</th>
+          <th class="col-station" @click="showNameSub = !showNameSub" style="cursor: pointer;">
+            站点
+            <img :src="foldIcon" class="toggle-name-sub" :class="{ expanded: showNameSub }" title="切换显示副名称"/>
+          </th>
           <th v-for="col in sliceCols" :key="col.kind" class="col-slice">{{ col.label }}</th>
         </tr>
       </thead>
@@ -468,7 +496,10 @@ defineExpose({
           <!-- 数据行 -->
           <tr v-if="row.type === 'data'" :class="{ 'editing-row': sliceCols.some(c => isEditing(c.kind, row.stationIdx)) }">
             <!-- 站点名 -->
-            <td class="cell-station">{{ stations[row.stationIdx].name }}</td>
+            <td class="cell-station">
+              <input v-model.lazy="stations[row.stationIdx].name" @change="updateStaName(row.stationIdx, stations[row.stationIdx].name)"/>
+              <input v-if="showNameSub" v-model.lazy="stations[row.stationIdx].nameSub" @change="updateStaNameSub(row.stationIdx, stations[row.stationIdx].nameSub)"/>
+            </td>
 
             <!-- slice 列 -->
             <SliceCell
@@ -560,6 +591,19 @@ table {
 
 .cell-station {
   font-size: 14px;
+  padding: 5px 0px;
+  input{
+    width: 100px;
+    margin: 0px;
+    font-size: 12px;
+    padding: 2px;
+    margin-top: 3px;
+    &:first-child{
+        font-size: 15px;
+        padding: 3px 2px;
+        margin-top: 0px;
+    }
+  }
 }
 
 .editing-row {
@@ -608,5 +652,17 @@ table {
 .time-options-btn {
   margin-top: 12px;
   text-align: center;
+}
+
+.toggle-name-sub {
+  cursor: pointer;
+  margin-left: 4px;
+  width: 14px;
+  height: 14px;
+  transition: transform 0.5s;
+  filter: brightness(0) invert(1);
+  &.expanded {
+    transform: rotate(180deg);
+  }
 }
 </style>

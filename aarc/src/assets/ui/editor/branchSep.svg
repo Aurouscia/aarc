@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 28.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+
+<svg
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 255 255"
+   style="enable-background:new 0 0 255 255;"
+   xml:space="preserve"
+   sodipodi:docname="branchSep.svg"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs5" /><sodipodi:namedview
+   id="namedview5"
+   pagecolor="#ffffff"
+   bordercolor="#000000"
+   borderopacity="0.25"
+   inkscape:showpageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   inkscape:deskcolor="#d1d1d1"
+   inkscape:zoom="4.772549"
+   inkscape:cx="127.5"
+   inkscape:cy="127.5"
+   inkscape:window-width="2560"
+   inkscape:window-height="1494"
+   inkscape:window-x="-11"
+   inkscape:window-y="-11"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="图层_1" />
+<style
+   type="text/css"
+   id="style1">
+	.st0{fill:none;stroke:#000000;stroke-width:25.2927;stroke-miterlimit:10;}
+	.st1{fill:#FFFFFF;}
+	.st2{fill:none;stroke:#FFFFFF;stroke-width:12;stroke-linecap:round;stroke-miterlimit:10;}
+	.st3{fill:none;stroke:#000000;stroke-width:7;stroke-linecap:round;stroke-miterlimit:10;}
+</style>
+<path
+   d="M 116.14648,130.49609 90.853516,155.78906 V 205 h 25.292964 z"
+   style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;vector-effect:none;stroke-miterlimit:10;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+   id="path14" /><path
+   d="m 157.27148,89.371094 -17.88476,17.884766 20.26758,20.2832 17.89062,-17.8789 z"
+   style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;vector-effect:none;stroke-miterlimit:10;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+   id="path12" /><path
+   d="M 45.544922,-22.439453 27.654297,-4.5605469 44.96875,12.765625 l 10.070312,10.158203 0.01953,0.01758 C 77.990472,45.87328 90.853516,76.944493 90.853516,109.40039 v 29.41797 l 25.292964,-25.29297 v -4.125 c 0,-9.501656 -0.91508,-18.90811 -2.69726,-28.101562 l 17.45508,17.46875 17.88476,-17.884766 -86.074216,-86.1386714 -1.535157,-1.5488281 -0.0059,0.00586 z"
+   style="baseline-shift:baseline;display:inline;overflow:visible;opacity:1;vector-effect:none;stroke-miterlimit:10;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+   id="path8" />
+<g
+   id="g1">
+	<path
+   d="M183.4,116.1c4.6,0,8.9,1.8,12.2,5.1c6.7,6.7,6.7,17.7,0,24.4c-3.3,3.3-7.6,5.1-12.2,5.1s-8.9-1.8-12.2-5.1   c-6.7-6.7-6.7-17.7,0-24.4C174.5,117.9,178.8,116.1,183.4,116.1 M183.4,104.6c-7.4,0-14.7,2.8-20.3,8.4   c-11.2,11.2-11.2,29.4,0,40.6c5.6,5.6,13,8.4,20.3,8.4s14.7-2.8,20.3-8.4c11.2-11.2,11.2-29.4,0-40.6   C198.1,107.4,190.8,104.6,183.4,104.6L183.4,104.6z"
+   id="path1" />
+</g>
+
+<g
+   id="g3">
+	<path
+   d="M103.5,209c9.5,0,17.2,7.7,17.2,17.2s-7.7,17.2-17.2,17.2s-17.2-7.7-17.2-17.2S94,209,103.5,209 M103.5,197.5   c-15.9,0-28.7,12.9-28.7,28.7S87.6,255,103.5,255s28.7-12.9,28.7-28.7S119.4,197.5,103.5,197.5L103.5,197.5z"
+   id="path3" />
+</g>
+
+<path
+   d="m 90.853516,138.81836 v 8.48633 l 25.292964,-25.29297 v -8.48633 z"
+   style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#ffffff;stroke-linecap:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+   id="path17" /><path
+   d="m 148.78906,80.882812 -17.88476,17.884766 4.24023,4.244142 17.88477,-17.884767 z"
+   style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#ffffff;stroke-linecap:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+   id="path10" /><path
+   style="fill:#000000;stroke:#000000;stroke-width:4.62700062;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+   d="M 25.226119,213.01136 220.76403,17.473445"
+   id="path5" /></svg>

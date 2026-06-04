@@ -55,8 +55,8 @@ async function copyLineListTxt() {
         if(wikiMode.value)
             txt += `/-c-/`
         txt += `${l.color}|`
-        let firstStaName =staClusterStore. getStaName(l.pts[0])
-        let lastStaName = staClusterStore.getStaName(l.pts[l.pts.length - 1])
+        let firstStaName = staClusterStore.getStaName(l.pts[0]).name
+        let lastStaName = staClusterStore.getStaName(l.pts[l.pts.length - 1]).name
         if (firstStaName != lastStaName)
             txt += `${firstStaName}|${lastStaName}|`
         else {
@@ -89,7 +89,7 @@ async function copyStaNameListTxt() {
 
         let stationNameList: string[] = []
         l.pts.forEach(p => {
-            stationNameList.push(staClusterStore.getStaName(p)) 
+            stationNameList.push(staClusterStore.getStaName(p).name) 
         })
         stationNameList = removeConsecutiveSameItem(stationNameList)
         if (stationNameList.length > 1) {

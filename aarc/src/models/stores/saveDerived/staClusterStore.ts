@@ -231,18 +231,21 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         }
         return clutser
     }
-    function getStaName(ptId: number) {
+    function getStaName(ptId: number): {name: string, nameSub: string, ptId: number} {
         // 先尝试获取指定点本身的名称
         const pt = saveStore.getPtById(ptId)
         if (pt?.name) {
-            return pt.name.replaceAll('\n', '')
+            return { name: pt.name.replaceAll('\n', ''), nameSub: pt.nameS?.replaceAll('\n', '') ?? '', ptId }
         }
         // 若该点本身无名称，再尝试从所在 cluster 中获取
         const cluster = getStaClusterById(ptId)
         let clusterHaveName = cluster.find(x => x.name)
         let res = clusterHaveName?.name
         res = res?.replaceAll('\n', '')
-        return res ?? `#${ptId}`
+        if (res) {
+            return { name: res, nameSub: clusterHaveName!.nameS?.replaceAll('\n', '') ?? '', ptId: clusterHaveName!.id }
+        }
+        return { name: `#${ptId}`, nameSub: '', ptId }
     }
 
     function isPtSingle(ptId: number) {
