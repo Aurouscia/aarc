@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SideBar from '../../common/SideBar.vue';
-import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
+import { onMounted, onUnmounted, ref, useTemplateRef, nextTick } from 'vue';
 import { useSideListShared } from './shared/useSideListShared';
 import { Line, LineType } from '@/models/save';
 import LineOptions from '../options/LineOptions.vue';
@@ -13,6 +13,8 @@ import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
 import ColorPalette from '../ColorPalette.vue';
 import boxIcon from '@/assets/ui/box.svg'
 import SliceEditorTable from '../options/slices/SliceEditorTable.vue';
+import { useLineFocusorStore } from '@/models/stores/utils/lineFocusorStore';
+
 
 const props = defineProps<{isChildrenList?:boolean}>()
 const { showPop } = useUniqueComponentsStore()
@@ -20,6 +22,7 @@ const sidebar = useTemplateRef('sidebar')
 const lineOptions = useTemplateRef('lineOptions')
 const childrenLines = useTemplateRef('childrenLines')
 const sliceEditorTable = useTemplateRef('sliceEditorTable')
+const linesContainer = useTemplateRef('linesContainer')
 
 const { 
     lines,
@@ -30,7 +33,8 @@ const {
     showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
     showingBtns, showingChildrenOfInfo,
     showChildrenOf, leaveParent,
-    showListSidebar, hideListSidebar
+    showListSidebar, hideListSidebar,
+    saveStore
 } = useSideListShared(LineType.common, sidebar, lineOptions, childrenLines)
 
 const colorPalette = useTemplateRef('colorPalette')
@@ -55,14 +59,67 @@ function clickContainer(){
     pickers.value?.forEach(cp => cp?.close())
 }
 
+const flashingLineId = ref<number>()
+let flashTimer:number = 0
+
+async function scrollAndFlash(lineId:number){
+    await nextTick()
+    const container = linesContainer.value
+    if(container){
+        const target = container.querySelector(`[data-line-id="${lineId}"]`)
+        if(target){
+            target.scrollIntoView({ behavior: 'instant', block: 'center' })
+        }
+    }
+    window.clearTimeout(flashTimer)
+    flashingLineId.value = lineId
+    flashTimer = window.setTimeout(()=>{
+        flashingLineId.value = undefined
+    }, 800)
+}
+
+async function focusLine(lineId?:number){
+    if(lineId === undefined) return
+    const line = saveStore.getLineById(lineId)
+    if(!line) return
+    if(props.isChildrenList){
+        // 子列表：只负责滚动闪烁当前列表中的线路
+        await scrollAndFlash(lineId)
+        return
+    }
+    // 主列表逻辑
+    // 先展开主列表，切换到该线路（或其父线路）所属的组
+    showingLineGroup.value = line.group
+    showListSidebar()
+    // 在主列表中滚动到该线路（或父线路）的位置并闪烁
+    const parentLineId = line.parent ?? line.id
+    await scrollAndFlash(parentLineId)
+    // 如果目标线路是子线路，等待主列表闪烁结束后，打开子列表并滚动闪烁
+    if(line.parent){
+        window.setTimeout(()=>{
+            childrenLines?.value?.comeOut(line.parent)
+            window.setTimeout(()=>{
+                if(childrenLines?.value && 'focusLine' in childrenLines.value){
+                    (childrenLines.value as any).focusLine(lineId)
+                }
+            }, 350)
+        }, 800)
+    }
+}
+
 defineExpose({
     comeOut: (lineId?:number)=>showListSidebar(lineId),
-    fold: ()=>hideListSidebar()
+    fold: ()=>hideListSidebar(),
+    focusLine
 })
 onMounted(()=>{
     //因为本组件在编辑器中始终存在，所以仅会执行一次
     showingBtns.value = 'children'
     autoInitShowingGroup()
+    if(!props.isChildrenList){
+        const lineFocusor = useLineFocusorStore()
+        lineFocusor.focusCommonLine = focusLine
+    }
 })
 onUnmounted(()=>{
     disposeLinesArrange()
@@ -89,8 +146,8 @@ onUnmounted(()=>{
             <Switch :left-text="'设置'" :right-text="'调序'" :initial="'left'"
                 @left="showingBtns='children'" @right="showingBtns='arrange'"></Switch>
         </div>
-        <div class="lines" :class="{arranging: arrangingId >= 0}">
-            <div v-for="l,idx in lines" :key="l.id" :class="{arranging: arrangingId==l.id}">
+        <div ref="linesContainer" class="lines" :class="{arranging: arrangingId >= 0}">
+            <div v-for="l,idx in lines" :key="l.id" :data-line-id="l.id" :class="{arranging: arrangingId==l.id, flash: flashingLineId===l.id}">
                 <div v-if="!isChildrenList" class="colorEdit">
                     <div v-if="showingBtns==='arrange'" class="sqrBtn paletteEntry" :style="{backgroundColor: l.color}"
                         @click="editColorByPalette(l)">

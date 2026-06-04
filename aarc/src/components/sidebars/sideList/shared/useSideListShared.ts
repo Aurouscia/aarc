@@ -9,6 +9,7 @@ import LineOptions from "../../options/LineOptions.vue"
 import Lines from "../Lines.vue"
 import { useUniqueComponentsStore } from "@/app/globalStores/uniqueComponents"
 import { useOptionsOpenerStore } from "@/models/stores/utils/optionsOpenerStore"
+
 import { storeToRefs } from "pinia"
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore"
 
@@ -191,6 +192,8 @@ export function useSideListShared(
         editInfoOfLine(line)
     }
 
+
+
     return {
         lines, envStore, saveStore,
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
@@ -198,7 +201,7 @@ export function useSideListShared(
         createLine, 
         wantDelLine, delLineStart, delLineAbort, delLineExe,
         showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
-        showingBtns, showingChildrenOfInfo,
+        showingBtns, showingChildrenOfInfo, showingChildrenOf,
         showChildrenOf, leaveParent,
         showListSidebar, hideListSidebar
     }

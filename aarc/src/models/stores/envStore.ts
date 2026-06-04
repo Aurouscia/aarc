@@ -26,6 +26,7 @@ import { useSelectionStore } from "./selectionStore";
 import { assignAllProps, removeNonexistentKeys } from "@/utils/lang/assignAllProps";
 import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
 import { useOptionsOpenerStore } from "./utils/optionsOpenerStore";
+import { useLineFocusorStore } from "./utils/lineFocusorStore";
 import { useLineStateStore } from "./saveDerived/state/lineStateStore";
 
 export const useEnvStore = defineStore('env', ()=>{
@@ -62,6 +63,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const rerender = ref<(changedLines?:number[], staNameMoved?:number[])=>void>(()=>{});
     const rescaled = ref<(()=>void)[]>([])
     const getActivePtOpsAvoidance = ref<()=>SgnCoord[]>(()=>[])
+    const lineFocus = ref<(lineId:number)=>void>(()=>{})
     const snapStore = useSnapStore()
     const { snap, snapName, snapNameStatus, snapGrid } = snapStore
     const { setLinesFormalPts } = useFormalizedLineStore()
@@ -73,6 +75,7 @@ export const useEnvStore = defineStore('env', ()=>{
     const selectionStore = useSelectionStore()
 
     const optionsOpenerStore = useOptionsOpenerStore()
+    const lineFocusorStore = useLineFocusorStore()
     const deepClone = rfdc()
     function init(){
         if(!cvsCont.value || !cvsFrame.value)
@@ -702,10 +705,23 @@ export const useEnvStore = defineStore('env', ()=>{
                 textSub: '在此插入'
             })
         const btns1:OpsBtn[] = [{
-                cb: ()=>optionsOpenerStore.openOptionsFor(activeLine.value),
+                cb: ()=>{
+                    optionsOpenerStore.openOptionsFor(activeLine.value)
+                    cancelActive()
+                    setOpsPos(false)
+                },
                 text: '设置',
                 textSub: '打开侧栏'
             },{
+                cb: ()=>{
+                    lineFocusorStore.focusLine(activeLine.value)
+                    cancelActive()
+                    setOpsPos(false)
+                },
+                text: '定位',
+                textSub: '列表位置'
+            }
+            ,{
                 cb: createTagForLine,
                 text:'标签',
                 textSub:'创建'
@@ -1078,7 +1094,7 @@ export const useEnvStore = defineStore('env', ()=>{
         activeLine, activeTextTag, somethingActive,
         cursorPos, movingPoint, movedPoint, movingExtendedPointOriginated, movingTextTag,
         cvsWidth, cvsHeight, getDisplayRatio,
-        rerender, rescaled, getActivePtOpsAvoidance,
+        rerender, rescaled, lineFocus, getActivePtOpsAvoidance,
         delActivePt, delLine, createLine, lineInfoChanged, ensureChildrenOptionsSame,
         createTextTag, duplicateTextTag, delActiveTextTag, createPlainPt,
         endEveryEditing, cancelActive, splitLineByPt, mergeLinesByPt,

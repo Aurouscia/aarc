@@ -51,6 +51,13 @@
         box-shadow: 0px 0px 5px 2px black;
         background-color: #ddd;
     }
+    .lines>div.flash{
+        animation: flashPulse 0.2s infinite alternate;
+    }
+    @keyframes flashPulse{
+        from { background-color: white; }
+        to { background-color: #b3d9ff; }
+    }
     .newLine{
         font-size: 20px;
         cursor: pointer;
