@@ -51,6 +51,13 @@ const mode = computed<'A'|'B'>(()=>{
         return 'B'
     return 'A'
 })
+
+const childrenCount = computed<number>(()=>{
+    if(props.l.parent !== undefined && props.l.parent !== null)
+        return 0
+    const children = saveStore.getLinesByParent(props.l.id)
+    return children?.length || 0
+})
 </script>
 
 <template>
@@ -61,8 +68,9 @@ const mode = computed<'A'|'B'>(()=>{
     <div class="sqrBtn" @click="editInfoOfLine(l)">
         <img class="btn-icon btn-icon-bigger" :src="settingsIcon"/>
     </div>
-    <div v-if="mode==='A' && !isInChildrenList" class="sqrBtn" @click="showChildrenOf(l)">
+    <div v-if="mode==='A' && !isInChildrenList" class="sqrBtn sqrBtn-relative" @click="showChildrenOf(l)">
         <img class="btn-icon" :src="branchIcon"/>
+        <span v-if="childrenCount > 0" class="children-count">{{ childrenCount }}</span>
     </div>
     <div v-if="mode==='A' && isInChildrenList" class="sqrBtn" @click="leaveParent(l)">
         <img class="btn-icon" :src="branchSeperateIcon"/>
@@ -93,6 +101,20 @@ const mode = computed<'A'|'B'>(()=>{
     }
 }
 
+.sqrBtn-relative{
+    position: relative;
+}
+.children-count{
+    position: absolute;
+    right: 1px;
+    bottom: 1px;
+    height: 12px;
+    line-height: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    color: black;
+    pointer-events: none;
+}
 .search-icon{
     // 位于右下角的搜索按钮，需要外层线路卡片是 position 非 static 才能正确定位
     position: absolute;
