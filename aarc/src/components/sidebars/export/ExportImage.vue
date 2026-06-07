@@ -41,7 +41,7 @@ const { showPop } = useUniqueComponentsStore()
 const renderOptionsStore = useRenderOptionsStore()
 const exportLocalConfig = useExportLocalConfigStore()
 const { 
-    fileNameStyle, fileFormat, fileQuality, pixelRestrict, pixelRestrictMode, ads, bgRefImage, animationMini
+    fileNameStyle, fileFormat, fileQuality, pixelRestrict, pixelRestrictMode, ads, bgRefImage, animationMini, grid
 } = storeToRefs(exportLocalConfig)
 
 // 使用 composables
@@ -89,7 +89,9 @@ async function renderMainCvsToDataUrl(): Promise<string | null> {
         suppressRenderedCallback:true,
         ctx,
         withAds: ads.value,
-        withBgRefImage: bgRefImage.value
+        withBgRefImage: bgRefImage.value,
+        withGridLayer: grid.value.layer,
+        withGridLevel: grid.value.level
     }
     mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
     return await cvsToDataUrl(cvs, fileFormat.value, fileQuality.value)

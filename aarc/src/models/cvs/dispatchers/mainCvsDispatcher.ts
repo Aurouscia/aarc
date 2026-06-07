@@ -14,12 +14,13 @@ import { timestampMS } from "@/utils/timeUtils/timestamp";
 import { useTimeSpanClock } from "@/utils/timeUtils/timeSpanClock";
 import { CvsContext } from "../common/cvsContext";
 import { useAdsCvsWorker } from "../workers/adsCvsWorker";
-import { AdsRenderType } from "@/app/localConfig/exportLocalConfig";
+import { AdsRenderType, ExportGridLayer, ExportGridLevel } from "@/app/localConfig/exportLocalConfig";
 import { usePointLinkStore } from "@/models/stores/pointLinkStore";
 import { usePointLinkCvsWorker } from "../workers/pointLinkCvsWorker";
 import { useWatermarkCvsWorker } from "../workers/watermarkCvsWorker";
 import { useRenderOptionsStore } from "@/models/stores/renderOptionsStore";
 import { useBgRefImageCvsWorker } from "../workers/bgRefImageCvsWorker";
+import { useGridCvsWorker } from "../workers/gridCvsWorker";
 
 
 export interface MainCvsRenderingOptions{
@@ -33,6 +34,10 @@ export interface MainCvsRenderingOptions{
     withAds?: AdsRenderType
     /** 背景参考图 */
     withBgRefImage?: boolean
+    /** 导出网格线 (none/under/over) */
+    withGridLayer?: ExportGridLayer
+    /** 导出网格等级 (1-5) */
+    withGridLevel?: ExportGridLevel
 }
 
 export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
@@ -54,6 +59,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const { renderAds } = useAdsCvsWorker()
     const { renderWatermark } = useWatermarkCvsWorker()
     const { renderBgRefImage } = useBgRefImageCvsWorker()
+    const { renderGrid } = useGridCvsWorker()
     const afterMainCvsRendered = shallowRef<()=>void>()
     const isRendering = ref(false)
     const logRendering = import.meta.env.VITE_LogMainCvsRendering === 'true'
@@ -72,6 +78,9 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
             ctx.globalAlpha = 1
             if(options.withBgRefImage){
                 renderBgRefImage(ctx)
+            }
+            if(options.withGridLayer === 'under'){
+                renderGridForExport(ctx, options.withGridLevel)
             }
         }
         if(!visitorMode.value)
@@ -108,6 +117,9 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         if(options.withAds){
             renderAds(ctx, options.withAds)
         }
+        if(forExport && options.withGridLayer === 'over'){
+            renderGridForExport(ctx, options.withGridLevel)
+        }
         if(!visitorMode.value)
             renderWatermark(ctx, 'afterMain', forExport)
         isRendering.value = false
@@ -130,5 +142,14 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
             suppressRenderedCallback:true
         })
     })
+    function renderGridForExport(ctx: CvsContext, level?: ExportGridLevel){
+        if(!level)
+            return
+        renderGrid(ctx, {
+            viewRectInRatio: { left:0, right:1, top:0, bottom:1 },
+            level: level,
+            updateSnapGridIntv: false
+        })
+    }
     return { renderMainCvs, afterMainCvsRendered, canvasIdPrefix, visitorMode }
 })

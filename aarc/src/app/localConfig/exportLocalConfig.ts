@@ -4,6 +4,8 @@ import { localConfigKeyPrefix } from "./common/keyPrefix";
 
 export type ExportFileNameStyle = 'plain'|'date'|'dateTime'|'lineCount'
 export type AdsRenderType = 'no'|'less'|'more'
+export type ExportGridLayer = 'none'|'under'|'over'
+export type ExportGridLevel = 1|2|3|4|5
 export interface ExportWatermarkLocalConfig{
     enabled?:boolean,
     enabledPreview?:boolean
@@ -76,6 +78,13 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
     })
 
     const bgRefImage = ref<boolean>(true)
+    const grid = ref<{
+        layer: ExportGridLayer,
+        level: ExportGridLevel
+    }>({
+        layer: 'none',
+        level: 3
+    })
 
     return {
         fileNameStyle,
@@ -90,7 +99,8 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
         accentuation,
         time,
         animationMini,
-        bgRefImage
+        bgRefImage,
+        grid
     }
 },
 {

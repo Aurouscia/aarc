@@ -5,7 +5,7 @@ import ConfigSection from '../../configs/shared/ConfigSection.vue';
 import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
 
 const { bgOpacity } = storeToRefs(useRenderOptionsStore())
-const { bgRefImage } = storeToRefs(useExportLocalConfigStore())
+const { bgRefImage, grid } = storeToRefs(useExportLocalConfigStore())
 </script>
 
 <template>
@@ -34,6 +34,28 @@ const { bgRefImage } = storeToRefs(useExportLocalConfigStore())
             <div v-if="bgRefImage" class="smallNoteVital">
                 警告：会显著增大导出文件尺寸
             </div>
+        </td>
+    </tr>
+    <tr>
+        <td>导出<br/>网格线</td>
+        <td>
+            <select v-model="grid.layer">
+                <option value="none">关</option>
+                <option value="under">底层</option>
+                <option value="over">顶层</option>
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>网格<br/>等级</td>
+        <td>
+            <select v-model.number="grid.level">
+                <option :value="1">1级</option>
+                <option :value="2">2级</option>
+                <option :value="3">3级</option>
+                <option :value="4">4级</option>
+                <option :value="5">5级</option>
+            </select>
         </td>
     </tr>
 </tbody></table>
