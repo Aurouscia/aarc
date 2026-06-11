@@ -5,7 +5,7 @@ import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 
 const configStore = useEditorLocalConfigStore()
-const { staNameFob, duplicateNameDistThrs, allowMergePtAndTerrain, ignoreStyleAndSpan, staNameSnapDiagonal } = storeToRefs(configStore)
+const { staNameFob, duplicateNameDistThrs, allowMergePtAndTerrain, ignoreStyleAndSpan, staNameSnapDiagonal, gridLabelSize } = storeToRefs(configStore)
 
 onMounted(()=>{
     configStore.backCompat()
@@ -63,6 +63,16 @@ onMounted(()=>{
                 </select>
                 <div class="explain">
                     <p>控制斜向站名吸附的位置：内侧（距离=正交距离）、外侧（距离=正交距离×√2）、或两者同时启用。</p>
+                </div>
+            </td>
+        </tr>
+        <tr><th>网格数字大小</th></tr>
+        <tr>
+            <td>
+                <input v-model.number="gridLabelSize" type="range" :min="0" :max="8" :step="0.5"/>
+                <div>{{ gridLabelSize }}</div>
+                <div class="explain">
+                    <p>控制网格线数字标注的相对大小<br/>（设为0则不显示）</p>
                 </div>
             </td>
         </tr>

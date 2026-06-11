@@ -9,6 +9,7 @@ export const useEditorLocalConfigStore = defineStore('editorLocalConfig',()=>{
     const allowMergePtAndTerrain = ref<boolean>(true)
     const ignoreStyleAndSpan = ref<boolean>(false)
     const staNameSnapDiagonal = ref<'inner'|'outer'|'both'>('both')
+    const gridLabelSize = ref<number>(0)
 
     //旧版兼容性
     function backCompat(){
@@ -27,6 +28,7 @@ export const useEditorLocalConfigStore = defineStore('editorLocalConfig',()=>{
         allowMergePtAndTerrain,
         ignoreStyleAndSpan,
         staNameSnapDiagonal,
+        gridLabelSize,
         backCompat
     }
 },

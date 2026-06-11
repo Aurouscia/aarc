@@ -3,6 +3,7 @@ import { useCvs, useCvsBlocksControlStore } from "../common/cvs";
 import { useGridCvsWorker } from "../workers/gridCvsWorker";
 import { defineStore, storeToRefs } from "pinia";
 import { useSnapStore } from "@/models/stores/snapStore";
+import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
 import { watch } from "vue";
 
 export const useBaseCvsDispatcher = defineStore('baseCvsDispatcher', ()=>{
@@ -14,6 +15,7 @@ export const useBaseCvsDispatcher = defineStore('baseCvsDispatcher', ()=>{
     cvsBlocksControlStore.blocksReformHandler.push(renderBaseCvs)
     const { renderGrid } = useGridCvsWorker()
     const { snapGridEnabled } = storeToRefs(useSnapStore())
+    const { gridLabelSize } = storeToRefs(useEditorLocalConfigStore())
     function renderBaseCvs(){
         if(!snapGridEnabled.value)
             return
@@ -25,6 +27,10 @@ export const useBaseCvsDispatcher = defineStore('baseCvsDispatcher', ()=>{
             renderBaseCvs()
         else
             getCtx()//默认就会清屏
+    })
+    watch(gridLabelSize, ()=>{
+        if(snapGridEnabled.value)
+            renderBaseCvs()
     })
     return { renderBaseCvs, canvasIdPrefix }
 })
