@@ -5,6 +5,7 @@ import { addSavesPages } from "@/pages/saves/routes/routesInit"
 import { addEditorsPages } from "@/pages/editors/routes/routesInit"
 import { addHomesPages } from "@/pages/homes/routes/routesInit"
 import { addFilesPages } from "@/pages/files/routes/routesInit"
+import { addEtcPages } from "@/pages/etc/routes/routesInit"
 //import { editorName } from "@/pages/editors/routes/routesNames"
 
 export function routerSetup(router:Router){
@@ -17,4 +18,5 @@ export function routerSetup(router:Router){
     addSavesPages(router)
     addFilesPages(router)
     addEditorsPages(router)
+    addEtcPages(router)
 }

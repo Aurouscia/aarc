@@ -5,6 +5,7 @@ import { faq } from "@/pages/homes/routes/routesNames";
 import { useCommonLocalConfigStore } from "@/app/localConfig/commonLocalConfig";
 import { userFileList } from "@/pages/files/routes/routesNames";
 import { useUserListLocalConfigStore } from "../localConfig/userListLocalConfig";
+import { sponsorWxName } from "@/pages/etc/routes/routesNames";
 
 export async function getTopbarData(): Promise<TopbarModel> {
     const common = useCommonLocalConfigStore()
@@ -106,6 +107,12 @@ export async function getTopbarData(): Promise<TopbarModel> {
             link: { name: faq }
         })
     }
+
+    items.push({
+        title: "资助 ❤",
+        link: { name: sponsorWxName }
+    })
+    
     // 登录必排在最后
     items.push({
         title: "登录",
