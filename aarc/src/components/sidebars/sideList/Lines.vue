@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SideBar from '../../common/SideBar.vue';
-import { onMounted, onUnmounted, ref, useTemplateRef, nextTick } from 'vue';
+import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import { useSideListShared } from './shared/useSideListShared';
 import { Line, LineType } from '@/models/save';
 import LineOptions from '../options/LineOptions.vue';
@@ -13,7 +13,6 @@ import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
 import ColorPalette from '../ColorPalette.vue';
 import boxIcon from '@/assets/ui/box.svg'
 import SliceEditorTable from '../options/slices/SliceEditorTable.vue';
-import { useLineFocusorStore } from '@/models/stores/utils/lineFocusorStore';
 
 
 const props = defineProps<{isChildrenList?:boolean}>()
@@ -34,8 +33,8 @@ const {
     showingBtns, showingChildrenOfInfo,
     showChildrenOf, leaveParent,
     showListSidebar, hideListSidebar,
-    saveStore
-} = useSideListShared(LineType.common, sidebar, lineOptions, childrenLines)
+    saveStore, flashingLineId, scrollAndFlash
+} = useSideListShared(LineType.common, sidebar, lineOptions, childrenLines, linesContainer, 'focusCommonLine')
 
 const colorPalette = useTemplateRef('colorPalette')
 const editingColorByPaletteLine = ref<Line>()
@@ -57,25 +56,6 @@ function editSlicesOfLine(line:Line){
 const pickers = useTemplateRef('pickers')
 function clickContainer(){
     pickers.value?.forEach(cp => cp?.close())
-}
-
-const flashingLineId = ref<number>()
-let flashTimer:number = 0
-
-async function scrollAndFlash(lineId:number){
-    await nextTick()
-    const container = linesContainer.value
-    if(container){
-        const target = container.querySelector(`[data-line-id="${lineId}"]`)
-        if(target){
-            target.scrollIntoView({ behavior: 'instant', block: 'center' })
-        }
-    }
-    window.clearTimeout(flashTimer)
-    flashingLineId.value = lineId
-    flashTimer = window.setTimeout(()=>{
-        flashingLineId.value = undefined
-    }, 800)
 }
 
 async function focusLine(lineId?:number){
@@ -116,10 +96,6 @@ onMounted(()=>{
     //因为本组件在编辑器中始终存在，所以仅会执行一次
     showingBtns.value = 'children'
     autoInitShowingGroup()
-    if(!props.isChildrenList){
-        const lineFocusor = useLineFocusorStore()
-        lineFocusor.focusCommonLine = focusLine
-    }
 })
 onUnmounted(()=>{
     disposeLinesArrange()

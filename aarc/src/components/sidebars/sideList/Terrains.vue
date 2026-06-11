@@ -11,14 +11,16 @@ import ColorPickerForTerrain from '../shared/ColorPickerForTerrain.vue';
 
 const sidebar = useTemplateRef('sidebar')
 const lineOptions = useTemplateRef('lineOptions')
+const linesContainer = useTemplateRef('linesContainer')
 const { 
     lines: terrains,
     registerLinesArrange, disposeLinesArrange, mouseDownLineArrange, arrangingId,
     createLine, editingInfoLine, editInfoOfLine,
     wantDelLine, delLineStart, delLineAbort, delLineExe,
     showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
-    showListSidebar, hideListSidebar
-} = useSideListShared(LineType.terrain, sidebar, lineOptions)
+    showListSidebar, hideListSidebar,
+    flashingLineId, focusLine
+} = useSideListShared(LineType.terrain, sidebar, lineOptions, undefined, linesContainer, 'focusTerrainLine')
 
 const pickers = useTemplateRef('pickers')
 function clickContainer(){
@@ -27,7 +29,8 @@ function clickContainer(){
 
 defineExpose({
     comeOut: showListSidebar,
-    fold: hideListSidebar
+    fold: hideListSidebar,
+    focusLine
 })
 onMounted(()=>{
     //因为本组件在编辑器中始终存在，所以仅会执行一次
@@ -50,8 +53,8 @@ onUnmounted(()=>{
                 </option>
             </select>
         </div>
-        <div class="lines" :class="{arranging: arrangingId >= 0}">
-            <div v-for="l,idx in terrains" :key="l.id" :class="{arranging: arrangingId==l.id}">
+        <div ref="linesContainer" class="lines" :class="{arranging: arrangingId >= 0}">
+            <div v-for="l,idx in terrains" :key="l.id" :data-line-id="l.id" :class="{arranging: arrangingId==l.id, flash: flashingLineId===l.id}">
                 <ColorPickerForTerrain ref="pickers" :line="l" :z-index="idx"></ColorPickerForTerrain>
                 <LineItemBtns :showing-btns="'arrange'"
                     :mouse-down-line-arrange="mouseDownLineArrange" :del-line-start="delLineStart"

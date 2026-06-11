@@ -4,11 +4,12 @@ import { useEnvStore } from "@/models/stores/envStore"
 import { useSaveStore } from "@/models/stores/saveStore"
 import { useLinesArrange } from "@/utils/eventUtils/linesArrange"
 import SideBar from "@/components/common/SideBar.vue"
-import { computed, Ref, ref } from "vue"
+import { computed, nextTick, Ref, ref } from "vue"
 import LineOptions from "../../options/LineOptions.vue"
 import Lines from "../Lines.vue"
 import { useUniqueComponentsStore } from "@/app/globalStores/uniqueComponents"
 import { useOptionsOpenerStore } from "@/models/stores/utils/optionsOpenerStore"
+import { useLineFocusorStore } from "@/models/stores/utils/lineFocusorStore"
 
 import { storeToRefs } from "pinia"
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore"
@@ -19,7 +20,8 @@ export function useSideListShared(
     sidebar: Ref<InstanceType<typeof SideBar>|null>,
     lineOptions: Ref<InstanceType<typeof LineOptions>|null>,
     childrenLines?: Ref<InstanceType<typeof Lines>|null>,
-
+    linesContainer?: Ref<HTMLElement|null>,
+    lineFocusorSlot?: 'focusCommonLine' | 'focusTerrainLine'
 ){
     const saveStore = useSaveStore()
     const lineStateStore = useLineStateStore()
@@ -170,6 +172,33 @@ export function useSideListShared(
         showingChildrenOf.value = parentLineId
         sidebar.value?.extend()
     }
+
+    const flashingLineId = ref<number>()
+    let flashTimer = 0
+    async function scrollAndFlash(lineId:number){
+        await nextTick()
+        const container = linesContainer?.value
+        if(container){
+            const target = container.querySelector(`[data-line-id="${lineId}"]`)
+            if(target){
+                target.scrollIntoView({ behavior: 'instant', block: 'center' })
+            }
+        }
+        window.clearTimeout(flashTimer)
+        flashingLineId.value = lineId
+        flashTimer = window.setTimeout(()=>{
+            flashingLineId.value = undefined
+        }, 800)
+    }
+
+    async function focusLine(lineId?:number){
+        if(lineId === undefined) return
+        const line = saveStore.getLineById(lineId)
+        if(!line) return
+        showingLineGroup.value = line.group
+        showListSidebar()
+        await scrollAndFlash(lineId)
+    }
     function hideListSidebar(){
         childrenLines?.value?.fold()
         sidebar.value?.fold()
@@ -194,6 +223,11 @@ export function useSideListShared(
 
 
 
+    if(lineFocusorSlot){
+        const lineFocusor = useLineFocusorStore()
+        lineFocusor[lineFocusorSlot] = focusLine
+    }
+
     return {
         lines, envStore, saveStore,
         registerLinesArrange, disposeLinesArrange, mouseDownLineArrange,
@@ -203,6 +237,7 @@ export function useSideListShared(
         showingLineGroup, lineGroupCheck, lineGroupsSelectable, autoInitShowingGroup,
         showingBtns, showingChildrenOfInfo, showingChildrenOf,
         showChildrenOf, leaveParent,
-        showListSidebar, hideListSidebar
+        showListSidebar, hideListSidebar,
+        flashingLineId, scrollAndFlash, focusLine
     }
 }
