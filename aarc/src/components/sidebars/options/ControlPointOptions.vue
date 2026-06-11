@@ -267,7 +267,7 @@ defineExpose({
                                     <select v-model="mergingLine1Id" class="lineMergeSelect">
                                         <option :value="0">请选择线路</option>
                                         <option v-for="line in mergeableLinesHere" :value="line.id">
-                                            {{line.name}}
+                                            {{line.name || '<未命名线路>'}}
                                         </option>
                                     </select>
                                 </td>
@@ -278,7 +278,7 @@ defineExpose({
                                     <select v-model="mergingLine2Id" class="lineMergeSelect">
                                         <option :value="0">请选择线路</option>
                                         <option v-for="line in mergeableLinesHere" :value="line.id">
-                                            {{line.name}}
+                                            {{line.name || '<未命名线路>'}}
                                         </option>
                                     </select>
                                 </td>
