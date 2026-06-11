@@ -14,10 +14,12 @@ export const useSaveListLocalConfigStore = defineStore('saveListLocalConfig', ()
     const searchOrderby = ref<SaveListOrderBy>(defaultOrderby)
     const autoRefreshNewest = ref<AutoRefreshNewest>(defaultAutoRefreshNewest)
     const folderOrderby = ref<FolderOrderBy>(defaultFolderOrderby)
+    const simpleCoopRulesDisplay = ref<boolean>(true)
     return {
         searchOrderby,
         autoRefreshNewest,
-        folderOrderby
+        folderOrderby,
+        simpleCoopRulesDisplay
     }
 },
 {

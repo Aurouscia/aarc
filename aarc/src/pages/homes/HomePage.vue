@@ -10,9 +10,12 @@ import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import RecentUpdates from '../components/RecentUpdates.vue';
 import Notice from '@/components/common/Notice.vue';
 import { userUpgradeToMemberName } from '../identities/routes/routesNames';
+import { storeToRefs } from 'pinia';
+import { useSaveListLocalConfigStore } from '@/app/localConfig/saveListLocalConfig.ts';
 
 const { setEnteredFrom } = useEnteredCanvasFromStore()
 const userInfoStore = useUserInfoStore()
+const { simpleCoopRulesDisplay } = storeToRefs(useSaveListLocalConfigStore())
 
 onMounted(()=>{
     appVersionCheck()
@@ -38,6 +41,17 @@ onMounted(()=>{
     现在无需加 qq 群即可免费转为正式用户，公开展示作品，使用多人协作功能：
     <RouterLink :to="{name:userUpgradeToMemberName}" style="color: white;text-decoration: underline;">立即转正</RouterLink>
 </Notice>
+<div v-else class="simple-coop-rules">
+    <button class="lite" @click="simpleCoopRulesDisplay=!simpleCoopRulesDisplay">
+        {{ simpleCoopRulesDisplay ? '收起' : '展开'}}合作提示{{ simpleCoopRulesDisplay ? '▲':'▼' }}
+    </button>
+    <div v-if="simpleCoopRulesDisplay">
+        ✅ 推荐：存档明显位置展示你建的QQ群号，让协作者在QQ群讨论发展方向/团队规定<br/>
+        ✅ 可以：在存档中添加与存档发展有关的留言<br/>
+        ❌ 请不要：把存档当聊天室/贴吧/伦坛使用<br/>
+        ❓如有疑问请咨询QQ交流群群主
+    </div>
+</div>
 <div class="marginedSection">
     <NewestSaves></NewestSaves>
     <div v-if="userInfoStore.isLoginedTourist" class="userTypeNote">当前账号为游客，作品无法公开展示</div>
@@ -163,9 +177,6 @@ onMounted(()=>{
         white-space: pre-wrap;
         &.guideExtra {
             font-size: 14px;
-            &:deep(a) {
-                color: cornflowerblue;
-            }
         }
     }
     h1{
@@ -180,6 +191,17 @@ onMounted(()=>{
         &:hover{
             color: #333;
         }
+    }
+}
+.simple-coop-rules{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    div{
+        color: #333;
+        background-color: #eee;
+        border-radius: 10px;
+        padding: 10px;
     }
 }
 .roadmap{
