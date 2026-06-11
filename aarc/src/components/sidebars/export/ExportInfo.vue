@@ -4,7 +4,7 @@ import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore'
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import ConfigSection from '../configs/shared/ConfigSection.vue';
-import { LineType } from '@/models/save';
+import { LineType, ControlPointSta } from '@/models/save';
 import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
 import copy from 'copy-to-clipboard';
 
@@ -89,7 +89,10 @@ async function copyStaNameListTxt() {
 
         let stationNameList: string[] = []
         l.pts.forEach(p => {
-            stationNameList.push(staClusterStore.getStaName(p).name) 
+            const pt = saveStore.getPtById(p)
+            if (pt && pt.sta === ControlPointSta.sta) {
+                stationNameList.push(staClusterStore.getStaName(p).name)
+            }
         })
         stationNameList = removeConsecutiveSameItem(stationNameList)
         if (stationNameList.length > 1) {
