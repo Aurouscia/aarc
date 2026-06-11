@@ -324,4 +324,56 @@ describe('staClusterStore - getStaName', () => {
       expect(result.nameSub).toBe('BeijingSouth')
     })
   })
+
+  describe('raw 参数', () => {
+    it('raw=true 时应保留换行符', () => {
+      const save = createEmptySave({
+        points: [
+          { ...createPoint(1), name: '北京\n南站', nameS: 'Beijing\nSouth' }
+        ]
+      })
+      setupSaveStore(save)
+      const store = useStaClusterStore()
+
+      const result = store.getStaName(1, true)
+
+      expect(result.name).toBe('北京\n南站')
+      expect(result.nameSub).toBe('Beijing\nSouth')
+    })
+
+    it('raw=true 时跨 cluster 名称也应保留换行符', () => {
+      const save = createEmptySave({
+        points: [
+          { ...createPoint(1), pos: [0, 0] },
+          { ...createPoint(2), pos: [0.5, 0.5] },
+          { ...createPoint(3), pos: [100, 100], name: '北京\n南站', nameS: 'Beijing\nSouth' }
+        ],
+        pointLinks: [
+          { pts: [2, 3], type: ControlPointLinkType.cluster }
+        ]
+      })
+      setupSaveStore(save)
+      const store = useStaClusterStore()
+
+      const result = store.getStaName(1, true)
+
+      expect(result.name).toBe('北京\n南站')
+      expect(result.nameSub).toBe('Beijing\nSouth')
+    })
+
+    it('raw=false 时应移除换行符（与默认行为一致）', () => {
+      const save = createEmptySave({
+        points: [
+          { ...createPoint(1), name: '北京\n南站', nameS: 'Beijing\nSouth' }
+        ]
+      })
+      setupSaveStore(save)
+      const store = useStaClusterStore()
+
+      const result = store.getStaName(1, false)
+
+      expect(result.name).toBe('北京南站')
+      expect(result.nameSub).toBe('BeijingSouth')
+    })
+  })
 })

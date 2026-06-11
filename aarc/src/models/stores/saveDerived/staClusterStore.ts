@@ -231,11 +231,15 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         }
         return clutser
     }
-    function getStaName(ptId: number): {name: string, nameSub: string, ptId: number} {
+    function getStaName(ptId: number, raw?: boolean): {name: string, nameSub: string, ptId: number} {
         // 先尝试获取指定点本身的名称
         const pt = saveStore.getPtById(ptId)
         if (pt?.name) {
-            return { name: pt.name.replaceAll('\n', ''), nameSub: pt.nameS?.replaceAll('\n', '') ?? '', ptId }
+            return {
+                name: raw ? pt.name : pt.name.replaceAll('\n', ''),
+                nameSub: raw ? (pt.nameS ?? '') : (pt.nameS?.replaceAll('\n', '') ?? ''),
+                ptId
+            }
         }
         // 若该点本身无名称，再尝试从所在 cluster（及通过 ptLink 可达的其他 cluster）中获取
         // 收集所有 cluster（包括 staClusters 中的和单点形成的虚拟 cluster）
@@ -273,10 +277,10 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
                 const currIdx = queue.shift()!
                 const currCluster = allClusters[currIdx]
                 const namedPt = currCluster.find(x => x.name)
-                if (namedPt) {
+                if (namedPt && namedPt.name) {
                     return {
-                        name: namedPt.name.replaceAll('\n', ''),
-                        nameSub: namedPt.nameS?.replaceAll('\n', '') ?? '',
+                        name: raw ? namedPt.name : namedPt.name.replaceAll('\n', ''),
+                        nameSub: raw ? (namedPt.nameS ?? '') : (namedPt.nameS?.replaceAll('\n', '') ?? ''),
                         ptId: namedPt.id
                     }
                 }

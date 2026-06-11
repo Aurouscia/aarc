@@ -185,7 +185,7 @@ onUnmounted(()=>{
     <ColorPalette ref="colorPalette" v-if="editingColorByPaletteLine"
         :editing-line="editingColorByPaletteLine"></ColorPalette>
     <SliceEditorTable ref="sliceEditorTable" v-if="editingSlicesLine"
-        :line="editingSlicesLine"></SliceEditorTable>
+        :line="editingSlicesLine" @close="sidebar?.fold()"></SliceEditorTable>
     <Lines v-if="!isChildrenList" ref="childrenLines" :is-children-list="true"></Lines>
 </template>
 

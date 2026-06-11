@@ -2,6 +2,7 @@
 import SideBar from '@/components/common/SideBar.vue';
 import { Line, TimeSlice, StyleSlice, AnySlice, SliceKind } from '@/models/save';
 import { useSaveStore } from '@/models/stores/saveStore';
+import { useCvsFrameStore } from '@/models/stores/cvsFrameStore';
 import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore';
 import { computed, ref, useTemplateRef, type Component, type ComputedRef } from 'vue'
 import TimeSliceEditor from './TimeSliceEditor.vue';
@@ -22,14 +23,20 @@ import {
 import SliceCell from './SliceCell.vue';
 import SliceEditorPanel from './SliceEditorPanel.vue';
 import LineTimeOptions from '../LineTimeOptions.vue';
-import foldIcon from '@/assets/ui/fold.svg';
+import searchIcon from '@/assets/ui/search.svg';
+
 
 
 const props = defineProps<{
     line: Line
 }>()
 
+const emit = defineEmits<{
+    close: []
+}>()
+
 const saveStore = useSaveStore()
+const cvs = useCvsFrameStore()
 const staClusterStore = useStaClusterStore()
 const sliceResolverStore = useSliceResolverStore()
 const envStore = useEnvStore()
@@ -43,7 +50,7 @@ function openLineTimeOptions() {
 // ========== 站点列表（当前线路的点） ==========
 const stations = computed(() => {
     return props.line.pts.map(ptId => {
-        const staNameInfo = staClusterStore.getStaName(ptId)
+        const staNameInfo = staClusterStore.getStaName(ptId, true)
         return {
             id: ptId,
             name: staNameInfo.name,
@@ -53,24 +60,57 @@ const stations = computed(() => {
     })
 })
 
-const showNameSub = ref(false)
+// ========== 站点名称编辑状态 ==========
+const editingStaIdx = ref<number | null>(null)
+const editingName = ref('')
+const editingNameSub = ref('')
 
-function updateStaName(stationIdx: number, newName: string) {
-    const ptId = stations.value[stationIdx].namePtId
-    const pt = saveStore.getPtById(ptId)
-    if (pt) {
-        pt.name = newName
-        envStore.lineInfoChanged(props.line)
+function startEditStaName(stationIdx: number) {
+    // 再次点击同一个站名时收起 panel
+    if (editingStaIdx.value === stationIdx) {
+        editingStaIdx.value = null
+        return
+    }
+    // 打开站名编辑器时关闭 slice 编辑器，避免两个 panel 同时出现
+    editingSlice.value = null
+    resizingSlice.value = null
+    pendingFrom.value = null
+    editingStaIdx.value = stationIdx
+    editingName.value = stations.value[stationIdx].name
+    editingNameSub.value = stations.value[stationIdx].nameSub
+}
+
+function finishEditStaName() {
+    if (editingStaIdx.value !== null) {
+        const stationIdx = editingStaIdx.value
+        const ptId = stations.value[stationIdx].namePtId
+        const pt = saveStore.getPtById(ptId)
+        if (pt) {
+            pt.name = editingName.value
+            pt.nameS = editingNameSub.value
+            envStore.lineInfoChanged(props.line)
+        }
+        editingStaIdx.value = null
     }
 }
 
-function updateStaNameSub(stationIdx: number, newNameSub: string) {
-    const ptId = stations.value[stationIdx].namePtId
+function cancelEditStaName() {
+    editingStaIdx.value = null
+}
+
+function centerOnSta(stationIdx: number) {
+    const ptId = stations.value[stationIdx].id
     const pt = saveStore.getPtById(ptId)
-    if (pt) {
-        pt.nameS = newNameSub
-        envStore.lineInfoChanged(props.line)
-    }
+    if (!pt) return
+    cvs.focusViewToPos(pt.pos)
+    envStore.activePt = pt
+    envStore.cursorPos = [...pt.pos]
+    fold()  // 收起 SliceEditorTable 侧栏
+    emit('close')  // 通知父组件也收起 Lines 侧栏
+}
+
+function getTextareaRows(text: string): number {
+    return text.includes('\n') ? 2 : 1
 }
 
 // ========== Slice 列配置 ==========
@@ -250,6 +290,9 @@ function getSliceIdAtPosition(slices: AnySlice[], rowIdx: number, col: SliceKind
 }
 
 function onSliceCellClick(event: MouseEvent, col: SliceKind, rowIdx: number) {
+    // 点击 slice 区域时关闭站名编辑器
+    editingStaIdx.value = null
+
     const info = getCellInfoByCol(rowIdx, col)
 
     // 如果正在重设端点
@@ -281,6 +324,7 @@ function onSliceCellClick(event: MouseEvent, col: SliceKind, rowIdx: number) {
 
     if (info.role === 'empty') {
         // 空位：走创建流程，关闭编辑面板
+        editingStaIdx.value = null
         editingSlice.value = null
         onCellClick(col, rowIdx)
         return
@@ -300,6 +344,7 @@ function onSliceCellClick(event: MouseEvent, col: SliceKind, rowIdx: number) {
 
     if (targetSliceId) {
         // 已有 slice：切换编辑模式
+        editingStaIdx.value = null
         pendingFrom.value = null
         resizingSlice.value = null
         if (editingSlice.value?.type === col && editingSlice.value?.id === targetSliceId) {
@@ -428,6 +473,8 @@ function rerenderIfSlicesChanged() {
 }
 
 function onSideBarFold() {
+    editingSlice.value = null
+    editingStaIdx.value = null
     resizingSlice.value = null
     pendingFrom.value = null
     rerenderIfSlicesChanged()
@@ -442,7 +489,7 @@ function fold() {
 
 // ========== 表格行数据结构 ==========
 
-type RowType = 'data' | 'editor'
+type RowType = 'data' | 'sliceEditor' | 'staNameEditor'
 
 interface TableRow {
     type: RowType
@@ -455,7 +502,11 @@ const tableRows = computed<TableRow[]>(() => {
     const rows: TableRow[] = []
     for (let i = 0; i < stations.value.length; i++) {
         rows.push({ type: 'data', stationIdx: i })
-        // 检查这一行后面是否需要插入编辑器行
+        // 检查是否需要插入站名编辑器行
+        if (editingStaIdx.value === i) {
+            rows.push({ type: 'staNameEditor', stationIdx: i })
+        }
+        // 检查这一行后面是否需要插入 slice 编辑器行
         for (const col of sliceCols) {
             const info = col.cellInfoMap.value.get(i)!
             if (info.sliceId && editingSlice.value?.type === col.kind && editingSlice.value.id === info.sliceId) {
@@ -463,7 +514,7 @@ const tableRows = computed<TableRow[]>(() => {
                 if (slice) {
                     const indices = getSliceIndices(slice, col.kind)
                     if (indices && i === indices.toIdx) {
-                        rows.push({ type: 'editor', stationIdx: i, editorType: col.kind, editorSliceId: info.sliceId })
+                        rows.push({ type: 'sliceEditor', stationIdx: i, editorType: col.kind, editorSliceId: info.sliceId })
                     }
                 }
             }
@@ -484,21 +535,22 @@ defineExpose({
     <table>
       <thead>
         <tr>
-          <th class="col-station" @click="showNameSub = !showNameSub" style="cursor: pointer;">
-            站点
-            <img :src="foldIcon" class="toggle-name-sub" :class="{ expanded: showNameSub }" title="切换显示副名称"/>
-          </th>
+          <th class="col-station">站点</th>
           <th v-for="col in sliceCols" :key="col.kind" class="col-slice">{{ col.label }}</th>
         </tr>
       </thead>
       <tbody>
         <template v-for="(row, rowIdx) in tableRows" :key="rowIdx">
           <!-- 数据行 -->
-          <tr v-if="row.type === 'data'" :class="{ 'editing-row': sliceCols.some(c => isEditing(c.kind, row.stationIdx)) }">
+          <tr v-if="row.type === 'data'" :class="{ 'editing-row': sliceCols.some(c => isEditing(c.kind, row.stationIdx)), 'sta-name-editing': editingStaIdx === row.stationIdx }">
             <!-- 站点名 -->
             <td class="cell-station">
-              <input v-model.lazy="stations[row.stationIdx].name" @change="updateStaName(row.stationIdx, stations[row.stationIdx].name)"/>
-              <input v-if="showNameSub" v-model.lazy="stations[row.stationIdx].nameSub" @change="updateStaNameSub(row.stationIdx, stations[row.stationIdx].nameSub)"/>
+              <div class="sta-name-row">
+                <img :src="searchIcon" class="sta-icon" title="定位到该站点" @click="centerOnSta(row.stationIdx)"/>
+                <div class="sta-name-display" @click="startEditStaName(row.stationIdx)">
+                  {{ stations[row.stationIdx].name }}
+                </div>
+              </div>
             </td>
 
             <!-- slice 列 -->
@@ -519,8 +571,8 @@ defineExpose({
             />
           </tr>
 
-          <!-- 编辑器行 -->
-          <tr v-else-if="row.type === 'editor'" class="editor-row">
+          <!-- slice 编辑器行 -->
+          <tr v-else-if="row.type === 'sliceEditor'" class="editor-row">
             <td :colspan="1 + sliceCols.length" class="editor-cell">
               <SliceEditorPanel
                 v-if="row.editorType && getColConfig(row.editorType).editingSlice.value"
@@ -536,6 +588,29 @@ defineExpose({
                 @delete="deleteSlice(row.editorType, row.editorSliceId!)"
                 @cancel-resize="resizingSlice = null"
               />
+            </td>
+          </tr>
+
+          <!-- 站名编辑器行 -->
+          <tr v-else-if="row.type === 'staNameEditor'" class="editor-row">
+            <td :colspan="1 + sliceCols.length" class="editor-cell">
+              <div class="editor-panel staName">
+                <div class="editorTitle">编辑站点名称</div>
+                <textarea
+                  v-model="editingName"
+                  :rows="getTextareaRows(editingName)"
+                  class="sta-name-input"
+                />
+                <textarea
+                  v-model="editingNameSub"
+                  :rows="getTextareaRows(editingNameSub)"
+                  class="sta-name-sub-input"
+                />
+                <div class="editor-btns">
+                  <button @click="finishEditStaName">确定</button>
+                  <button @click="cancelEditStaName" class="cancel">取消</button>
+                </div>
+              </div>
             </td>
           </tr>
         </template>
@@ -592,22 +667,49 @@ table {
 .cell-station {
   font-size: 14px;
   padding: 5px 0px;
-  input{
-    width: 100px;
-    margin: 0px;
-    font-size: 12px;
-    padding: 2px;
-    margin-top: 3px;
-    &:first-child{
-        font-size: 15px;
-        padding: 3px 2px;
-        margin-top: 0px;
+
+  .sta-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    padding: 0px 2px;
+
+    .sta-icon {
+      width: 12px;
+      height: 12px;
+      padding: 4px;
+      flex-shrink: 0;
+      cursor: pointer;
+      filter: brightness(0);
+      opacity: 0.6;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    .sta-name-display {
+      padding: 3px 0px;
+      min-height: 20px;
+      word-break: break-all;
+      flex: 1;
+      text-align: center;
+      cursor: pointer;
     }
   }
+
 }
 
 .editing-row {
   background: #fafafa;
+}
+
+.sta-name-editing {
+  .cell-station {
+    background: #ccc;
+  }
 }
 
 /* ========== 通用样式 ========== */
@@ -623,7 +725,34 @@ table {
 
 .editor-panel {
   padding: 8px;
-  border-radius: 4px;
+
+  &.staName {
+    background: #ccc;
+
+    .editorTitle {
+      color: #666;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    textarea {
+      width: calc(100% - 8px);
+      margin: 0px;
+      padding: 4px;
+      font-size: 12px;
+      resize: none;
+      font-family: inherit;
+      line-height: 1.4;
+      margin-top: 4px;
+      box-sizing: border-box;
+
+      &.sta-name-input {
+        font-size: 15px;
+        padding: 5px 4px;
+        margin-top: 0px;
+      }
+    }
+  }
 }
 
 .editor-btns {
@@ -654,15 +783,5 @@ table {
   text-align: center;
 }
 
-.toggle-name-sub {
-  cursor: pointer;
-  margin-left: 4px;
-  width: 14px;
-  height: 14px;
-  transition: transform 0.5s;
-  filter: brightness(0) invert(1);
-  &.expanded {
-    transform: rotate(180deg);
-  }
-}
+
 </style>
