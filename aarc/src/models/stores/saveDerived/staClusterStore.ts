@@ -237,13 +237,56 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         if (pt?.name) {
             return { name: pt.name.replaceAll('\n', ''), nameSub: pt.nameS?.replaceAll('\n', '') ?? '', ptId }
         }
-        // 若该点本身无名称，再尝试从所在 cluster 中获取
-        const cluster = getStaClusterById(ptId)
-        let clusterHaveName = cluster.find(x => x.name)
-        let res = clusterHaveName?.name
-        res = res?.replaceAll('\n', '')
-        if (res) {
-            return { name: res, nameSub: clusterHaveName!.nameS?.replaceAll('\n', '') ?? '', ptId: clusterHaveName!.id }
+        // 若该点本身无名称，再尝试从所在 cluster（及通过 ptLink 可达的其他 cluster）中获取
+        // 收集所有 cluster（包括 staClusters 中的和单点形成的虚拟 cluster）
+        const allClusters: ControlPoint[][] = [...(getStaClusters() || [])]
+        const clusteredPtIds = new Set<number>()
+        allClusters.forEach(c => c.forEach(p => clusteredPtIds.add(p.id)))
+        // 为未聚类的单点也创建虚拟 cluster
+        const allPts = saveStore.save?.points || []
+        for (const p of allPts) {
+            if (!clusteredPtIds.has(p.id)) {
+                allClusters.push([p])
+            }
+        }
+        // 构建 ptId -> clusterIndex 映射
+        const ptToClusterIdx: Record<number, number> = {}
+        allClusters.forEach((c, idx) => c.forEach(p => ptToClusterIdx[p.id] = idx))
+        // 构建 cluster 邻接图（通过所有类型的 pointLinks）
+        const clusterAdj: Record<number, Set<number>> = {}
+        const links = saveStore.save?.pointLinks || []
+        links.forEach(link => {
+            const c1 = ptToClusterIdx[link.pts[0]]
+            const c2 = ptToClusterIdx[link.pts[1]]
+            if (c1 === undefined || c2 === undefined || c1 === c2) return
+            if (!clusterAdj[c1]) clusterAdj[c1] = new Set()
+            if (!clusterAdj[c2]) clusterAdj[c2] = new Set()
+            clusterAdj[c1].add(c2)
+            clusterAdj[c2].add(c1)
+        })
+        // BFS 从当前 cluster 开始搜索
+        const startIdx = ptToClusterIdx[ptId]
+        if (startIdx !== undefined) {
+            const visited = new Set<number>([startIdx])
+            const queue: number[] = [startIdx]
+            while (queue.length > 0) {
+                const currIdx = queue.shift()!
+                const currCluster = allClusters[currIdx]
+                const namedPt = currCluster.find(x => x.name)
+                if (namedPt) {
+                    return {
+                        name: namedPt.name.replaceAll('\n', ''),
+                        nameSub: namedPt.nameS?.replaceAll('\n', '') ?? '',
+                        ptId: namedPt.id
+                    }
+                }
+                for (const neib of (clusterAdj[currIdx] || [])) {
+                    if (!visited.has(neib)) {
+                        visited.add(neib)
+                        queue.push(neib)
+                    }
+                }
+            }
         }
         return { name: `#${ptId}`, nameSub: '', ptId }
     }
