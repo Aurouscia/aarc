@@ -9,6 +9,7 @@ namespace AARC.WebApi.Controllers.Saves
     [Authorize]
     [ApiController]
     [Route(ApiConsts.routePattern)]
+    [RateLimit(20, 40)]
     public class SaveFolderController(
         SaveFolderRepo saveFolderRepo,
         SaveFolderRelationRepo saveFolderRelationRepo,
