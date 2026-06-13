@@ -69,7 +69,7 @@ namespace AARC.WebApi.Repos.Saves
             var folder = mapper.Map<SaveFolder>(dto);
             folder.OwnerUserId = uid;
             folder.ParentFolderId = dto.ParentFolderId;
-            folderTreeCache.EnsureInitialized(context);
+            folderTreeCache.EnsureInitialized(Context);
             folderTreeCache.AddOrUpdate(folder.Id, folder.ParentFolderId, folder.Name);
             var siblings = MyFolders
                 .Where(x => x.ParentFolderId == folder.ParentFolderId)
@@ -87,7 +87,7 @@ namespace AARC.WebApi.Repos.Saves
             ValidateDto(dto);
             var folder = GetOwned(dto.Id);
             mapper.Map(dto, folder);
-            folderTreeCache.EnsureInitialized(context);
+            folderTreeCache.EnsureInitialized(Context);
             folderTreeCache.AddOrUpdate(folder.Id, folder.ParentFolderId, folder.Name);
             base.Update(folder, true);
         }
@@ -118,7 +118,7 @@ namespace AARC.WebApi.Repos.Saves
                 .ToList();
             newSiblings.Add(folder);
             newSiblings.RearrangePriority();
-            folderTreeCache.EnsureInitialized(context);
+            folderTreeCache.EnsureInitialized(Context);
             folderTreeCache.AddOrUpdate(folder.Id, folder.ParentFolderId, folder.Name);
             base.Update(folder, true);
         }
@@ -153,7 +153,7 @@ namespace AARC.WebApi.Repos.Saves
             if (hasSaves)
                 throw new RqEx("请先移出目录内的存档");
             base.FakeRemove(folder);
-            folderTreeCache.EnsureInitialized(context);
+            folderTreeCache.EnsureInitialized(Context);
             folderTreeCache.Remove(folder.Id);
             // 重新排列同级目录优先级
             var siblings = MyFolders
