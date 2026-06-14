@@ -4,6 +4,8 @@ import { SaveDto } from '@/app/com/apiGenerated';
 import defaultMini from '@/assets/defaultMini.svg'
 import iconLock from '@/assets/ui/lock.svg';
 import iconPen from '@/assets/ui/pen.svg';
+import iconWarn from '@/assets/ui/warn.svg';
+import Prompt from '@/components/common/Prompt.vue'
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { useRouter } from 'vue-router';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
@@ -57,14 +59,25 @@ const hideStatus = computed(()=>{
 
 const router = useRouter()
 const { editorRoute } = useEditorsRoutesJump()
+const warnPromptShow = ref(false)
 function openEditor(){
     const s = sDisplay.value
     if(!s.id) return
+    if(hasWarn.value){
+        warnPromptShow.value = true
+        return
+    }
     const behave = status.value?.clickBehavior
     if(behave === 'refuse') // 提示用户权限不足
         showPop('根据权限设置\n无法查看该存档', 'failed')
     else // 进入编辑页面
         router.push(editorRoute(s.id))
+}
+function enterEditorFromWarn(){
+    warnPromptShow.value = false
+    const s = sDisplay.value
+    if(!s.id) return
+    router.push(editorRoute(s.id))
 }
 
 const loadedStatus = ref<SaveDto>()
@@ -87,6 +100,9 @@ async function handleStatusClick(){
     }
     loadingStatus.value = false
 }
+const hasWarn = computed(()=>{
+    return !!props.s.latestWarnContent
+})
 const sDisplay = computed(()=>{
     // 如果有新加载的状态，则将其合并进props的值里（不修改props）
     const res = {...props.s}
@@ -97,8 +113,21 @@ const sDisplay = computed(()=>{
 </script>
 
 <template>
-<div class="save-avatar" :style="style" @click="openEditor">
-    <img class="save-avatar-bg" :src="props.s.miniUrl ?? defaultMini"/>
+<div class="save-avatar" :style="style">
+    <img class="save-avatar-bg" :src="props.s.miniUrl ?? defaultMini" @click="openEditor"/>
+    <img v-if="hasWarn" class="save-avatar-warn" :src="iconWarn" @click.stop/>
+    <Prompt v-if="warnPromptShow" bg-click-close @close="warnPromptShow = false">
+        <div class="warn-prompt">
+            <img :src="iconWarn"/>
+            <div class="warn-content">{{ props.s.latestWarnContent }}</div>
+            <div class="warn-meta">
+                <span>{{ props.s.latestWarnBy }}</span>
+                <span>{{ props.s.latestWarnCreated }}</span>
+            </div>
+            <div class="warn-meta">编辑后，管理员会检查并消除本警告</div>
+        </div>
+        <button class="major" @click="enterEditorFromWarn">进入编辑</button>
+    </Prompt>
     <div v-if="status && !hideStatus" class="save-avatar-status" :style="{backgroundColor: status.color}" @click.stop="handleStatusClick">
         <img :src="status.icon"/>
         <div>{{ status.text }}</div>
@@ -123,6 +152,42 @@ const sDisplay = computed(()=>{
         object-fit: cover;
         &:hover{
             cursor: pointer;
+        }
+    }
+    .save-avatar-warn{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50%;
+        height: 50%;
+        object-fit: contain;
+        pointer-events: none;
+        filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+    }
+    .warn-prompt{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        min-width: 200px;
+        max-width: 300px;
+        margin-bottom: 8px;
+        img{
+            width: 40px;
+            height: 40px;
+        }
+        .warn-content{
+            font-size: 16px;
+            color: #c0392b;
+            text-align: center;
+            word-break: break-word;
+        }
+        .warn-meta{
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            color: #666;
         }
     }
     .save-avatar-status{
