@@ -139,6 +139,9 @@ namespace AARC.WebApi.Models.Db.Migrations.Sqlserver
                     b.Property<DateTime>("LastActive")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("MasterUserId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(16)
@@ -276,6 +279,49 @@ namespace AARC.WebApi.Models.Db.Migrations.Sqlserver
                     b.HasIndex("OwnerUserId");
 
                     b.ToTable("Saves");
+                });
+
+            modelBuilder.Entity("AARC.WebApi.Models.DbModels.Saves.SaveComment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Deprecated")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastActive")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("OwnerUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SaveId")
+                        .HasColumnType("int");
+
+                    b.Property<byte>("Type")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerUserId");
+
+                    b.HasIndex("SaveId");
+
+                    b.ToTable("SaveComments");
                 });
 
             modelBuilder.Entity("AARC.WebApi.Models.DbModels.Saves.SaveDiff", b =>

@@ -1,4 +1,4 @@
-﻿using AARC.WebApi.Models.DbModels.Files;
+using AARC.WebApi.Models.DbModels.Files;
 using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Models.DbModels.Saves;
 using Microsoft.EntityFrameworkCore;
@@ -17,5 +17,6 @@ namespace AARC.WebApi.Models.Db.Context
         public DbSet<SaveFolder> SaveFolders { get; set; }
         public DbSet<SaveFolderRelation> SaveFolderRelations { get; set; }
         public DbSet<SaveDiff> SaveDiffs { get; set; }
+        public DbSet<SaveComment> SaveComments { get; set; }
     }
 }

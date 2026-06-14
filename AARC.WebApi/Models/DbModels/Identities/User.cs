@@ -22,6 +22,7 @@ namespace AARC.WebApi.Models.DbModels.Identities
         [MaxLength(passwordResetAnswerMaxLength)]
         public string? PasswordResetAnswer { get; set; }
         public int SelectedFolderId { get; set; }
+        public int MasterUserId { get; set; }
         public DateTime LastActive { get; set; }
         public bool Deleted { get; set; }
 
