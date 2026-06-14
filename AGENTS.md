@@ -13,3 +13,11 @@
 cd AARC.WebApi
 ASPNETCORE_ENVIRONMENT=Development dotnet run --urls "http://localhost:5250"
 ```
+
+## 改动 cs 代码后
+
+对 cs 文件或 csproj 文件进行任何改动后，运行 `dotnet build` 确保没有构建问题
+
+## 改动前端代码后
+
+对 vue、ts、json 文件进行任何改动后，运行 `pnpm type-check` 确保没有类型问题
