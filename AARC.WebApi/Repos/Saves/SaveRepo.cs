@@ -425,6 +425,12 @@ namespace AARC.WebApi.Repos.Saves
         public bool AllowRequesterFork { get; set; }
         public int EditingByUserId { get; set; }
         public string? EditingByUserName { get; set; }
+        public int CommentCount { get; set; }
+        public string? LatestWarnContent { get; set; }
+        public string? LatestWarnCreated { get; set; }
+        public string? LatestWarnBy { get; set; }
+        public string? LatestRuleContent { get; set; }
+        public string? LatestRuleCreated { get; set; }
         [JsonIgnore]
         public DateTime HeartbeatAt { get; set; }
         [JsonIgnore]

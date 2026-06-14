@@ -18,6 +18,7 @@ import { useSavesRoutesJump } from '../routes/routesJump';
 import SaveBackups from '../../components/SaveBackups.vue';
 import ConvertToRailChess from '../../components/ConvertToRailChess.vue';
 import FolderSelect from './FolderSelect.vue';
+import CommentList from '@/components/common/CommentList.vue';
 
 const props = defineProps<{
     saves: WithIntroShow<SaveDto>[] | undefined
@@ -205,6 +206,12 @@ async function downloadJson() {
 const authGrantSb = useTemplateRef('authGrantSb')
 const backupSb = useTemplateRef('backupSb')
 const rcConvert = useTemplateRef('rcConvert')
+const commentShow = ref(false)
+const commentSaveId = ref<number>(0)
+function openComment(s: SaveDto) {
+    commentSaveId.value = s.id || 0
+    commentShow.value = true
+}
 
 // 目录管理
 const myFolders = ref<SaveFolderDto[]>([])
@@ -326,6 +333,12 @@ defineExpose({ startCreating })
                     </td>
                 </tr>
                 <tr v-if="!isCreatingSave">
+                    <td>留言</td>
+                    <td>
+                        <button class="lite confirm" @click="editingSave && openComment(editingSave)">打开留言</button>
+                    </td>
+                </tr>
+                <tr v-if="!isCreatingSave">
                     <td>权限</td>
                     <td>
                         <button class="lite confirm" @click="authGrantSb?.extend">打开权限设置栏</button>
@@ -408,6 +421,7 @@ defineExpose({ startCreating })
             </tbody>
         </table>
     </SideBar>
+    <CommentList v-if="commentShow" :save-id="commentSaveId" :is-owner="isMine" @close="commentShow = false"></CommentList>
     <SideBar ref="authGrantSb">
         <h1>授权管理</h1>
         <template v-if="editingSave?.id">
