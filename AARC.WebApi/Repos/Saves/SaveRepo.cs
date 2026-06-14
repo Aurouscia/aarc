@@ -212,6 +212,9 @@ namespace AARC.WebApi.Repos.Saves
             copied.Id = 0; // 重置主键，让数据库生成新记录
             copied.OwnerUserId = httpUserIdProvider.RequireUserId();
             copied.ForkedFromId = id;
+            copied.EditingUserId = null;
+            copied.EditingUserName = null;
+            copied.EditingHeartbeat = null;
             base.Add(copied);
         }
         public void UpdateInfo(SaveDto saveDto)
