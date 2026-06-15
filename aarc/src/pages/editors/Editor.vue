@@ -27,10 +27,10 @@ import { autoUpdateDataSources } from '@/models/save/dataSourceOps';
 import { compressObjectToGzip } from '@/utils/dataUtils/compressObjectToGzip';
 import { useLoadedSave } from '@/models/stores/utils/loadedSave';
 import { HttpUserInfo, SaveDto, SavePreflightStatus } from '@/app/com/apiGenerated';
-import DontUseWeirdBrowser from './components/DontUseWeirdBrowser.vue';
+import { useSavingDisabledWarningStore } from './components/savingDisabledWarningStore';
+import SavingDisabledWarning from './components/SavingDisabledWarning.vue';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
-import { useIdentitiesRoutesJump } from '../identities/routes/routesJump';
 import { coordRound } from '@/utils/coordUtils/coordRound';
 import { useUndoStore } from '@/models/stores/utils/undoStore';
 import { isFocusingInput } from '@/utils/domUtils/focusingInput';
@@ -39,7 +39,6 @@ const heartbeatIntervalSecs = 3 * 60 // 每3分钟心跳一次
 
 const props = defineProps<{saveId:string}>()
 const { someonesSavesRoute } = useSavesRoutesJump()
-const { loginRoute } = useIdentitiesRoutesJump()
 const enteredFromStore = useEnteredCanvasFromStore()
 const { goBackToWhereWeEntered } = enteredFromStore
 const uniq = useUniqueComponentsStore()
@@ -62,9 +61,7 @@ const isDemo = computed(()=>props.saveId.toLowerCase() == 'demo')
 const viewOnly = ref(false)
 const loadError = ref<string>()
 const ownerUserInfo = ref<{userId: number, userName: string}>()
-const editingUserInfo = ref<{userId: number, userName: string}>()
-const savingDisabledWarning = ref<string>()
-const savingDisabledWarningHide = ref<boolean>()
+const savingDisabledWarningStore = useSavingDisabledWarningStore()
 
 const saveStatus = ref<SaveDto>()
 
@@ -89,11 +86,12 @@ async function load() {
                 console.log('根据preflight结果，已设为viewOnly模式')
                 viewOnly.value = true
             }
-            if(preRes.status == SavePreflightStatus.ViewOnly)
-                savingDisabledWarning.value = '当前为仅浏览模式，无法保存更改'
+            if(preRes.status == SavePreflightStatus.ViewOnly){
+                savingDisabledWarningStore.setWarning('当前为仅浏览模式，无法保存更改', true)
+            }
             else if(preRes.status == SavePreflightStatus.Occupied){
-                savingDisabledWarning.value = `当前有其他用户在编辑，无法保存更改\n占用者：${preRes.editingByUserName ?? '??'}`
-                editingUserInfo.value = { userId: preRes.editingByUserId ?? 0, userName: preRes.editingByUserName ?? '' }
+                savingDisabledWarningStore.setWarning(`当前有其他用户在编辑，无法保存更改\n占用者：${preRes.editingByUserName ?? '??'}`)
+                savingDisabledWarningStore.editingUserId = preRes.editingByUserId ?? 0
             }
         }
 
@@ -141,8 +139,7 @@ async function load() {
         await iconStore.ensureAllLoaded()
         mainCvsDispatcher.visitorMode = false
         loadComplete.value = true
-        savingDisabledWarning.value = '此处为体验环境，不能保存\n如需创作，请注册账户并新建存档'
-        savingDisabledWarningHide.value = true //暂时隐藏，等第一次编辑后再出现
+        savingDisabledWarningStore.setWarning('此处为体验环境，不能保存\n如需创作，请注册账户并新建存档', true)
         preventLeavingDisabled.value = true //demo环境，不阻止未保存退出
     }
     if(saveStore.save){
@@ -229,20 +226,18 @@ async function saveData(mustBackup:boolean){
 }
 
 const notLogin = ref<boolean>()
-const notLoginNeedToWarn = ref<boolean>()
 async function checkLoginLeftTime(userInfo:HttpUserInfo){
     const nearExpireMsg = '登录即将过期\n尽快重新登录'
     const noLoginMsg = '当前没有登录\n不能保存'
     if(!userInfo.leftHours){
         notLogin.value = true
-        savingDisabledWarning.value = noLoginMsg
-        notLoginNeedToWarn.value = true
+        savingDisabledWarningStore.setWarning(noLoginMsg, true)
+        savingDisabledWarningStore.notLogin = true
         preventLeavingDisabled.value = true //未登录：不阻止未保存退出（也没法保存）
-        savingDisabledWarningHide.value = true //暂时隐藏，等第一次编辑后再出现
     }
     else if(userInfo.leftHours <= 6){
         showPop(nearExpireMsg, 'warning')
-        savingDisabledWarning.value = nearExpireMsg
+        savingDisabledWarningStore.setWarning(nearExpireMsg)
         window.setTimeout(()=>{
             showPop('否则将无法保存', 'warning')
         }, 3000)
@@ -252,9 +247,8 @@ async function checkLoginLeftTime(userInfo:HttpUserInfo){
 function setLeavingPreventing(){
     //将“主画布重新渲染”当成“存档信息变化”，当主画布重新渲染时，阻止用户离开/刷新页面/关闭页面
     mainCvsDispatcher.afterMainCvsRendered = () =>{ 
-        if(notLoginNeedToWarn.value){
-            savingDisabledWarningHide.value = false
-            notLoginNeedToWarn.value = false
+        if(savingDisabledWarningStore.needToWarn){
+            savingDisabledWarningStore.onFirstEdit()
         }
         preventLeaving()
         if(saveStore.save)
@@ -358,12 +352,7 @@ onBeforeUnmount(()=>{
         :save="()=>saveData(false)" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
     <HiddenLongWarnPrompt v-if="showHiddenLongWarn" @ok="showHiddenLongWarn=false"></HiddenLongWarnPrompt>
     <WarnRulePrompts :save-status="saveStatus"></WarnRulePrompts>
-    <div v-if="savingDisabledWarning" class="statusDisplay saving-disabled-warning" :class="{'warning-hidden': savingDisabledWarningHide}">
-        {{ savingDisabledWarning }}
-        <RouterLink v-if="notLogin" :to="loginRoute(true)">去登录</RouterLink>
-        <RouterLink v-else-if="editingUserInfo?.userId" :to="someonesSavesRoute(editingUserInfo.userId)">看看TA的作品</RouterLink>
-        <button @click="savingDisabledWarningHide=true">知道了</button>
-    </div>
+    <SavingDisabledWarning></SavingDisabledWarning>
     <div class="cache-preventer"><input :id="cachePreventerInputId"/></div>
     <DontUseWeirdBrowser></DontUseWeirdBrowser>
 </template>
@@ -388,37 +377,5 @@ onBeforeUnmount(()=>{
     position: fixed;
     z-index: -1;
     top: -100px; //藏起来
-}
-.saving-disabled-warning{
-    color:white;
-    animation: colorBlink 1s ease-out infinite;
-    white-space: pre-wrap;
-    line-height: 22px;
-    a {
-        margin-left: 16px;
-        color: white;
-        text-decoration: underline;
-    }
-    button {
-        display: block;
-        background-color: white;
-        margin: 6px auto 3px;
-        padding: 3px 20px;
-        color: red;
-        font-weight: bold;
-    }
-    &.warning-hidden {
-        transform: translateY(140%);
-        background-color: red;
-        animation: none;
-    }
-}
-@keyframes colorBlink {
-    0% {
-        background-color: red;
-    }
-    100% {
-        background-color: orange;
-    }
 }
 </style>
