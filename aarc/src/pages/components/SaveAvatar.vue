@@ -257,6 +257,10 @@ const sDisplay = computed(()=>{
             color: #666;
         }
     }
+    .major{
+        display: block;
+        margin: auto;
+    }
     .rule-prompt{
         display: flex;
         flex-direction: column;

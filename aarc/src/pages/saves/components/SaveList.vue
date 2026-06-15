@@ -9,7 +9,6 @@ import { Save, saveLineCount, saveStaCount } from '@/models/save';
 import defaultMini from '@/assets/defaultMini.svg'
 import { SaveDto, SaveFolderDto } from '@/app/com/apiGenerated';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
-
 import AuthGrantEdit from '../../components/AuthGrantEdit.vue';
 import { AuthGrantOn, AuthGrantTypeOfSave } from '@/app/com/apiGenerated';
 import SwitchingTabs from '@/components/common/SwitchingTabs.vue';
@@ -19,6 +18,8 @@ import SaveBackups from '../../components/SaveBackups.vue';
 import ConvertToRailChess from '../../components/ConvertToRailChess.vue';
 import FolderSelect from './FolderSelect.vue';
 import CommentList from '@/components/common/CommentList.vue';
+import { useUserInfoStore } from '@/app/globalStores/userInfo';
+import { storeToRefs } from 'pinia';
 
 const props = defineProps<{
     saves: WithIntroShow<SaveDto>[] | undefined
@@ -28,6 +29,7 @@ const props = defineProps<{
     folderMode?: boolean
     folderId?: number
     orderBy?: string
+    showComment?: boolean | ((save: SaveDto) => boolean)
 }>()
 
 const emit = defineEmits<{
@@ -36,6 +38,8 @@ const emit = defineEmits<{
     orderChanged: [ids: number[]]
 }>()
 
+const userInfoStore = useUserInfoStore()
+const { isAdmin } = storeToRefs(userInfoStore)
 const api = useApiStore();
 const { showPop } = useUniqueComponentsStore()
 const { saveDiffsRoute } = useSavesRoutesJump()
@@ -298,6 +302,7 @@ defineExpose({ startCreating })
                                 </button>
                             </template>
                             <button v-if="folderMode && orderBy === 'custom' && idx > 0" class="lite" @click="moveUp(idx)">上移</button>
+                            <button v-if="(typeof showComment === 'function' ? showComment(s) : showComment) || isAdmin" class="lite" @click="openComment(s)">留言</button>
                         </div>
                     </td>
                 </tr>

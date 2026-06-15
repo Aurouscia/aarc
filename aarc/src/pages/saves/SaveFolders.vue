@@ -172,6 +172,7 @@ watch(() => route.params.folderId, () => {
     <!-- 存档列表（根目录不显示） -->
     <div v-if="folderId > 0">
         <SaveList v-if="saves && saves.length > 0" :saves="saves" :is-mine="true"
+            :show-comment="(s) => s.ownerUserId === userInfo.id"
             :extra-action="[{ label: '移出', onClick: (s) => removeSaveFromFolder(s.id) }]"
             folder-mode :folder-id="folderId" :order-by="saveListLocalConfig.folderOrderby"
             @refresh="load">

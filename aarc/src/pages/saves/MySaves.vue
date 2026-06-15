@@ -77,7 +77,7 @@ onMounted(async () => {
             <button @click="saveListRef?.startCreating">新建</button>
         </div>
     </h1>
-    <SaveList ref="saveListRef" :saves="saveList" :is-mine="isMine" :show-fork="!isMine" @refresh="load"
+    <SaveList ref="saveListRef" :saves="saveList" :is-mine="isMine" :show-fork="!isMine" :show-comment="isMine" @refresh="load"
         @fork="fork">
     </SaveList>
     <div v-if="guideInfo.findHelp" style="color: #666; font-size: 14px; text-align: center; margin-top: 10px;">

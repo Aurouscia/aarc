@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { SaveDto } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import Loading from '@/components/common/Loading.vue';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
 import { useSavesRoutesJump } from './routes/routesJump';
@@ -10,10 +10,13 @@ import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom'
 import { SaveListOrderBy, useSaveListLocalConfigStore } from '@/app/localConfig/saveListLocalConfig';
 import { storeToRefs } from 'pinia';
 import SaveAvatar from '../components/SaveAvatar.vue';
+import CommentList from '@/components/common/CommentList.vue';
+import { useUserInfoStore } from '@/app/globalStores/userInfo';
 
 const api = useApiStore()
 const { someonesSavesRoute, searchSaveRoute } = useSavesRoutesJump()
 const router = useRouter()
+const userInfoStore = useUserInfoStore()
 const searchInit = router.currentRoute.value.query["s"] as string|undefined
 const orderbyInit = router.currentRoute.value.query["o"] as string|undefined
 
@@ -51,6 +54,15 @@ async function load() {
     }
 }
 
+const isAdmin = computed(() => userInfoStore.isAdmin)
+const commentShow = ref(false)
+const commentSaveId = ref<number>(0)
+const commentIsOwner = ref(false)
+function openComment(s: SaveDto) {
+    commentSaveId.value = s.id || 0
+    commentIsOwner.value = s.ownerUserId === userInfoStore.userInfo.id
+    commentShow.value = true
+}
 const { setEnteredFrom } = useEnteredCanvasFromStore()
 onMounted(()=>{
     setEnteredFrom()
@@ -106,6 +118,7 @@ onMounted(()=>{
         </td>
         <td>
             <div class="lastActive">{{ s.lastActive }}</div>
+            <button v-if="isAdmin" class="lite comment-btn" @click="openComment(s)">留言</button>
         </td>
     </tr>
     <tr v-if="search != searchedUsing" class="searchStatus">
@@ -126,6 +139,7 @@ onMounted(()=>{
 </tbody></table>
 <Loading v-else></Loading>
 </div>
+    <CommentList v-if="commentShow" :save-id="commentSaveId" :is-owner="commentIsOwner" @close="commentShow = false"></CommentList>
 </template>
 
 <style scoped lang="scss">
