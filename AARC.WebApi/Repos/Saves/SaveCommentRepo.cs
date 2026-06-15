@@ -71,6 +71,35 @@ namespace AARC.WebApi.Repos.Saves
             base.Update(model, true);
         }
 
+        public List<SaveWarnDto> GetAllWarns()
+        {
+            var q = ExistingAndValid.Where(x => x.Type == SaveCommentType.Warn);
+            var temp = (
+                from c in q
+                join s in Context.Saves.Existing() on c.SaveId equals s.Id
+                join u in Context.Users.Existing() on c.OwnerUserId equals u.Id
+                join su in Context.Users.Existing() on s.OwnerUserId equals su.Id
+                select new
+                {
+                    Comment = c,
+                    SaveName = s.Name,
+                    SaveOwnerName = su.Name,
+                    SaveLastActive = s.LastActive,
+                    CommentAuthorName = u.Name
+                }).ToList();
+            List<SaveWarnDto> res = [];
+            foreach (var t in temp)
+            {
+                var dto = mapper.Map<SaveComment, SaveWarnDto>(t.Comment);
+                dto.SaveName = t.SaveName;
+                dto.SaveOwnerName = t.SaveOwnerName;
+                dto.SaveLastActive = t.SaveLastActive.ToString("yyyy-MM-dd HH:mm");
+                dto.CommentAuthorName = t.CommentAuthorName;
+                res.Add(dto);
+            }
+            return res;
+        }
+
         public List<SaveCommentDto> GetBySaveId(int saveId, int skip, int take)
         {
             var q = Existing.Where(x => x.SaveId == saveId);
@@ -107,6 +136,21 @@ namespace AARC.WebApi.Repos.Saves
         }
     }
 
+    public class SaveWarnDto
+    {
+        public int Id { get; set; }
+        public int SaveId { get; set; }
+        public int OwnerUserId { get; set; }
+        public string? CommentAuthorName { get; set; }
+        public string? Content { get; set; }
+        public SaveCommentType Type { get; set; }
+        public string? Created { get; set; }
+        public bool Deprecated { get; set; }
+        public string? SaveName { get; set; }
+        public string? SaveOwnerName { get; set; }
+        public string? SaveLastActive { get; set; }
+    }
+
     public class SaveCommentDto
     {
         public int Id { get; set; }
@@ -126,6 +170,10 @@ namespace AARC.WebApi.Repos.Saves
             CreateMap<SaveCommentDto, SaveComment>()
                 .IgnoreLastActive();
             CreateMap<SaveComment, SaveCommentDto>()
+                .ForMember(
+                    destinationMember: x => x.Created,
+                    memberOptions: mem => mem.MapFrom(source => source.Created.ToString("yyyy-MM-dd HH:mm")));
+            CreateMap<SaveComment, SaveWarnDto>()
                 .ForMember(
                     destinationMember: x => x.Created,
                     memberOptions: mem => mem.MapFrom(source => source.Created.ToString("yyyy-MM-dd HH:mm")));

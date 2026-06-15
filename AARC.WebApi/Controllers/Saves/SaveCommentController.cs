@@ -58,5 +58,14 @@ namespace AARC.WebApi.Controllers.Saves
         {
             return saveCommentRepo.GetBySaveId(saveId, skip, take);
         }
+
+        [HttpGet]
+        [UserCheck]
+        public List<SaveWarnDto> GetAllWarns()
+        {
+            if (!httpUserInfoService.IsAdmin)
+                throw new RqEx("无权操作");
+            return saveCommentRepo.GetAllWarns();
+        }
     }
 }

@@ -1,4 +1,4 @@
-import { mySavesName, saveToolsName, searchSaveName, saveFoldersName } from "@/pages/saves/routes/routesNames";
+import { mySavesName, saveToolsName, searchSaveName, saveFoldersName, saveWarnsName } from "@/pages/saves/routes/routesNames";
 import { TopbarModel, TopbarModelItem } from "./topbarModel";
 import { aboutName, loginName, userCreditName, userHistoriesName, userListName } from "@/pages/identities/routes/routesNames";
 import { faq } from "@/pages/homes/routes/routesNames";
@@ -29,6 +29,10 @@ export async function getTopbarData(): Promise<TopbarModel> {
                 {
                     title: "搜索作品",
                     link: { name: searchSaveName }
+                },
+                {
+                    title: "问题提醒",
+                    link: { name: saveWarnsName }
                 }
             ]
         },
@@ -99,7 +103,7 @@ export async function getTopbarData(): Promise<TopbarModel> {
         }
     ]
 
-    // 按设置决定是否加入“疑问“
+    // 按设置决定是否加入"疑问"
     const showFaqOnTopbar = common.showFaqOnTopbar
     if (showFaqOnTopbar) {
         items.push({
