@@ -20,7 +20,6 @@ const error = ref('')
 const isAdmin = computed(() => userInfoStore.isAdmin)
 
 async function loadWarns() {
-    if (!isAdmin.value) return
     loading.value = true
     error.value = ''
     try {
