@@ -129,7 +129,7 @@ async function load() {
         }
         // 加载完成后获取状态（warn/rule信息）
         const statusRes = await api.save.loadStatus(saveIdNum.value, true)
-        if(statusRes && !enteredFromStore.commentPromptChecked){
+        if(statusRes && !enteredFromStore.isCommentPromptChecked(saveIdNum.value)){
             saveStatus.value = statusRes
         }
     }

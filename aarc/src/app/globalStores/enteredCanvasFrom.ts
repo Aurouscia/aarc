@@ -4,15 +4,18 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const storeId = 'enteredCanvasFrom'
+const commentPromptExpireMs = 60 * 1000
+
 export const useEnteredCanvasFromStore = defineStore(storeId,()=>{
     const router = useRouter()
     const route = ref<string>()
-    /** 是否已在来源页面查看过Comment弹窗（warn/rule），不持久化 */
-    const commentPromptChecked = ref(false)
+    /** 记录每个存档Id的"已查看Comment弹窗"时间戳，过期60秒 */
+    const commentPromptChecked = ref<Record<number, number>>({})
+
     function setEnteredFrom(){
         route.value = router.currentRoute.value.fullPath
-        commentPromptChecked.value = false
     }
+
     function goBackToWhereWeEntered(){
         if(route.value){
             router.push(route.value)
@@ -21,15 +24,35 @@ export const useEnteredCanvasFromStore = defineStore(storeId,()=>{
             router.push({name: homePageName})
         }
     }
+
+    function markCommentPromptChecked(saveId: number){
+        commentPromptChecked.value[saveId] = Date.now()
+    }
+
+    function isCommentPromptChecked(saveId: number): boolean{
+        const now = Date.now()
+        const record = commentPromptChecked.value
+        // 先移除所有过期项目
+        for(const id in record){
+            if(now - record[id] > commentPromptExpireMs){
+                delete record[id]
+            }
+        }
+        // 再判断当前存档是否在里面
+        return !!record[saveId]
+    }
+
     return {
         route,
         commentPromptChecked,
         setEnteredFrom,
-        goBackToWhereWeEntered
+        goBackToWhereWeEntered,
+        markCommentPromptChecked,
+        isCommentPromptChecked
     }
 }, {
     persist:{
         key:`aarc-${storeId}`,
-        pick: ['route']
+        pick: ['route', 'commentPromptChecked']
     }
 })

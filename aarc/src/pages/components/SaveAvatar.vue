@@ -96,7 +96,7 @@ function openEditor(){
 function navigateToEditor(){
     const s = sDisplay.value
     if(!s.id) return
-    enteredFromStore.commentPromptChecked = true
+    enteredFromStore.markCommentPromptChecked(s.id)
     router.push(editorRoute(s.id))
 }
 
