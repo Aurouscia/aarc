@@ -85,7 +85,7 @@ namespace AARC.WebApi.Services.Saves
                 return;
             var comments = saveCommentRepo.ExistingAndValid
                 .Where(x => ids.Contains(x.SaveId))
-                .Select(x => new { x.SaveId, x.Type, x.Content, x.Created, x.OwnerUserId })
+                .Select(x => new { x.Id, x.SaveId, x.Type, x.Content, x.Created, x.OwnerUserId })
                 .ToList();
             var userIds = comments.Select(x => x.OwnerUserId).Distinct().ToHashSet();
             userIds.Remove(0);
@@ -106,7 +106,7 @@ namespace AARC.WebApi.Services.Saves
                         .FirstOrDefault(),
                     LatestRule = g.Where(x => x.Type == SaveCommentType.Rule)
                         .OrderByDescending(x => x.Created)
-                        .Select(x => new { x.Content, x.Created })
+                        .Select(x => new { x.Id, x.Content, x.Created })
                         .FirstOrDefault()
                 });
             foreach (var s in saves)
@@ -123,6 +123,7 @@ namespace AARC.WebApi.Services.Saves
                     }
                     if (stats.LatestRule != null)
                     {
+                        s.LatestRuleCommentId = stats.LatestRule.Id;
                         s.LatestRuleContent = stats.LatestRule.Content;
                         s.LatestRuleCreated = stats.LatestRule.Created.ToString("yyyy-MM-dd HH:mm");
                     }

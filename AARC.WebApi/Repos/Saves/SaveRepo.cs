@@ -429,6 +429,7 @@ namespace AARC.WebApi.Repos.Saves
         public string? LatestWarnContent { get; set; }
         public string? LatestWarnCreated { get; set; }
         public string? LatestWarnBy { get; set; }
+        public int LatestRuleCommentId { get; set; }
         public string? LatestRuleContent { get; set; }
         public string? LatestRuleCreated { get; set; }
         [JsonIgnore]

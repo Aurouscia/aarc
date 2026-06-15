@@ -11,8 +11,10 @@ import { useRouter } from 'vue-router';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { storeToRefs } from 'pinia';
+import { useSaveListLocalConfigStore } from '@/app/localConfig/saveListLocalConfig';
 import { useApiStore } from '@/app/com/apiStore';
 
+const saveListLocalConfig = useSaveListLocalConfigStore()
 const api = useApiStore()
 const props = defineProps<{
     s: SaveDto,
@@ -60,12 +62,26 @@ const hideStatus = computed(()=>{
 const router = useRouter()
 const { editorRoute } = useEditorsRoutesJump()
 const warnPromptShow = ref(false)
+const hasRule = computed(()=>{
+    return !!props.s.latestRuleContent
+})
+const rulePromptShow = ref(false)
+const ruleDoNotShowAgain = ref(false)
 function openEditor(){
     const s = sDisplay.value
     if(!s.id) return
     if(hasWarn.value){
         warnPromptShow.value = true
         return
+    }
+    if(hasRule.value){
+        const readRuleId = saveListLocalConfig.readRuleCommentIds[s.id]
+        if(readRuleId && readRuleId === s.latestRuleCommentId){
+            // 已读过当前Rule，直接进入
+        } else {
+            rulePromptShow.value = true
+            return
+        }
     }
     const behave = status.value?.clickBehavior
     if(behave === 'refuse') // 提示用户权限不足
@@ -76,6 +92,45 @@ function openEditor(){
 function enterEditorFromWarn(){
     warnPromptShow.value = false
     const s = sDisplay.value
+    if(!s.id) return
+    // 关闭Warn后检查是否还有未读的Rule
+    if(hasRule.value){
+        const readRuleId = saveListLocalConfig.readRuleCommentIds[s.id]
+        if(!readRuleId || readRuleId !== s.latestRuleCommentId){
+            rulePromptShow.value = true
+            return
+        }
+    }
+    router.push(editorRoute(s.id))
+}
+function handleWarnPromptClose(){
+    warnPromptShow.value = false
+    const s = sDisplay.value
+    if(!s.id) return
+    // 关闭Warn后检查是否还有未读的Rule
+    if(hasRule.value){
+        const readRuleId = saveListLocalConfig.readRuleCommentIds[s.id]
+        if(!readRuleId || readRuleId !== s.latestRuleCommentId){
+            rulePromptShow.value = true
+        }
+    }
+    // 无Rule或已读过，仅关闭Prompt不进入编辑器
+}
+function handleRulePromptClose(){
+    const s = sDisplay.value
+    if(ruleDoNotShowAgain.value && s.id && s.latestRuleCommentId){
+        saveListLocalConfig.readRuleCommentIds[s.id] = s.latestRuleCommentId
+    }
+    rulePromptShow.value = false
+    ruleDoNotShowAgain.value = false
+}
+function enterEditorFromRule(){
+    const s = sDisplay.value
+    if(ruleDoNotShowAgain.value && s.id && s.latestRuleCommentId){
+        saveListLocalConfig.readRuleCommentIds[s.id] = s.latestRuleCommentId
+    }
+    rulePromptShow.value = false
+    ruleDoNotShowAgain.value = false
     if(!s.id) return
     router.push(editorRoute(s.id))
 }
@@ -116,7 +171,7 @@ const sDisplay = computed(()=>{
 <div class="save-avatar" :style="style">
     <img class="save-avatar-bg" :src="props.s.miniUrl ?? defaultMini" @click="openEditor"/>
     <img v-if="hasWarn" class="save-avatar-warn" :src="iconWarn" @click.stop/>
-    <Prompt v-if="warnPromptShow" bg-click-close @close="warnPromptShow = false">
+    <Prompt v-if="warnPromptShow" bg-click-close @close="handleWarnPromptClose">
         <div class="warn-prompt">
             <img :src="iconWarn"/>
             <div class="warn-content">{{ props.s.latestWarnContent }}</div>
@@ -127,6 +182,18 @@ const sDisplay = computed(()=>{
             <div class="warn-meta">编辑后，管理员会检查并消除本警告</div>
         </div>
         <button class="major" @click="enterEditorFromWarn">进入编辑</button>
+    </Prompt>
+    <Prompt v-if="rulePromptShow" bg-click-close @close="handleRulePromptClose">
+        <div class="rule-prompt">
+            <div class="rule-label">编辑规则</div>
+            <div class="rule-content">{{ props.s.latestRuleContent }}</div>
+            <div class="rule-meta">{{ props.s.latestRuleCreated }}</div>
+            <label class="do-not-show-again">
+                <input type="checkbox" v-model="ruleDoNotShowAgain"/>
+                <span>不再显示本条</span>
+            </label>
+        </div>
+        <button class="major" @click="enterEditorFromRule">进入编辑</button>
     </Prompt>
     <div v-if="status && !hideStatus" class="save-avatar-status" :style="{backgroundColor: status.color}" @click.stop="handleStatusClick">
         <img :src="status.icon"/>
@@ -188,6 +255,41 @@ const sDisplay = computed(()=>{
             gap: 8px;
             font-size: 12px;
             color: #666;
+        }
+    }
+    .rule-prompt{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        min-width: 200px;
+        max-width: 300px;
+        margin-bottom: 8px;
+        .rule-label{
+            font-size: 14px;
+            color: #3498db;
+            font-weight: bold;
+        }
+        .rule-content{
+            font-size: 16px;
+            color: #2c3e50;
+            text-align: center;
+            word-break: break-word;
+        }
+        .rule-meta{
+            font-size: 12px;
+            color: #666;
+        }
+        .do-not-show-again{
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+            input{
+                cursor: pointer;
+            }
         }
     }
     .save-avatar-status{
