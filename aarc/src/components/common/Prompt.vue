@@ -89,6 +89,7 @@ onMounted(()=>{
     padding: 10px 20px;
     margin: 20px;
     z-index: 20001;
+    position: relative;
 }
 .closeBtn{
     display: block;

@@ -81,12 +81,14 @@ async function deprecateComment(id: number) {
 }
 
 const canSubmit = computed(() => content.value.trim().length > 0)
+const helpShow = ref(false)
 
 loadComments(true)
 </script>
 
 <template>
     <Prompt bg-click-close close-btn @close="emit('close')">
+        <button class="lite helpBtn" @click="helpShow = true">使用帮助</button>
         <h2>存档留言</h2>
         <div class="commentList">
             <div class="list">
@@ -123,6 +125,10 @@ loadComments(true)
                 <button :disabled="!canSubmit" @click="submitComment" class="ok">发送</button>
             </div>
         </div>
+    </Prompt>
+    <Prompt v-if="helpShow" bg-click-close close-btn @close="helpShow = false">
+        <h2>使用帮助</h2>
+        <p class="helpText">作为存档所有者，你可以在此创建本存档的协作规则，其他协作者进入时必然会看到你创建的规则。如果有不遵守者，你可以向管理员举报。</p>
     </Prompt>
 </template>
 
@@ -233,5 +239,19 @@ loadComments(true)
 h2 {
     text-align: center;
     margin-bottom: 10px;
+}
+.helpBtn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 12px;
+    padding: 2px 8px;
+}
+.helpText {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    max-width: 280px;
+    text-indent: 2em;
 }
 </style>
