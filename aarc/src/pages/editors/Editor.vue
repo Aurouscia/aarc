@@ -21,11 +21,12 @@ import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvs
 import { useCachePreventer } from '@/utils/timeUtils/cachePreventer';
 import { DocumentHiddenLongWatcher } from '@/utils/eventUtils/documentHiddenLong';
 import HiddenLongWarnPrompt from './components/HiddenLongWarnPrompt.vue';
+import WarnRulePrompts from './components/WarnRulePrompts.vue';
 import { useIconStore } from '@/models/stores/iconStore';
 import { autoUpdateDataSources } from '@/models/save/dataSourceOps';
 import { compressObjectToGzip } from '@/utils/dataUtils/compressObjectToGzip';
 import { useLoadedSave } from '@/models/stores/utils/loadedSave';
-import { HttpUserInfo, SavePreflightStatus } from '@/app/com/apiGenerated';
+import { HttpUserInfo, SaveDto, SavePreflightStatus } from '@/app/com/apiGenerated';
 import DontUseWeirdBrowser from './components/DontUseWeirdBrowser.vue';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
@@ -39,7 +40,8 @@ const heartbeatIntervalSecs = 3 * 60 // 每3分钟心跳一次
 const props = defineProps<{saveId:string}>()
 const { someonesSavesRoute } = useSavesRoutesJump()
 const { loginRoute } = useIdentitiesRoutesJump()
-const { goBackToWhereWeEntered } = useEnteredCanvasFromStore()
+const enteredFromStore = useEnteredCanvasFromStore()
+const { goBackToWhereWeEntered } = enteredFromStore
 const uniq = useUniqueComponentsStore()
 const { showPop } = uniq
 const { topbarShow } = storeToRefs(uniq)
@@ -63,6 +65,8 @@ const ownerUserInfo = ref<{userId: number, userName: string}>()
 const editingUserInfo = ref<{userId: number, userName: string}>()
 const savingDisabledWarning = ref<string>()
 const savingDisabledWarningHide = ref<boolean>()
+
+const saveStatus = ref<SaveDto>()
 
 async function load() {
     loadedSave.value = true
@@ -122,6 +126,11 @@ async function load() {
         }
         else{
             startHeartbeat()
+        }
+        // 加载完成后获取状态（warn/rule信息）
+        const statusRes = await api.save.loadStatus(saveIdNum.value, true)
+        if(statusRes && !enteredFromStore.commentPromptChecked){
+            saveStatus.value = statusRes
         }
     }
     else if(isDemo.value){
@@ -348,6 +357,7 @@ onBeforeUnmount(()=>{
     <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving"
         :save="()=>saveData(false)" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
     <HiddenLongWarnPrompt v-if="showHiddenLongWarn" @ok="showHiddenLongWarn=false"></HiddenLongWarnPrompt>
+    <WarnRulePrompts :save-status="saveStatus"></WarnRulePrompts>
     <div v-if="savingDisabledWarning" class="statusDisplay saving-disabled-warning" :class="{'warning-hidden': savingDisabledWarningHide}">
         {{ savingDisabledWarning }}
         <RouterLink v-if="notLogin" :to="loginRoute(true)">去登录</RouterLink>

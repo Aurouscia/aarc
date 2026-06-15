@@ -153,10 +153,12 @@ namespace AARC.WebApi.Controllers.Saves
         [AllowAnonymous]
         [HttpPost]
         [RateLimit(5, 5)]
-        public SaveDto? LoadStatus(int id)
+        public SaveDto? LoadStatus(int id, bool needComments = false)
         {
             var data = saveRepo.LoadStatus(id);
             saveDtoEnrichService.EnrichPrivilege([data]);
+            if (needComments)
+                saveDtoEnrichService.EnrichComment([data]);
             return data;
         }
         [AllowAnonymous]

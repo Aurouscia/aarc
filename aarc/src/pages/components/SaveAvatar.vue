@@ -5,17 +5,19 @@ import defaultMini from '@/assets/defaultMini.svg'
 import iconLock from '@/assets/ui/lock.svg';
 import iconPen from '@/assets/ui/pen.svg';
 import iconWarn from '@/assets/ui/warn.svg';
-import Prompt from '@/components/common/Prompt.vue'
+import WarnRulePrompts from '@/pages/editors/components/WarnRulePrompts.vue';
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { useRouter } from 'vue-router';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { storeToRefs } from 'pinia';
 import { useSaveListLocalConfigStore } from '@/app/localConfig/saveListLocalConfig';
+import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 import { useApiStore } from '@/app/com/apiStore';
 
 const saveListLocalConfig = useSaveListLocalConfigStore()
 const api = useApiStore()
+const enteredFromStore = useEnteredCanvasFromStore()
 const props = defineProps<{
     s: SaveDto,
     size?: number,
@@ -61,77 +63,40 @@ const hideStatus = computed(()=>{
 
 const router = useRouter()
 const { editorRoute } = useEditorsRoutesJump()
-const warnPromptShow = ref(false)
-const hasRule = computed(()=>{
-    return !!props.s.latestRuleContent
+const promptSaveStatus = ref<SaveDto>()
+const hasWarn = computed(()=>{
+    return !!props.s.latestWarnContent
 })
-const rulePromptShow = ref(false)
-const ruleDoNotShowAgain = ref(false)
 function openEditor(){
     const s = sDisplay.value
     if(!s.id) return
-    if(hasWarn.value){
-        warnPromptShow.value = true
-        return
-    }
-    if(hasRule.value){
-        const readRuleId = saveListLocalConfig.readRuleCommentIds[s.id]
-        if(readRuleId && readRuleId === s.latestRuleCommentId){
-            // 已读过当前Rule，直接进入
-        } else {
-            rulePromptShow.value = true
+    // 强制重置promptSaveStatus以触发WarnRulePrompts的watch
+    promptSaveStatus.value = undefined
+    nextTick(()=>{
+        if(hasWarn.value){
+            promptSaveStatus.value = s
             return
         }
-    }
-    const behave = status.value?.clickBehavior
-    if(behave === 'refuse') // 提示用户权限不足
-        showPop('根据权限设置\n无法查看该存档', 'failed')
-    else // 进入编辑页面
-        router.push(editorRoute(s.id))
-}
-function enterEditorFromWarn(){
-    warnPromptShow.value = false
-    const s = sDisplay.value
-    if(!s.id) return
-    // 关闭Warn后检查是否还有未读的Rule
-    if(hasRule.value){
-        const readRuleId = saveListLocalConfig.readRuleCommentIds[s.id]
-        if(!readRuleId || readRuleId !== s.latestRuleCommentId){
-            rulePromptShow.value = true
-            return
+        if(hasRule.value){
+            const readRuleId = saveListLocalConfig.readRuleCommentIds[s.id!]
+            if(readRuleId && readRuleId === s.latestRuleCommentId){
+                // 已读过当前Rule，直接进入
+            } else {
+                promptSaveStatus.value = s
+                return
+            }
         }
-    }
-    router.push(editorRoute(s.id))
+        const behave = status.value?.clickBehavior
+        if(behave === 'refuse') // 提示用户权限不足
+            showPop('根据权限设置\n无法查看该存档', 'failed')
+        else // 进入编辑页面
+            router.push(editorRoute(s.id!))
+    })
 }
-function handleWarnPromptClose(){
-    warnPromptShow.value = false
+function navigateToEditor(){
     const s = sDisplay.value
     if(!s.id) return
-    // 关闭Warn后检查是否还有未读的Rule
-    if(hasRule.value){
-        const readRuleId = saveListLocalConfig.readRuleCommentIds[s.id]
-        if(!readRuleId || readRuleId !== s.latestRuleCommentId){
-            rulePromptShow.value = true
-        }
-    }
-    // 无Rule或已读过，仅关闭Prompt不进入编辑器
-}
-function handleRulePromptClose(){
-    const s = sDisplay.value
-    if(ruleDoNotShowAgain.value && s.id && s.latestRuleCommentId){
-        saveListLocalConfig.readRuleCommentIds[s.id] = s.latestRuleCommentId
-    }
-    rulePromptShow.value = false
-    ruleDoNotShowAgain.value = false
-}
-function enterEditorFromRule(){
-    const s = sDisplay.value
-    if(ruleDoNotShowAgain.value && s.id && s.latestRuleCommentId){
-        saveListLocalConfig.readRuleCommentIds[s.id] = s.latestRuleCommentId
-    }
-    rulePromptShow.value = false
-    ruleDoNotShowAgain.value = false
-    if(!s.id) return
+    enteredFromStore.commentPromptChecked = true
     router.push(editorRoute(s.id))
 }
 
@@ -141,7 +106,7 @@ async function handleStatusClick(){
     if(status.value?.clickBehavior != 'wait') return
     if(loadingStatus.value) return
     loadingStatus.value = true
-    const res = await api.save.loadStatus(props.s.id)
+    const res = await api.save.loadStatus(props.s.id, false)
     if(res){
         loadedStatus.value = res
         nextTick(()=>{
@@ -155,8 +120,8 @@ async function handleStatusClick(){
     }
     loadingStatus.value = false
 }
-const hasWarn = computed(()=>{
-    return !!props.s.latestWarnContent
+const hasRule = computed(()=>{
+    return !!props.s.latestRuleContent
 })
 const sDisplay = computed(()=>{
     // 如果有新加载的状态，则将其合并进props的值里（不修改props）
@@ -171,30 +136,7 @@ const sDisplay = computed(()=>{
 <div class="save-avatar" :style="style">
     <img class="save-avatar-bg" :src="props.s.miniUrl ?? defaultMini" @click="openEditor"/>
     <img v-if="hasWarn" class="save-avatar-warn" :src="iconWarn" @click.stop/>
-    <Prompt v-if="warnPromptShow" bg-click-close @close="handleWarnPromptClose">
-        <div class="warn-prompt">
-            <img :src="iconWarn"/>
-            <div class="warn-content">{{ props.s.latestWarnContent }}</div>
-            <div class="warn-meta">
-                <span>{{ props.s.latestWarnBy }}</span>
-                <span>{{ props.s.latestWarnCreated }}</span>
-            </div>
-            <div class="warn-meta">编辑后，管理员会检查并消除本警告</div>
-        </div>
-        <button class="major" @click="enterEditorFromWarn">进入编辑</button>
-    </Prompt>
-    <Prompt v-if="rulePromptShow" bg-click-close @close="handleRulePromptClose">
-        <div class="rule-prompt">
-            <div class="rule-label">编辑规则</div>
-            <div class="rule-content">{{ props.s.latestRuleContent }}</div>
-            <div class="rule-meta">{{ props.s.latestRuleCreated }}</div>
-            <label class="do-not-show-again">
-                <input type="checkbox" v-model="ruleDoNotShowAgain"/>
-                <span>不再显示本条</span>
-            </label>
-        </div>
-        <button class="major" @click="enterEditorFromRule">进入编辑</button>
-    </Prompt>
+    <WarnRulePrompts :save-status="promptSaveStatus" mode="navigate" @navigate="navigateToEditor"></WarnRulePrompts>
     <div v-if="status && !hideStatus" class="save-avatar-status" :style="{backgroundColor: status.color}" @click.stop="handleStatusClick">
         <img :src="status.icon"/>
         <div>{{ status.text }}</div>
@@ -231,70 +173,6 @@ const sDisplay = computed(()=>{
         object-fit: contain;
         pointer-events: none;
         filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
-    }
-    .warn-prompt{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-        min-width: 200px;
-        max-width: 300px;
-        margin-bottom: 8px;
-        img{
-            width: 40px;
-            height: 40px;
-        }
-        .warn-content{
-            font-size: 16px;
-            color: #c0392b;
-            text-align: center;
-            word-break: break-word;
-        }
-        .warn-meta{
-            display: flex;
-            gap: 8px;
-            font-size: 12px;
-            color: #666;
-        }
-    }
-    .major{
-        display: block;
-        margin: auto;
-    }
-    .rule-prompt{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
-        min-width: 200px;
-        max-width: 300px;
-        margin-bottom: 8px;
-        .rule-label{
-            font-size: 14px;
-            color: #3498db;
-            font-weight: bold;
-        }
-        .rule-content{
-            font-size: 16px;
-            color: #2c3e50;
-            text-align: center;
-            word-break: break-word;
-        }
-        .rule-meta{
-            font-size: 12px;
-            color: #666;
-        }
-        .do-not-show-again{
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            color: #666;
-            cursor: pointer;
-            input{
-                cursor: pointer;
-            }
-        }
     }
     .save-avatar-status{
         position: absolute;
