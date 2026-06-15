@@ -2,7 +2,7 @@
 import { useApiStore } from '@/app/com/apiStore'
 import { SaveCommentType, type SaveCommentDto } from '@/app/com/apiGenerated'
 import { useUserInfoStore } from '@/app/globalStores/userInfo'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import Prompt from './Prompt.vue'
 
 const props = defineProps<{
@@ -23,9 +23,9 @@ const skip = ref(0)
 const take = 20
 
 const content = ref('')
-const commentType = ref<SaveCommentType>(SaveCommentType.Regular)
+const commentType = ref<SaveCommentType>(SaveCommentType.Rule)
 const typeOptions = computed(() => {
-    const opts = [{ label: '普通', value: SaveCommentType.Regular }]
+    const opts = []
     if (props.isOwner) {
         opts.push({ label: '规则', value: SaveCommentType.Rule })
     }
@@ -34,6 +34,14 @@ const typeOptions = computed(() => {
     }
     return opts
 })
+
+const canSendAny = computed(() => typeOptions.value.length > 0)
+
+watch(typeOptions, (opts) => {
+    if (opts.length > 0 && !opts.find(o => o.value === commentType.value)) {
+        commentType.value = opts[0].value
+    }
+}, { immediate: true })
 
 async function loadComments(reset = false) {
     if (loading.value) return
@@ -105,7 +113,7 @@ loadComments(true)
             <div v-if="hasMore && !loading" class="loadMore">
                 <button class="minor" @click="loadComments()">加载更多</button>
             </div>
-            <div class="controls">
+            <div v-if="canSendAny" class="controls">
                 <select v-model="commentType">
                     <option v-for="opt in typeOptions" :key="opt.value" :value="opt.value">
                         {{ opt.label }}
