@@ -1,7 +1,7 @@
 import { Coord, RectCoord, SgnCoord, SgnNumber } from "@/models/coord"
 //import { concatFontStr } from "../lang/fontStr"
 import { splitLinesClean } from "../lang/splitLines"
-import { CvsContext } from "@/models/cvs/common/cvsContext"
+import { CvsContext, isSvgCanvasContext } from "@/models/cvs/common/cvsContext"
 import { TextMetricsSelected } from "../type/TextMetricsSelected"
 
 export interface DrawTextBodyOption{
@@ -326,8 +326,13 @@ function getTextActualCenterBaseline(ctx:CvsContext, wantMiddleAtY:number, text:
     const m = ctx.measureText(text)
     ctx.textBaseline = 'middle'
     const fix = (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent)/2
+    // svgcanvas 的文本垂直定位与原生 canvas 不一致，
+    // 对 'middle' baseline 的修正反而会放大偏差，因此 SVG 模式下不做修正。
+    const shouldUseY = isSvgCanvasContext(ctx.getUnderlyingCanvas() as any)
+        ? wantMiddleAtY
+        : wantMiddleAtY + fix
     return {
-        shouldUseY: wantMiddleAtY+fix,
+        shouldUseY,
         m
     }
 }

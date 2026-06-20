@@ -9,6 +9,7 @@ import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
 import { timeStr, toYMD } from '@/utils/timeUtils/timeStr';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext';
+import { Context as SvgCanvasContext } from 'svgcanvas';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
@@ -76,6 +77,25 @@ const {
     getAnimationTimePoints
 } = useAnimatedExport()
 
+async function renderMainCvsToSvgBlobUrl(): Promise<string | null> {
+    const { scale, cvsWidth, cvsHeight } = getExportRenderSize()
+    const svgCtx = new SvgCanvasContext({ width: cvsWidth, height: cvsHeight })
+    const ctx = new CvsContext(new CvsBlock(scale, 0, 0, svgCtx))
+    const mainRenderingOptions: MainCvsRenderingOptions = {
+        movedStaNames: [],
+        suppressRenderedCallback: true,
+        ctx,
+        withAds: ads.value,
+        withBgRefImage: bgRefImage.value,
+        withGridLayer: grid.value.layer,
+        withGridLevel: grid.value.level
+    }
+    mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
+    const svgStr = svgCtx.getSerializedSvg(true)
+    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
+    return URL.createObjectURL(blob)
+}
+
 /**
  * 渲染主画布并返回 Data URL
  */
@@ -112,7 +132,11 @@ async function downloadMainCvsAsImage() {
 
         let imageDataUrl
         try{
-            imageDataUrl = await renderMainCvsToDataUrl()
+            if(fileFormat.value === 'svg'){
+                imageDataUrl = await renderMainCvsToSvgBlobUrl()
+            }else{
+                imageDataUrl = await renderMainCvsToDataUrl()
+            }
         }
         catch(e){
             console.error(e)
@@ -291,7 +315,7 @@ function explainPixelMode(){
     window.alert('选择“指定”模式后，将严格按“像素”的值进行导出，“像素”值较大时可获得高清图片')
 }
 function explainFileFormat(){
-    window.alert('png文件较大（但兼容性好且无损），webp文件较小且可以设置画质（但老设备可能无法查看），jpg建议不要用；敬请期待svg导出功能')
+    window.alert('png文件较大（但兼容性好且无损），webp文件较小且可以设置画质（但老设备可能无法查看），jpg建议不要用；svg为矢量格式，可无限缩放')
 }
 
 onMounted(()=>{
@@ -365,9 +389,10 @@ const showApngExportNotice = ref(false)
                     <option :value="'png'">PNG(不推荐)</option>
                     <option :value="'webp'">WEBP</option>
                     <option :value="'jpeg'">JPG(不推荐)</option>
+                    <option :value="'svg'">SVG(矢量)</option>
                 </select>
             </div>
-            <div class="configItem" v-if="fileFormat!='png'">
+            <div class="configItem" v-if="fileFormat!='png' && fileFormat!='svg'">
                 <div class="itemName">图片质量</div>
                 <div>
                     <input v-model.number="fileQuality" type="range" :min="0" :max="1" :step="0.01"/>

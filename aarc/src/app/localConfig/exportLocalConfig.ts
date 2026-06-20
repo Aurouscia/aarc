@@ -41,7 +41,7 @@ export interface ExportAnimationMiniConfig extends ExportAnimationConfig{
 
 export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
     const fileNameStyle = ref<ExportFileNameStyle>('lineCount')
-    const fileFormat = ref<'png'|'webp'|'jpeg'>('webp')
+    const fileFormat = ref<'png'|'webp'|'jpeg'|'svg'>('webp')
     const fileQuality = ref(1)
     const pixelRestrict = ref<string|number>('')
     const pixelRestrictMode = ref<'max'|'exact'>('max')

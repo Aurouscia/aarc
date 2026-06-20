@@ -1,12 +1,31 @@
 import { convertLineSeppedToCommaSepped } from "@/utils/lang/fontStr";
 import { TextMetricsSelected } from "@/utils/type/TextMetricsSelected";
+import type { Context as SvgCanvasContext } from "svgcanvas";
+
+export type Cvs2dContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | SvgCanvasContext
+
+export function isSvgCanvasContext(ctx: Cvs2dContext): ctx is SvgCanvasContext {
+    return typeof (ctx as SvgCanvasContext).getSerializedSvg === 'function'
+}
+
+function convertImageSourceForSvgCanvas(image: CanvasImageSource): HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap {
+    if (image instanceof OffscreenCanvas) {
+        const canvas = document.createElement('canvas')
+        canvas.width = image.width
+        canvas.height = image.height
+        const ctx2d = canvas.getContext('2d')!
+        ctx2d.drawImage(image, 0, 0)
+        return canvas
+    }
+    return image as HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | ImageBitmap
+}
 
 export class CvsBlock{
     scale:number
     x:number
     y:number
-    ctx2d:CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D
-    constructor(scale:number, x:number, y:number, ctx2d:CanvasRenderingContext2D|OffscreenCanvasRenderingContext2D){
+    ctx2d:Cvs2dContext
+    constructor(scale:number, x:number, y:number, ctx2d:Cvs2dContext){
         this.scale = scale
         this.x = x
         this.y = y
@@ -62,12 +81,26 @@ export class CvsContext{
     measureText(text:string):TextMetricsSelected{
         const m = this.b.ctx2d.measureText(text)
         const scale = this.b.scale || 1
-        if(m)
-            return {
-                width: m.width / scale,
-                actualBoundingBoxAscent: m.actualBoundingBoxAscent / scale,
-                actualBoundingBoxDescent: m.actualBoundingBoxDescent / scale
+        if(m){
+            if('actualBoundingBoxAscent' in m && 'actualBoundingBoxDescent' in m){
+                return {
+                    width: m.width / scale,
+                    actualBoundingBoxAscent: m.actualBoundingBoxAscent / scale,
+                    actualBoundingBoxDescent: m.actualBoundingBoxDescent / scale
+                }
             }
+            else{
+                // svgcanvas 的类型声明较保守，运行时通常仍返回完整 TextMetrics；
+                // 此处兜底避免类型声明不全时破坏布局
+                const ascent = m.width * 0.6
+                const descent = m.width * 0.3
+                return {
+                    width: m.width / scale,
+                    actualBoundingBoxAscent: ascent / scale,
+                    actualBoundingBoxDescent: descent / scale
+                }
+            }
+        }
         else{
             return {
                 width: 0,
@@ -84,10 +117,21 @@ export class CvsContext{
         let b = this.b
         dx = b.mapX(dx); dy = b.mapY(dy)
         dw *= b.scale; dh *= b.scale
-        b.ctx2d.drawImage(image, dx, dy, dw, dh)
+        if(isSvgCanvasContext(b.ctx2d)){
+            b.ctx2d.drawImage(convertImageSourceForSvgCanvas(image), dx, dy, dw, dh)
+        }else{
+            b.ctx2d.drawImage(image, dx, dy, dw, dh)
+        }
     }
-    createPattern(image:CanvasImageSource, repetition: string|null){
-        return this.b.ctx2d.createPattern(image, repetition)
+    createPattern(image:CanvasImageSource, repetition: string|null): CanvasPattern | null{
+        const ctx2d = this.b.ctx2d
+        if(isSvgCanvasContext(ctx2d)){
+            return ctx2d.createPattern(
+                convertImageSourceForSvgCanvas(image),
+                (repetition ?? 'repeat') as 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat'
+            ) as CanvasPattern | null
+        }
+        return ctx2d.createPattern(image, repetition)
     }
     translate(x:number, y:number){
         this.b.ctx2d.translate(x, y)
@@ -117,10 +161,10 @@ export class CvsContext{
         this.b.ctx2d.lineCap = value}
     set lineWidth(value:number){
         this.b.ctx2d.lineWidth = value*this.b.scale}
-    set strokeStyle(value:string){
-        this.b.ctx2d.strokeStyle = value}
-    set fillStyle(value:string){
-        this.b.ctx2d.fillStyle = value}
+    set strokeStyle(value:string | CanvasPattern){
+        this.b.ctx2d.strokeStyle = value as any}
+    set fillStyle(value:string | CanvasPattern){
+        this.b.ctx2d.fillStyle = value as any}
     set globalAlpha(value:number){
         this.b.ctx2d.globalAlpha = value}
     get globalAlpha(){

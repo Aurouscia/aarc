@@ -70,7 +70,7 @@ export const usePatternStore = defineStore('pattern', ()=>{
             }
             ctx.stroke()
         }
-        return ctx.getUnderlyingCanvas()
+        return ctx.getUnderlyingCanvas() as OffscreenCanvas
     }
 
     return {

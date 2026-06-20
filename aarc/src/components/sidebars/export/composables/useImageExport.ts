@@ -22,7 +22,7 @@ export function useImageExport() {
 
     async function cvsToDataUrl(
         cvs: OffscreenCanvas, 
-        fileFormat: 'png' | 'webp' | 'jpeg', 
+        fileFormat: 'png' | 'webp' | 'jpeg' | 'svg', 
         fileQuality: number
     ): Promise<string> {
         let mime = 'image/png'
