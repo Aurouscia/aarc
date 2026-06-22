@@ -1,3 +1,26 @@
+/**
+ * SVG 导出兼容说明：
+ * 
+ * 本文件内有多个 `buildPath` 变量，仅在 svgcanvas（SVG 导出）模式下创建和使用。
+ * 
+ * 背景：svgcanvas 的 stroke() 不会创建新的 <path> 元素，而是修改当前元素的样式。
+ * 当线路有多层样式（multi-layer line style）时，strokeStyledLine 会对同一条路径
+ * 调用多次 stroke()，导致后一层覆盖前一层的样式，最终 SVG 只显示最后一层。
+ * 
+ * 解决方案：在 strokeStyledLine 中，每次 stroke() 前调用 pathBuilder 回调，
+ * 重新 beginPath() 并重建路径，确保每层样式都有自己的独立 <path> 元素。
+ * 
+ * 性能考虑：buildPath 仅在检测到 svgcanvas 上下文时才创建；正常 Canvas 渲染时
+ * 为 undefined，完全保持原有行为，不增加任何开销。
+ * 
+ * 涉及位置：
+ * - 简化模式（ignoreStyleAndSpan）
+ * - Carpet 渲染
+ * - renderAllSpansBase（逐 span）
+ * - renderAllSpansStyle（按组聚合）
+ * - 旧版 doRender（选中点局部）
+ */
+
 import { useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, ControlPointDir, Line, LineType } from "../../save";
 import { coordRelDiff } from "@/utils/coordUtils/coordRel";
@@ -84,10 +107,13 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         // 简化模式：无视样式和分段，整线统一绘制
         if(useEditorLocalConfigStore().ignoreStyleAndSpan){
             for(const l of line){
-                ctx.beginPath()
                 const formalPts = formalizedLineStore.getLinesFormalPts(l.id) ?? []
-                linkPts(ctx, formalPts, l)
-                doRender(ctx, l, undefined, undefined, 'both', 'base')
+                const buildPath = () => {
+                    ctx.beginPath()
+                    linkPts(ctx, formalPts, l)
+                }
+                buildPath()
+                doRender(ctx, l, undefined, undefined, 'both', 'base', buildPath)
             }
             return
         }
@@ -95,10 +121,13 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         // 1. Carpet 保持整线绘制
         if(includeCarpet){
             for(const l of line){
-                ctx.beginPath()
                 const formalPts = formalizedLineStore.getLinesFormalPts(l.id) ?? []
-                linkPts(ctx, formalPts, l)
-                doRender(ctx, l, undefined, undefined, 'carpet')
+                const buildPath = () => {
+                    ctx.beginPath()
+                    linkPts(ctx, formalPts, l)
+                }
+                buildPath()
+                doRender(ctx, l, undefined, undefined, 'carpet', undefined, buildPath)
             }
         }
 
@@ -181,10 +210,13 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             }
             fpts.forEach(pt=>relatedPts.add(pt))
             formalizedSegs.push({lineId:line.id, pts:formalized})
-            ctx.beginPath()
-            linkPts(ctx, formalized, line)
+            const buildPath = () => {
+                ctx.beginPath()
+                linkPts(ctx, formalized, line)
+            }
+            buildPath()
             const enforceLineWidth = line.isFilled ? 1 : undefined
-            doRender(ctx, line, true, enforceLineWidth)
+            doRender(ctx, line, true, enforceLineWidth, undefined, undefined, buildPath)
         })
         formalizedLineStore.setLocalFormalSegs(formalizedSegs)
         return {
@@ -455,9 +487,9 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     function doRenderSpan(
         ctx: CvsContext,
         lineInfo: Line,
-        options: SpanRenderOptions
+        options: SpanRenderOptions & { pathBuilder?: () => void }
     ) {
-        const { color, downplayed, style, styleId, strokeTarget } = options
+        const { color, downplayed, style, styleId, strokeTarget, pathBuilder } = options
         const lineColor = color ?? lineStateStore.getLineActualColor(lineInfo)
 
         // 填充线路（如湖泊）
@@ -490,7 +522,8 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                     if (lineDownplayed)
                         return colorProc.colorProcDownplay.convert(c)
                     return c
-                }
+                },
+                pathBuilder
             })
     }
 
@@ -501,14 +534,18 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
      */
     function renderAllSpansBase(ctx: CvsContext, infos: SpanRenderInfo[]) {
         for (const info of infos) {
-            ctx.beginPath()
-            linkPts(ctx, info.formalPts, info.line)
+            const buildPath = () => {
+                ctx.beginPath()
+                linkPts(ctx, info.formalPts, info.line)
+            }
+            buildPath()
             doRenderSpan(ctx, info.line, {
                 color: info.color,
                 downplayed: info.downplayed,
                 style: info.style,
                 styleId: info.styleId,
-                strokeTarget: 'base'
+                strokeTarget: 'base',
+                pathBuilder: buildPath
             })
         }
     }
@@ -551,16 +588,20 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
 
         for (const groupInfos of groups.values()) {
             const representative = groupInfos[0]
-            ctx.beginPath()
-            for (const info of groupInfos) {
-                linkPts(ctx, info.formalPts, info.line)
+            const buildPath = () => {
+                ctx.beginPath()
+                for (const info of groupInfos) {
+                    linkPts(ctx, info.formalPts, info.line)
+                }
             }
+            buildPath()
             doRenderSpan(ctx, representative.line, {
                 color: representative.color,
                 downplayed: representative.downplayed,
                 style: representative.style,
                 styleId: representative.styleId,
-                strokeTarget: 'style'
+                strokeTarget: 'style',
+                pathBuilder: buildPath
             })
         }
     }
@@ -570,7 +611,8 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
      */
     function doRender(
         ctx:CvsContext, lineInfo:Line, enforceNoFill?:boolean,
-        enforceLineWidth?:number, type?:LineRenderType, strokeTarget?:LineStrokeTarget
+        enforceLineWidth?:number, type?:LineRenderType, strokeTarget?:LineStrokeTarget,
+        pathBuilder?:()=>void
     ){
         const drawCarpet = (!type || type==='both' || type==='carpet') && (!lineInfo.removeCarpet)
         const drawBody = !type || type==='both' || type==='body'
@@ -579,6 +621,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             ctx.lineJoin = 'round'
             ctx.lineCap = 'round'
             if(drawCarpet){
+                if(pathBuilder) pathBuilder()
                 const carpetWiden = cs.config.lineCarpetWiden
                 ctx.lineWidth = lineWidth+carpetWiden
                 ctx.strokeStyle = cs.config.bgColor
@@ -608,9 +651,11 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                             if(lineDownplayed)
                                 return colorProc.colorProcDownplay.convert(c)
                             return c
-                        }
+                        },
+                        pathBuilder
                     })
                 }else{
+                    if(pathBuilder) pathBuilder()
                     ctx.lineWidth = lineWidth
                     ctx.strokeStyle = lineColor
                     ctx.stroke()
@@ -620,6 +665,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             ctx.lineJoin = 'round'
             ctx.lineCap = 'round'
             if(drawCarpet){
+                if(pathBuilder) pathBuilder()
                 const carpetWiden = cs.config.lineWidth * 0.5
                 ctx.lineWidth = carpetWiden
                 ctx.strokeStyle = cs.config.bgColor

@@ -1,7 +1,11 @@
 import { LineStyle } from "@/models/save"
-import { CvsContext } from "./cvsContext"
+import { CvsContext, isSvgCanvasContext } from "./cvsContext"
 import { usePatternStore } from "@/models/stores/patternStore"
 import { Coord } from "@/models/coord"
+
+function isCvsContext(ctx: CanvasRenderingContext2D | CvsContext): ctx is CvsContext {
+    return 'getUnderlyingCanvas' in ctx
+}
 
 export type LineStrokeTarget = 'base'|'style'|'both'
 
@@ -15,11 +19,14 @@ export function strokeStyledLine(
         lineWidthBase:number,
         baseCap:CanvasLineCap
         dynaColor:string,
-        fixedColorConverter:(c:string)=>string
+        fixedColorConverter:(c:string)=>string,
+        pathBuilder?:()=>void
     }){
-    const { target, scale, offset, lineWidthBase, lineStyle, baseCap, dynaColor, fixedColorConverter } = options
+    const { target, scale, offset, lineWidthBase, lineStyle, baseCap, dynaColor, fixedColorConverter, pathBuilder } = options
+    const needRebuildPath = pathBuilder && isCvsContext(ctx) && isSvgCanvasContext(ctx.getUnderlyingCanvas() as any)
     if(target != 'style' && !lineStyle?.noBase){
         // target 为 base 或 both 时，渲染线路本体
+        if(needRebuildPath) pathBuilder()
         ctx.lineWidth = lineWidthBase
         ctx.globalAlpha = 1
         ctx.strokeStyle = dynaColor
@@ -38,6 +45,7 @@ export function strokeStyledLine(
         if(!layer.opacity || layer.opacity==0){
             continue
         }
+        if(needRebuildPath) pathBuilder()
         ctx.lineWidth = lineWidthBase * layer.width
         ctx.globalAlpha = layer.opacity
         let color
