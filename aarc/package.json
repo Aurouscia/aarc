@@ -43,6 +43,7 @@
     "pinia-plugin-persistedstate": "^4.7.1",
     "rfdc": "^1.4.1",
     "svgcanvas": "^2.6.0",
+    "svgo": "^4.0.1",
     "upng-js": "^2.1.0",
     "vue": "^3.5.32",
     "vue-router": "^4.6.4"

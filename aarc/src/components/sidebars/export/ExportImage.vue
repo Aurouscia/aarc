@@ -22,6 +22,7 @@ import ExportEtcConfig from './configs/ExportEtcConfig.vue';
 import ExportTimeConfig from './configs/ExportTimeConfig.vue';
 import Prompt from '../../common/Prompt.vue';
 import { useImageExport } from './composables/useImageExport';
+import { optimizeSvg } from '@/utils/svgUtils/optimizeSvg';
 import { useApngExport } from './composables/useApngExport';
 import { useGifExport } from './composables/useGifExport';
 import { useAnimatedExport } from './composables/useAnimatedExport';
@@ -88,7 +89,13 @@ async function renderMainCvsToSvgBlobUrl(): Promise<string | null> {
     }
     mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
     const svgStr = svgCtx.getSerializedSvg(true)
-    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' })
+    let optimizedSvgStr = svgStr
+    try {
+        optimizedSvgStr = optimizeSvg(svgStr)
+    } catch (e) {
+        console.error('SVGO 优化失败，使用原始 SVG', e)
+    }
+    const blob = new Blob([optimizedSvgStr], { type: 'image/svg+xml;charset=utf-8' })
     return URL.createObjectURL(blob)
 }
 
