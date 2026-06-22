@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SideBar from '../../common/SideBar.vue';
-import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import { useSideListShared } from './shared/useSideListShared';
 import { Line, LineType } from '@/models/save';
 import LineOptions from '../options/LineOptions.vue';
@@ -34,7 +34,7 @@ const {
     showingBtns, showingChildrenOfInfo,
     showChildrenOf, leaveParent,
     showListSidebar, hideListSidebar,
-    saveStore, flashingLineId, scrollAndFlash
+    saveStore, flashingLineId, scrollToLine, scrollAndFlash
 } = useSideListShared(LineType.common, sidebar, lineOptions, childrenLines, linesContainer, props.isChildrenList ? undefined : 'focusCommonLine')
 
 const colorPalette = useTemplateRef('colorPalette')
@@ -47,11 +47,12 @@ function editColorByPalette(line:Line){
 }
 
 const editingSlicesLine = ref<Line>()
-function editSlicesOfLine(line:Line){
+async function editSlicesOfLine(line:Line){
     editingSlicesLine.value = line
-    window.setTimeout(()=>{
+    await nextTick()
+    requestAnimationFrame(()=>{
         sliceEditorTable.value?.open()
-    }, 1)
+    })
 }
 
 const pickers = useTemplateRef('pickers')
@@ -59,39 +60,71 @@ function clickContainer(){
     pickers.value?.forEach(cp => cp?.close())
 }
 
-async function focusLine(lineId?:number){
-    if(lineId === undefined) return
+type FocusLineMode = {
+    flash: boolean
+    childOpenDelay: number
+    childScrollDelay: number
+    childMethod: 'focusLine' | 'focusLineForSliceEdit'
+}
+
+async function focusLineInternal(lineId?:number, mode?:FocusLineMode){
+    if(lineId === undefined || !mode) return
     const line = saveStore.getLineById(lineId)
     if(!line) return
     if(props.isChildrenList){
-        // 子列表：只负责滚动闪烁当前列表中的线路
-        await scrollAndFlash(lineId)
+        // 子列表：只负责滚动（是否闪烁由模式决定）
+        if(mode.flash)
+            await scrollAndFlash(lineId)
+        else
+            await scrollToLine(lineId)
         return
     }
-    // 主列表逻辑
-    // 先展开主列表，切换到该线路（或其父线路）所属的组
+    // 主列表逻辑：先展开主列表，切换到该线路（或其父线路）所属的组
     showingLineGroup.value = line.group
     showListSidebar()
-    // 在主列表中滚动到该线路（或父线路）的位置并闪烁
+    // 在主列表中滚动到该线路（或父线路）的位置
     const parentLineId = line.parent ?? line.id
-    await scrollAndFlash(parentLineId)
-    // 如果目标线路是子线路，等待主列表闪烁结束后，打开子列表并滚动闪烁
+    if(mode.flash)
+        await scrollAndFlash(parentLineId)
+    else
+        await scrollToLine(parentLineId)
+    // 如果目标线路是子线路，按模式指定的延迟打开子列表并滚动
     if(line.parent){
         window.setTimeout(()=>{
             childrenLines?.value?.comeOut(line.parent)
             window.setTimeout(()=>{
-                if(childrenLines?.value && 'focusLine' in childrenLines.value){
-                    (childrenLines.value as any).focusLine(lineId)
+                const child = childrenLines?.value
+                if(child && mode.childMethod in child){
+                    (child as any)[mode.childMethod](lineId)
                 }
-            }, 350)
-        }, 800)
+            }, mode.childScrollDelay)
+        }, mode.childOpenDelay)
     }
+}
+
+function focusLine(lineId?:number){
+    return focusLineInternal(lineId, {
+        flash: true,
+        childOpenDelay: 800,
+        childScrollDelay: 350,
+        childMethod: 'focusLine'
+    })
+}
+
+function focusLineForSliceEdit(lineId?:number){
+    return focusLineInternal(lineId, {
+        flash: false,
+        childOpenDelay: 100,
+        childScrollDelay: 0,
+        childMethod: 'focusLineForSliceEdit'
+    })
 }
 
 defineExpose({
     comeOut: (lineId?:number)=>showListSidebar(lineId),
     fold: ()=>hideListSidebar(),
-    focusLine
+    focusLine,
+    focusLineForSliceEdit
 })
 onMounted(()=>{
     //因为本组件在编辑器中始终存在，所以仅会执行一次
@@ -104,10 +137,10 @@ onMounted(()=>{
             if(lineId === undefined) return
             const line = saveStore.getLineById(lineId)
             if(!line) return
-            await focusLine(lineId)
-            // 等待定位动画完成后打开 SliceEditorTable
-            // 子线路需要先展开子列表，因此等待更久
-            const delay = line.parent ? 1200 : 800
+            await focusLineForSliceEdit(lineId)
+            // 以 100ms 间隔快速打开列表→子列表→片段编辑器
+            // 非子线路只需打开列表后即可打开片段编辑器
+            const delay = line.parent ? 200 : 100
             window.setTimeout(()=>{
                 editSlicesOfLine(line)
             }, delay)
@@ -177,9 +210,9 @@ onUnmounted(()=>{
         @open-slice-editor="editSlicesOfLine(editingInfoLine)"></LineOptions>
     <ColorPalette ref="colorPalette" v-if="editingColorByPaletteLine"
         :editing-line="editingColorByPaletteLine"></ColorPalette>
+    <Lines v-if="!isChildrenList" ref="childrenLines" :is-children-list="true"></Lines>
     <SliceEditorTable ref="sliceEditorTable" v-if="editingSlicesLine"
         :line="editingSlicesLine" @close="sidebar?.fold()"></SliceEditorTable>
-    <Lines v-if="!isChildrenList" ref="childrenLines" :is-children-list="true"></Lines>
 </template>
 
 <style scoped lang="scss">

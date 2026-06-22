@@ -175,7 +175,7 @@ export function useSideListShared(
 
     const flashingLineId = ref<number>()
     let flashTimer = 0
-    async function scrollAndFlash(lineId:number){
+    async function scrollToLine(lineId:number){
         await nextTick()
         const container = linesContainer?.value
         if(container){
@@ -184,6 +184,9 @@ export function useSideListShared(
                 target.scrollIntoView({ behavior: 'instant', block: 'center' })
             }
         }
+    }
+    async function scrollAndFlash(lineId:number){
+        await scrollToLine(lineId)
         window.clearTimeout(flashTimer)
         flashingLineId.value = lineId
         flashTimer = window.setTimeout(()=>{
@@ -238,6 +241,6 @@ export function useSideListShared(
         showingBtns, showingChildrenOfInfo, showingChildrenOf,
         showChildrenOf, leaveParent,
         showListSidebar, hideListSidebar,
-        flashingLineId, scrollAndFlash, focusLine
+        flashingLineId, scrollToLine, scrollAndFlash, focusLine
     }
 }
