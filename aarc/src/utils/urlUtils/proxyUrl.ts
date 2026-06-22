@@ -20,3 +20,21 @@ export function convertToProxyUrlIfNeeded(url: string, type:'icon'|'json') {
     const baseUrl = import.meta.env.VITE_ApiUrlBase
     return `${baseUrl}/proxy/${type}/${encoded}`
 }
+
+/**
+ * 将代理 URL 还原为原始 URL
+ * 用于 SVG 导出等场景：导出文件脱离当前服务端后，/proxy/icon/... 无法访问
+ * @param content 包含代理 URL 的文本（如 SVG 字符串）
+ * @param type 代理类型
+ * @returns 还原后的文本
+ */
+export function restoreUrlFromProxyIfNeeded(content: string, type: 'icon' | 'json'): string {
+    const regex = new RegExp(`(?:https?://[^"'\\s<>]+)?/proxy/${type}/([^"'\\s<>]+)`, 'g')
+    return content.replace(regex, (match, encoded: string) => {
+        try {
+            return decodeURIComponent(encoded)
+        } catch {
+            return match
+        }
+    })
+}
