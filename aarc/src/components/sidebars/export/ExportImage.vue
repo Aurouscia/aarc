@@ -290,10 +290,10 @@ defineExpose({
 })
 
 function explainPixelMode(){
-    window.alert('选择“指定”模式后，将严格按“像素”的值进行导出，“像素”值较大时可获得高清图片')
+    showPixelModePrompt.value = true
 }
 function explainFileFormat(){
-    window.alert('png文件较大（但兼容性好且无损），webp文件较小且可以设置画质（但老设备可能无法查看），jpg建议不要用；svg为矢量格式，可无限缩放')
+    showFileFormatPrompt.value = true
 }
 
 onMounted(()=>{
@@ -328,6 +328,8 @@ watch(gifExportFailedMsg, (val) => {
 })
 
 const showApngExportNotice = ref(false)
+const showPixelModePrompt = ref(false)
+const showFileFormatPrompt = ref(false)
 </script>
 
 <template>
@@ -349,7 +351,6 @@ const showApngExportNotice = ref(false)
             <div class="configItem">
                 <div class="itemName">
                     像素模式
-                    <!--TODO：删除它，改为使用统一的自定义alert组件-->
                     <div class="questionMark" @click="explainPixelMode">?</div>
                 </div>
                 <select v-model="pixelRestrictMode">
@@ -360,14 +361,13 @@ const showApngExportNotice = ref(false)
             <div class="configItem">
                 <div class="itemName">
                     图片格式
-                    <!--TODO：删除它，改为使用统一的自定义alert组件-->
-                    <div class="questionMark" @click="explainFileFormat">?</div>
+                    <div class="questionMark questionMarkBlue" @click="explainFileFormat">?</div>
                 </div>
                 <select v-model="fileFormat">
                     <option :value="'png'">PNG(不推荐)</option>
                     <option :value="'webp'">WEBP</option>
                     <option :value="'jpeg'">JPG(不推荐)</option>
-                    <option :value="'svg'">SVG(矢量)</option>
+                    <option :value="'svg'">SVG</option>
                 </select>
             </div>
             <div class="configItem" v-if="fileFormat!='png' && fileFormat!='svg'">
@@ -391,6 +391,16 @@ const showApngExportNotice = ref(false)
             <div v-show="!exported" class="note apng-notice-entry" @click="showApngExportNotice=true">
                 动图功能有关注意事项
             </div>
+            <Prompt v-if="showPixelModePrompt" @close="showPixelModePrompt=false" :bg-click-close="true">
+                <p>选择“指定”模式后，将严格按“像素”的值进行导出，“像素”值较大时可获得高清图片</p>
+            </Prompt>
+            <Prompt v-if="showFileFormatPrompt" @close="showFileFormatPrompt=false" :bg-click-close="true">
+                <p><b class="fileFormatName">PNG</b>文件较大，但兼容性好且无损</p>
+                <p><b class="fileFormatName">WEBP</b>（最推荐）文件较小且可以设置画质，但老设备可能无法查看</p>
+                <p><b class="fileFormatName">JPG</b>不建议使用，视觉效果较差，且不支持透明度</p>
+                <p><b class="fileFormatName">SVG</b>矢量格式，可无限缩放，或在 InkScape、illustrator 等工具进一步编辑</p>
+                <p class="smallNoteVital" style="margin-top: 10px;">目前导出的svg文件内若含有图片，则只能联网查看，图片无法访问将导致其位置变为空白</p>
+            </Prompt>
             <Prompt v-if="showApngExportNotice" @close="showApngExportNotice=false" :bg-click-close="true">
                 <p>请先为每条线路设置“开通时间”，才能使用本功能。</p><br/>
                 <p>本功能可在下方的“略缩图动画”中设置。</p><br/>
@@ -513,11 +523,10 @@ const showApngExportNotice = ref(false)
     font-size: 14px;
 }
 
-// TODO：删除它，改为使用统一的自定义alert组件
 .questionMark{
     height: 12px;
     width: 12px;
-    border: 1px solid #aaa;
+    border: 1.5px solid #aaa;
     color: #aaa;
     font-size: 10px;
     line-height: 12px;
@@ -526,12 +535,20 @@ const showApngExportNotice = ref(false)
     cursor: pointer;
     display: inline-block;
 }
+.questionMarkBlue{
+    border-color: cornflowerblue;
+    color: cornflowerblue;
+}
 
 .rangeDisplay{
     margin-top: -10px;
     font-size: 12px;
     color: #999;
     text-align: center;
+}
+.fileFormatName{
+    color: cornflowerblue;
+    margin-right: 4px;
 }
 
 .exportConfigs{
