@@ -91,7 +91,7 @@ async function renderMainCvsToSvgBlobUrl(): Promise<string | null> {
     const svgStr = svgCtx.getSerializedSvg(true)
     let optimizedSvgStr = svgStr
     try {
-        optimizedSvgStr = optimizeSvg(svgStr)
+        optimizedSvgStr = await optimizeSvg(svgStr)
     } catch (e) {
         console.error('SVGO 优化失败，使用原始 SVG', e)
     }

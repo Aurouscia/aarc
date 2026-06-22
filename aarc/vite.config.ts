@@ -51,6 +51,8 @@ export default defineConfig(({ mode }) => {
           manualChunks: (id) => {
             if (id.includes('@aurouscia'))
               return 'au'
+            if (id.includes('svgo'))
+              return 'svgo'
             if (id.includes('node_modules'))
               return 'libs'
           }
