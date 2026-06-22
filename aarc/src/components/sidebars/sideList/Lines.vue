@@ -35,7 +35,7 @@ const {
     showChildrenOf, leaveParent,
     showListSidebar, hideListSidebar,
     saveStore, flashingLineId, scrollAndFlash
-} = useSideListShared(LineType.common, sidebar, lineOptions, childrenLines, linesContainer, 'focusCommonLine')
+} = useSideListShared(LineType.common, sidebar, lineOptions, childrenLines, linesContainer, props.isChildrenList ? undefined : 'focusCommonLine')
 
 const colorPalette = useTemplateRef('colorPalette')
 const editingColorByPaletteLine = ref<Line>()
@@ -99,6 +99,7 @@ onMounted(()=>{
     autoInitShowingGroup()
     if(!props.isChildrenList){
         const lineFocusor = useLineFocusorStore()
+        lineFocusor.focusCommonLine = focusLine
         lineFocusor.focusAndEditSlicesOfCommonLine = async (lineId?:number)=>{
             if(lineId === undefined) return
             const line = saveStore.getLineById(lineId)
