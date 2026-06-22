@@ -13,6 +13,7 @@ import ColorPickerForLine from '../shared/ColorPickerForLine.vue';
 import ColorPalette from '../ColorPalette.vue';
 import boxIcon from '@/assets/ui/box.svg'
 import SliceEditorTable from '../options/slices/SliceEditorTable.vue';
+import { useLineFocusorStore } from '@/models/stores/utils/lineFocusorStore';
 
 
 const props = defineProps<{isChildrenList?:boolean}>()
@@ -96,6 +97,21 @@ onMounted(()=>{
     //因为本组件在编辑器中始终存在，所以仅会执行一次
     showingBtns.value = 'children'
     autoInitShowingGroup()
+    if(!props.isChildrenList){
+        const lineFocusor = useLineFocusorStore()
+        lineFocusor.focusAndEditSlicesOfCommonLine = async (lineId?:number)=>{
+            if(lineId === undefined) return
+            const line = saveStore.getLineById(lineId)
+            if(!line) return
+            await focusLine(lineId)
+            // 等待定位动画完成后打开 SliceEditorTable
+            // 子线路需要先展开子列表，因此等待更久
+            const delay = line.parent ? 1200 : 800
+            window.setTimeout(()=>{
+                editSlicesOfLine(line)
+            }, delay)
+        }
+    }
 })
 onUnmounted(()=>{
     disposeLinesArrange()

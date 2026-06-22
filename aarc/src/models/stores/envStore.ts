@@ -703,6 +703,10 @@ export const useEnvStore = defineStore('env', ()=>{
                 cb: ()=>insertPtCb(ControlPointSta.plain),
                 text: '节点',
                 textSub: '在此插入'
+            },{
+                cb: createTagForLine,
+                text:'标签',
+                textSub:'创建'
             })
         const btns1:OpsBtn[] = [{
                 cb: ()=>{
@@ -720,11 +724,14 @@ export const useEnvStore = defineStore('env', ()=>{
                 },
                 text: '定位',
                 textSub: '列表位置'
-            }
-            ,{
-                cb: createTagForLine,
-                text:'标签',
-                textSub:'创建'
+            },{
+                cb: ()=>{
+                    lineFocusorStore.focusAndEditSlicesOfLine(activeLine.value)
+                    cancelActive()
+                    setOpsPos(false)
+                },
+                text: '片段',
+                textSub: '片段编辑'
             }
         ]
         opsStore.btns = [btns, btns1]

@@ -5,15 +5,22 @@ import { ref } from "vue";
 export const useLineFocusorStore = defineStore('linefocusor', ()=>{
     const focusCommonLine = ref<(lineId?:number)=>void>(()=>{})
     const focusTerrainLine = ref<(lineId?:number)=>void>(()=>{})
+    const focusAndEditSlicesOfCommonLine = ref<(lineId?:number)=>void>(()=>{})
     function focusLine(line?:Line){
         if(line?.type === LineType.common)
             focusCommonLine.value(line.id)
         else if(line?.type === LineType.terrain)
             focusTerrainLine.value(line.id)
     }
+    function focusAndEditSlicesOfLine(line?:Line){
+        if(line?.type === LineType.common)
+            focusAndEditSlicesOfCommonLine.value(line.id)
+    }
     return {
         focusLine,
         focusCommonLine,
-        focusTerrainLine
+        focusTerrainLine,
+        focusAndEditSlicesOfCommonLine,
+        focusAndEditSlicesOfLine
     }
 })
