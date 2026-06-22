@@ -1,9 +1,20 @@
 import { ref } from 'vue';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
+import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
+import { useApiStore } from '@/app/com/apiStore';
+import { useSaveStore } from '@/models/stores/saveStore';
+import { useRoute } from 'vue-router';
+import { editorParamNameSaveId } from '@/pages/editors/routes/routesNames';
+import { timeStr } from '@/utils/timeUtils/timeStr';
 import { storeToRefs } from 'pinia';
 
 export function useImageExport() {
     const { browserInfo, isIPhoneOrIPad, isWebkit } = storeToRefs(useBrowserInfoStore())
+    const exportLocalConfig = useExportLocalConfigStore()
+    const { fileNameStyle } = storeToRefs(exportLocalConfig)
+    const api = useApiStore()
+    const saveStore = useSaveStore()
+    const route = useRoute()
     
     const exporting = ref<boolean>(false)
     const exported = ref<boolean>(false)
@@ -77,6 +88,40 @@ export function useImageExport() {
         exporting.value = false
     }
 
+    async function getExportFileName(ext?: string, suffix?: string): Promise<string | undefined> {
+        let saveId = route.params[editorParamNameSaveId]
+        if (typeof saveId === 'object')
+            saveId = saveId[0] || 'err'
+        const saveIdNum = parseInt(saveId)
+        let saveName: string
+        if (isNaN(saveIdNum))
+            saveName = saveId
+        else {
+            const info = await api.save.loadInfo(saveIdNum)
+            saveName = info?.name ?? '??'
+        }
+        let name = ''
+        const style = fileNameStyle.value
+        if (style == 'date')
+            name = `${saveName}-${timeStr('date')}`
+        else if (style == 'dateTime')
+            name = `${saveName}-${timeStr('dateTime')}`
+        else if (style == 'lineCount') {
+            const lineCount = saveStore.getLineCount()
+            const staCount = saveStore.getStaCount()
+            name = `${saveName}-${lineCount}线${staCount}站`
+        } else {
+            name = saveName ?? '未命名'
+        }
+        if (suffix) {
+            name = `${name}-${suffix}`
+        }
+        if (ext) {
+            return `${name}.${ext}`
+        }
+        return name
+    }
+
     return {
         // state
         exporting,
@@ -89,6 +134,7 @@ export function useImageExport() {
         canEncodeWebP,
         cvsToDataUrl,
         triggerDownload,
+        getExportFileName,
         resetExportState,
         startExport,
         finishExport,

@@ -7,10 +7,12 @@ import ConfigSection from '../configs/shared/ConfigSection.vue';
 import { LineType, ControlPointSta } from '@/models/save';
 import { removeConsecutiveSameItem } from "@/utils/lang/removeConsecutiveSameItem";
 import copy from 'copy-to-clipboard';
+import { useImageExport } from './composables/useImageExport';
 
 const saveStore = useSaveStore()
 const staClusterStore = useStaClusterStore()
 const { showPop } = useUniqueComponentsStore()
+const { triggerDownload, getExportFileName } = useImageExport()
 
 const wikiMode = ref(false)
 const staNameSplitChar = ref('')
@@ -47,7 +49,7 @@ function parseLineName(lname: string) {
     return lname
 }
 
-async function copyLineListTxt() {
+function buildLineListTxt(): string {
     let txt = '|线路|颜色|起点|终点|\n'
     saveStore.save?.lines.filter(l => l.type == LineType.common && !l.isFake).forEach(l => {
         let lname = parseLineName(l.name)
@@ -64,9 +66,9 @@ async function copyLineListTxt() {
         }
         txt += '\n'
     })
-    copyText(txt)
+    return txt
 }
-async function copyStaNameListTxt() {
+function buildStaNameListTxt(): string {
     let txt = ''
     saveStore.save?.lines.filter(l => l.type == LineType.common && !l.isFake).forEach(l => {
         let lname = parseLineName(l.name)
@@ -103,7 +105,27 @@ async function copyStaNameListTxt() {
             txt += stationNameList.join(splitChar) + '\n'
         }
     })
-    copyText(txt)
+    return txt
+}
+async function copyLineListTxt() {
+    copyText(buildLineListTxt())
+}
+async function copyStaNameListTxt() {
+    copyText(buildStaNameListTxt())
+}
+async function downloadStaNameListTxt() {
+    const txt = buildStaNameListTxt()
+    const fileName = await getExportFileName('txt', 'stations')
+    if (fileName) {
+        triggerDownload(URL.createObjectURL(new Blob([txt], { type: 'text/plain' })), fileName)
+    }
+}
+async function downloadLineListTxt() {
+    const txt = buildLineListTxt()
+    const fileName = await getExportFileName('txt', 'lines')
+    if (fileName) {
+        triggerDownload(URL.createObjectURL(new Blob([txt], { type: 'text/plain' })), fileName)
+    }
 }
 function copyText(txt: string) {
     const success = copy(txt);
@@ -187,6 +209,9 @@ function copyText(txt: string) {
         </table>
         <button @click="copyStaNameListTxt" class="minor">复制站名列表</button>
         <button @click="copyLineListTxt" class="minor">复制线路列表</button>
+        <button @click="downloadStaNameListTxt" class="minor">下载站名列表</button>
+        <button @click="downloadLineListTxt" class="minor">下载线路列表</button>
+        <div class="smallNote" style="text-align: center;">下载文件的命名方式跟随图片导出设置</div>
     </ConfigSection>
 </template>
 

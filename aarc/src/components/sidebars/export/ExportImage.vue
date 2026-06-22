@@ -2,11 +2,8 @@
 import { onMounted, ref, useTemplateRef, watch } from 'vue';
 import SideBar from '../../common/SideBar.vue';
 import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
-import { useApiStore } from '@/app/com/apiStore';
-import { useRoute } from 'vue-router';
-import { editorParamNameSaveId } from '@/pages/editors/routes/routesNames';
 import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
-import { timeStr, toYMD } from '@/utils/timeUtils/timeStr';
+import { toYMD } from '@/utils/timeUtils/timeStr';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext';
 import { Context as SvgCanvasContext } from 'svgcanvas';
@@ -34,9 +31,7 @@ const sidebar = useTemplateRef('sidebar')
 const mainCvsDispatcher = useMainCvsDispatcher()
 const miniatureCvsDispatcher = useMiniatureCvsDispatcher()
 const saveStore = useSaveStore()
-const api = useApiStore()
 const { isWindows } = storeToRefs(useBrowserInfoStore())
-const route = useRoute()
 const { showPop } = useUniqueComponentsStore()
 
 const renderOptionsStore = useRenderOptionsStore()
@@ -54,6 +49,7 @@ const {
     canEncodeWebP,
     cvsToDataUrl,
     triggerDownload,
+    getExportFileName,
     startExport,
     finishExport,
     setExportFailed
@@ -247,34 +243,9 @@ async function downloadMiniatureAnimation() {
 }
 
 async function getExportImageFileName(isMini?:boolean){
-    let saveId = route.params[editorParamNameSaveId]
-    if(typeof saveId === 'object')
-        saveId = saveId[0] || 'err'
-    const saveIdNum = parseInt(saveId)
-    let saveName:string
-    if(isNaN(saveIdNum))
-        saveName = saveId
-    else{
-        const info = await api.save.loadInfo(saveIdNum)
-        saveName = info?.name ?? '??'
-    }
-    let name = ''
-    const style = fileNameStyle.value
-    if (style == 'date')
-        name = `${saveName}-${timeStr('date')}`
-    else if (style == 'dateTime')
-        name = `${saveName}-${timeStr('dateTime')}`
-    else if (style == 'lineCount') {
-        const lineCount = saveStore.getLineCount()
-        const staCount = saveStore.getStaCount()
-        name = `${saveName}-${lineCount}线${staCount}站`
-    } else {
-        name = saveName ?? '未命名'
-    }
-    if (isMini) {
-        name = `${name}-mini`
-    }
-    return `${name}.${fileFormat.value}`
+    const suffix = isMini ? 'mini' : undefined
+    const fileName = await getExportFileName(fileFormat.value, suffix)
+    return fileName
 }
 
 function getExportRenderSize():{scale:number, cvsWidth:number, cvsHeight:number}{
@@ -411,7 +382,7 @@ const showApngExportNotice = ref(false)
             <button @click="downloadMiniatureCvsAsImage" class="minor">导出为缩略图</button>
             <button @click="downloadMiniatureAnimation" class="minor">导出发展史略缩动图（{{ animationMini.fileFormat }}）</button>
             <div v-show="!exported" class="note apng-notice-entry" @click="showApngExportNotice=true">
-                试验功能有关注意事项
+                动图功能有关注意事项
             </div>
             <Prompt v-if="showApngExportNotice" @close="showApngExportNotice=false" :bg-click-close="true">
                 <p>请先为每条线路设置“开通时间”，才能使用本功能。</p><br/>
@@ -562,6 +533,6 @@ const showApngExportNotice = ref(false)
 
 .apng-notice-entry{
     cursor: pointer;
-    color: cornflowerblue
+    color: #999
 }
 </style>
