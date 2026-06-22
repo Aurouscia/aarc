@@ -116,16 +116,20 @@ const childrenCount = computed<number>(()=>{
     pointer-events: none;
 }
 .search-icon{
-    // 位于右下角的搜索按钮，需要外层线路卡片是 position 非 static 才能正确定位
+    // 需要外层线路卡片是 position 非 static 才能正确定位
     position: absolute;
-    right: 2px;
-    bottom: -1px;
-    width: 11px;
-    height: 11px;
-    padding: 0px 4px 4px 0px;
+    right: -10px;
+    top: -8px;
+    width: 15px;
+    height: 15px;
+    padding: 5px;
+    border-radius: 5px 0px 0px 5px;
+    background-color: white;
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2);
     cursor: pointer;
+    z-index: 10;
     &:hover{
-        filter: brightness(0.6);
+        filter: brightness(0.8);
     }
 }
 </style>
