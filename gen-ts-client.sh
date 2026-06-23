@@ -6,6 +6,8 @@
 #   ./gen-ts-client.sh                  # 使用 dotnet run 启动（默认），写到 ../aarc/src/app/com/apiGenerated.ts
 #   ./gen-ts-client.sh --dll            # 使用已发布的 dotnet <dll> 启动
 #   ./gen-ts-client.sh --dll --here     # 使用 DLL 启动，并写到当前目录 ./apiGenerated.ts
+# 注意:
+#   确保本文件是 LF 换行模式
 
 set -e
 
