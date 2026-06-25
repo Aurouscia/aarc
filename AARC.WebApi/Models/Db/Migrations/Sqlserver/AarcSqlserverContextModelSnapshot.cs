@@ -22,6 +22,40 @@ namespace AARC.WebApi.Models.Db.Migrations.Sqlserver
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("AARC.WebApi.Models.DbModels.Files.UserFavorite", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Group")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<DateTime>("LastActive")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ObjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OwnerUserId")
+                        .HasColumnType("int");
+
+                    b.Property<byte>("Type")
+                        .HasColumnType("tinyint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerUserId", "Type", "Group");
+
+                    b.ToTable("UserFavorites");
+                });
+
             modelBuilder.Entity("AARC.WebApi.Models.DbModels.Files.UserFile", b =>
                 {
                     b.Property<int>("Id")
@@ -59,9 +93,12 @@ namespace AARC.WebApi.Models.Db.Migrations.Sqlserver
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
+                    b.Property<byte>("Type")
+                        .HasColumnType("tinyint");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerUserId", "Size", "Priority");
+                    b.HasIndex("OwnerUserId", "Priority");
 
                     b.ToTable("UserFiles");
                 });
@@ -132,15 +169,20 @@ namespace AARC.WebApi.Models.Db.Migrations.Sqlserver
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
+                    b.Property<string>("ExternalIssuer")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("ExternalSubjectId")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.Property<string>("Intro")
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
                     b.Property<DateTime>("LastActive")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("MasterUserId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -167,6 +209,8 @@ namespace AARC.WebApi.Models.Db.Migrations.Sqlserver
                         .HasColumnType("tinyint");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name");
 
                     b.ToTable("Users");
                 });
@@ -203,7 +247,9 @@ namespace AARC.WebApi.Models.Db.Migrations.Sqlserver
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TargetUserId", "OperatorUserId");
+                    b.HasIndex("OperatorUserId");
+
+                    b.HasIndex("TargetUserId");
 
                     b.ToTable("UserHistories");
                 });
@@ -398,7 +444,9 @@ namespace AARC.WebApi.Models.Db.Migrations.Sqlserver
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerUserId", "ParentFolderId");
+                    b.HasIndex("OwnerUserId");
+
+                    b.HasIndex("ParentFolderId");
 
                     b.ToTable("SaveFolders");
                 });
@@ -422,7 +470,9 @@ namespace AARC.WebApi.Models.Db.Migrations.Sqlserver
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SaveId", "FolderId");
+                    b.HasIndex("FolderId");
+
+                    b.HasIndex("SaveId");
 
                     b.ToTable("SaveFolderRelations");
                 });

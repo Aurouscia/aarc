@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using AARC.WebApi.Models.DbModels.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace AARC.WebApi.Models.DbModels.Files
 {
-    [Index(nameof(OwnerUserId), nameof(Size), nameof(Priority))]
+    [Index(nameof(OwnerUserId), nameof(Priority))]
     public class UserFile : IDbModel, IPrioritizable, IOwnable
     {
         public int Id { get; set; }
@@ -15,6 +16,7 @@ namespace AARC.WebApi.Models.DbModels.Files
         [MaxLength(introMaxLength)]
         public string? Intro { get; set; }
         public int Size { get; set; }
+        public UserFileType Type { get; set; }
         public byte Priority { get; set; }
         public DateTime LastActive { get; set; }
         public bool Deleted { get; set; }

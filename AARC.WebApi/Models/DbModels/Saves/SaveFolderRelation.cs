@@ -2,7 +2,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AARC.WebApi.Models.DbModels.Saves;
 
-[Index(nameof(SaveId), nameof(FolderId))]
+[Index(nameof(SaveId))]
+[Index(nameof(FolderId))]
 public class SaveFolderRelation: IPrioritizable
 {
     public int Id { get; set; }

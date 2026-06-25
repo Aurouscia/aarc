@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AARC.WebApi.Models.DbModels.Identities;
 
-[Index(nameof(TargetUserId), nameof(OperatorUserId))]
+[Index(nameof(TargetUserId))]
+[Index(nameof(OperatorUserId))]
 public class UserHistory
 {
     public int Id { get; set; }

@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AARC.WebApi.Models.DbModels.Saves;
 
-[Index(nameof(OwnerUserId), nameof(ParentFolderId))]
+[Index(nameof(OwnerUserId))]
+[Index(nameof(ParentFolderId))]
 public class SaveFolder:IDbModel, IPrioritizable, IOwnable
 {
     public int Id { get; set; }

@@ -12,6 +12,7 @@ namespace AARC.WebApi.Models.Db.Context
         public DbSet<AuthGrant> AuthGrants { get; set; }
         
         public DbSet<UserFile> UserFiles { get; set; }
+        public DbSet<UserFavorite> UserFavorites { get; set; }
         
         public DbSet<Save> Saves { get; set; }
         public DbSet<SaveFolder> SaveFolders { get; set; }
