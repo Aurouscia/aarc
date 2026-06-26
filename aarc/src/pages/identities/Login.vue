@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { guideInfo } from '@/app/guideInfo';
@@ -11,6 +11,7 @@ import { RouterLink } from 'vue-router';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
 import { loginExpireHrsDefault, useAuthLocalConfigStore } from '@/app/localConfig/authLocalConfig';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
+import { oidcEnabled, oidcAuthority, hideLocalAuth, apiBaseUrl } from '@/app/envConfig';
 
 const props = defineProps<{
     backAfterSuccess?:string
@@ -29,6 +30,37 @@ const { userInfo } = storeToRefs(userInfoStore)
 const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
 const { registerRoute } = useIdentitiesRoutesJump()
+
+const oidcPopup = ref<Window | null>(null)
+
+function oidcLogin() {
+    const base = (apiBaseUrl ?? '').replace(/\/$/, '')
+    const url = `${base}/api/auth/oidc/challenge`
+    oidcPopup.value = window.open(url, 'oidcLogin', 'width=500,height=600')
+}
+
+async function handleOidcMessage(event: MessageEvent) {
+    if (event.data?.type !== 'AARC_OIDC_LOGIN' || !event.data.token) {
+        return
+    }
+    oidcPopup.value?.close()
+    api.setJwtToken(event.data.token)
+    userInfoStore.clearCache()
+    await userInfoStore.getIdentityInfo(true)
+    showPop("登录成功", "success")
+    if (props.backAfterSuccess) {
+        router.back()
+    } else {
+        router.push("/")
+    }
+}
+
+onMounted(() => {
+    window.addEventListener('message', handleOidcMessage)
+})
+onUnmounted(() => {
+    window.removeEventListener('message', handleOidcMessage)
+})
 
 async function Login(){
     const loginResp = await api.auth.login(
@@ -78,6 +110,12 @@ onMounted(async()=>{
     <div>
         <h1>登录</h1>
     </div>
+    <div v-if="oidcEnabled" class="oidc-login">
+        <button @click="oidcLogin" class="confirm">
+            使用 {{ oidcAuthority }} 账号登录
+        </button>
+    </div>
+    <template v-if="!hideLocalAuth">
     <div>
         <table><tbody>
             <tr>
@@ -132,6 +170,7 @@ onMounted(async()=>{
         </div>
         <div style="height: 15vh;"></div>
     </div>
+    </template>
     <div class="loginInfo" v-if="userInfo">
         当前登录：
         [{{ userTypeReadable(userInfo.type??0) }}]{{ userInfo.name }}<br/>
@@ -187,6 +226,10 @@ input{
     padding: 2px;
     margin: 2px;
     margin-left: 10px;
+}
+.oidc-login{
+    text-align: center;
+    margin: 20px 0;
 }
 .login{
     display: flex;

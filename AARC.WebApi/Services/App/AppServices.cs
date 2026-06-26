@@ -1,4 +1,4 @@
-﻿using AARC.WebApi.Services.App.ActionFilters;
+using AARC.WebApi.Services.App.ActionFilters;
 using AARC.WebApi.Services.App.Authentication;
 using AARC.WebApi.Services.App.Config;
 using AARC.WebApi.Services.App.Email;
@@ -23,6 +23,8 @@ namespace AARC.WebApi.Services.App
             services.AddCors(config);
             services.AddSerilog(config, env);
             services.AddJwtService(config);
+            services.Configure<OidcAuthOptions>(config.GetSection("OidcAuth"));
+            services.AddSingleton<OidcAuthService>();
             services.AddProxies();
             services.AddControllers(options =>
             {

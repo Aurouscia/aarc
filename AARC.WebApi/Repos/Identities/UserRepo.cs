@@ -1,4 +1,4 @@
-﻿using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.Db.Context;
 using AARC.WebApi.Models.Db.Context.Specific;
 using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Identities;
@@ -8,6 +8,7 @@ using AARC.WebApi.Utils;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace AARC.WebApi.Repos.Identities
 {
@@ -39,6 +40,72 @@ namespace AARC.WebApi.Repos.Identities
             var pwdEncrypted = UserPwdEncryption.Encrypt(password);
             return Existing
                 .FirstOrDefault(x => x.Name == username && x.Password == pwdEncrypted);
+        }
+
+        /// <summary>
+        /// 根据外部身份标识查找或创建本地用户
+        /// </summary>
+        public User GetOrCreateExternalUser(
+            string externalSubjectId,
+            string externalIssuer,
+            string? displayName,
+            string? email)
+        {
+            var user = Existing.FirstOrDefault(x =>
+                x.ExternalSubjectId == externalSubjectId
+                && x.ExternalIssuer == externalIssuer);
+            if (user is not null)
+                return user;
+
+            var name = GenerateUniqueExternalUserName(displayName, email);
+            var randomPassword = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
+            user = new User
+            {
+                Name = name,
+                Password = UserPwdEncryption.Encrypt(randomPassword),
+                Email = email,
+                Type = UserType.Tourist,
+                ExternalSubjectId = externalSubjectId,
+                ExternalIssuer = externalIssuer
+            };
+            using var t = Context.Database.BeginTransaction();
+            try
+            {
+                int uid = base.Add(user);
+                userHistoryService.RecordRegister(uid);
+                t.Commit();
+                return user;
+            }
+            catch
+            {
+                t.Rollback();
+                throw;
+            }
+        }
+
+        private string GenerateUniqueExternalUserName(string? displayName, string? email)
+        {
+            var candidate = GetSafeUserName(displayName)
+                ?? GetSafeUserName(email?.Split('@').FirstOrDefault())
+                ?? $"u{Guid.NewGuid().ToString("N")[..8]}";
+            if (!Existing.Any(x => x.Name == candidate))
+                return candidate;
+            var suffix = Guid.NewGuid().ToString("N")[..6];
+            var maxBaseLen = User.nameMaxLength - suffix.Length - 1;
+            var baseName = candidate.Length > maxBaseLen ? candidate[..maxBaseLen] : candidate;
+            return $"{baseName}_{suffix}";
+        }
+
+        private static string? GetSafeUserName(string? input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return null;
+            var safe = new string(input
+                .Where(c => char.IsLetterOrDigit(c) || c == '-' || c == '_')
+                .ToArray());
+            if (string.IsNullOrEmpty(safe))
+                return null;
+            return safe.Length > User.nameMaxLength ? safe[..User.nameMaxLength] : safe;
         }
 
         public List<UserDto> IndexUser(string? search, string? orderby)

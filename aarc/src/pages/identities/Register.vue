@@ -5,6 +5,7 @@ import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
 import Notice from '@/components/common/Notice.vue';
 import Turnstile from '@/components/common/Turnstile.vue';
+import { hideLocalAuth } from '@/app/envConfig';
 
 const userName = ref<string>("");
 const password = ref<string>("");
@@ -86,7 +87,11 @@ onMounted(async()=>{
     <div>
         <h1>注册</h1>
     </div>
-    <div>
+    <div v-if="hideLocalAuth" style="text-align: center; margin-top: 30px;">
+        <p>本站点已关闭本地注册，请使用主应用账号登录。</p>
+        <button @click="loginRouteJump(false)" class="confirm">去登录</button>
+    </div>
+    <div v-else>
         <Notice v-if="!noticeRead" :title="'注册须知'" :type="'info'">
             <p><b>1. 为了确保内容合规性，新账号为“游客”账号</b></p>
             <p>2. “游客”不会显示在用户列表中，“游客”的作品也无法公开展示，
