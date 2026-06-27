@@ -59,7 +59,7 @@ namespace AARC.WebApi.Controllers.System
         /// 发起 OIDC 登录：生成 state/nonce/PKCE，重定向到主应用 IdP。
         /// 前端应在弹窗中打开此地址。
         /// </summary>
-        [HttpGet("oidc/challenge")]
+        [HttpGet("/api/auth/oidc/challenge")]
         [AllowAnonymous]
         public async Task<IActionResult> OidcChallenge()
         {
@@ -84,7 +84,7 @@ namespace AARC.WebApi.Controllers.System
         /// OIDC 回调：用 code 换 token，校验 id_token，映射/创建本地用户，签发本应用 JWT。
         /// 返回一段 HTML，通过 postMessage 把 token 交给打开此弹窗的前端页面。
         /// </summary>
-        [HttpGet("oidc/callback")]
+        [HttpGet("/api/auth/oidc/callback")]
         [AllowAnonymous]
         public async Task<IActionResult> OidcCallback(string code, string state)
         {
