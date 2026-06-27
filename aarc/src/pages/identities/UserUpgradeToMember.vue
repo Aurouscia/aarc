@@ -2,6 +2,7 @@
 import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
+import { guideInfo } from '@/app/guideInfo';
 import { useRouter } from 'vue-router';
 
 const api = useApiStore()
@@ -18,8 +19,6 @@ async function upgradeToMember() {
         }, 500)
     }
 }
-
-const help = import.meta.env.VITE_GuideFindHelp
 </script>
 
 <template>
@@ -30,7 +29,10 @@ const help = import.meta.env.VITE_GuideFindHelp
             <div class="rule">1. 当前是游客身份（注册后初始为游客）</div>
             <div class="rule">2. 已绑定邮箱（可以在<b>顶部栏-用户-个人信息设置</b>进行绑定）</div>
             <div class="rule">3. 此前无类型变动记录（没有被封过号）</div>
-            <div class="rule">如果无法接收到邮件，或遇到其他问题：{{ help }}</div>
+            <div class="rule">
+                没有邮箱？请试试使用<a href="https://mail.qq.com">QQ邮箱</a>，每个QQ号自带QQ邮箱
+            </div>
+            <div class="rule" v-if="guideInfo.findHelp">如果无法接收到邮件，或遇到其他问题：{{ guideInfo.findHelp }}</div>
         </div>
         <button
             class="upgrade-btn"
@@ -65,6 +67,10 @@ h1 {
     border-radius: 8px;
     background-color: #f7f7f7;
     border: 1px solid #e0e0e0;
+    a {
+        color: cornflowerblue;
+        text-decoration: underline;
+    }
 }
 
 .upgrade-btn {

@@ -81,7 +81,7 @@ onMounted(async () => {
         @fork="fork">
     </SaveList>
     <div v-if="guideInfo.findHelp" style="color: #666; font-size: 14px; text-align: center; margin-top: 10px;">
-        {{ guideInfo.findHelp }}
+        遇到问题：{{ guideInfo.findHelp }}
     </div>
 </template>
 

@@ -143,7 +143,7 @@ const showGuideInfos = guideInfo.findHelp || guideInfo.extra
     <div v-if="showGuideInfos">
         <h3>更多问题：可问其他用户</h3>
         <div>
-            <p>{{ guideInfo.findHelp }}</p>
+            <p>疑问或反馈：{{ guideInfo.findHelp }}</p>
             <p v-html="guideInfo.extra?.replaceAll('\n', ' | ')"></p>
         </div>
     </div>

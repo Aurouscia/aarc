@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import { guideInfo } from '@/app/guideInfo';
 import Notice from '@/components/common/Notice.vue';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -83,8 +84,6 @@ async function confirmBind() {
     }
 }
 
-const help = import.meta.env.VITE_GuideFindHelp
-
 onMounted(() => {
     const remaining = getRemainingFromStorage();
     if (remaining > 0) {
@@ -107,7 +106,8 @@ onUnmounted(() => {
             如果已经绑定邮箱，获取验证码将导致解绑
         </Notice>
         <Notice :type="'success'" :title="'承诺'">
-            本站会对邮箱严格保密且不会用来发送推广邮件
+            本站会对邮箱严格保密且不会用来发送推广邮件<br/>
+            绑定邮箱是为了恶意行为能被及时遏制，感谢理解
         </Notice>
         <div class="form">
             <div class="row">
@@ -131,7 +131,8 @@ onUnmounted(() => {
             </div>
         </div>
         <Notice v-if="codeRequested" :type="'info'" :title="'提示'">
-            如果确认邮箱正确但收不到邮件，请耐心等待一段时间。验证码不会过期，同一邮箱+验证码在数小时后仍能通过验证。如果遇到问题：{{ help }}
+            如果确认邮箱正确但收不到邮件，请耐心等待一段时间。验证码不会过期，同一邮箱+验证码在数小时后仍能通过验证。
+            <div v-if="guideInfo.findHelp">如果遇到问题：{{ guideInfo.findHelp }}</div>
         </Notice>
     </div>
 </template>
