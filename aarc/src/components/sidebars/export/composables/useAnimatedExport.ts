@@ -1,10 +1,12 @@
-
+import { computed } from 'vue';
 import { useLineTimeStore } from '@/models/stores/saveDerived/slice/lineTimeStore';
 import { useRenderOptionsStore } from '@/models/stores/renderOptionsStore';
 import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
 import { useImageExport } from './useImageExport';
 import { storeToRefs } from 'pinia';
 import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
+import { useSaveStore } from '@/models/stores/saveStore';
+import { LineType, type Line } from '@/models/save';
 import { clamp } from '@/utils/lang/clamp';
 
 // 动画导出配置的上下限常量
@@ -89,7 +91,12 @@ export function useAnimatedExport() {
         lineWidth = clamp(lineWidth, ANIMATED_EXPORT_LIMITS.lineWidth.min, ANIMATED_EXPORT_LIMITS.lineWidth.max)
 
         const { linesSortedByOpenState } = storeToRefs(useLineTimeStore())
-        const lines = linesSortedByOpenState
+        const { linesSortedByZIndex } = storeToRefs(useSaveStore())
+        const lines = computed<Line[]>(() => {
+            const commonLines = linesSortedByOpenState.value.filter(l => l.type === LineType.common)
+            const terrainLines = linesSortedByZIndex.value.filter(l => l.type === LineType.terrain)
+            return [...commonLines, ...terrainLines]
+        })
 
         const timePoints = getAnimationTimePoints()
         if (!timePoints) {
