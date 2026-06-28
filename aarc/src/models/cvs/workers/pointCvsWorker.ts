@@ -8,11 +8,67 @@ import { Coord } from "@/models/coord";
 import { useCvsBlocksControlStore } from "../common/cvs";
 import { useSnapStore } from "@/models/stores/snapStore";
 import { isLineFamily } from "@/utils/lineUtils/isLineFamily";
+import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
+import { useLineSpanStore } from "@/models/stores/saveDerived/slice/lineSpanStore";
+
+/**
+ * 根据站点所在线路的 span 淡化状态，计算车站圆圈应使用的描边颜色。
+ *
+ * 策略：站点所有相邻 span 都淡化时，站点才使用淡化色；
+ * 否则使用未淡化 span 的实际颜色（通常为线路基础色）。
+ *
+ * 相邻 span 的判定：
+ * - 站点索引严格位于某 span 内部（fromIdx < idx < toIdx）→ 该 span 为唯一相邻 span
+ * - 站点索引位于 span 边界（idx === fromIdx 或 idx === toIdx）→ 前后两个 span 均为相邻 span
+ * - 线路端点 → 只有一个相邻 span
+ *
+ * @param line - 站点所属的线路（同线路族时应取主线/父线）
+ * @param ptId - 站点控制点 ID
+ * @returns 实际描边颜色；若站点不在该线路上则返回 undefined
+ */
+export function getStaColorFromSpan(line: Line, ptId: number): string | undefined {
+    const lineSpanStore = useLineSpanStore()
+    const lineStateStore = useLineStateStore()
+    const flattened = lineSpanStore.getFlattenedLine(line.id)
+    if (!flattened || flattened.spans.length === 0) {
+        return lineStateStore.getLineActualColor(line)
+    }
+
+    const indices = ptInLineIndices(ptId, line)
+    if (indices.length === 0) return undefined
+    const idx = indices[0]
+
+    const adjacentSpanIdxs: number[] = []
+    flattened.spans.forEach((span, spanIdx) => {
+        if (idx > span.fromIdx && idx < span.toIdx) {
+            adjacentSpanIdxs.push(spanIdx)
+        } else if (idx === span.fromIdx || idx === span.toIdx) {
+            adjacentSpanIdxs.push(spanIdx)
+        }
+    })
+
+    if (adjacentSpanIdxs.length === 0) {
+        return lineStateStore.getLineActualColor(line)
+    }
+
+    // 策略：所有相邻 span 都淡化，站点才淡化
+    const anyNotDownplayed = adjacentSpanIdxs.some(
+        spanIdx => !lineStateStore.isSpanDownplayed(line.id, spanIdx)
+    )
+
+    if (anyNotDownplayed) {
+        const notDownplayedSpanIdx = adjacentSpanIdxs.find(
+            spanIdx => !lineStateStore.isSpanDownplayed(line.id, spanIdx)
+        )!
+        return lineStateStore.getSpanActualColor(line.id, notDownplayedSpanIdx)
+    }
+
+    return lineStateStore.getSpanActualColor(line.id, adjacentSpanIdxs[0])
+}
 
 export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     const saveStore = useSaveStore();
-    const lineStateStore = useLineStateStore()
     const cvsBlocksControlStore = useCvsBlocksControlStore()
     const cs = useConfigStore();
     const snapStore = useSnapStore()
@@ -82,7 +138,8 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             const arcRadius = cs.config.ptStaSize * sizeRatio
             const lineWidth = cs.config.ptStaLineWidth * sizeRatio
             if(relatedLines.length>0 && isLineFamily(relatedLines) && !active){
-                ctx.strokeStyle = lineStateStore.getLineActualColor(relatedLines[0])
+                const primaryLine = relatedLines.find(l => !l.parent) ?? relatedLines[0]
+                ctx.strokeStyle = getStaColorFromSpan(primaryLine, pt.id) ?? markColor
             }else{
                 ctx.strokeStyle = markColor
                 ctx.beginPath()

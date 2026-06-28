@@ -367,3 +367,5 @@ FodyWeavers.xsd
 
 # macOS
 .DS_Store
+
+/temp
