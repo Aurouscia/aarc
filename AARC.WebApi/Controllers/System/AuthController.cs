@@ -1,11 +1,8 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using AARC.WebApi.Repos.Identities;
+using AARC.WebApi.Services.App.Authentication;
 using AARC.WebApi.Services.App.HttpAuthInfo;
 using AARC.WebApi.Services.Identities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace AARC.WebApi.Controllers.System
 {
@@ -15,7 +12,7 @@ namespace AARC.WebApi.Controllers.System
         UserRepo userRepo,
         UserHistoryService userHistoryService,
         HttpUserInfoService userInfo,
-        IConfiguration config,
+        JwtTokenService jwtTokenService,
         ILogger<AuthController> logger)
         : Controller
     {
@@ -32,27 +29,7 @@ namespace AARC.WebApi.Controllers.System
             var u = userRepo.MatchUser(username, password) 
                 ?? throw new RqEx("用户名或密码错误");
 
-            string domain = config["Jwt:Domain"] ?? throw new Exception("未找到配置项Jwt:Domain");
-            string secret = config["Jwt:SecretKey"] ?? throw new Exception("未找到配置项Jwt:SecretKey");
-
-            expireHrs = Math.Clamp(expireHrs, 3, 8760);
-            var claims = new[]
-            {
-                    new Claim (JwtRegisteredClaimNames.Nbf,$"{new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()}") ,
-                    new Claim (JwtRegisteredClaimNames.Exp,$"{new DateTimeOffset(DateTime.Now.AddHours(expireHrs)).ToUnixTimeSeconds()}"),
-                    new Claim (type:JwtRegisteredClaimNames.NameId, u.Id.ToString())
-            };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken(
-                issuer: domain,
-                audience: domain,
-                claims: claims,
-                expires: DateTime.Now.AddHours(expireHrs),
-                signingCredentials: creds
-            );
-
-            string tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
+            string tokenStr = jwtTokenService.GenerateToken(u.Id, expireHrs);
             logger.LogInformation("[{userId}]{username}登录成功", u.Id, username);
             userHistoryService.RecordLogin(u.Id);
             return new LoginResponse(tokenStr);
