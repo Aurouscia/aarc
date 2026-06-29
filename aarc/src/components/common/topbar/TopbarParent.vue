@@ -3,7 +3,6 @@ import { onMounted, ref, useTemplateRef } from 'vue'
 import { TopbarModel } from '@/app/topbar/topbarModel';
 import { getTopbarData } from '@/app/topbar/topbarData';
 import itemsImg from '@/assets/ui/items.svg';
-import aarcLogo from '@/assets/logo/aarc-new.svg'
 import defaultAvatar from '@/assets/defaultAvatar.svg'
 import TopbarBodyHorizontal from './TopbarBodyHorizontal.vue';
 import TopbarBodyVertical from './TopbarBodyVertical.vue';
@@ -29,7 +28,7 @@ function toggleFold(){
 <template>
 <div class="topbarParent">
     <div class="logo" @click="router.push('/')">
-        <img :src="aarcLogo" alt="aarcLogo" />
+        <img src="/aarc-logo.svg" alt="aarcLogo" />
         <div class="logoText">
             <div class="logoText1">AARC</div>
             <div class="logoText2">线路图画布</div>

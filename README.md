@@ -1,4 +1,4 @@
-<img src="https://gitee.com/au114514/aarc/raw/master/aarc/src/assets/logo/aarc-new.svg" width="150px" style="display:block;margin:auto"/>
+<img src="https://aarc.jowei19.com/aarc-logo.svg" width="150px" style="display:block;margin:auto"/>
 
 <div style="text-align:center;margin-top:15px">
 <div style="font-size:22px">先进型抽象线路图画布</div>

@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import logoImg from '@/assets/logo/aarc-new.svg';
 import { GitInfo } from '@/utils/gitInfo/gitInfo';
 import { getGitInfo } from '@/utils/gitInfo/gitInfoGet'
 import { onBeforeMount, ref } from 'vue';
@@ -13,7 +12,7 @@ onBeforeMount(async () => {
 <template>
     <div class="about">
         <div class="logoContainer">
-            <img :src="logoImg"/>
+            <img src="/aarc-logo.svg"/>
             <div class="appName0">
                 <div class="ab">
                     <span>A</span>
