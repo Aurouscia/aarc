@@ -2,13 +2,14 @@ import { Router } from "vue-router";
 import Login from "../Login.vue";
 import Register from "../Register.vue";
 import { addToRouter } from "@/app/router/addToRouter";
-import { aboutName, loginName, registerName, userCreditName, userEmailBindName, userHistoriesName, userListName, userUpgradeToMemberName } from "./routesNames";
+import { aboutName, loginName, registerName, ssoCallbackName, userCreditName, userEmailBindName, userHistoriesName, userListName, userUpgradeToMemberName } from "./routesNames";
 import UserList from "../UserList.vue";
 import About from "../About.vue";
 import UserHistories from "../UserHistories.vue";
 import UserCredit from "../UserCredit.vue";
 import UserEmailBind from "../UserEmailBind.vue";
 import UserUpgradeToMember from "../UserUpgradeToMember.vue";
+import SsoCallback from "../SsoCallback.vue";
 
 export function addIdentitiesPages(r:Router){
     addToRouter(r, routes);
@@ -55,5 +56,10 @@ const routes = [
         path:"/About",
         component:About,
         name:aboutName
+    },
+    {
+        path:"/SsoCallback",
+        component:SsoCallback,
+        name:ssoCallbackName
     }
 ]

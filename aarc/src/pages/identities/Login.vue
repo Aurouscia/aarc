@@ -12,6 +12,24 @@ import { useIdentitiesRoutesJump } from './routes/routesJump';
 import { loginExpireHrsDefault, useAuthLocalConfigStore } from '@/app/localConfig/authLocalConfig';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
 
+interface F3SsoAudienceIssuerOptions {
+    id: string;
+    displayName: string;
+    origin: string;
+    avatar: string;
+    clientId: string;
+}
+
+interface F3SsoAudienceOptions {
+    id: string;
+    enabled: boolean;
+    issuers: F3SsoAudienceIssuerOptions[];
+}
+
+const showAccountPasswordLogin = import.meta.env.VITE_ShowAccountPasswordLogin === 'true'
+const enableSsoLogin = import.meta.env.VITE_EnableSsoLogin === 'true'
+const apiUrlBase = import.meta.env.VITE_ApiUrlBase
+
 const props = defineProps<{
     backAfterSuccess?:string
 }>();
@@ -29,6 +47,29 @@ const { userInfo } = storeToRefs(userInfoStore)
 const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
 const { registerRoute } = useIdentitiesRoutesJump()
+
+const ssoConfig = ref<F3SsoAudienceOptions | undefined>()
+const ssoLoading = ref<boolean>(false)
+
+async function loadSsoConfig() {
+    console.log({enableSsoLogin})
+    ssoLoading.value = true
+    try {
+        const fetchUrl = `${apiUrlBase}/f3sso/aud/config`
+        const res = await fetch(fetchUrl)
+        if (!res.ok) return
+        ssoConfig.value = await res.json() as F3SsoAudienceOptions
+    } catch(e) {
+        console.error(e)
+        ssoConfig.value = undefined
+    } finally {
+        ssoLoading.value = false
+    }
+}
+
+function ssoLogin(issuer: F3SsoAudienceIssuerOptions) {
+    window.location.href = `${apiUrlBase}/f3sso/aud/auth?issuerId=${issuer.id}`
+}
 
 async function Login(){
     const loginResp = await api.auth.login(
@@ -71,6 +112,7 @@ const leftTimeDisplay = computed<string>(()=>{
 onMounted(async()=>{
     configStore.backCompat()
     await userInfoStore.getIdentityInfo(true);
+    await loadSsoConfig();
 })
 </script>
 
@@ -78,7 +120,7 @@ onMounted(async()=>{
     <div>
         <h1>登录</h1>
     </div>
-    <div>
+    <div v-if="showAccountPasswordLogin">
         <table><tbody>
             <tr>
                 <td>昵称</td>
@@ -130,8 +172,16 @@ onMounted(async()=>{
             <div>否则本程序可能无法正常工作</div>
             <div>如果使用正规浏览器后问题仍存在，请向管理员报告</div>
         </div>
-        <div style="height: 15vh;"></div>
     </div>
+    <div v-if="enableSsoLogin" class="ssoLogin">
+        <div v-if="ssoLoading">正在加载 SSO 登录选项…</div>
+        <div v-else-if="ssoConfig?.enabled && ssoConfig.issuers.length > 0">
+            <div v-for="issuer in ssoConfig.issuers" :key="issuer.id" class="ssoIssuer">
+                <button @click="ssoLogin(issuer)">使用 {{ issuer.displayName }} 账号登录</button>
+            </div>
+        </div>
+    </div>
+    <div style="height: 10vh;"></div>
     <div class="loginInfo" v-if="userInfo">
         当前登录：
         [{{ userTypeReadable(userInfo.type??0) }}]{{ userInfo.name }}<br/>
@@ -216,5 +266,12 @@ button.logout{
     bottom: 10px;
     box-shadow: 0px 0px 8px 0px gray;
     border-radius: 5px;
+}
+.ssoLogin{
+    text-align: center;
+    margin-top: 10px;
+}
+.ssoIssuer{
+    margin: 8px 0;
 }
 </style>

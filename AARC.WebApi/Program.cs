@@ -8,6 +8,7 @@ using AARC.WebApi.Services.Identities;
 using AARC.WebApi.Services.Saves;
 using AARC.WebApi.Utils;
 using Serilog;
+using FCloud3.Sso.Audience;
 
 // 先初始化一个最基础的 logger，确保启动异常能被记录
 Log.Logger = new LoggerConfiguration()
@@ -50,6 +51,7 @@ try
     app.UseSerilog();
     app.UseResponseCompression();
     app.MapControllers();
+    app.MapF3SsoAudienceEndpoints();
 
     Log.Information("AARC启动成功=============================================");
     app.Run();

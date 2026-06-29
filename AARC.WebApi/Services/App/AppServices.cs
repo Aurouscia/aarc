@@ -1,4 +1,4 @@
-﻿using AARC.WebApi.Services.App.ActionFilters;
+using AARC.WebApi.Services.App.ActionFilters;
 using AARC.WebApi.Services.App.Authentication;
 using AARC.WebApi.Services.App.Config;
 using AARC.WebApi.Services.App.Email;
@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.IO.Compression;
 using AARC.WebApi.Services.App.Turnstile;
+using FCloud3.Sso.Audience;
+using AARC.WebApi.Services.App.F3Sso;
 
 namespace AARC.WebApi.Services.App
 {
@@ -23,6 +25,7 @@ namespace AARC.WebApi.Services.App
             services.AddCors(config);
             services.AddSerilog(config, env);
             services.AddJwtService(config);
+            services.AddScoped<JwtTokenService>();
             services.AddProxies();
             services.AddControllers(options =>
             {
@@ -56,6 +59,9 @@ namespace AARC.WebApi.Services.App
             services.AddSingleton<NSwagTsGenService>();
             services.AddSingleton<TurnstileVerifyService>();
             services.AddSingleton<EmailService>();
+
+            services.AddF3SsoAudience();
+            services.AddScoped<IF3SsoSignInHandler, F3SsoSignInHandler>();
 
             services.SetupAutoMapper(config);
             return services;

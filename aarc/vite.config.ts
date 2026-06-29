@@ -40,6 +40,10 @@ export default defineConfig(({ mode }) => {
         '/sudo': {
           target: env.VITE_DevProxyTarget,
           changeOrigin: true,
+        },
+        '/f3sso': {
+          target: env.VITE_DevProxyTarget,
+          changeOrigin: true,
         }
       }
     },

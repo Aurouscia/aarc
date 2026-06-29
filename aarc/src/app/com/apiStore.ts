@@ -29,6 +29,17 @@ export const useApiStore = defineStore('api', () => {
         jwtToken.value = token;
         localStorage.setItem(jwtTokenStorageKey, token);
     }
+    const setJwtTokenFromCookie = (cookieName:string = 'token'):boolean=>{
+        const match = document.cookie.match(
+            new RegExp('(?:^|; )' + cookieName.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1') + '=([^;]*)')
+        )
+        const token = match ? decodeURIComponent(match[1]) : undefined
+        if(!token)
+            return false
+        setJwtToken(token)
+        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+        return true
+    }
     const instance = axios.create()
     const { showPop, showWait } = useUniqueComponentsStore()
 
@@ -171,6 +182,7 @@ export const useApiStore = defineStore('api', () => {
     return {
         abortAll,
         setJwtToken,
+        setJwtTokenFromCookie,
         clearJwtToken,
         sudo,
         auth,

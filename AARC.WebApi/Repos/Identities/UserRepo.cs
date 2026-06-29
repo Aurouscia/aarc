@@ -1,4 +1,4 @@
-﻿using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.Db.Context;
 using AARC.WebApi.Models.Db.Context.Specific;
 using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Identities;
@@ -39,6 +39,65 @@ namespace AARC.WebApi.Repos.Identities
             var pwdEncrypted = UserPwdEncryption.Encrypt(password);
             return Existing
                 .FirstOrDefault(x => x.Name == username && x.Password == pwdEncrypted);
+        }
+
+        public int GetOrCreateSsoUser(
+            string issuer, string subjectId, string preferredName, UserType type = UserType.Member)
+        {
+            var existing = Existing
+                .FirstOrDefault(x => x.ExternalIssuer == issuer && x.ExternalSubjectId == subjectId);
+            if (existing is not null)
+                return existing.Id;
+
+            var name = EnsureUniqueName(preferredName);
+            var user = new User
+            {
+                Name = name,
+                Password = "",
+                Type = type,
+                ExternalIssuer = issuer,
+                ExternalSubjectId = subjectId
+            };
+            using var t = Context.Database.BeginTransaction();
+            try
+            {
+                int uid = base.Add(user);
+                userHistoryService.RecordRegister(uid);
+                t.Commit();
+                return uid;
+            }
+            catch
+            {
+                t.Rollback();
+                throw;
+            }
+        }
+
+        private string EnsureUniqueName(string preferredName)
+        {
+            const int suffixLength = 4;
+            var maxBaseLength = User.nameMaxLength - suffixLength - 1;
+            var baseName = preferredName.Length > maxBaseLength
+                ? preferredName[..maxBaseLength]
+                : preferredName;
+
+            if (!Existing.Any(x => x.Name == baseName))
+                return baseName;
+
+            for (int i = 0; i < 20; i++)
+            {
+                var candidate = $"{baseName}_{GenerateRandomSuffix(suffixLength)}";
+                if (!Existing.Any(x => x.Name == candidate))
+                    return candidate;
+            }
+            throw new Exception("无法生成唯一用户名");
+        }
+
+        private static string GenerateRandomSuffix(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            return new string(Enumerable.Range(0, length)
+                .Select(_ => chars[Random.Shared.Next(chars.Length)]).ToArray());
         }
 
         public List<UserDto> IndexUser(string? search, string? orderby)
