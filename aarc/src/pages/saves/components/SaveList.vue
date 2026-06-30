@@ -39,7 +39,7 @@ const emit = defineEmits<{
 }>()
 
 const userInfoStore = useUserInfoStore()
-const { isAdmin } = storeToRefs(userInfoStore)
+const { isAdmin, userInfo: currentUser } = storeToRefs(userInfoStore)
 const api = useApiStore();
 const { showPop } = useUniqueComponentsStore()
 const { saveDiffsRoute } = useSavesRoutesJump()
@@ -293,7 +293,7 @@ defineExpose({ startCreating })
                         <div class="lastActive">{{ s.lastActive }}</div>
                     </td>
                     <td>
-                        <button v-if="isMine" class="minor" @click="startEditingInfo(s)">信息设置</button>
+                        <button v-if="isMine || s.ownerUserId == currentUser.id" class="minor" @click="startEditingInfo(s)">信息设置</button>
                         <button v-else-if="showFork && s.allowRequesterFork" class="minor" @click="$emit('fork', s.id)">另存为我的</button>
                         <div class="other-ops">
                             <template v-if="extraAction">

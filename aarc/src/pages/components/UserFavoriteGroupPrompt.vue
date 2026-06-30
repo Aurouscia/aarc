@@ -122,6 +122,7 @@ async function renameGroup(group: GroupWithStatus) {
 
 async function deleteGroup(group: GroupWithStatus) {
     if (!group.name) return
+    if (!window.confirm(`确认删除分组“${group.name}”？将会丢失里面的收藏项`)) return
     loading.value = true
     const res = await api.userFavorite.deleteGroup(props.type, group.name)
     loading.value = false

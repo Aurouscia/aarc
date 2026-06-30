@@ -3,6 +3,7 @@ using AARC.WebApi.Repos.Files;
 using AARC.WebApi.Repos.Saves;
 using AARC.WebApi.Services.App.ActionFilters;
 using AARC.WebApi.Services.Saves;
+using AARC.WebApi.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +12,7 @@ namespace AARC.WebApi.Controllers.Files
     [Authorize]
     [ApiController]
     [Route(ApiConsts.routePattern)]
+    [RateLimit(20, 60)]
     public class UserFavoriteController(
         UserFavoriteRepo userFavoriteRepo,
         SaveRepo saveRepo,

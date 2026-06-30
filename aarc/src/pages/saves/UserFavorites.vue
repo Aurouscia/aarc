@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 
 import { useApiStore } from '@/app/com/apiStore';
 import { SaveDto, UserFavoriteType, GroupWithStatus } from '@/app/com/apiGenerated';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
-import { useRouter, useRoute } from 'vue-router';
-import { userFavoritesName } from './routes/routesNames';
+import { useRouter } from 'vue-router';
 import SaveList from './components/SaveList.vue';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
 import { useSavesRoutesJump } from './routes/routesJump';
@@ -13,7 +12,6 @@ import { useSaveListLocalConfigStore } from '@/app/localConfig/saveListLocalConf
 
 const api = useApiStore()
 const router = useRouter()
-const route = useRoute()
 const { userInfo } = useUserInfoStore()
 const { mySavesRoute } = useSavesRoutesJump()
 const saveListLocalConfig = useSaveListLocalConfigStore()
@@ -25,7 +23,7 @@ const props = defineProps<{
 const allGroupsLabel = '全部'
 
 const selectedGroup = computed<string>(() => {
-    return props.group ?? (route.query.group as string | undefined) ?? ''
+    return saveListLocalConfig.favoriteGroup
 })
 
 const groups = ref<GroupWithStatus[]>([])
@@ -85,17 +83,8 @@ async function load() {
     isInitializing.value = true
     await loadGroups()
     const persistedGroup = saveListLocalConfig.favoriteGroup
-    const initialGroup = persistedGroup && groupOptions.value.includes(persistedGroup)
-        ? persistedGroup
-        : ''
-    if (saveListLocalConfig.favoriteGroup !== initialGroup) {
-        saveListLocalConfig.favoriteGroup = initialGroup
-    }
-    if (selectedGroup.value !== initialGroup) {
-        await router.replace({
-            name: userFavoritesName,
-            params: initialGroup ? { group: initialGroup } : {}
-        })
+    if (persistedGroup && !groupOptions.value.includes(persistedGroup)) {
+        saveListLocalConfig.favoriteGroup = ''
     }
     isInitializing.value = false
     await loadSaves(false)
@@ -106,11 +95,7 @@ function selectGroup(group: string) {
     if (saveListLocalConfig.favoriteGroup !== groupValue) {
         saveListLocalConfig.favoriteGroup = groupValue
     }
-    if (group === allGroupsLabel) {
-        router.push({ name: userFavoritesName })
-    } else {
-        router.push({ name: userFavoritesName, params: { group } })
-    }
+    loadSaves(false)
 }
 
 async function fork(id?: number) {
@@ -119,15 +104,6 @@ async function fork(id?: number) {
         router.push(mySavesRoute())
     }
 }
-
-watch(() => props.group, () => {
-    if (isInitializing.value) return
-    const groupValue = selectedGroup.value === allGroupsLabel ? '' : selectedGroup.value
-    if (saveListLocalConfig.favoriteGroup !== groupValue) {
-        saveListLocalConfig.favoriteGroup = groupValue
-    }
-    loadSaves(false)
-})
 
 onMounted(() => {
     load()
