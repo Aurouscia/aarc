@@ -58,6 +58,27 @@ namespace AARC.WebApi.Controllers.Files
         {
             return userFavoriteRepo.SetGroups(type, objectId, groups);
         }
+
+        [HttpPost]
+        [UserCheck]
+        public bool RenameGroup(
+            [FromForm] UserFavoriteType type,
+            [FromForm] string oldName,
+            [FromForm] string newName)
+        {
+            userFavoriteRepo.RenameGroup(type, oldName, newName);
+            return true;
+        }
+
+        [HttpDelete]
+        [UserCheck]
+        public bool DeleteGroup(
+            [FromForm] UserFavoriteType type,
+            [FromForm] string groupName)
+        {
+            userFavoriteRepo.DeleteGroup(type, groupName);
+            return true;
+        }
     }
 
     public class UserFavoriteStatusDto

@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 import Prompt from '@/components/common/Prompt.vue';
 import { useApiStore } from '@/app/com/apiStore';
 import { UserFavoriteType, GroupWithStatus } from '@/app/com/apiGenerated';
+import gearIcon from '@/assets/ui/gear.svg';
 
 const props = defineProps<{
     type: UserFavoriteType,
@@ -22,6 +23,9 @@ const errorMsg = ref<string>()
 const showNewGroupInput = ref(false)
 const newGroupName = ref('')
 const newGroupError = ref<string>()
+const expandedGroup = ref<string | null>(null)
+const renameValue = ref('')
+const renameError = ref<string>()
 
 const defaultGroupName = '默认'
 
@@ -31,6 +35,9 @@ async function load() {
     showNewGroupInput.value = false
     newGroupName.value = ''
     newGroupError.value = undefined
+    expandedGroup.value = null
+    renameValue.value = ''
+    renameError.value = undefined
     try {
         const res = await api.userFavorite.groups(props.type, props.objectId)
         if (!res) {
@@ -72,6 +79,56 @@ function addCustomGroup() {
     groups.value.push({ name, checked: true })
     newGroupName.value = ''
     showNewGroupInput.value = false
+}
+
+function toggleExpand(groupName: string) {
+    renameError.value = undefined
+    if (expandedGroup.value === groupName) {
+        expandedGroup.value = null
+    } else {
+        expandedGroup.value = groupName
+        renameValue.value = groupName
+    }
+}
+
+async function renameGroup(group: GroupWithStatus) {
+    if (!group.name) return
+    renameError.value = undefined
+    let newName = renameValue.value.trim()
+    if (!newName) {
+        renameError.value = '分组名称不能为空'
+        return
+    }
+    if (newName.length > 16)
+        newName = newName.slice(0, 16)
+    if (newName === group.name) {
+        expandedGroup.value = null
+        return
+    }
+    if (groups.value.some(g => g.name === newName)) {
+        renameError.value = '该分组已存在'
+        return
+    }
+    loading.value = true
+    const res = await api.userFavorite.renameGroup(props.type, group.name, newName)
+    loading.value = false
+    if (res) {
+        group.name = newName
+        expandedGroup.value = null
+    } else {
+        renameError.value = '重命名失败'
+    }
+}
+
+async function deleteGroup(group: GroupWithStatus) {
+    if (!group.name) return
+    loading.value = true
+    const res = await api.userFavorite.deleteGroup(props.type, group.name)
+    loading.value = false
+    if (res) {
+        groups.value = groups.value.filter(g => g.name !== group.name)
+        expandedGroup.value = null
+    }
 }
 
 async function confirm() {
@@ -119,14 +176,37 @@ function close() {
             <div v-if="loading && groups.length === 0" class="loading">加载中...</div>
             <div v-else-if="errorMsg" class="error">{{ errorMsg }}</div>
             <div v-else class="group-list">
-                <label v-for="group in groups" :key="group.name" class="group-item">
-                    <input
-                        type="checkbox"
-                        v-model="group.checked"
-                        :disabled="loading"
-                    />
-                    <span>{{ group.name }}</span>
-                </label>
+                <div v-for="(group, index) in groups" :key="group.name ?? index" class="group-item" :class="{ expanded: expandedGroup === group.name }">
+                    <div class="group-main">
+                        <label class="group-label">
+                            <input
+                                type="checkbox"
+                                v-model="group.checked"
+                                :disabled="loading"
+                            />
+                            <span>{{ group.name }}</span>
+                        </label>
+                        <img
+                            class="gear-icon"
+                            :src="gearIcon"
+                            @click.stop="toggleExpand(group.name!)"
+                            :class="{ active: expandedGroup === group.name }"
+                        />
+                    </div>
+                    <div v-if="expandedGroup === group.name" class="group-actions">
+                        <input
+                            v-model="renameValue"
+                            type="text"
+                            placeholder="新分组名称"
+                            maxlength="16"
+                            :disabled="loading"
+                            @keydown.enter.prevent="renameGroup(group)"
+                        />
+                        <button class="lite confirm" @click="renameGroup(group)" :disabled="loading">重命名</button>
+                        <button class="lite" @click="deleteGroup(group)" :disabled="loading">删除</button>
+                        <div v-if="renameError" class="rename-error">{{ renameError }}</div>
+                    </div>
+                </div>
             </div>
             <div class="new-group-area">
                 <button v-if="!showNewGroupInput" class="lite new-group-btn" @click="showNewGroupInput = true" :disabled="loading">
@@ -156,8 +236,8 @@ function close() {
 
 <style lang="scss" scoped>
 .ufg-prompt {
-    min-width: 200px;
-    max-width: 300px;
+    min-width: 220px;
+    max-width: 320px;
     .title {
         font-size: 16px;
         font-weight: bold;
@@ -173,22 +253,71 @@ function close() {
         color: #c0392b;
     }
     .group-list {
-        max-height: 240px;
+        max-height: 260px;
         overflow-y: auto;
         margin-bottom: 10px;
         .group-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 0;
-            cursor: pointer;
-            input[type="checkbox"] {
-                width: 16px;
-                height: 16px;
-                cursor: pointer;
+            background-color: #eee;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            padding: 8px 10px;
+            &:last-child {
+                margin-bottom: 0;
             }
-            span {
-                font-size: 14px;
+            .group-main {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                .group-label {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    flex: 1;
+                    cursor: pointer;
+                    input[type="checkbox"] {
+                        width: 16px;
+                        height: 16px;
+                        cursor: pointer;
+                    }
+                    span {
+                        font-size: 14px;
+                    }
+                }
+                .gear-icon {
+                    width: 18px;
+                    height: 18px;
+                    cursor: pointer;
+                    opacity: 0.6;
+                    transition: opacity 0.2s;
+                    filter: brightness(0);
+                    &:hover, &.active {
+                        opacity: 1;
+                    }
+                }
+            }
+            .group-actions {
+                margin-top: 8px;
+                padding-top: 8px;
+                border-top: 1px solid #ddd;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                input {
+                    flex: 1;
+                    width: 80px;
+                    padding: 4px 8px;
+                    font-size: 14px;
+                }
+                button {
+                    white-space: nowrap;
+                    font-size: 14px;
+                }
+                .rename-error {
+                    width: 100%;
+                    color: #c0392b;
+                    font-size: 12px;
+                }
             }
         }
     }

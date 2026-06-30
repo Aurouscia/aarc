@@ -30,14 +30,20 @@ namespace AARC.WebApi.Repos.Files
                 }
                 return existing.Id;
             }
+            var now = DateTime.Now;
             var model = new UserFavorite
             {
                 OwnerUserId = uid,
                 Type = type,
                 ObjectId = objectId,
-                Group = group
+                Group = group,
+                LastActive = now
             };
-            return base.Add(model);
+            context.Add(model);
+            if (group is not null)
+                EnsureGroupMarker(type, group, uid, now);
+            context.SaveChanges();
+            return model.Id;
         }
 
         public void Remove(int id)
@@ -113,6 +119,7 @@ namespace AARC.WebApi.Repos.Files
                         LastActive = now
                     });
                 }
+                EnsureGroupMarker(type, group, uid, now);
             }
 
             foreach (var fav in activeFavorites)
@@ -146,6 +153,89 @@ namespace AARC.WebApi.Repos.Files
                 Name = g,
                 Checked = objectGroups.Contains(g)
             }).ToList();
+        }
+
+        public void RenameGroup(UserFavoriteType type, string oldName, string newName)
+        {
+            if (oldName.Length > UserFavorite.groupMaxLength)
+                oldName = oldName[..UserFavorite.groupMaxLength];
+            if (newName.Length > UserFavorite.groupMaxLength)
+                newName = newName[..UserFavorite.groupMaxLength];
+            var uid = httpUserIdProvider.RequireUserId();
+            var oldGroupFavorites = All.Where(x =>
+                x.OwnerUserId == uid
+                && x.Type == type
+                && x.Group == oldName).ToList();
+            if (oldGroupFavorites.Count == 0)
+                return;
+
+            var targetHasMarker = All.Any(x =>
+                x.OwnerUserId == uid
+                && x.Type == type
+                && x.Group == newName
+                && x.ObjectId == 0
+                && !x.Deleted);
+
+            var now = DateTime.Now;
+            foreach (var fav in oldGroupFavorites)
+            {
+                if (fav.ObjectId == 0 && targetHasMarker)
+                {
+                    fav.Deleted = true;
+                }
+                else
+                {
+                    fav.Group = newName;
+                }
+                fav.LastActive = now;
+                context.Update(fav);
+            }
+            context.SaveChanges();
+        }
+
+        public void DeleteGroup(UserFavoriteType type, string groupName)
+        {
+            if (groupName.Length > UserFavorite.groupMaxLength)
+                groupName = groupName[..UserFavorite.groupMaxLength];
+            var uid = httpUserIdProvider.RequireUserId();
+            var favorites = All.Where(x =>
+                x.OwnerUserId == uid
+                && x.Type == type
+                && x.Group == groupName).ToList();
+            var now = DateTime.Now;
+            foreach (var fav in favorites)
+            {
+                fav.Deleted = true;
+                fav.LastActive = now;
+                context.Update(fav);
+            }
+            context.SaveChanges();
+        }
+
+        private void EnsureGroupMarker(UserFavoriteType type, string group, int uid, DateTime now)
+        {
+            var marker = All.FirstOrDefault(x =>
+                x.OwnerUserId == uid
+                && x.Type == type
+                && x.ObjectId == 0
+                && x.Group == group);
+            if (marker is null)
+            {
+                context.Add(new UserFavorite
+                {
+                    OwnerUserId = uid,
+                    Type = type,
+                    ObjectId = 0,
+                    Group = group,
+                    LastActive = now
+                });
+            }
+            else if (marker.Deleted)
+            {
+                marker.Deleted = false;
+                marker.LastActive = now;
+                context.Update(marker);
+            }
         }
     }
 

@@ -184,12 +184,16 @@ const sDisplay = computed(()=>{
     }
     .save-avatar-fav{
         position: absolute;
-        top: 4px;
-        right: 4px;
+        top: -2px;
+        right: -2px;
         width: 20px;
         height: 20px;
+        padding: 6px;
         object-fit: contain;
         cursor: pointer;
+        &:hover{
+            filter: brightness(0.7);
+        }
     }
     .save-avatar-warn{
         position: absolute;
