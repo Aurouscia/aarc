@@ -1,4 +1,4 @@
-import { mySavesName, saveToolsName, searchSaveName, saveFoldersName, saveWarnsName } from "@/pages/saves/routes/routesNames";
+import { mySavesName, saveToolsName, searchSaveName, saveFoldersName, saveWarnsName, userFavoritesName } from "@/pages/saves/routes/routesNames";
 import { TopbarModel, TopbarModelItem } from "./topbarModel";
 import { aboutName, loginName, userCreditName, userHistoriesName, userListName } from "@/pages/identities/routes/routesNames";
 import { faq } from "@/pages/homes/routes/routesNames";
@@ -25,6 +25,10 @@ export async function getTopbarData(): Promise<TopbarModel> {
                 {
                     title: "我的目录",
                     link: { name: saveFoldersName }
+                },
+                {
+                    title: "我的收藏",
+                    link: { name: userFavoritesName }
                 },
                 {
                     title: "搜索作品",

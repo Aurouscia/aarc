@@ -4,6 +4,7 @@ using AARC.WebApi.Models.DbModels.Enums.AuthGrantTypes;
 using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Models.DbModels.Saves;
 using AARC.WebApi.Repos;
+using AARC.WebApi.Repos.Files;
 using AARC.WebApi.Repos.Identities;
 using AARC.WebApi.Repos.Saves;
 using AARC.WebApi.Services.App.HttpAuthInfo;
@@ -17,7 +18,8 @@ namespace AARC.WebApi.Services.Saves
         UserRepo userRepo,
         AuthGrantCheckService authGrantCheckService,
         HttpUserInfoService httpUserInfoService,
-        SaveCommentRepo saveCommentRepo
+        SaveCommentRepo saveCommentRepo,
+        UserFavoriteRepo userFavoriteRepo
         )
     {
         public void EnrichSaveMini(List<SaveDto> saves)
@@ -127,6 +129,25 @@ namespace AARC.WebApi.Services.Saves
                         s.LatestRuleContent = stats.LatestRule.Content;
                         s.LatestRuleCreated = stats.LatestRule.Created.ToString("yyyy-MM-dd HH:mm");
                     }
+                }
+            }
+        }
+
+        public void EnrichFavStatus(List<SaveDto> saves)
+        {
+            var uid = httpUserInfoService.UserInfo.Value.Id;
+            if (uid <= 0)
+                return;
+            var ids = saves.ConvertAll(x => x.Id);
+            if (ids.Count == 0)
+                return;
+            var favMap = userFavoriteRepo.GetFavoriteIdMap(UserFavoriteType.Save, ids);
+            foreach (var s in saves)
+            {
+                if (favMap.TryGetValue(s.Id, out var favId) && favId > 0)
+                {
+                    s.IsFavorited = true;
+                    s.FavoriteId = favId;
                 }
             }
         }

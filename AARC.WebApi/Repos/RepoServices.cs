@@ -12,6 +12,7 @@ namespace AARC.WebApi.Repos
             services.AddScoped<UserRepo>();
             services.AddScoped<AuthGrantRepo>();
             services.AddScoped<UserFileRepo>();
+            services.AddScoped<UserFavoriteRepo>();
             services.AddScoped<SaveRepo>();
             services.AddScoped<SaveFolderRepo>();
             services.AddScoped<SaveFolderRelationRepo>();

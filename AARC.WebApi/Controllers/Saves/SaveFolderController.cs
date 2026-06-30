@@ -133,6 +133,7 @@ namespace AARC.WebApi.Controllers.Saves
             saveDtoEnrichService.EnrichUserName(list, isForMySaves: true);
             saveDtoEnrichService.EnrichPrivilege(list, true);
             saveDtoEnrichService.EnrichComment(list);
+            saveDtoEnrichService.EnrichFavStatus(list);
             return list;
         }
     }

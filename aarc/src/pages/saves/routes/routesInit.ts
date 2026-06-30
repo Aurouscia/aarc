@@ -2,11 +2,12 @@ import { Router } from "vue-router";
 import MySaves from "../MySaves.vue";
 import SaveWarns from "../SaveWarns.vue";
 import { addToRouter } from "@/app/router/addToRouter";
-import { mySavesName, saveDiffsName, saveToolsName, searchSaveName, saveFoldersName, saveWarnsName } from "./routesNames";
+import { mySavesName, saveDiffsName, saveToolsName, searchSaveName, saveFoldersName, saveWarnsName, userFavoritesName } from "./routesNames";
 import SearchSave from "../SearchSave.vue";
 import SaveTools from "../SaveTools.vue";
 import SaveDiffs from "../SaveDiffs.vue";
 import SaveFolders from "../SaveFolders.vue";
+import UserFavorites from "../UserFavorites.vue";
 
 export function addSavesPages(r:Router){
     addToRouter(r, routes);
@@ -43,6 +44,12 @@ const routes = [
         path:"/Saves/Folders/:folderId?",
         component:SaveFolders,
         name:saveFoldersName,
+        props:true
+    },
+    {
+        path:"/Saves/Favorites/:group?",
+        component:UserFavorites,
+        name:userFavoritesName,
         props:true
     }
 ]

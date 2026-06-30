@@ -32,19 +32,43 @@ const uidNum = computed<number>(() => {
     return uid
 })
 const isMine = computed<boolean>(() => uidNum.value === 0)
-watch(uidNum, load)
+watch(uidNum, () => load(false))
+
+const skip = ref(0)
+const hasMore = ref(false)
+const loading = ref(false)
+const pageSize = 30
 
 const ownerName = ref<string>()
-async function load() {
+async function load(append: boolean = false) {
+    loading.value = true
     setEnteredFrom()
+    if (!append) {
+        saveList.value = undefined
+        skip.value = 0
+        hasMore.value = false
+    }
     if (uidNum.value > 0) {
         const ownerInfo = await api.user.getInfo(uidNum.value)
         ownerName.value = ownerInfo?.name || '??'
     } else {
         ownerName.value = '我'
     }
-    const list = await api.save.getMySaves(uidNum.value)
-    saveList.value = (list || []).map(s => ({ ...s, introShow: false }))
+    const res = await api.save.getMySaves(uidNum.value, skip.value, pageSize)
+    const list = (res?.saves || []).map(s => ({ ...s, introShow: false }))
+    if (append && saveList.value) {
+        saveList.value = [...saveList.value, ...list]
+    } else {
+        saveList.value = list
+    }
+    hasMore.value = res?.hasMore ?? false
+    loading.value = false
+}
+
+async function loadMore() {
+    if (loading.value || !hasMore.value) return
+    skip.value += pageSize
+    await load(true)
 }
 
 async function fork(id?: number) {
@@ -77,9 +101,16 @@ onMounted(async () => {
             <button @click="saveListRef?.startCreating">新建</button>
         </div>
     </h1>
-    <SaveList ref="saveListRef" :saves="saveList" :is-mine="isMine" :show-fork="!isMine" :show-comment="isMine" @refresh="load"
+    <SaveList ref="saveListRef" :saves="saveList" :is-mine="isMine" :show-fork="!isMine" :show-comment="isMine" @refresh="load(false)"
         @fork="fork">
     </SaveList>
+
+    <div v-if="hasMore" class="load-more-area">
+        <button :disabled="loading" @click="loadMore">
+            {{ loading ? '加载中...' : '加载更多' }}
+        </button>
+    </div>
+
     <div v-if="guideInfo.findHelp" style="color: #666; font-size: 14px; text-align: center; margin-top: 10px;">
         遇到问题：{{ guideInfo.findHelp }}
     </div>
@@ -101,6 +132,16 @@ onMounted(async () => {
 
     &:hover {
         opacity: 0.8;
+    }
+}
+
+.load-more-area {
+    text-align: center;
+    margin: 20px 0;
+
+    button {
+        padding-left: 24px;
+        padding-right: 24px;
     }
 }
 </style>
