@@ -1,4 +1,5 @@
 using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Identities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -112,6 +113,9 @@ namespace AARC.WebApi.Services.Chat
                 throw new RqEx("消息内容过长");
 
             var user = GetCurrentUser();
+            if (user.Type < UserType.Member)
+                throw new RqEx("仅正式用户可发送消息");
+
             var msgDto = new ChatMessageDto
             {
                 RoomName = roomName,

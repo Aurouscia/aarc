@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { useSignalrStore, ChatMessage } from '@/app/com/signalrStore'
 import { useUserInfoStore } from '@/app/globalStores/userInfo'
+import { UserType } from '@/app/com/apiGenerated'
+import { guideInfo } from '@/app/guideInfo'
 import { useChatMsgsReadStore } from '@/app/globalStores/chatMsgsReadStore'
 import SideBar from '@/components/common/SideBar.vue'
 import messageIcon from '@/assets/ui/message.svg'
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu'
-import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import Notice from '@/components/common/Notice.vue'
-import { guideInfo } from '@/app/guideInfo'
 
 const props = defineProps<{
     saveId: number
@@ -23,23 +24,40 @@ const signalrStore = useSignalrStore()
 const userInfoStore = useUserInfoStore()
 const chatMsgsReadStore = useChatMsgsReadStore()
 const sidebar = useTemplateRef('sidebar')
+const messagesRef = useTemplateRef('messages')
 
 const messageInput = ref('')
 const localError = ref<string | null>(null)
 const isSidebarOpen = ref(false)
+const atBottom = ref(true)
 
 const roomName = computed(() => props.saveId.toString())
 const messages = computed(() => signalrStore.getRoomMessages(roomName.value))
+const noticeMessage = computed<ChatMessage>(() => ({
+    messageId: 'chat-notice',
+    roomName: roomName.value,
+    userId: 0,
+    userName: '',
+    content: `如有涉政敏感、黄赌毒、辱骂他人、恶意刷屏等行为，请立即截图并联系管理员，将警告或封号处理`,
+    sentAt: new Date().toISOString(),
+    isSystem: true
+}))
+const displayMessages = computed(() => [noticeMessage.value, ...messages.value])
 const isInRoom = computed(() => signalrStore.joinedRooms.has(roomName.value))
 const effectiveEnabled = computed(() => props.enabled && !signalrStore.disabledRooms.has(roomName.value))
+const canSend = computed(() => (userInfoStore.userInfo.type ?? UserType.Tourist) >= UserType.Member)
 const unreadCount = computed(() => messages.value.filter(
     msg => !msg.isSystem && !chatMsgsReadStore.isRead(props.saveId, msg.sentAt)
 ).length)
 
-watch(messages, (newVal) => {
+watch(messages, async (newVal) => {
     if (isSidebarOpen.value && newVal.length > 0) {
         const latest = newVal[newVal.length - 1]
         chatMsgsReadStore.markRead(props.saveId, latest.sentAt)
+    }
+    if (atBottom.value) {
+        await nextTick()
+        scrollToBottom()
     }
 }, { deep: true })
 
@@ -64,10 +82,14 @@ async function leaveRoom() {
 
 async function sendMessage() {
     localError.value = null
+    if (!canSend.value) return
     if (!messageInput.value.trim()) return
     const ok = await signalrStore.sendMessage(roomName.value, messageInput.value)
     if (ok) {
         messageInput.value = ''
+        atBottom.value = true
+        await nextTick()
+        scrollToBottom()
     }
 }
 
@@ -103,6 +125,29 @@ function onSidebarFold() {
 
 function open() {
     sidebar.value?.extend()
+}
+
+function isScrolledToBottom(el: HTMLElement | null): boolean {
+    if (!el) return true
+    return el.scrollHeight <= el.clientHeight + el.scrollTop + 2
+}
+
+function scrollToBottom() {
+    const el = messagesRef.value
+    if (!el) return
+    el.scrollTop = el.scrollHeight
+    if (!atBottom.value) {
+        console.log('[ChatRoom] atBottom changed: true (scrolled to bottom)')
+        atBottom.value = true
+    }
+}
+
+function checkAtBottom() {
+    const newVal = isScrolledToBottom(messagesRef.value)
+    if (newVal !== atBottom.value) {
+        console.log('[ChatRoom] atBottom changed:', newVal)
+        atBottom.value = newVal
+    }
 }
 
 function fold() {
@@ -145,15 +190,15 @@ onUnmounted(async () => {
             <div v-else-if="canEnable" class="disableChatWrap">
                 <button class="lite" @click="emit('disable')">关闭聊天功能</button>
             </div>
-            <div class="messages">
+            <div ref="messages" class="messages" @scroll="checkAtBottom">
                 <div
-                    v-for="(msg, idx) in messages"
-                    :key="idx"
+                    v-for="msg in displayMessages"
+                    :key="msg.messageId"
                     class="message"
                     :class="messageClass(msg)"
                 >
                     <div class="meta">
-                        <span class="userName">{{ msg.userName }}</span>
+                        <span class="userName">{{ msg.userName }}[{{ msg.userId }}]</span>
                         <span class="time">{{ formatTime(msg.sentAt) }}</span>
                     </div>
                     <div class="content">{{ msg.content }}</div>
@@ -164,11 +209,11 @@ onUnmounted(async () => {
                 <input
                     v-model="messageInput"
                     type="text"
-                    placeholder="输入消息..."
-                    :disabled="!isInRoom"
+                    :placeholder="canSend ? '输入消息...' : '仅转正用户可发送消息'"
+                    :disabled="!isInRoom || !canSend"
                     @keyup.enter="sendMessage"
                 />
-                <button @click="sendMessage" :disabled="!isInRoom || !messageInput.trim()">发送</button>
+                <button @click="sendMessage" :disabled="!isInRoom || !canSend || !messageInput.trim()">发送</button>
             </div>
         </div>
         <div v-else class="chatDisabled">
