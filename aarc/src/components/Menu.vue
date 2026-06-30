@@ -165,7 +165,7 @@ $gap: 10px;
 $dist-from-edge: 5px;
 
 .anotherMenu{
-    z-index: 997;
+    z-index: 498;
     position: fixed;
     right: $dist-from-edge;
     bottom: $dist-from-edge;

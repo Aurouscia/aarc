@@ -242,8 +242,9 @@ onUnmounted(async () => {
     justify-content: center;
     cursor: pointer;
     border-radius: 6px;
-    background-color: #f5f5f5;
+    background-color: white;
     transition: background-color 0.2s;
+    box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.3);
     &:hover {
         background-color: #e0e0e0;
     }

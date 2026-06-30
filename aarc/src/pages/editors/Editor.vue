@@ -406,6 +406,6 @@ onBeforeUnmount(()=>{
     position: fixed;
     top: 10px;
     right: 10px;
-    z-index: 998;
+    z-index: 499;
 }
 </style>
