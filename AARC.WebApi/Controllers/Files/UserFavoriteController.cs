@@ -1,6 +1,8 @@
 ﻿using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Repos.Files;
+using AARC.WebApi.Repos.Saves;
 using AARC.WebApi.Services.App.ActionFilters;
+using AARC.WebApi.Services.Saves;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +12,9 @@ namespace AARC.WebApi.Controllers.Files
     [ApiController]
     [Route(ApiConsts.routePattern)]
     public class UserFavoriteController(
-        UserFavoriteRepo userFavoriteRepo
+        UserFavoriteRepo userFavoriteRepo,
+        SaveRepo saveRepo,
+        SaveDtoEnrichService saveDtoEnrichService
         ) : Controller
     {
         [HttpPost]
@@ -49,6 +53,30 @@ namespace AARC.WebApi.Controllers.Files
             return userFavoriteRepo.GetGroups(type, objectId);
         }
 
+        [HttpGet]
+        [UserCheck]
+        public UserFavoriteSavesDto GetSaves(
+            UserFavoriteType type,
+            string? group = null,
+            int skip = 0,
+            int take = 30)
+        {
+            if (take > 30)
+                take = 30;
+            var page = userFavoriteRepo.GetSaveIds(type, group, skip, take);
+            var list = saveRepo.GetByIds(page.Ids);
+            saveDtoEnrichService.EnrichSaveMini(list);
+            saveDtoEnrichService.EnrichUserName(list);
+            saveDtoEnrichService.EnrichPrivilege(list, true);
+            saveDtoEnrichService.EnrichComment(list);
+            saveDtoEnrichService.EnrichFavStatus(list);
+            return new UserFavoriteSavesDto
+            {
+                Saves = list,
+                HasMore = page.HasMore
+            };
+        }
+
         [HttpPost]
         [UserCheck]
         public bool SetGroups(
@@ -85,5 +113,11 @@ namespace AARC.WebApi.Controllers.Files
     {
         public int Id { get; set; }
         public bool IsFavorited { get; set; }
+    }
+
+    public class UserFavoriteSavesDto
+    {
+        public List<SaveDto> Saves { get; set; } = [];
+        public bool HasMore { get; set; }
     }
 }

@@ -139,13 +139,18 @@ const sDisplay = computed(()=>{
     Object.assign(res, source)
     return res
 })
+
+const favIcon = computed(() => {
+    if (!userInfo.value.id)
+        return null
+    return isFavoritedDisplay.value ? iconStarSolid : iconStarHollow
+})
 </script>
 
 <template>
 <div class="save-avatar" :style="style">
     <img class="save-avatar-bg" :src="props.s.miniUrl ?? defaultMini" @click="openEditor"/>
-    <img v-if="isFavoritedDisplay" class="save-avatar-fav" :src="iconStarSolid" @click.stop="showFavoritePrompt = true" />
-    <img v-else class="save-avatar-fav" :src="iconStarHollow" @click.stop="showFavoritePrompt = true" />
+    <img v-if="favIcon" class="save-avatar-fav" :src="favIcon" @click.stop="showFavoritePrompt = true" />
     <UserFavoriteGroupPrompt
         v-if="showFavoritePrompt"
         :type="UserFavoriteType.Save"

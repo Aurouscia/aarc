@@ -81,6 +81,30 @@ namespace AARC.WebApi.Repos.Files
                 id => existingMap.TryGetValue(id, out var favoriteId) ? favoriteId : 0);
         }
 
+        public UserFavoriteIdPage GetSaveIds(UserFavoriteType type, string? group, int skip, int take)
+        {
+            var uid = httpUserIdProvider.RequireUserId();
+            var q = Existing
+                .Where(x =>
+                    x.OwnerUserId == uid
+                    && x.Type == type
+                    && x.ObjectId > 0);
+            if (!string.IsNullOrEmpty(group))
+                q = q.Where(x => x.Group == group);
+            var ids = q
+                .GroupBy(x => x.ObjectId)
+                .Select(g => new { ObjectId = g.Key, LastActive = g.Max(x => x.LastActive) })
+                .OrderByDescending(x => x.LastActive)
+                .Skip(skip)
+                .Take(take + 1)
+                .Select(x => x.ObjectId)
+                .ToList();
+            var hasMore = ids.Count > take;
+            if (hasMore)
+                ids.RemoveAt(ids.Count - 1);
+            return new UserFavoriteIdPage { Ids = ids, HasMore = hasMore };
+        }
+
         public bool SetGroups(UserFavoriteType type, int objectId, List<string> groups)
         {
             var uid = httpUserIdProvider.RequireUserId();
@@ -243,5 +267,11 @@ namespace AARC.WebApi.Repos.Files
     {
         public string Name { get; set; } = string.Empty;
         public bool Checked { get; set; }
+    }
+
+    public class UserFavoriteIdPage
+    {
+        public List<int> Ids { get; set; } = [];
+        public bool HasMore { get; set; }
     }
 }

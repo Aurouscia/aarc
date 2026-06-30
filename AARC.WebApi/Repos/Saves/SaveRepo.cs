@@ -140,6 +140,19 @@ namespace AARC.WebApi.Repos.Saves
             EnrichEditingBy(res);
             return res;
         }
+
+        public List<SaveDto> GetByIds(List<int> ids)
+        {
+            if (ids.Count == 0)
+                return [];
+            var res = base.Existing
+                .Where(x => ids.Contains(x.Id))
+                .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
+                .ToList();
+            res.OrderByKeyList(x => x.Id, ids);
+            EnrichEditingBy(res);
+            return res;
+        }
         public List<SaveDto> Search(string search, string orderby, int pageIdx)
         {
             var q = Viewable;

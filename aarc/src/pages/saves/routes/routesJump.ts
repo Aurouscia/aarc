@@ -1,5 +1,5 @@
 import { RouteLocationRaw } from "vue-router"
-import { mySavesName, saveDiffsName, searchSaveName, saveFoldersName } from "./routesNames"
+import { mySavesName, saveDiffsName, searchSaveName, saveFoldersName, userFavoritesName } from "./routesNames"
 
 export const useSavesRoutesJump = ()=>{
     function mySavesRoute():RouteLocationRaw{
@@ -41,5 +41,13 @@ export const useSavesRoutesJump = ()=>{
             }
         }
     }
-    return { mySavesRoute, someonesSavesRoute, searchSaveRoute, saveDiffsRoute, saveFoldersRoute }
+    function userFavoritesRoute(group?:string):RouteLocationRaw{
+        return {
+            name:userFavoritesName,
+            params:{
+                group: group || undefined
+            }
+        }
+    }
+    return { mySavesRoute, someonesSavesRoute, searchSaveRoute, saveDiffsRoute, saveFoldersRoute, userFavoritesRoute }
 }
