@@ -432,6 +432,8 @@ namespace AARC.WebApi.Repos.Saves
         public int LatestRuleCommentId { get; set; }
         public string? LatestRuleContent { get; set; }
         public string? LatestRuleCreated { get; set; }
+        public bool IsFavorited { get; set; }
+        public int FavoriteId { get; set; }
         [JsonIgnore]
         public DateTime HeartbeatAt { get; set; }
         [JsonIgnore]

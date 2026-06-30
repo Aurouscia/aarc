@@ -45,6 +45,7 @@ namespace AARC.WebApi.Controllers.Saves
             saveDtoEnrichService.EnrichUserName(list);
             saveDtoEnrichService.EnrichPrivilege(list);
             saveDtoEnrichService.EnrichComment(list);
+            saveDtoEnrichService.EnrichFavStatus(list);
             return list;
         }
         [HttpGet]
@@ -56,6 +57,7 @@ namespace AARC.WebApi.Controllers.Saves
             saveDtoEnrichService.EnrichSaveMini(list);
             saveDtoEnrichService.EnrichUserName(list);
             saveDtoEnrichService.EnrichPrivilege(list);
+            saveDtoEnrichService.EnrichFavStatus(list);
             return list;
         }
         [AllowAnonymous]
@@ -67,6 +69,7 @@ namespace AARC.WebApi.Controllers.Saves
             saveDtoEnrichService.EnrichUserName(list, isForMySaves: true);
             saveDtoEnrichService.EnrichPrivilege(list, true);
             saveDtoEnrichService.EnrichComment(list);
+            saveDtoEnrichService.EnrichFavStatus(list);
             return list;
         }
         [AllowAnonymous]
@@ -80,6 +83,7 @@ namespace AARC.WebApi.Controllers.Saves
             saveDtoEnrichService.EnrichUserName(list);
             saveDtoEnrichService.EnrichPrivilege(list, true);
             saveDtoEnrichService.EnrichComment(list);
+            saveDtoEnrichService.EnrichFavStatus(list);
             return list;
         }
         [HttpPost]
@@ -157,6 +161,7 @@ namespace AARC.WebApi.Controllers.Saves
         {
             var data = saveRepo.LoadStatus(id);
             saveDtoEnrichService.EnrichPrivilege([data]);
+            saveDtoEnrichService.EnrichFavStatus([data]);
             if (needComments)
                 saveDtoEnrichService.EnrichComment([data]);
             return data;

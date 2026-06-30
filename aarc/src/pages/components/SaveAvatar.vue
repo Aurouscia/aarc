@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, CSSProperties, nextTick, ref } from 'vue';
-import { SaveDto } from '@/app/com/apiGenerated';
+import { SaveDto, UserFavoriteType } from '@/app/com/apiGenerated';
 import defaultMini from '@/assets/defaultMini.svg'
 import iconLock from '@/assets/ui/lock.svg';
 import iconPen from '@/assets/ui/pen.svg';
 import iconWarn from '@/assets/ui/warn.svg';
+import iconStarSolid from '@/assets/ui/starSolid.svg';
+import iconStarHollow from '@/assets/ui/starHollow.svg';
 import WarnRulePrompts from '@/pages/editors/components/WarnRulePrompts.vue';
+import UserFavoriteGroupPrompt from './UserFavoriteGroupPrompt.vue';
 import { useEditorsRoutesJump } from '../editors/routes/routesJump';
 import { useRouter } from 'vue-router';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
@@ -64,6 +67,12 @@ const hideStatus = computed(()=>{
 const router = useRouter()
 const { editorRoute } = useEditorsRoutesJump()
 const promptSaveStatus = ref<SaveDto>()
+const showFavoritePrompt = ref(false)
+const favoritedOverride = ref<boolean | undefined>(undefined)
+const isFavoritedDisplay = computed(() => favoritedOverride.value ?? props.s.isFavorited ?? false)
+function handleFavUpdated(newIsFavorited: boolean) {
+    favoritedOverride.value = newIsFavorited
+}
 const hasWarn = computed(()=>{
     return !!props.s.latestWarnContent
 })
@@ -135,6 +144,16 @@ const sDisplay = computed(()=>{
 <template>
 <div class="save-avatar" :style="style">
     <img class="save-avatar-bg" :src="props.s.miniUrl ?? defaultMini" @click="openEditor"/>
+    <img v-if="isFavoritedDisplay" class="save-avatar-fav" :src="iconStarSolid" @click.stop="showFavoritePrompt = true" />
+    <img v-else class="save-avatar-fav" :src="iconStarHollow" @click.stop="showFavoritePrompt = true" />
+    <UserFavoriteGroupPrompt
+        v-if="showFavoritePrompt"
+        :type="UserFavoriteType.Save"
+        :objectId="props.s.id!"
+        :show="showFavoritePrompt"
+        @close="showFavoritePrompt = false"
+        @updated="handleFavUpdated"
+    />
     <img v-if="hasWarn" class="save-avatar-warn" :src="iconWarn" @click.stop/>
     <WarnRulePrompts :save-status="promptSaveStatus" mode="navigate" @navigate="navigateToEditor"></WarnRulePrompts>
     <div v-if="status && !hideStatus" class="save-avatar-status" :style="{backgroundColor: status.color}" @click.stop="handleStatusClick">
@@ -162,6 +181,15 @@ const sDisplay = computed(()=>{
         &:hover{
             cursor: pointer;
         }
+    }
+    .save-avatar-fav{
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+        cursor: pointer;
     }
     .save-avatar-warn{
         position: absolute;
