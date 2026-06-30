@@ -6,9 +6,17 @@ import SideBar from '@/components/common/SideBar.vue'
 import messageIcon from '@/assets/ui/message.svg'
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu'
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import Notice from '@/components/common/Notice.vue'
+import { guideInfo } from '@/app/guideInfo'
 
 const props = defineProps<{
     saveId: number
+    enabled: boolean
+    canEnable: boolean
+}>()
+const emit = defineEmits<{
+    enable: []
+    disable: []
 }>()
 
 const signalrStore = useSignalrStore()
@@ -23,6 +31,7 @@ const isSidebarOpen = ref(false)
 const roomName = computed(() => props.saveId.toString())
 const messages = computed(() => signalrStore.getRoomMessages(roomName.value))
 const isInRoom = computed(() => signalrStore.joinedRooms.has(roomName.value))
+const effectiveEnabled = computed(() => props.enabled && !signalrStore.disabledRooms.has(roomName.value))
 const unreadCount = computed(() => messages.value.filter(
     msg => !msg.isSystem && !chatMsgsReadStore.isRead(props.saveId, msg.sentAt)
 ).length)
@@ -33,6 +42,12 @@ watch(messages, (newVal) => {
         chatMsgsReadStore.markRead(props.saveId, latest.sentAt)
     }
 }, { deep: true })
+
+watch(effectiveEnabled, async (enabled) => {
+    if (enabled && isSidebarOpen.value) {
+        await onSidebarExtend()
+    }
+})
 
 async function joinRoom() {
     localError.value = null
@@ -70,6 +85,7 @@ function messageClass(msg: ChatMessage): string {
 async function onSidebarExtend() {
     isSidebarOpen.value = true
     enableContextMenu()
+    if (!effectiveEnabled.value) return
     if (!isInRoom.value) {
         await joinRoom()
     }
@@ -96,7 +112,8 @@ function fold() {
 defineExpose({ open, fold })
 
 onMounted(async () => {
-    console.log(`[ChatRoom] 组件挂载 saveId=${props.saveId}`)
+    console.log(`[ChatRoom] 组件挂载 saveId=${props.saveId} effectiveEnabled=${effectiveEnabled.value}`)
+    if (!effectiveEnabled.value) return
     await joinRoom()
     await signalrStore.syncHistory(roomName.value)
 })
@@ -115,7 +132,7 @@ onUnmounted(async () => {
         <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
     </div>
     <SideBar ref="sidebar" @extend="onSidebarExtend" @fold="onSidebarFold" :shrink-way="'v-show'">
-        <div class="chatRoom">
+        <div v-if="effectiveEnabled" class="chatRoom">
             <div class="header">房间：{{ roomName }}</div>
             <div class="status">
                 <span v-if="signalrStore.isConnected" class="connected">已连接</span>
@@ -124,6 +141,9 @@ onUnmounted(async () => {
             </div>
             <div v-if="localError || signalrStore.error" class="error">
                 {{ localError || signalrStore.error }}
+            </div>
+            <div v-else-if="canEnable" class="disableChatWrap">
+                <button class="lite" @click="emit('disable')">关闭聊天功能</button>
             </div>
             <div class="messages">
                 <div
@@ -150,6 +170,15 @@ onUnmounted(async () => {
                 />
                 <button @click="sendMessage" :disabled="!isInRoom || !messageInput.trim()">发送</button>
             </div>
+        </div>
+        <div v-else class="chatDisabled">
+            <div class="header">房间：{{ roomName }}</div>
+            <div class="disabledTip">当前存档未启用聊天功能</div>
+            <button v-if="canEnable" class="enableBtn" @click="emit('enable')">启用</button>
+            <div v-else class="contactTip">请联系存档所有者启用</div>
+            <Notice v-if="canEnable" :type="'info'">
+                如果遇到类似“丢消息”的问题，请反馈：{{ guideInfo.findHelp }}
+            </Notice>
         </div>
     </SideBar>
 </div>
@@ -199,11 +228,11 @@ onUnmounted(async () => {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    height: calc(100% - 40px);
     .header {
         font-size: 18px;
         font-weight: bold;
         text-align: center;
-        margin-top: 40px;
     }
     .status {
         font-size: 14px;
@@ -226,6 +255,9 @@ onUnmounted(async () => {
         font-size: 14px;
         text-align: center;
     }
+    .disableChatWrap {
+        text-align: center;
+    }
     .messages {
         border: 1px solid #ddd;
         border-radius: 8px;
@@ -236,6 +268,7 @@ onUnmounted(async () => {
         display: flex;
         flex-direction: column;
         gap: 8px;
+        flex: 1;
         .message {
             max-width: 90%;
             padding: 8px 12px;
@@ -286,12 +319,14 @@ onUnmounted(async () => {
         gap: 8px;
         input {
             flex-grow: 1;
-            padding: 8px;
+            flex-shrink: 1;
             border: 1px solid #ccc;
             border-radius: 6px;
+            margin: 0px;
         }
         button {
-            padding: 8px 16px;
+            white-space: nowrap;
+            margin: 0px;
             border: none;
             border-radius: 6px;
             background-color: #4a90e2;
@@ -305,6 +340,34 @@ onUnmounted(async () => {
                 cursor: not-allowed;
             }
         }
+    }
+}
+.chatDisabled {
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    .disabledTip {
+        color: #999;
+        font-size: 14px;
+        text-align: center;
+    }
+    .enableBtn {
+        padding-left: 24px;
+        padding-right: 24px;
+        border: none;
+        border-radius: 6px;
+        background-color: #4a90e2;
+        color: white;
+        cursor: pointer;
+        &:hover {
+            background-color: #357abd;
+        }
+    }
+    .contactTip {
+        color: #999;
+        font-size: 14px;
     }
 }
 </style>

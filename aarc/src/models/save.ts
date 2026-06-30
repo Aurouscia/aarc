@@ -246,7 +246,9 @@ export interface SaveMetaData{
     lineStylesVersion?: number,
     textTagIconsVersion?: number,
     patternsVersion?: number,
-    dataSourcesVersion?: number
+    dataSourcesVersion?: number,
+    /** 是否启用聊天功能 */
+    chatEnabled?: boolean
 }
 
 export function saveStaCount(save:Save){

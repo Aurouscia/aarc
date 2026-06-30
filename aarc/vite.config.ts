@@ -44,6 +44,11 @@ export default defineConfig(({ mode }) => {
         '/f3sso': {
           target: env.VITE_DevProxyTarget,
           changeOrigin: true,
+        },
+        '/chat': {
+          target: env.VITE_DevProxyTarget,
+          changeOrigin: true,
+          ws: true,
         }
       }
     },

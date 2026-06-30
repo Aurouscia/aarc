@@ -32,6 +32,7 @@ import { useSavingDisabledWarningStore } from './components/savingDisabledWarnin
 import SavingDisabledWarning from './components/SavingDisabledWarning.vue';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
+import { useSignalrStore } from '@/app/com/signalrStore';
 import { coordRound } from '@/utils/coordUtils/coordRound';
 import { useUndoStore } from '@/models/stores/utils/undoStore';
 import { isFocusingInput } from '@/utils/domUtils/focusingInput';
@@ -53,6 +54,7 @@ const iconStore = useIconStore()
 const undoStore = useUndoStore()
 const api = useApiStore()
 const userInfoStore = useUserInfoStore()
+const signalrStore = useSignalrStore()
 const saveIdNum = computed(()=>parseInt(props.saveId))
 const { loadedSave } = storeToRefs(useLoadedSave())
 const loadComplete = ref(false)
@@ -65,6 +67,24 @@ const ownerUserInfo = ref<{userId: number, userName: string}>()
 const savingDisabledWarningStore = useSavingDisabledWarningStore()
 
 const saveStatus = ref<SaveDto>()
+const chatEnabled = computed(() => saveStore.save?.meta.chatEnabled === true)
+const chatCanEnable = computed(() => {
+    const currentUserId = userInfoStore.userInfo?.id
+    return !!currentUserId && currentUserId === ownerUserInfo.value?.userId
+})
+function enableChat(){
+    if(!saveStore.save) return
+    saveStore.save.meta.chatEnabled = true
+    signalrStore.clearDisabledRoom(saveIdNum.value.toString())
+    preventLeaving()
+}
+async function disableChat(){
+    if(!window.confirm('确认关闭聊天功能？')) return
+    if(!saveStore.save) return
+    saveStore.save.meta.chatEnabled = false
+    await signalrStore.disableChat(saveIdNum.value.toString())
+    await saveData(false)
+}
 
 async function load() {
     loadedSave.value = true
@@ -357,7 +377,7 @@ onBeforeUnmount(()=>{
     <div class="cache-preventer"><input :id="cachePreventerInputId"/></div>
     <DontUseWeirdBrowser></DontUseWeirdBrowser>
     <div v-if="loadComplete && !isNaN(saveIdNum)" class="chatRoomWrap">
-        <ChatRoom :saveId="saveIdNum" />
+        <ChatRoom :saveId="saveIdNum" :enabled="chatEnabled" :canEnable="chatCanEnable" @enable="enableChat" @disable="disableChat" />
     </div>
 </template>
 
@@ -386,6 +406,6 @@ onBeforeUnmount(()=>{
     position: fixed;
     top: 10px;
     right: 10px;
-    z-index: 1003;
+    z-index: 998;
 }
 </style>

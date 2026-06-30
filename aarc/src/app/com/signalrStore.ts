@@ -20,6 +20,7 @@ export const useSignalrStore = defineStore('signalr', () => {
     const connectionState = ref<HubConnectionState>(HubConnectionState.Disconnected)
     const messages = ref<ChatMessage[]>([])
     const joinedRooms = ref<Set<string>>(new Set())
+    const disabledRooms = ref<Set<string>>(new Set())
     // 每个房间最后收到消息的时间戳（毫秒），用于重连后同步
     const lastReceivedTimes = ref<Record<string, number | undefined>>({})
     const seenMessageIds = ref<Set<string>>(new Set())
@@ -98,6 +99,11 @@ export const useSignalrStore = defineStore('signalr', () => {
         conn.on("ReceiveMessage", handleIncomingMessage)
         conn.on("UserJoined", handleIncomingMessage)
         conn.on("UserLeft", handleIncomingMessage)
+
+        conn.on("ChatDisabled", (roomName: string) => {
+            disabledRooms.value.add(roomName)
+            console.log(`[signalr]房间 ${roomName} 的聊天功能已被禁用`)
+        })
 
         conn.on("LoadHistory", (history: ChatMessage[]) => {
             if (!history || history.length === 0) return
@@ -224,6 +230,24 @@ export const useSignalrStore = defineStore('signalr', () => {
         }
     }
 
+    async function disableChat(roomName: string): Promise<boolean> {
+        if (!roomName.trim() || !connection.value) return false
+        try {
+            console.log(`[signalr]请求禁用房间 ${roomName} 的聊天功能`)
+            await connection.value.invoke("DisableChat", roomName.trim())
+            disabledRooms.value.add(roomName.trim())
+            return true
+        } catch (e: any) {
+            error.value = e?.message ?? '禁用聊天功能失败'
+            console.error(`[signalr]禁用房间 ${roomName} 聊天功能失败`, e)
+            return false
+        }
+    }
+
+    function clearDisabledRoom(roomName: string): void {
+        disabledRooms.value.delete(roomName)
+    }
+
     function clearMessages(): void {
         messages.value = []
     }
@@ -237,6 +261,7 @@ export const useSignalrStore = defineStore('signalr', () => {
         connectionState,
         messages,
         joinedRooms,
+        disabledRooms,
         error,
         isConnected,
         startConnection,
@@ -244,7 +269,9 @@ export const useSignalrStore = defineStore('signalr', () => {
         joinRoom,
         leaveRoom,
         sendMessage,
+        disableChat,
         clearMessages,
+        clearDisabledRoom,
         getRoomMessages,
         syncHistory
     }

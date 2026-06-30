@@ -127,6 +127,19 @@ namespace AARC.WebApi.Services.Chat
         }
 
         /// <summary>
+        /// 通知房间内所有用户该存档已禁用聊天功能
+        /// </summary>
+        public async Task DisableChat(string roomName)
+        {
+            if (string.IsNullOrWhiteSpace(roomName))
+                throw new RqEx("房间名不能为空");
+
+            var user = GetCurrentUser();
+            _logger.LogInformation("[ChatHub] 禁用聊天 room={RoomName}, user={UserName}", roomName, user.Name);
+            await Clients.Group(roomName).SendAsync("ChatDisabled", roomName);
+        }
+
+        /// <summary>
         /// 同步某房间最近的全部历史消息（最近 50 条）
         /// </summary>
         public async Task SyncHistory(string roomName)

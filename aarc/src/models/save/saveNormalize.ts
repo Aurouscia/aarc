@@ -66,6 +66,9 @@ export function normalizeSave(obj:any){
     }else{
         fillDefault('meta', 'object', {})
     }
+    // 旧存档未记录聊天开关时默认关闭
+    if(obj.meta.chatEnabled === undefined)
+        obj.meta.chatEnabled = false
     ensureValidCvsSize(obj)
     ensureValidSliceEndpoints(obj)
     removeInvalidSlices(obj)
@@ -88,5 +91,6 @@ function getFreshNewMeta():SaveMetaData{
         lineStylesVersion: freshNewLineStylesVersion,
         textTagIconsVersion: freshNewTextTagIconsVersion,
         patternsVersion: freshNewPatternsVersion,
+        chatEnabled: false,
     }
 }
