@@ -110,7 +110,7 @@ namespace AARC.WebApi.Repos.Saves
             EnrichEditingBy(res);
             return res;
         }
-        public List<SaveDto> GetMySaves(int uid = 0)
+        public SaveListPage GetMySaves(int uid = 0, int skip = 0, int take = 30)
         {
             bool isSelf = false;
             if (uid == 0) //如果未提供目标uid，则理解为查看自己的
@@ -132,13 +132,19 @@ namespace AARC.WebApi.Repos.Saves
                     throw new RqEx("无权查看");
             }
 
-            var res = base.Existing
+            var q = base.Existing
                 .Where(x => x.OwnerUserId == uid)
-                .OrderByDescending(x => x.LastActive)
+                .OrderByDescending(x => x.LastActive);
+            var res = q
+                .Skip(skip)
+                .Take(take + 1)
                 .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
                 .ToList();
+            var hasMore = res.Count > take;
+            if (hasMore)
+                res.RemoveAt(res.Count - 1);
             EnrichEditingBy(res);
-            return res;
+            return new SaveListPage { Saves = res, HasMore = hasMore };
         }
 
         public List<SaveDto> GetByIds(List<int> ids)
@@ -468,6 +474,12 @@ namespace AARC.WebApi.Repos.Saves
                     memberOptions: mem => mem.MapFrom(source => new DateTimeOffset(source.LastActive).ToUnixTimeMilliseconds()));
             CreateMap<Save, Save>();
         }
+    }
+
+    public class SaveListPage
+    {
+        public List<SaveDto> Saves { get; set; } = [];
+        public bool HasMore { get; set; }
     }
     
     public enum HeartbeatType : byte
