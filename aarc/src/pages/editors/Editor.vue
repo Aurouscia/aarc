@@ -22,6 +22,7 @@ import { useCachePreventer } from '@/utils/timeUtils/cachePreventer';
 import { DocumentHiddenLongWatcher } from '@/utils/eventUtils/documentHiddenLong';
 import HiddenLongWarnPrompt from './components/HiddenLongWarnPrompt.vue';
 import WarnRulePrompts from './components/WarnRulePrompts.vue';
+import ChatRoom from '@/pages/chat/ChatRoom.vue';
 import { useIconStore } from '@/models/stores/iconStore';
 import { autoUpdateDataSources } from '@/models/save/dataSourceOps';
 import { compressObjectToGzip } from '@/utils/dataUtils/compressObjectToGzip';
@@ -355,6 +356,9 @@ onBeforeUnmount(()=>{
     <SavingDisabledWarning></SavingDisabledWarning>
     <div class="cache-preventer"><input :id="cachePreventerInputId"/></div>
     <DontUseWeirdBrowser></DontUseWeirdBrowser>
+    <div v-if="loadComplete && !isNaN(saveIdNum)" class="chatRoomWrap">
+        <ChatRoom :saveId="saveIdNum" />
+    </div>
 </template>
 
 <style scoped lang="scss">
@@ -377,5 +381,11 @@ onBeforeUnmount(()=>{
     position: fixed;
     z-index: -1;
     top: -100px; //藏起来
+}
+.chatRoomWrap{
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1003;
 }
 </style>

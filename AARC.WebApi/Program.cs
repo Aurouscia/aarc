@@ -3,6 +3,7 @@ using AARC.WebApi.Models.Db.Context;
 using AARC.WebApi.Repos;
 using AARC.WebApi.Services.App;
 using AARC.WebApi.Services.App.Logging;
+using AARC.WebApi.Services.Chat;
 using AARC.WebApi.Services.Files;
 using AARC.WebApi.Services.Identities;
 using AARC.WebApi.Services.Saves;
@@ -34,6 +35,8 @@ try
     builder.Services.AddSavesServices();
     //添加身份有关服务
     builder.Services.AddIdentitiesServices();
+    //添加 SignalR 实时通信服务
+    builder.Services.AddSignalR();
     
     var app = builder.Build();
     if (app.Environment.IsDevelopment())
@@ -51,6 +54,7 @@ try
     app.UseSerilog();
     app.UseResponseCompression();
     app.MapControllers();
+    app.MapHub<ChatHub>("/chat");
     app.MapF3SsoAudienceEndpoints();
 
     Log.Information("AARC启动成功=============================================");

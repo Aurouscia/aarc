@@ -36,9 +36,23 @@ namespace AARC.WebApi.Services.App.Logging
                         fileSizeLimitBytes: 500000,
                         retainedFileCountLimit: 60))
                 .WriteTo.Logger(cfg => cfg
-                    .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Information)
+                    .Filter.ByIncludingOnly(e => 
+                        e.Level == LogEventLevel.Information &&
+                        !IsSourceContext(e, "ChatHub"))
                     .WriteTo.File(
                         path: Path.Combine(logsPath, "info-.txt"),
+                        rollingInterval: RollingInterval.Day,
+                        outputTemplate: outputTemplate,
+                        shared: true,
+                        rollOnFileSizeLimit: true,
+                        fileSizeLimitBytes: 500000,
+                        retainedFileCountLimit: 60))
+                .WriteTo.Logger(cfg => cfg
+                    .Filter.ByIncludingOnly(e => 
+                        e.Level == LogEventLevel.Information &&
+                        IsSourceContext(e, "ChatHub"))
+                    .WriteTo.File(
+                        path: Path.Combine(logsPath, "hub-info-.txt"),
                         rollingInterval: RollingInterval.Day,
                         outputTemplate: outputTemplate,
                         shared: true,
@@ -79,6 +93,13 @@ namespace AARC.WebApi.Services.App.Logging
             services.AddSerilog(logger);
             Log.Logger = logger;
             return services;
+        }
+
+        private static bool IsSourceContext(LogEvent logEvent, string contains)
+        {
+            if (!logEvent.Properties.TryGetValue("SourceContext", out var sourceContext))
+                return false;
+            return sourceContext.ToString().Contains(contains, StringComparison.OrdinalIgnoreCase);
         }
 
         public static IApplicationBuilder UseSerilog(this IApplicationBuilder app)

@@ -182,6 +182,7 @@ export const useApiStore = defineStore('api', () => {
 
     return {
         abortAll,
+        jwtToken,
         setJwtToken,
         setJwtTokenFromCookie,
         clearJwtToken,
