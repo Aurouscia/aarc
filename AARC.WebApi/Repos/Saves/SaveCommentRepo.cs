@@ -27,10 +27,10 @@ namespace AARC.WebApi.Repos.Saves
                 {
                     old.Deprecated = true;
                     old.LastActive = DateTime.Now;
-                    context.Update(old);
+                    Context.Update(old);
                 }
                 if (oldRules.Count > 0)
-                    context.SaveChanges();
+                    Context.SaveChanges();
             }
             var model = new SaveComment
             {

@@ -39,10 +39,10 @@ namespace AARC.WebApi.Repos.Files
                 Group = group,
                 LastActive = now
             };
-            context.Add(model);
+            Context.Add(model);
             if (group is not null)
                 EnsureGroupMarker(type, group, uid, now);
-            context.SaveChanges();
+            Context.SaveChanges();
             return model.Id;
         }
 
@@ -130,11 +130,11 @@ namespace AARC.WebApi.Repos.Files
                 {
                     deleted.Deleted = false;
                     deleted.LastActive = now;
-                    context.Update(deleted);
+                    Context.Update(deleted);
                 }
                 else
                 {
-                    context.Add(new UserFavorite
+                    Context.Add(new UserFavorite
                     {
                         OwnerUserId = uid,
                         Type = type,
@@ -152,10 +152,10 @@ namespace AARC.WebApi.Repos.Files
                     continue;
                 fav.Deleted = true;
                 fav.LastActive = now;
-                context.Update(fav);
+                Context.Update(fav);
             }
 
-            context.SaveChanges();
+            Context.SaveChanges();
             return Existing.Any(x => x.OwnerUserId == uid && x.Type == type && x.ObjectId == objectId);
         }
 
@@ -212,9 +212,9 @@ namespace AARC.WebApi.Repos.Files
                     fav.Group = newName;
                 }
                 fav.LastActive = now;
-                context.Update(fav);
+                Context.Update(fav);
             }
-            context.SaveChanges();
+            Context.SaveChanges();
         }
 
         public void DeleteGroup(UserFavoriteType type, string groupName)
@@ -231,9 +231,9 @@ namespace AARC.WebApi.Repos.Files
             {
                 fav.Deleted = true;
                 fav.LastActive = now;
-                context.Update(fav);
+                Context.Update(fav);
             }
-            context.SaveChanges();
+            Context.SaveChanges();
         }
 
         private void EnsureGroupMarker(UserFavoriteType type, string group, int uid, DateTime now)
@@ -245,7 +245,7 @@ namespace AARC.WebApi.Repos.Files
                 && x.Group == group);
             if (marker is null)
             {
-                context.Add(new UserFavorite
+                Context.Add(new UserFavorite
                 {
                     OwnerUserId = uid,
                     Type = type,
@@ -258,7 +258,7 @@ namespace AARC.WebApi.Repos.Files
             {
                 marker.Deleted = false;
                 marker.LastActive = now;
-                context.Update(marker);
+                Context.Update(marker);
             }
         }
     }
