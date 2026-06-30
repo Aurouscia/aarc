@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { appVersionMark } from '@aurouscia/vite-app-version'
 import fullReload from 'vite-plugin-full-reload'
+import { signalrCommentFixerPlugin } from '@aurouscia/signalr-comment-fixer'
 import { resolve } from 'path'
 
 // https://vitejs.dev/config/
@@ -15,7 +16,8 @@ export default defineConfig(({ mode }) => {
       appVersionMark(),
       fullReload([
         "src/app/**", "src/models/**", "src/utils/**"
-      ])
+      ]),
+      signalrCommentFixerPlugin()
     ],
     server: {
       host: '127.0.0.1',
