@@ -3,7 +3,7 @@ import { onMounted, ref, useTemplateRef, watch } from 'vue';
 import SideBar from '../../common/SideBar.vue';
 import { MainCvsRenderingOptions, useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
-import { toYMD } from '@/utils/timeUtils/timeStr';
+import { toYMD, fromYMD } from '@/utils/timeUtils/timeStr';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext';
 import { Context as SvgCanvasContext } from 'svgcanvas';
@@ -168,16 +168,27 @@ async function downloadMiniatureCvsAsImage() {
     if(fileName){
         if(activeUrl)
             URL.revokeObjectURL(activeUrl)
+        let appliedTime = false
+        renderOptionsStore.exporting = true
         try{
+            if(miniImage.value.timeStr){
+                const t = fromYMD(miniImage.value.timeStr, msg=>showPop(msg, 'failed'))
+                if(typeof t === 'number'){
+                    renderOptionsStore.setTimeMomentOverride(t)
+                    appliedTime = true
+                }
+            }
             if(miniImage.value.fileFormat === 'svg'){
                 activeUrl = await miniatureCvsDispatcher.renderMiniatureCvsToSvgBlobUrl({
                     sideLength: miniImage.value.sideLength,
-                    lineWidth: miniImage.value.lineWidth
+                    lineWidth: miniImage.value.lineWidth,
+                    filterNotOpened: miniImage.value.hideNotOpened
                 })
             }else{
                 const cvs = miniatureCvsDispatcher.renderMiniatureCvs({
                     sideLength: miniImage.value.sideLength,
-                    lineWidth: miniImage.value.lineWidth
+                    lineWidth: miniImage.value.lineWidth,
+                    filterNotOpened: miniImage.value.hideNotOpened
                 })
                 activeUrl = await cvsToDataUrl(cvs, miniImage.value.fileFormat, fileQuality.value)
             }
@@ -186,6 +197,11 @@ async function downloadMiniatureCvsAsImage() {
             showPop('导出失败\n请查看指引', 'failed')
             setExportFailed('可能是浏览器格式限制，请查看指引')
             return
+        }finally{
+            renderOptionsStore.exporting = false
+            if(appliedTime){
+                renderOptionsStore.setTimeMomentOverride(undefined)
+            }
         }
         if(!activeUrl){
             finishExport()

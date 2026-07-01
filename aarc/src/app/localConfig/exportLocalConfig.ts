@@ -40,6 +40,8 @@ export interface ExportAnimationMiniConfig extends ExportAnimationConfig{
 }
 export interface ExportMiniImageConfig extends ExportMiniConfig{
     fileFormat: 'png'|'webp'|'jpeg'|'svg'
+    timeStr: string
+    hideNotOpened: boolean
 }
 
 export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
@@ -82,7 +84,9 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
     const miniImage = ref<ExportMiniImageConfig>({
         fileFormat: 'png',
         sideLength: 256,
-        lineWidth: 2
+        lineWidth: 2,
+        timeStr: '',
+        hideNotOpened: false
     })
 
     const bgRefImage = ref<boolean>(true)

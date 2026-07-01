@@ -25,6 +25,26 @@ const limits = ANIMATED_EXPORT_LIMITS
         </td>
     </tr>
     <tr>
+        <td colspan="2">
+            <input v-model.lazy="miniImage.timeStr" placeholder="导出特定时间点"/>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" class="smallNote" style="text-align: left;">
+            可填写：2015（仅年份）<br/>
+            或：2015-3（年-月）<br/>
+            或：2015-3-15（年-月-日）
+        </td>
+    </tr>
+    <tr>
+        <td>
+            隐藏未开通
+        </td>
+        <td>
+            <input v-model="miniImage.hideNotOpened" type="checkbox"/>
+        </td>
+    </tr>
+    <tr>
         <td>
             边长
         </td>
