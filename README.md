@@ -79,14 +79,14 @@ http://aarc.jowei19.com
     ```bash
     docker run -d \
         --name aarc \
-        -p 8080:80 \
+        -p 8080:8080 \
         -v $(pwd)/data:/app/Data \
         --restart unless-stopped \
         aarc
     ```
    - `-v $(pwd)/data:/app/Data`：将数据库等数据持久化到主机目录（自行选择合适的位置）
    - 首次启动后，必须进行一次[更新数据库架构](#更新数据库架构)
-5. 使用 nginx 反向代理到 80/443 端口，配置 SSL 证书
+5. 使用 nginx 反向代理到 8080 端口，配置 SSL 证书
 
 ### 部署步骤（windows 服务器）
 1. 停止调试，选择导出位置和方式
