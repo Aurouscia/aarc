@@ -10,6 +10,7 @@ import FaqAsConfig from './configs/FaqAsConfig.vue';
 import TextTagIconConfig from './configs/TextTagIconConfig.vue';
 import PinyinConvertConfig from './configs/PinyinConvertConfig.vue';
 import SaveConfigReuse from './configs/SaveConfigReuse.vue';
+import CloudSvgConfig from './configs/CloudSvgConfig.vue';
 import BgRefImageConfig from './configs/BgRefImageConfig.vue';
 import FontConfig from './configs/FontConfig.vue';
 import PatternsConfig from './configs/PatternsConfig.vue';
@@ -50,6 +51,8 @@ defineExpose({
 <BgRefImageConfig></BgRefImageConfig>
 
 <DataSourcesConfig></DataSourcesConfig>
+
+<CloudSvgConfig></CloudSvgConfig>
 
 <SaveConfigReuse></SaveConfigReuse>
 

@@ -12,7 +12,7 @@ import { ref, shallowRef } from "vue";
 import { useConfigStore } from "@/models/stores/configStore";
 import { timestampMS } from "@/utils/timeUtils/timestamp";
 import { useTimeSpanClock } from "@/utils/timeUtils/timeSpanClock";
-import { CvsContext } from "../common/cvsContext";
+import { CvsContext, CvsBlock } from "../common/cvsContext";
 import { useAdsCvsWorker } from "../workers/adsCvsWorker";
 import { AdsRenderType, ExportGridLayer, ExportGridLevel } from "@/app/localConfig/exportLocalConfig";
 import { usePointLinkStore } from "@/models/stores/pointLinkStore";
@@ -21,6 +21,9 @@ import { useWatermarkCvsWorker } from "../workers/watermarkCvsWorker";
 import { useRenderOptionsStore } from "@/models/stores/renderOptionsStore";
 import { useBgRefImageCvsWorker } from "../workers/bgRefImageCvsWorker";
 import { useGridCvsWorker } from "../workers/gridCvsWorker";
+import { Context as SvgCanvasContext } from 'svgcanvas';
+import { optimizeSvg } from "@/utils/svgUtils/optimizeSvg";
+import { useSaveStore } from "@/models/stores/saveStore";
 
 
 export interface MainCvsRenderingOptions{
@@ -60,6 +63,7 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
     const { renderWatermark } = useWatermarkCvsWorker()
     const { renderBgRefImage } = useBgRefImageCvsWorker()
     const { renderGrid } = useGridCvsWorker()
+    const saveStore = useSaveStore()
     const afterMainCvsRendered = shallowRef<()=>void>()
     const isRendering = ref(false)
     const logRendering = import.meta.env.VITE_LogMainCvsRendering === 'true'
@@ -130,6 +134,35 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
         if(!suppressRenderedCallback && afterMainCvsRendered.value)
             afterMainCvsRendered.value()
     }
+    async function renderMainCvsToSvgBlob(options?: Pick<MainCvsRenderingOptions, 'withAds' | 'withBgRefImage' | 'withGridLayer' | 'withGridLevel'>):Promise<Blob>{
+        const cvsWidth = saveStore.cvsWidth
+        const cvsHeight = saveStore.cvsHeight
+        const svgCtx = new SvgCanvasContext({ width: cvsWidth, height: cvsHeight })
+        const ctx = new CvsContext(new CvsBlock(1, 0, 0, svgCtx))
+        const originalExporting = renderOptionsStore.exporting
+        renderOptionsStore.exporting = true
+        try{
+            renderMainCvs({
+                movedStaNames: [],
+                suppressRenderedCallback: true,
+                ctx,
+                withAds: options?.withAds ?? 'no',
+                withBgRefImage: options?.withBgRefImage ?? false,
+                withGridLayer: options?.withGridLayer ?? 'none',
+                withGridLevel: options?.withGridLevel
+            })
+            const svgStr = svgCtx.getSerializedSvg(true)
+            let optimizedSvgStr = svgStr
+            try{
+                optimizedSvgStr = await optimizeSvg(svgStr)
+            }catch(e){
+                console.error('SVGO 优化失败，使用原始 SVG', e)
+            }
+            return new Blob([optimizedSvgStr], { type: 'image/svg+xml;charset=utf-8' })
+        }finally{
+            renderOptionsStore.exporting = originalExporting
+        }
+    }
     envStore.rerender = (_changedLines, movedStaNames)=>{
         // TODO：将rerender的参数改为对象
         renderMainCvs({
@@ -151,5 +184,5 @@ export const useMainCvsDispatcher = defineStore('mainCvsDispatcher', ()=>{
             updateSnapGridIntv: false
         })
     }
-    return { renderMainCvs, afterMainCvsRendered, canvasIdPrefix, visitorMode }
+    return { renderMainCvs, renderMainCvsToSvgBlob, afterMainCvsRendered, canvasIdPrefix, visitorMode }
 })

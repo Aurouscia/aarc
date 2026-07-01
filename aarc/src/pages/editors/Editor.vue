@@ -36,6 +36,7 @@ import { useSignalrStore } from '@/app/com/signalrStore';
 import { coordRound } from '@/utils/coordUtils/coordRound';
 import { useUndoStore } from '@/models/stores/utils/undoStore';
 import { isFocusingInput } from '@/utils/domUtils/focusingInput';
+import { renderAndUploadCloudSvg } from '@/models/save/cloudSvgOps';
 
 const heartbeatIntervalSecs = 3 * 60 // 每3分钟心跳一次
 
@@ -239,6 +240,12 @@ async function saveData(mustBackup:boolean){
         const miniCvs = miniatureCvsDispatcher.renderMiniatureCvs({sideLength: 256, lineWidth: 2})
         const miniBlob = await miniCvs.convertToBlob()
         await api.save.updateMiniature(saveIdNum.value, {data:miniBlob, fileName:'mini.png'})
+
+        //次要任务：根据设置自动更新云端SVG，不影响主流程
+        if(saveStore.save?.meta.autoUpdateCloudSvg?.enabled === true){
+            await renderAndUploadCloudSvg(saveIdNum.value)
+            showPop('已更新云端SVG', 'success')
+        }
 
         //重新初始化心跳定时器周期，因为“保存”本身会触发一次心跳续约
         endHeartbeat()

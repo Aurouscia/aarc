@@ -248,7 +248,10 @@ export interface SaveMetaData{
     patternsVersion?: number,
     dataSourcesVersion?: number,
     /** 是否启用聊天功能 */
-    chatEnabled?: boolean
+    chatEnabled?: boolean,
+    autoUpdateCloudSvg?: {
+        enabled?: boolean
+    }
 }
 
 export function saveStaCount(save:Save){

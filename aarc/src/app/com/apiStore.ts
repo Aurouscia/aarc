@@ -179,6 +179,7 @@ export const useApiStore = defineStore('api', () => {
     const saveFolder = w(new api.SaveFolderClient(baseUrl, instance))
     const saveComment = w(new api.SaveCommentClient(baseUrl, instance))
     const userFavorite = w(new api.UserFavoriteClient(baseUrl, instance))
+    const saveSvg = w(new api.SaveSvgClient(baseUrl, instance))
 
     return {
         abortAll,
@@ -195,6 +196,7 @@ export const useApiStore = defineStore('api', () => {
         saveUtils,
         saveFolder,
         saveComment,
-        userFavorite
+        userFavorite,
+        saveSvg
     }
 })

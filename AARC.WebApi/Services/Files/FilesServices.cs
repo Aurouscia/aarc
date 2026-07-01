@@ -6,6 +6,7 @@
             this IServiceCollection services)
         {
             services.AddSingleton<SaveMiniatureFileService>();
+            services.AddSingleton<SaveSvgFileService>();
             services.AddSingleton<SaveBackupFileService>();
             services.AddSingleton<UserFileService>();
             return services;
@@ -17,6 +18,7 @@
             this IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseSaveMiniatureFiles(env);
+            app.UseSaveSvgFiles(env);
             app.UseUserFiles(env);
             return app;
         }

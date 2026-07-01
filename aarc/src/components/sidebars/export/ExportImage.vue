@@ -6,7 +6,6 @@ import { useExportLocalConfigStore } from '@/app/localConfig/exportLocalConfig';
 import { toYMD, fromYMD } from '@/utils/timeUtils/timeStr';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext';
-import { Context as SvgCanvasContext } from 'svgcanvas';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useMiniatureCvsDispatcher } from '@/models/cvs/dispatchers/miniatureCvsDispatcher';
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu';
@@ -22,7 +21,6 @@ import ExportEtcConfig from './configs/ExportEtcConfig.vue';
 import ExportTimeConfig from './configs/ExportTimeConfig.vue';
 import Prompt from '../../common/Prompt.vue';
 import { useImageExport } from './composables/useImageExport';
-import { optimizeSvg } from '@/utils/svgUtils/optimizeSvg';
 import { useApngExport } from './composables/useApngExport';
 import { useGifExport } from './composables/useGifExport';
 import { useAnimatedExport } from './composables/useAnimatedExport';
@@ -76,27 +74,12 @@ const {
 } = useAnimatedExport()
 
 async function renderMainCvsToSvgBlobUrl(): Promise<string | null> {
-    const { scale, cvsWidth, cvsHeight } = getExportRenderSize()
-    const svgCtx = new SvgCanvasContext({ width: cvsWidth, height: cvsHeight })
-    const ctx = new CvsContext(new CvsBlock(scale, 0, 0, svgCtx))
-    const mainRenderingOptions: MainCvsRenderingOptions = {
-        movedStaNames: [],
-        suppressRenderedCallback: true,
-        ctx,
+    const blob = await mainCvsDispatcher.renderMainCvsToSvgBlob({
         withAds: ads.value,
         withBgRefImage: bgRefImage.value,
         withGridLayer: grid.value.layer,
         withGridLevel: grid.value.level
-    }
-    mainCvsDispatcher.renderMainCvs(mainRenderingOptions)
-    const svgStr = svgCtx.getSerializedSvg(true)
-    let optimizedSvgStr = svgStr
-    try {
-        optimizedSvgStr = await optimizeSvg(svgStr)
-    } catch (e) {
-        console.error('SVGO 优化失败，使用原始 SVG', e)
-    }
-    const blob = new Blob([optimizedSvgStr], { type: 'image/svg+xml;charset=utf-8' })
+    })
     return URL.createObjectURL(blob)
 }
 
