@@ -476,5 +476,59 @@ describe('lineStateStore - span level', () => {
       expect(store.isLineTagDownplayed(line1.id)).toBe(true)
       expect(store.getLineTagActualColor(line1)).toBe('#CCCCCC')
     })
+
+    it('主线自身未开通但存在已开通支线时，主线标签不淡化', () => {
+      const pts = [10, 20, 30]
+      const mainLine = createLine(pts, {
+        color: '#ff0000',
+        time: { open: new Date('2030-01-01').getTime() }
+      })
+      const branchLine = createLine(pts, {
+        color: '#00ff00',
+        parent: mainLine.id,
+        time: { open: new Date('2020-01-01').getTime() }
+      })
+      const save = createEmptySave({
+        points: pts.map(id => createPoint(id)),
+        lines: [mainLine, branchLine]
+      })
+      setupSaveStore(save)
+      const store = useLineStateStore()
+
+      const renderOptions = useRenderOptionsStore()
+      renderOptions.exporting = true
+      renderOptions.timeMoment = new Date('2025-01-01').getTime()
+      renderOptions.timeConfig = { enabledPreview: true }
+
+      expect(store.isLineTagDownplayed(mainLine.id)).toBe(false)
+      expect(store.getLineTagActualColor(mainLine)).toBe('#ff0000')
+    })
+
+    it('主线及其所有支线都未开通时，主线标签淡化', () => {
+      const pts = [10, 20, 30]
+      const mainLine = createLine(pts, {
+        color: '#ff0000',
+        time: { open: new Date('2030-01-01').getTime() }
+      })
+      const branchLine = createLine(pts, {
+        color: '#00ff00',
+        parent: mainLine.id,
+        time: { open: new Date('2030-06-01').getTime() }
+      })
+      const save = createEmptySave({
+        points: pts.map(id => createPoint(id)),
+        lines: [mainLine, branchLine]
+      })
+      setupSaveStore(save)
+      const store = useLineStateStore()
+
+      const renderOptions = useRenderOptionsStore()
+      renderOptions.exporting = true
+      renderOptions.timeMoment = new Date('2025-01-01').getTime()
+      renderOptions.timeConfig = { enabledPreview: true }
+
+      expect(store.isLineTagDownplayed(mainLine.id)).toBe(true)
+      expect(store.getLineTagActualColor(mainLine)).toBe('#CCCCCC')
+    })
   })
 })

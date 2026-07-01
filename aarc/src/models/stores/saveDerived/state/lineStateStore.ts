@@ -139,20 +139,39 @@ export const useLineStateStore = defineStore('lineState', () => {
      * 
      * 逻辑：
      * 1. 如果线路因“强调”被淡化，标签也淡化
-     * 2. 否则只在时间模式下，且该线路所有 FlatSpan 都未开通时才淡化
-     * 3. 不再依据线路级 Line.time 做判断
+     * 2. 否则只在时间模式下，且该线路（若是主线，还包括所有 parent 指向它的支线）
+     *    的每一个 FlatSpan 都未开通时才淡化
+     * 3. 不再直接依据线路级 Line.time 做判断
      */
     function isLineTagDownplayed(lineId: number): boolean {
         if (lineActualColors.value.get(lineId)?.downplayedBy === 'accentuation') return true
         if (!shouldRunDownplayByTime()) return false
-        const flattened = lineSpanStore.getFlattenedLine(lineId)
-        const spans = flattened?.spans
-        if (!spans || spans.length === 0) return false
-        for (let i = 0; i < spans.length; i++) {
-            const spanTimeInfo = lineSpanStore.getSpanTime(lineId, i)
-            if (!isTimeDownplayed(spanTimeInfo?.time)) return false
+
+        const line = saveStore.getLineById(lineId)
+        if (!line) return false
+
+        // 如果是主线（无 parent），需要同时检查自身和所有支线
+        const lineIdsToCheck: number[] = [lineId]
+        if (!line.parent) {
+            for (const l of save.value?.lines || []) {
+                if (l.parent === lineId) {
+                    lineIdsToCheck.push(l.id)
+                }
+            }
         }
-        return true
+
+        let hasAnySpan = false
+        for (const id of lineIdsToCheck) {
+            const flattened = lineSpanStore.getFlattenedLine(id)
+            const spans = flattened?.spans
+            if (!spans || spans.length === 0) continue
+            hasAnySpan = true
+            for (let i = 0; i < spans.length; i++) {
+                const spanTimeInfo = lineSpanStore.getSpanTime(id, i)
+                if (!isTimeDownplayed(spanTimeInfo?.time)) return false
+            }
+        }
+        return hasAnySpan
     }
 
     /**
