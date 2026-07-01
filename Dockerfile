@@ -32,6 +32,7 @@ RUN mkdir -p ./publish/Data/SqliteFiles
 
 # 复制并执行生成脚本（使用 --dll 模式，直接运行已发布的 DLL）
 COPY gen-ts-client.sh .
+RUN sed -i 's/\r$//' gen-ts-client.sh
 RUN chmod +x gen-ts-client.sh
 RUN ./gen-ts-client.sh --dll --here
 
