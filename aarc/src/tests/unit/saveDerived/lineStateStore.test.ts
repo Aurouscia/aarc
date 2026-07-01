@@ -346,4 +346,135 @@ describe('lineStateStore - span level', () => {
       expect(store.isSpanDownplayed(line.id, 0)).toBe(false)
     })
   })
+
+  describe('tag level downplay', () => {
+    it('所有 FlatSpan 都未开通时标签应淡化', () => {
+      const pts = [10, 20, 30]
+      const line = createLine(pts, {
+        color: '#ff0000',
+        time: { open: new Date('2030-01-01').getTime() }
+      })
+      const save = createEmptySave({
+        points: pts.map(id => createPoint(id)),
+        lines: [line]
+      })
+      setupSaveStore(save)
+      const store = useLineStateStore()
+
+      const renderOptions = useRenderOptionsStore()
+      renderOptions.exporting = true
+      renderOptions.timeMoment = new Date('2025-01-01').getTime()
+      renderOptions.timeConfig = { enabledPreview: true }
+
+      expect(store.isLineTagDownplayed(line.id)).toBe(true)
+      expect(store.getLineTagActualColor(line)).toBe('#CCCCCC')
+    })
+
+    it('部分 FlatSpan 已开通时标签不应淡化（忽略线路级 time）', () => {
+      const pts = [10, 20, 30, 40]
+      const line = createLine(pts, {
+        color: '#ff0000',
+        time: { open: new Date('2030-01-01').getTime() }
+      })
+      const timeSlice = createTimeSlice({
+        line: line.id,
+        fromPt: 10,
+        toPt: 30,
+        time: { open: new Date('2020-01-01').getTime() }
+      })
+      const save = createEmptySave({
+        points: pts.map(id => createPoint(id)),
+        lines: [line],
+        timeSlices: [timeSlice]
+      })
+      setupSaveStore(save)
+      const store = useLineStateStore()
+
+      const renderOptions = useRenderOptionsStore()
+      renderOptions.exporting = true
+      renderOptions.timeMoment = new Date('2025-01-01').getTime()
+      renderOptions.timeConfig = { enabledPreview: true }
+
+      expect(store.isLineTagDownplayed(line.id)).toBe(false)
+      expect(store.getLineTagActualColor(line)).toBe('#ff0000')
+    })
+
+    it('TimeSlice 使所有 span 都已开通时标签不淡化', () => {
+      const pts = [10, 20, 30]
+      const line = createLine(pts, {
+        color: '#ff0000',
+        time: { open: new Date('2030-01-01').getTime() }
+      })
+      const timeSlice = createTimeSlice({
+        line: line.id,
+        fromPt: 10,
+        toPt: 30,
+        time: { open: new Date('2020-01-01').getTime() }
+      })
+      const save = createEmptySave({
+        points: pts.map(id => createPoint(id)),
+        lines: [line],
+        timeSlices: [timeSlice]
+      })
+      setupSaveStore(save)
+      const store = useLineStateStore()
+
+      const renderOptions = useRenderOptionsStore()
+      renderOptions.exporting = true
+      renderOptions.timeMoment = new Date('2025-01-01').getTime()
+      renderOptions.timeConfig = { enabledPreview: true }
+
+      expect(store.isLineTagDownplayed(line.id)).toBe(false)
+      expect(store.getLineTagActualColor(line)).toBe('#ff0000')
+    })
+
+    it('无时间预览时标签不淡化', () => {
+      const pts = [10, 20, 30]
+      const line = createLine(pts, {
+        color: '#ff0000',
+        time: { open: new Date('2030-01-01').getTime() }
+      })
+      const save = createEmptySave({
+        points: pts.map(id => createPoint(id)),
+        lines: [line]
+      })
+
+      const renderOptions = useRenderOptionsStore()
+      renderOptions.exporting = false
+      renderOptions.timeMoment = undefined
+      renderOptions.timeConfig = { enabledPreview: false }
+
+      setupSaveStore(save)
+      const store = useLineStateStore()
+
+      expect(store.isLineTagDownplayed(line.id)).toBe(false)
+      expect(store.getLineTagActualColor(line)).toBe('#ff0000')
+    })
+
+    it('强调淡化时标签应淡化，不受 span 时间影响', () => {
+      const pts = [10, 20, 30]
+      const line1 = createLine(pts, { color: '#ff0000' })
+      const line2 = createLine([10, 20], { color: '#0000ff' })
+      const timeSlice = createTimeSlice({
+        line: line1.id,
+        fromPt: 10,
+        toPt: 30,
+        time: { open: new Date('2020-01-01').getTime() }
+      })
+      const save = createEmptySave({
+        points: pts.map(id => createPoint(id)),
+        lines: [line1, line2],
+        timeSlices: [timeSlice]
+      })
+      setupSaveStore(save)
+      const store = useLineStateStore()
+
+      const renderOptions = useRenderOptionsStore()
+      renderOptions.exporting = true
+      renderOptions.accentuationLineIds = [line2.id]
+
+      expect(store.isLineTagDownplayed(line1.id)).toBe(true)
+      expect(store.getLineTagActualColor(line1)).toBe('#CCCCCC')
+    })
+  })
 })

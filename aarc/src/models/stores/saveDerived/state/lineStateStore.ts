@@ -111,6 +111,51 @@ export const useLineStateStore = defineStore('lineState', () => {
     }
 
     /**
+     * 获取标签应该使用的线路实际颜色
+     * 
+     * 逻辑：
+     * 1. 先取整线基础色（处理 colorPre）
+     * 2. 如果线路因“强调”被淡化，直接使用 lineActualColors 中的淡化色
+     * 3. 如果所有 FlatSpan 都因时间未开通而淡化，则对基础色应用淡化
+     * 4. 否则返回原色
+     */
+    function getLineTagActualColor(line: Line): string {
+        let baseColor = line.color
+        if (line.colorPre) {
+            baseColor = configStore.getPresetColor(line.colorPre)
+        }
+        const lineState = lineActualColors.value.get(line.id)
+        if (lineState?.downplayedBy === 'accentuation') {
+            return lineState.color || baseColor
+        }
+        if (isLineTagDownplayed(line.id)) {
+            return colorProc.colorProcDownplay.convert(baseColor)
+        }
+        return baseColor
+    }
+
+    /**
+     * 判断标签是否应该被淡化
+     * 
+     * 逻辑：
+     * 1. 如果线路因“强调”被淡化，标签也淡化
+     * 2. 否则只在时间模式下，且该线路所有 FlatSpan 都未开通时才淡化
+     * 3. 不再依据线路级 Line.time 做判断
+     */
+    function isLineTagDownplayed(lineId: number): boolean {
+        if (lineActualColors.value.get(lineId)?.downplayedBy === 'accentuation') return true
+        if (!shouldRunDownplayByTime()) return false
+        const flattened = lineSpanStore.getFlattenedLine(lineId)
+        const spans = flattened?.spans
+        if (!spans || spans.length === 0) return false
+        for (let i = 0; i < spans.length; i++) {
+            const spanTimeInfo = lineSpanStore.getSpanTime(lineId, i)
+            if (!isTimeDownplayed(spanTimeInfo?.time)) return false
+        }
+        return true
+    }
+
+    /**
      * 获取指定线路指定 span 的实际颜色
      * 
      * 逻辑：
@@ -175,6 +220,8 @@ export const useLineStateStore = defineStore('lineState', () => {
         getLineActualColor,
         getLineActualColorById,
         isLineDownplayed,
+        getLineTagActualColor,
+        isLineTagDownplayed,
         getSpanActualColor,
         isSpanDownplayed
     }

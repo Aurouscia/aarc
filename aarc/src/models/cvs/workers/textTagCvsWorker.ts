@@ -55,8 +55,8 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         const commonLineBuiltinRatio = 1.2
         const mainRatio = getFontSize(t.textOp, cs.config.textTagForLine.fontSize??1) * commonLineBuiltinRatio
         const subRatio = getFontSize(t.textSOp, cs.config.textTagForLine.subFontSize??1) * commonLineBuiltinRatio
-        const color = lineStateStore.getLineActualColor(lineInfo)
-        const downplayed = lineStateStore.isLineDownplayed(lineInfo.id)
+        const color = lineStateStore.getLineTagActualColor(lineInfo)
+        const downplayed = lineStateStore.isLineTagDownplayed(lineInfo.id)
         let textColor:string = ''
         if(downplayed)
             textColor = 'white'
@@ -119,7 +119,7 @@ export const useTextTagCvsWorker = defineStore('textTagCvsWorker', ()=>{
         const terrainLineBuiltinRatio = 1.2
         const mainRatio = getFontSize(t.textOp, cs.config.textTagForTerrain.fontSize??1) * terrainLineBuiltinRatio
         const subRatio = getFontSize(t.textSOp, cs.config.textTagForTerrain.subFontSize??1) * terrainLineBuiltinRatio
-        const terrainColor = lineStateStore.getLineActualColor(lineInfo)
+        const terrainColor = lineStateStore.getLineTagActualColor(lineInfo)
         const textColor = colorProcStore.colorProcTerrainTag.convert(terrainColor)
         const mainEmpty = !t.text?.trim()
         const subEmpty = mainEmpty && !t.textS?.trim()
