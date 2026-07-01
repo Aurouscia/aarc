@@ -38,6 +38,9 @@ export interface ExportAnimationConfig{
 export interface ExportAnimationMiniConfig extends ExportAnimationConfig{
     mini: ExportMiniConfig
 }
+export interface ExportMiniImageConfig extends ExportMiniConfig{
+    fileFormat: 'png'|'webp'|'jpeg'|'svg'
+}
 
 export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
     const fileNameStyle = ref<ExportFileNameStyle>('lineCount')
@@ -76,6 +79,11 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
             lineWidth: 2
         }
     })
+    const miniImage = ref<ExportMiniImageConfig>({
+        fileFormat: 'png',
+        sideLength: 256,
+        lineWidth: 2
+    })
 
     const bgRefImage = ref<boolean>(true)
     const grid = ref<{
@@ -99,6 +107,7 @@ export const useExportLocalConfigStore = defineStore('exportLocalConfig',()=>{
         accentuation,
         time,
         animationMini,
+        miniImage,
         bgRefImage,
         grid
     }

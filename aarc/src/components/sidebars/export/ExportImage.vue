@@ -27,6 +27,7 @@ import { useApngExport } from './composables/useApngExport';
 import { useGifExport } from './composables/useGifExport';
 import { useAnimatedExport } from './composables/useAnimatedExport';
 import ExportAnimationMiniConfig from './configs/ExportAnimationMiniConfig.vue';
+import ExportMiniConfig from './configs/ExportMiniConfig.vue';
 
 const sidebar = useTemplateRef('sidebar')
 const mainCvsDispatcher = useMainCvsDispatcher()
@@ -38,7 +39,7 @@ const { showPop } = useUniqueComponentsStore()
 const renderOptionsStore = useRenderOptionsStore()
 const exportLocalConfig = useExportLocalConfigStore()
 const { 
-    fileNameStyle, fileFormat, fileQuality, pixelRestrict, pixelRestrictMode, ads, bgRefImage, animationMini, grid
+    fileNameStyle, fileFormat, fileQuality, pixelRestrict, pixelRestrictMode, ads, bgRefImage, animationMini, miniImage, grid
 } = storeToRefs(exportLocalConfig)
 
 // 使用 composables
@@ -163,13 +164,31 @@ async function downloadMiniatureCvsAsImage() {
     if(exporting.value)
         return
     startExport()
-    const fileName = await getExportImageFileName(true)
+    const fileName = await getExportImageFileName(true, miniImage.value.fileFormat)
     if(fileName){
         if(activeUrl)
             URL.revokeObjectURL(activeUrl)
-        const cvs = miniatureCvsDispatcher.renderMiniatureCvs({sideLength:256, lineWidth:2})
-        activeUrl = await cvsToDataUrl(cvs, fileFormat.value, fileQuality.value)
+        try{
+            if(miniImage.value.fileFormat === 'svg'){
+                activeUrl = await miniatureCvsDispatcher.renderMiniatureCvsToSvgBlobUrl({
+                    sideLength: miniImage.value.sideLength,
+                    lineWidth: miniImage.value.lineWidth
+                })
+            }else{
+                const cvs = miniatureCvsDispatcher.renderMiniatureCvs({
+                    sideLength: miniImage.value.sideLength,
+                    lineWidth: miniImage.value.lineWidth
+                })
+                activeUrl = await cvsToDataUrl(cvs, miniImage.value.fileFormat, fileQuality.value)
+            }
+        }catch(e){
+            console.error(e)
+            showPop('导出失败\n请查看指引', 'failed')
+            setExportFailed('可能是浏览器格式限制，请查看指引')
+            return
+        }
         if(!activeUrl){
+            finishExport()
             return
         }
         triggerDownload(activeUrl, fileName)
@@ -249,9 +268,10 @@ async function downloadMiniatureAnimation() {
     }
 }
 
-async function getExportImageFileName(isMini?:boolean){
+async function getExportImageFileName(isMini?:boolean, miniFormat?: 'png'|'webp'|'jpeg'|'svg'){
     const suffix = isMini ? 'mini' : undefined
-    const fileName = await getExportFileName(fileFormat.value, suffix)
+    const ext = miniFormat ?? fileFormat.value
+    const fileName = await getExportFileName(ext, suffix)
     return fileName
 }
 
@@ -386,7 +406,7 @@ const showFileFormatPrompt = ref(false)
                 </select>
             </div>
             <button @click="downloadMainCvsAsImage" class="ok">导出为图片</button>
-            <button @click="downloadMiniatureCvsAsImage" class="minor">导出为缩略图</button>
+            <button @click="downloadMiniatureCvsAsImage" class="minor">导出为略缩图</button>
             <button @click="downloadMiniatureAnimation" class="minor">导出发展史略缩动图（{{ animationMini.fileFormat }}）</button>
             <div v-show="!exported" class="note apng-notice-entry" @click="showApngExportNotice=true">
                 动图功能有关注意事项
@@ -424,6 +444,7 @@ const showFileFormatPrompt = ref(false)
                 若导出失败或长时间无响应<br />请查看本页下方“浏览器限制”部分
             </div>
             <div class="exportConfigs">
+                <ExportMiniConfig></ExportMiniConfig>
                 <ExportAnimationMiniConfig></ExportAnimationMiniConfig>
                 <ExportTimeConfig></ExportTimeConfig>
                 <ConfigSection :title="'导出所有时间点'">

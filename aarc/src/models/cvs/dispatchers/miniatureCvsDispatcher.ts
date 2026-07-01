@@ -3,6 +3,8 @@ import { useLineSimplifiedCvsWorker } from "../workers/lineSimplifiedCvsWorker";
 import { CvsBlock, CvsContext } from "../common/cvsContext";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { Line } from "@/models/save";
+import { Context as SvgCanvasContext } from 'svgcanvas';
+import { optimizeSvg } from "@/utils/svgUtils/optimizeSvg";
 
 export const useMiniatureCvsDispatcher = defineStore('miniatureCvsDispatcher', ()=>{
     const lineSimplifiedCvsWorker = useLineSimplifiedCvsWorker()
@@ -36,7 +38,42 @@ export const useMiniatureCvsDispatcher = defineStore('miniatureCvsDispatcher', (
         lineSimplifiedCvsWorker.renderAllLines(ctx, {lineWidth: lineWidth/ratio, lines, filterNotOpened})
         return cvs
     }
+    async function renderMiniatureCvsToSvgBlobUrl(options:{sideLength:number, lineWidth:number, lines?:Line[], filterNotOpened?:boolean}):Promise<string>{
+        const { sideLength, lineWidth, lines, filterNotOpened} = options
+        const svgCtx = new SvgCanvasContext({ width: sideLength, height: sideLength })
+        const w = saveStore.cvsWidth
+        const h = saveStore.cvsHeight
+        let ratio:number;
+        let top = 0;
+        let left = 0;
+        if(w >= h){
+            ratio = sideLength / w
+            const diff = (w-h)/2
+            top = -diff * ratio
+        }
+        else{
+            ratio = sideLength / h
+            const diff = (h-w)/2
+            left = -diff * ratio
+        }
+        const ctx = new CvsContext(
+            new CvsBlock(ratio, left, top, svgCtx)
+        )
+        ctx.fillStyle = 'white'
+        ctx.fillTotal()
+        lineSimplifiedCvsWorker.renderAllLines(ctx, {lineWidth: lineWidth/ratio, lines, filterNotOpened})
+        const svgStr = svgCtx.getSerializedSvg(true)
+        let optimizedSvgStr = svgStr
+        try {
+            optimizedSvgStr = await optimizeSvg(svgStr)
+        } catch (e) {
+            console.error('SVGO 优化失败，使用原始 SVG', e)
+        }
+        const blob = new Blob([optimizedSvgStr], { type: 'image/svg+xml;charset=utf-8' })
+        return URL.createObjectURL(blob)
+    }
     return {
-        renderMiniatureCvs
+        renderMiniatureCvs,
+        renderMiniatureCvsToSvgBlobUrl
     }
 })
