@@ -5,7 +5,7 @@ import { faq } from "@/pages/homes/routes/routesNames";
 import { useCommonLocalConfigStore } from "@/app/localConfig/commonLocalConfig";
 import { userFileList } from "@/pages/files/routes/routesNames";
 import { useUserListLocalConfigStore } from "../localConfig/userListLocalConfig";
-import { sponsorWxName } from "@/pages/etc/routes/routesNames";
+import { deriveRailchessName, deriveWikiName, forkAarcName, sponsorWxName } from "@/pages/etc/routes/routesNames";
 
 export async function getTopbarData(): Promise<TopbarModel> {
     const common = useCommonLocalConfigStore()
@@ -50,22 +50,22 @@ export async function getTopbarData(): Promise<TopbarModel> {
             ]
         },
         {
-            title: "工具",
+            title: "衍生",
             children: [
                 {
-                    title: "滨蜀的小工具合集",
-                    link: { name: saveToolsName }
+                    title: 'AARC 私服',
+                    link: { name:forkAarcName }
                 },
                 {
-                    title: "RMP转AARC",
-                    link: { name: saveToolsName }
+                    title: 'FCloud3 系统',
+                    link: { name:deriveWikiName }
                 },
                 {
-                    title: "AARC转FicCloud",
-                    link: { name: saveToolsName }
+                    title: '多人在线轨交棋',
+                    link: { name:deriveRailchessName }
                 },
                 {
-                    title: "AARC转轨交棋",
+                    title: "更多工具",
                     link: { name: saveToolsName }
                 }
             ]
