@@ -16,6 +16,8 @@ import { useSaveListLocalConfigStore } from '@/app/localConfig/saveListLocalConf
 const { setEnteredFrom } = useEnteredCanvasFromStore()
 const userInfoStore = useUserInfoStore()
 const { simpleCoopRulesDisplay } = storeToRefs(useSaveListLocalConfigStore())
+const isFork = import.meta.env.VITE_IsFork == "true"
+const welcome = import.meta.env.VITE_Welcome
 
 onMounted(()=>{
     appVersionCheck()
@@ -26,8 +28,8 @@ onMounted(()=>{
 <template>
 <div class="welcome">
     <h1>欢迎</h1>
-    <p>AARC是用于快速绘制抽象线路图的工具</p>
-    <p>
+    <p>{{ welcome || 'AARC是用于快速绘制抽象线路图的工具' }}</p>
+    <p v-if="!isFork">
         <b>
             <a style="color:green" href="/#/Editor/demo">点击此处立即试用</a>&nbsp;
             <a style="color:blueviolet" href="http://aarc.jowei19.com/#/Editor/188?viewOnly=1">使用说明</a>&nbsp;
@@ -37,6 +39,7 @@ onMounted(()=>{
     <p v-if="guideInfo.findHelp">遇到问题：{{ guideInfo.findHelp }}</p>
     <p v-if="guideInfo.extra" class="guideExtra" v-html="guideInfo.extra"></p>
 </div>
+<template v-if="!isFork">
 <Notice :type="'success'" :title="'🎉 好消息'" v-if="userInfoStore.userInfo.id && userInfoStore.userInfo.isTourist">
     现在无需加 qq 群即可免费转为正式用户，公开展示作品，使用多人协作功能：
     <RouterLink :to="{name:userUpgradeToMemberName}" style="color: white;text-decoration: underline;">立即转正</RouterLink>
@@ -52,6 +55,7 @@ onMounted(()=>{
         ❓如有疑问请咨询QQ交流群群主
     </div>
 </div>
+</template>
 <div class="marginedSection">
     <NewestSaves></NewestSaves>
     <div v-if="userInfoStore.isLoginedTourist" class="userTypeNote">当前账号为游客，作品无法公开展示</div>
@@ -63,7 +67,7 @@ onMounted(()=>{
 <div class="marginedSection">
     <SearchSaveEntrance></SearchSaveEntrance>
 </div>
-<div class="marginedSection">
+<div v-if="!isFork" class="marginedSection">
     <a href="http://u.fsf.org/16e" style="display: block;margin: auto;width: 200px;" target="_blank">
         <img src="https://static.fsf.org/nosvn/images/badges/fsfs_icons_beige-bg.png" alt="Free Software, Free Society" style="width: 100%;">
     </a>
@@ -78,11 +82,11 @@ onMounted(()=>{
         <a href="/#/about" style="text-decoration: underline;" target="_blank">AARC源码</a>
     </div>
 </div>
-<div class="releaseNotes">
+<div v-if="!isFork" class="releaseNotes">
     <RecentUpdates></RecentUpdates>
 </div>
-<GiteeInfo></GiteeInfo>
-<div class="roadmap">
+<GiteeInfo v-if="!isFork"></GiteeInfo>
+<div v-if="!isFork" class="roadmap">
     <h2>近期规划</h2>
     <div class="done">
         <h3>自由插入图片（已完成✔）</h3>
@@ -151,7 +155,7 @@ onMounted(()=>{
         <p>任意一张png线路图，可由算法和OCR转换为本工具的存档</p>
     </div>
 </div>
-<div class="openSourceNote">
+<div v-if="!isFork" class="openSourceNote">
     本项目以<a href="https://apache.org/licenses/LICENSE-2.0" target="_blank">Apache-2.0</a>开源许可证提供，可私有部署和商用。
     欢迎对本项目源码作出贡献或提出改进意见。<br/>
     <a href="https://gitee.com/au114514/aarc" target="_blank">Gitee(本体)</a>&nbsp;

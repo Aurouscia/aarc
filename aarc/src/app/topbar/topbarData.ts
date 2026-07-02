@@ -7,6 +7,8 @@ import { userFileList } from "@/pages/files/routes/routesNames";
 import { useUserListLocalConfigStore } from "../localConfig/userListLocalConfig";
 import { deriveRailchessName, deriveWikiName, forkAarcName, sponsorWxName } from "@/pages/etc/routes/routesNames";
 
+const isFork = import.meta.env.VITE_IsFork == "true"
+
 export async function getTopbarData(): Promise<TopbarModel> {
     const common = useCommonLocalConfigStore()
     const userList = useUserListLocalConfigStore()
@@ -48,7 +50,11 @@ export async function getTopbarData(): Promise<TopbarModel> {
                     link: { name: userFileList }
                 }
             ]
-        },
+        }
+    ]
+
+    if(!isFork){
+        items.push(
         {
             title: "衍生",
             children: [
@@ -69,7 +75,10 @@ export async function getTopbarData(): Promise<TopbarModel> {
                     link: { name: saveToolsName }
                 }
             ]
-        },
+        })
+    }
+
+    items.push(
         {
             title: "用户",
             children: [
@@ -104,8 +113,7 @@ export async function getTopbarData(): Promise<TopbarModel> {
                     link: { name: aboutName }
                 }
             ]
-        }
-    ]
+        })
 
     // 按设置决定是否加入"疑问"
     const showFaqOnTopbar = common.showFaqOnTopbar
@@ -116,10 +124,12 @@ export async function getTopbarData(): Promise<TopbarModel> {
         })
     }
 
-    items.push({
-        title: "资助 ❤",
-        link: { name: sponsorWxName }
-    })
+    if(!isFork){
+        items.push({
+            title: "资助",
+            link: { name: sponsorWxName }
+        })
+    }
     
     // 登录必排在最后
     items.push({

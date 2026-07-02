@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { aboutName } from '@/pages/identities/routes/routesNames.ts';
 import ConfigSection from './shared/ConfigSection.vue';
 import { guideInfo } from '@/app/guideInfo';
+import { forkAarcName } from '@/pages/etc/routes/routesNames.ts';
 
 const showGuideInfos = guideInfo.findHelp || guideInfo.extra
 </script>
@@ -11,10 +13,8 @@ const showGuideInfos = guideInfo.findHelp || guideInfo.extra
     <div>
         <h3>操作不习惯</h3>
         <div>
-            <p>如果觉得操作不习惯，这是由于您已经习惯了其他软件完全不同的操作，请保持耐心尝试完成您的第一个作品，您不会失望的。</p>
             <p>本工具的设计核心理念为上手简单，且可以<b>极为快速</b>地创建庞大复杂的线路图。</p>
             <p><b>铁证如山：</b>首页“最近更新”里，时常能看到的巨型线路图，即为“快速”最好的证明。如果难以操作，不会有如此多的用户有毅力创建这么巨大的线路图。</p>
-            <p>本工具为纯原创项目，没有借鉴任何其他的软件，设计上如有雷同纯属巧合。</p>
         </div>
     </div>
     <div>
@@ -34,8 +34,7 @@ const showGuideInfos = guideInfo.findHelp || guideInfo.extra
         <h3>收费</h3>
         <div>
             <p>本项目永远不会以任何理由收费，现有以及未来更新的所有功能（包括云服务）全部开源免费。</p>
-            <p>这是由于：作者制作本项目仅仅是爱慕虚荣，而非为了生计。</p>
-            <p>你可以在“关于”页找到本项目全部源代码并自己修改或私下使用。</p>
+            <p>你可以在<RouterLink :to="{name: aboutName}">关于页</RouterLink>找到本项目全部源代码并自己修改或私下使用。</p>
         </div>
     </div>
     <div>
@@ -54,6 +53,7 @@ const showGuideInfos = guideInfo.findHelp || guideInfo.extra
         <div>
             <p>这意味着：</p>
             <p>如果某项功能不对你的胃口，你可以自行修改或添加源代码，并开私服给自己和其他人使用（这个私服是否开源、是否收费无所谓）</p>
+            <p><RouterLink :to="{name: forkAarcName}">请在这里查看私服使用案例</RouterLink></p>
         </div>
     </div>
     <div>
@@ -127,6 +127,12 @@ const showGuideInfos = guideInfo.findHelp || guideInfo.extra
         <h3>获取备份</h3>
         <div>
             <p>请在“我的存档-信息设置”中下载或应用备份。</p>
+        </div>
+    </div>
+    <div>
+        <h3>分段设置样式</h3>
+        <div>
+            <p>请在线路列表中找到“线路片段”按钮，并在里面点击加号，创建“样式片段”，设置每一段的样式</p>
         </div>
     </div>
     <div>

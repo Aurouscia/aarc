@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { useRouter } from 'vue-router';
 
@@ -11,9 +11,20 @@ function jump(){
     router.push(searchSaveRoute(search.value))
 }
 
-const recommendList = [
-    '北京', '上海', '广州', '杭州', '成都', '武汉'
-]
+const recommendList = ref<string[]>([])
+const hotSearch = import.meta.env.VITE_HotSearch as string|undefined
+onMounted(()=>{
+    if(hotSearch && typeof hotSearch == 'string'){
+        if(hotSearch == '*'){
+            recommendList.value = [
+                '北京', '上海', '广州', '杭州', '成都', '武汉'
+            ]
+        }
+        else {
+            recommendList.value = hotSearch.split(',')
+        }
+    }
+})
 </script>
 
 <template>
@@ -22,7 +33,7 @@ const recommendList = [
         <input v-model="search" placeholder="搜索存档名称" @keyup.enter="jump"/>
         <button @click="jump">搜索</button>
     </div>
-    <div class="recommend">
+    <div class="recommend" v-if="recommendList.length">
         <span>推荐搜索：</span>
         <span v-for="item in recommendList" :key="item" @click="search=item;jump()" class="recommend-item">
             {{ item }}

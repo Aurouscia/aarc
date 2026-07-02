@@ -16,6 +16,13 @@ const list: ToolItem[] = [
         desc: '包括实际走向绘图器在内的多种实用工具'
     },
     {
+        name: '随机地名生成器',
+        isNew: true,
+        url: 'http://wiki.jowei19.com/#/w/di-ming-sheng-cheng-qi',
+        author: '南京精灵的灵芝',
+        desc: '随机组合字符生成地名'
+    },
+    {
         name: 'AARC-轨交棋转换器',
         url: 'http://railchess.jowei19.com/#/aarcConverter',
         author: 'SlinkierApple13',
@@ -38,13 +45,6 @@ const list: ToolItem[] = [
         url: 'http://mapgen.jowei19.com',
         author: 'Au',
         desc: '生成指定参数的地形图，可用于线路图背景'
-    },
-    {
-        name: '随机地名生成器',
-        isNew: true,
-        url: 'http://wiki.jowei19.com/#/w/di-ming-sheng-cheng-qi',
-        author: '南京精灵的灵芝',
-        desc: '随机组合字符生成地名'
     }
 ]
 </script>
@@ -92,6 +92,7 @@ const list: ToolItem[] = [
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
+    margin-bottom: 200px;
 }
 .tool-card {
     display: flex;
