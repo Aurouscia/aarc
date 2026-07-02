@@ -8,6 +8,7 @@ using AARC.WebApi.Services.App.Turnstile;
 using AARC.WebApi.Services.Identities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace AARC.WebApi.Controllers.Identities
 {
@@ -19,7 +20,8 @@ namespace AARC.WebApi.Controllers.Identities
         UserHistoryService userHistoryService,
         TurnstileVerifyService turnstileVerifyService,
         EmailService emailService,
-        HttpUserIdProvider httpUserIdProvider
+        HttpUserIdProvider httpUserIdProvider,
+        IConfiguration configuration
         ) : Controller
     {
         [AllowAnonymous]
@@ -62,6 +64,9 @@ namespace AARC.WebApi.Controllers.Identities
             [FromForm] string? password,
             [FromForm] string? turnstileToken)
         {
+            var registerEnabled = configuration.GetValue<bool?>("Register:Enabled") ?? true;
+            if (!registerEnabled)
+                throw new RqEx("本站点不允许注册");
             await turnstileVerifyService.Verify(turnstileToken);
             var success = userRepo.CreateUser(userName, password, out var errmsg);
             if (!success)
