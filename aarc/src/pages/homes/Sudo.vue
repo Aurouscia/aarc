@@ -30,6 +30,13 @@ async function removeAllPublicSaveEditAuthGrants() {
     removeAllPublicSaveEditAuthGrantsMsg.value = undefined
     removeAllPublicSaveEditAuthGrantsMsg.value = await api.sudo.removeAllPublicSaveEditAuthGrants(masterKey.value)
 }
+
+const setUserAsAdminUserId = ref<number>()
+const setUserAsAdminResMsg = ref<string>()
+async function setUserAsAdmin() {
+    setUserAsAdminResMsg.value = undefined
+    setUserAsAdminResMsg.value = await api.sudo.setUserAsAdmin(setUserAsAdminUserId.value, masterKey.value)
+}
 </script>
 
 <template>
@@ -50,6 +57,10 @@ async function removeAllPublicSaveEditAuthGrants() {
         <button :class="mode=='removeAllPublicSaveEditAuthGrants'?'confirm':'minor'"
             @click="mode='removeAllPublicSaveEditAuthGrants';removeAllPublicSaveEditAuthGrantsMsg = undefined">
             移除所有“允许所有人编辑”授权
+        </button>
+        <button :class="mode=='setUserAsAdmin'?'confirm':'minor'"
+            @click="mode='setUserAsAdmin';setUserAsAdminResMsg = undefined">
+            设置用户为管理员
         </button>
     </div>
     <div class="inputs"> 
@@ -73,6 +84,12 @@ async function removeAllPublicSaveEditAuthGrants() {
             <input v-model="masterKey" placeholder="masterKey">
             <button v-if="!removeAllPublicSaveEditAuthGrantsMsg" @click="removeAllPublicSaveEditAuthGrants" class="ok">执行</button>
             <div v-else>{{ removeAllPublicSaveEditAuthGrantsMsg }}</div>
+        </template>
+        <template v-if="mode=='setUserAsAdmin'">
+            <input v-model.number="setUserAsAdminUserId" placeholder="用户Id" type="number">
+            <input v-model="masterKey" placeholder="masterKey">
+            <button v-if="!setUserAsAdminResMsg" @click="setUserAsAdmin" class="ok">执行</button>
+            <div v-else>{{ setUserAsAdminResMsg }}</div>
         </template>
     </div>
 </div>

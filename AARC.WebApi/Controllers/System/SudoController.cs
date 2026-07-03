@@ -1,4 +1,5 @@
-﻿using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Enums.AuthGrantTypes;
 using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Repos.Identities;
@@ -58,6 +59,19 @@ namespace AARC.WebApi.Controllers.System
                 .Where(x => x.To == AuthGrantTo.All)
                 .ExecuteDelete();
             return $"已删除 {deleted} 条“允许所有人编辑”授权";
+        }
+
+        [HttpPost]
+        public string SetUserAsAdmin([FromForm] int userId, [FromForm] string masterKey)
+        {
+            masterKeyChecker.Check(masterKey);
+            var user = context.Users.Where(x => !x.Deleted).FirstOrDefault(x => x.Id == userId);
+            if (user is null)
+                return "找不到指定用户";
+            user.Type = UserType.Admin;
+            user.LastActive = DateTime.Now;
+            context.SaveChanges();
+            return $"已将用户 {user.Name}（{user.Id}）设置为管理员";
         }
     }
 }
