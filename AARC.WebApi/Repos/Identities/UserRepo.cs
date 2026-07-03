@@ -4,6 +4,7 @@ using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Services.App.HttpAuthInfo;
 using AARC.WebApi.Services.Identities;
+using AARC.WebApi.Services.Saves;
 using AARC.WebApi.Utils;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -16,7 +17,8 @@ namespace AARC.WebApi.Repos.Identities
         HttpUserInfoService httpUserInfoService,
         HttpUserIdProvider httpUserIdProvider,
         UserHistoryService userHistoryService,
-        IMapper mapper
+        IMapper mapper,
+        NewestSavesCacheService newestSavesCache
         ) : Repo<User>(context)
     {
         public IQueryable<User> Viewable
@@ -254,6 +256,7 @@ namespace AARC.WebApi.Repos.Identities
                 //除管理员之外的用户不能编辑Type
                 throw new RqEx("无权操作");
             }
+            var oldType = user.Type;
 
             using var t = Context.Database.BeginTransaction();
             try
@@ -278,6 +281,10 @@ namespace AARC.WebApi.Repos.Identities
                     userHistoryService.RecordChangeNameOrPassword(user.Id, comment);
                 base.Update(user, true);
                 t.Commit();
+                if (wantChangeType)
+                {
+                    newestSavesCache.MigrateForUser(u.Id, oldType, u.Type);
+                }
             }
             catch
             {
@@ -310,7 +317,15 @@ namespace AARC.WebApi.Repos.Identities
                 errmsg = "找不到指定用户";
                 return false;
             }
+            var isTourist = user.Type == UserType.Tourist;
+            var saveIds = Context.Saves
+                .Existing()
+                .Where(x => x.OwnerUserId == id)
+                .Select(x => x.Id)
+                .ToList();
             base.FakeRemove(user, true);
+            foreach (var saveId in saveIds)
+                newestSavesCache.Remove(saveId, isTourist);
             errmsg = null;
             return true;
         }
@@ -412,6 +427,7 @@ namespace AARC.WebApi.Repos.Identities
             user.Type = UserType.Member;
             userHistoryService.RecordChangeType(userId, UserType.Member, $"自助转正：{user.Email}");
             base.Update(user, true);
+            newestSavesCache.MigrateForUser(userId, UserType.Tourist, UserType.Member);
         }
     }
 

@@ -61,7 +61,7 @@ namespace AARC.WebApi.Repos.Saves
             var res = GetOwnerTypedSaves(isTourist: forAuditor)
                 .OrderByDescending(x => x.LastActive)
                 .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
-                .Take(10)
+                .Take(NewestSavesCacheService.Capacity)
                 .ToList();
             EnrichEditingBy(res);
             return res;
@@ -207,7 +207,7 @@ namespace AARC.WebApi.Repos.Saves
             EnrichEditingBy(res);
             return res;
         }
-        public void Create(SaveDto saveDto)
+        public int Create(SaveDto saveDto)
         {
             ValidateDto(saveDto);
             var uid = httpUserIdProvider.RequireUserId();
@@ -222,9 +222,9 @@ namespace AARC.WebApi.Repos.Saves
             
             Save save = mapper.Map<Save>(saveDto);
             save.OwnerUserId = uid;
-            base.Add(save);
+            return base.Add(save);
         }
-        public void Fork(int id)
+        public int Fork(int id)
         {
             var data = Existing.FirstOrDefault(x => x.Id == id) ?? throw new RqEx("找不到指定存档");
             var copied = mapper.Map<Save>(data); // 复制一份
@@ -233,7 +233,7 @@ namespace AARC.WebApi.Repos.Saves
             copied.ForkedFromId = id;
             copied.HeartbeatAt = default;
             copied.HeartbeatUserId = 0;
-            base.Add(copied);
+            return base.Add(copied);
         }
         public void UpdateInfo(SaveDto saveDto)
         {
@@ -333,7 +333,15 @@ namespace AARC.WebApi.Repos.Saves
         }
         public void Remove(int id)
         {
+            var save = All.FirstOrDefault(x => x.Id == id);
             base.FakeRemove(id);
+            if (save is null)
+                return;
+            var ownerType = Context.Users
+                .Where(x => x.Id == save.OwnerUserId)
+                .Select(x => x.Type)
+                .FirstOrDefault();
+            newestSavesCache.Remove(id, ownerType == UserType.Tourist);
         }
         
         /// <summary>

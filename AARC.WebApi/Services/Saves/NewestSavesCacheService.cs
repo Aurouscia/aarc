@@ -1,3 +1,8 @@
+using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.DbModels.Enums;
+using AARC.WebApi.Repos;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace AARC.WebApi.Services.Saves;
 
 /// <summary>
@@ -5,7 +10,7 @@ namespace AARC.WebApi.Services.Saves;
 /// 存档更新时立即将对应 ID 推到队首，挤出最旧的，使 GetNewestSaves 的数据库查询
 /// 退化为简单的 "WHERE Id IN (...)" 主键查找。
 /// </summary>
-public class NewestSavesCacheService
+public class NewestSavesCacheService(IServiceScopeFactory scopeFactory)
 {
     /// <summary>会员存档 ID 集合，用于 O(1) 去重判断。</summary>
     private readonly HashSet<int> _memberSet = [];
@@ -17,7 +22,7 @@ public class NewestSavesCacheService
     private readonly LinkedList<int> _touristOrder = new();
 
     /// <summary>每个队列的最大容量。</summary>
-    private const int Capacity = 16;
+    public const int Capacity = 16;
     /// <summary>保护会员队列的线程安全锁。</summary>
     private static readonly Lock MemberLock = new();
     /// <summary>保护游客队列的线程安全锁。</summary>
@@ -26,6 +31,9 @@ public class NewestSavesCacheService
     public static readonly Lock MemberInitLock = new();
     /// <summary>保护游客缓存初始化过程的线程安全锁，防止并发回退导致重复数据库查询。</summary>
     public static readonly Lock TouristInitLock = new();
+
+    /// <summary>用于在单例服务中创建作用域以解析 Scoped 的 AarcContext。</summary>
+    private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
 
     /// <summary>
     /// 获取缓存中的最新存档 ID 列表（纯内存读取，按时间倒序）。
@@ -147,5 +155,27 @@ public class NewestSavesCacheService
     {
         Remove(saveId, fromTourist);
         Touch(saveId, !fromTourist);
+    }
+
+    /// <summary>
+    /// 指定用户的类型发生变化时，将其所有现存存档从旧队列迁移到新队列。
+    /// </summary>
+    public void MigrateForUser(int userId, UserType oldType, UserType newType)
+    {
+        if (oldType == newType)
+            return;
+        var fromTourist = oldType == UserType.Tourist;
+        var toTourist = newType == UserType.Tourist;
+        if (fromTourist == toTourist)
+            return;
+        using var scope = _scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AarcContext>();
+        var saveIds = context.Saves
+            .Existing()
+            .Where(x => x.OwnerUserId == userId)
+            .Select(x => x.Id)
+            .ToList();
+        foreach (var saveId in saveIds)
+            Migrate(saveId, fromTourist);
     }
 }

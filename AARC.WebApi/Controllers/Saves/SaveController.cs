@@ -92,8 +92,9 @@ namespace AARC.WebApi.Controllers.Saves
         [UserCheck]
         public bool Add([FromBody]SaveDto saveDto)
         {
-            saveRepo.Create(saveDto);
+            var id = saveRepo.Create(saveDto);
             userRepo.UpdateCurrentUserLastActive();
+            NotifyCacheUpdated(id);
             return true;
         }
         [HttpPost]
@@ -101,8 +102,9 @@ namespace AARC.WebApi.Controllers.Saves
         public bool Fork(int id)
         {
             authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.Fork, false);
-            saveRepo.Fork(id);
+            var newId = saveRepo.Fork(id);
             userRepo.UpdateCurrentUserLastActive();
+            NotifyCacheUpdated(newId);
             return true;
         }
         [HttpPost]
@@ -234,6 +236,7 @@ namespace AARC.WebApi.Controllers.Saves
                 if(originalData is not null)
                     saveBackupFileService.Write(originalData, id, true);
                 t.Commit();
+                NotifyCacheUpdated(id);
             }
             catch
             {

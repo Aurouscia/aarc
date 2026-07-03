@@ -5,6 +5,7 @@ using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Repos.Identities;
 using AARC.WebApi.Services.App.Config;
 using AARC.WebApi.Services.Files;
+using AARC.WebApi.Services.Saves;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +17,8 @@ namespace AARC.WebApi.Controllers.System
         UserRepo userRepo,
         SaveBackupFileService saveBackupFileService,
         MasterKeyChecker masterKeyChecker,
-        AarcContext context
+        AarcContext context,
+        NewestSavesCacheService newestSavesCache
         ) : Controller
     {
         [HttpPost]
@@ -68,9 +70,11 @@ namespace AARC.WebApi.Controllers.System
             var user = context.Users.Where(x => !x.Deleted).FirstOrDefault(x => x.Id == userId);
             if (user is null)
                 return "找不到指定用户";
+            var oldType = user.Type;
             user.Type = UserType.Admin;
             user.LastActive = DateTime.Now;
             context.SaveChanges();
+            newestSavesCache.MigrateForUser(userId, oldType, UserType.Admin);
             return $"已将用户 {user.Name}（{user.Id}）设置为管理员";
         }
     }
