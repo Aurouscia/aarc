@@ -6,7 +6,6 @@ import { ref, watch } from 'vue';
 import { usePreventLeavingUnsavedStore } from '@/utils/eventUtils/preventLeavingUnsaved';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { checkUrlIsImage } from '@/utils/urlUtils/checkUrl';
-import { bytesFromMB } from '@/utils/dataUtils/fileSizeConvert';
 import { convertToProxyUrlIfNeeded } from '@/utils/urlUtils/proxyUrl';
 
 const { config } = storeToRefs(useConfigStore())
@@ -33,7 +32,7 @@ watch(() => config.value.bgRefImage.url, (newVal, oldVal)=>{
     }
     if(newVal){
         let urlProxied = convertToProxyUrlIfNeeded(newVal, 'icon')
-        checkUrlIsImage(urlProxied, bytesFromMB(30)).then(res=>{
+        checkUrlIsImage(urlProxied).then(res=>{
             urlWarn.value = res
         })
     }

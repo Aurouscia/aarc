@@ -4,7 +4,6 @@ import { computed, ref } from "vue";
 import { TextTagIcon } from "../save";
 import { convertToProxyUrlIfNeeded } from "@/utils/urlUtils/proxyUrl";
 import { checkUrlIsImage } from "@/utils/urlUtils/checkUrl";
-import { bytesFromMB } from "@/utils/dataUtils/fileSizeConvert";
 
 export interface TextTagIconData{
     img?:HTMLImageElement
@@ -19,7 +18,6 @@ export interface TextTagIconDisplayItem{
 } 
 
 const maxLoadWaitMs = 8000
-const maxIconSize = bytesFromMB(1)
 export const useIconStore = defineStore('iconStore', ()=>{
     const { save } = storeToRefs(useSaveStore())
     const data = ref(new Map<number, TextTagIconData>())
@@ -48,7 +46,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
                         res()
                         return
                     }
-                    checkUrlIsImage(icUrlFull, maxIconSize)
+                    checkUrlIsImage(icUrlFull)
                         .then(checkErr=>{
                             if(checkErr){
                                 imgData.status = 'failed'
