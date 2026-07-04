@@ -14,8 +14,7 @@ import {
     KICK_PROMPT_WAIT_MS,
     SAVE_REMINDER_DELAY_MS,
     SAVE_REMINDER_EARLY_MS,
-    SECOND_MS,
-    secText
+    SECOND_MS
 } from './consts'
 import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import Notice from '@/components/common/Notice.vue'
@@ -187,7 +186,7 @@ function resetSaveReminderTimer() {
     saveReminderRemainingMs.value = SAVE_REMINDER_DELAY_MS
     saveReminderTimer = window.setTimeout(() => {
         saveReminderTimer = null
-        if (effectiveEnabled.value && !props.viewOnly) {
+        if (effectiveEnabled.value && !props.viewOnly && !props.isOwner) {
             showSaveReminderPrompt.value = true
             saveReminderRemainingMs.value = SAVE_REMINDER_EARLY_MS
             if (saveReminderCountdownTimer === null) {
@@ -284,15 +283,15 @@ onUnmounted(async () => {
 </script>
 
 <template>
-<Prompt v-if="showKickPrompt" :bgClickClose="false">
-    <div class="kickPrompt">
-        <p class="kickTitle">请在{{ secText(KICK_PROMPT_WAIT_MS) }}内保存并退出</p>
-        <p class="kickCountdown">{{ kickCountdown }} 秒后自动退出</p>
-    </div>
-</Prompt>
 <Prompt v-if="showSaveReminderPrompt" :bgClickClose="false" closeBtn="我知道了" @close="closeSaveReminderPrompt">
     <div class="saveReminderPrompt">
         <p>已很长时间未保存，请尽快进行一次保存操作，否则 {{ saveReminderSeconds }} 秒后可能被存档所有者请出</p>
+    </div>
+</Prompt>
+<Prompt v-if="showKickPrompt" :bgClickClose="false">
+    <div class="kickPrompt">
+        <p class="kickTitle">请立即保存并退出，存档即将被强制接管</p>
+        <p class="kickCountdown">{{ kickCountdown }} 秒后自动退出</p>
     </div>
 </Prompt>
 <div class="chatRoomOuter">
@@ -304,7 +303,7 @@ onUnmounted(async () => {
         <div v-if="effectiveEnabled" class="chatRoom">
             <div class="header">
                 <span>房间：{{ roomName }}</span>
-                <button class="minor" @click="openKickingSidebar">请出</button>
+                <button v-if="!(isOwner && !viewOnly)" class="minor" @click="openKickingSidebar">请出</button>
             </div>
             <div class="status">
                 <span v-if="signalrStore.isConnected" class="connected">已连接</span>

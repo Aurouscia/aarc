@@ -163,7 +163,7 @@ defineExpose({ extend })
     <div class="kickingSidebarContent">
         <div v-if="isOwner" class="ownerSection">
             <button v-if="!takeoverWaiting && !takeoverReady" class="danger" @click="startTakeover">请出</button>
-            <div v-else-if="takeoverWaiting" class="takeoverWaiting">请等待 {{ takeoverWaitSeconds }} 秒</div>
+            <div v-else-if="takeoverWaiting" class="takeoverWaiting">已通知编辑者离开，{{ takeoverWaitSeconds }} 秒后可强制接管</div>
             <button v-else-if="takeoverReady" class="danger" @click="takeoverSave">接管存档</button>
             <p class="occupancyText">如果用户无保存操作占用存档{{ idleThresholdText }}以上，你可以将其请出去</p>
             <p class="lastActiveText">上次保存时间：</p>

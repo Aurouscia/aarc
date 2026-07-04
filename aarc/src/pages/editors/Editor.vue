@@ -39,6 +39,7 @@ import { coordRound } from '@/utils/coordUtils/coordRound';
 import { useUndoStore } from '@/models/stores/utils/undoStore';
 import { isFocusingInput } from '@/utils/domUtils/focusingInput';
 import { renderAndUploadCloudSvg } from '@/models/save/cloudSvgOps';
+import { kickedName } from './routes/routesNames.ts';
 
 const heartbeatIntervalSecs = 3 * 60 // 每3分钟心跳一次
 
@@ -92,7 +93,7 @@ async function disableChat(){
 }
 function onKicked(){
     releasePreventLeaving()
-    router.replace('/')
+    router.replace({name:kickedName})
 }
 
 async function load() {
