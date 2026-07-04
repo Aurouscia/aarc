@@ -2,6 +2,7 @@ import { defineStore } from "pinia"
 import { ref, computed } from "vue"
 import { HubConnectionBuilder, HubConnection, HubConnectionState, LogLevel } from "@microsoft/signalr"
 import { useApiStore } from "./apiStore"
+import { useUniqueComponentsStore } from "../globalStores/uniqueComponents"
 
 export interface ChatMessage {
     messageId: string
@@ -15,6 +16,7 @@ export interface ChatMessage {
 
 export const useSignalrStore = defineStore('signalr', () => {
     const apiStore = useApiStore()
+    const { showPop } = useUniqueComponentsStore()
 
     const connection = ref<HubConnection | null>(null)
     const connectionState = ref<HubConnectionState>(HubConnectionState.Disconnected)
@@ -67,12 +69,14 @@ export const useSignalrStore = defineStore('signalr', () => {
             if (err) {
                 error.value = `连接已关闭: ${err.message}`
             }
+            // 断连为被动事件，不弹窗
         })
 
         conn.onreconnecting((err) => {
             connectionState.value = HubConnectionState.Reconnecting
             console.log('[signalr]正在重新连接', err?.message ?? '')
             error.value = err ? `正在重新连接: ${err.message}` : '正在重新连接'
+            // 重连为被动事件，不弹窗
         })
 
         conn.onreconnected(() => {
@@ -144,7 +148,14 @@ export const useSignalrStore = defineStore('signalr', () => {
             }
         })
 
-        await conn.start()
+        try {
+            await conn.start()
+        } catch (e: any) {
+            const msg = e?.message ?? '连接聊天服务器失败'
+            error.value = msg
+            showPop(msg, 'failed')
+            throw e
+        }
         connection.value = conn
         connectionState.value = conn.state
         console.log('[signalr]连接已建立', conn.connectionId)
@@ -189,7 +200,9 @@ export const useSignalrStore = defineStore('signalr', () => {
             console.log(`[signalr]已加入房间 ${roomName}`)
             return true
         } catch (e: any) {
-            error.value = e?.message ?? '加入房间失败'
+            const msg = e?.message ?? '加入房间失败'
+            error.value = msg
+            showPop(msg, 'failed')
             console.error(`[signalr]加入房间 ${roomName} 失败`, e)
             return false
         }
@@ -202,7 +215,9 @@ export const useSignalrStore = defineStore('signalr', () => {
             await connection.value.invoke("SyncHistory", roomName.trim())
             return true
         } catch (e: any) {
-            error.value = e?.message ?? '同步历史消息失败'
+            const msg = e?.message ?? '同步历史消息失败'
+            error.value = msg
+            showPop(msg, 'failed')
             console.error(`[signalr]同步历史 ${roomName} 失败`, e)
             return false
         }
@@ -217,7 +232,9 @@ export const useSignalrStore = defineStore('signalr', () => {
             console.log(`[signalr]已退出房间 ${roomName}`)
             return true
         } catch (e: any) {
-            error.value = e?.message ?? '退出房间失败'
+            const msg = e?.message ?? '退出房间失败'
+            error.value = msg
+            showPop(msg, 'failed')
             console.error(`[signalr]退出房间 ${roomName} 失败`, e)
             return false
         }
@@ -231,7 +248,9 @@ export const useSignalrStore = defineStore('signalr', () => {
             await conn.invoke("SendMessage", roomName.trim(), content.trim())
             return true
         } catch (e: any) {
-            error.value = e?.message ?? '发送消息失败'
+            const msg = e?.message ?? '发送消息失败'
+            error.value = msg
+            showPop(msg, 'failed')
             console.error(`[signalr]发送消息 [${roomName}] 失败`, e)
             return false
         }
@@ -245,7 +264,9 @@ export const useSignalrStore = defineStore('signalr', () => {
             disabledRooms.value.add(roomName.trim())
             return true
         } catch (e: any) {
-            error.value = e?.message ?? '禁用聊天功能失败'
+            const msg = e?.message ?? '禁用聊天功能失败'
+            error.value = msg
+            showPop(msg, 'failed')
             console.error(`[signalr]禁用房间 ${roomName} 聊天功能失败`, e)
             return false
         }
@@ -258,7 +279,9 @@ export const useSignalrStore = defineStore('signalr', () => {
             await connection.value.invoke("NotifyKickEditingUser", roomName.trim())
             return true
         } catch (e: any) {
-            error.value = e?.message ?? '通知编辑用户失败'
+            const msg = e?.message ?? '通知编辑用户失败'
+            error.value = msg
+            showPop(msg, 'failed')
             console.error(`[signalr]通知房间 ${roomName} 编辑用户失败`, e)
             return false
         }
@@ -271,7 +294,9 @@ export const useSignalrStore = defineStore('signalr', () => {
             console.log(`[signalr]获取编辑者加入时间 ${saveId}: ${res}`)
             return res
         } catch (e: any) {
-            error.value = e?.message ?? '获取编辑者加入时间失败'
+            const msg = e?.message ?? '获取编辑者加入时间失败'
+            error.value = msg
+            showPop(msg, 'failed')
             console.error(`[signalr]获取编辑者加入时间 ${saveId} 失败`, e)
             return null
         }

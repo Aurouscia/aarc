@@ -129,7 +129,8 @@ async function startTakeover() {
         return
     }
     const roomName = props.saveId.toString()
-    await signalrStore.notifyKickEditingUser(roomName)
+    const success = await signalrStore.notifyKickEditingUser(roomName)
+    if(!success) return
     if (takeoverTimer !== null) {
         window.clearInterval(takeoverTimer)
         takeoverTimer = null

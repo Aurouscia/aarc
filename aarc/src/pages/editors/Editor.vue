@@ -90,8 +90,9 @@ function enableChat(){
 async function disableChat(){
     if(!window.confirm('确认关闭聊天功能？')) return
     if(!saveStore.save) return
+    const success = await signalrStore.disableChat(saveIdNum.value.toString())
+    if(!success) return
     saveStore.save.meta.chatEnabled = false
-    await signalrStore.disableChat(saveIdNum.value.toString())
     await saveData(false)
 }
 function onKicked(){
