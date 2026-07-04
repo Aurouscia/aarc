@@ -3,6 +3,7 @@ using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Identities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -18,6 +19,8 @@ namespace AARC.WebApi.Services.Chat
         private static readonly ConcurrentDictionary<string, ConcurrentQueue<ChatMessageDto>> _roomMessages = new();
         // 每个连接加入了哪些房间，用于断开时自动补发离开消息
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> _connectionRooms = new();
+        // 每个存档当前编辑者加入聊天房间的时间（键为存档 Id）
+        private static readonly ConcurrentDictionary<int, DateTime> _editorJoinedAt = new();
         private const int MaxHistoryPerRoom = 50;
 
         public ChatHub(AarcContext db, ILogger<ChatHub> logger)
@@ -64,6 +67,19 @@ namespace AARC.WebApi.Services.Chat
             var user = GetCurrentUser();
             await Groups.AddToGroupAsync(Context.ConnectionId, roomName);
             _connectionRooms.GetOrAdd(Context.ConnectionId, _ => new ConcurrentDictionary<string, byte>())[roomName] = 1;
+
+            // 若加入者正是当前存档的编辑者，记录其加入时间
+            if (int.TryParse(roomName, out var saveId))
+            {
+                var isCurrentEditor = _db.Saves
+                    .AsNoTracking()
+                    .Any(x => x.Id == saveId && !x.Deleted && x.HeartbeatUserId == user.Id);
+                if (isCurrentEditor)
+                {
+                    _editorJoinedAt[saveId] = DateTime.Now;
+                    _logger.LogInformation("[ChatHub] 记录编辑者加入时间 saveId={SaveId}, user={UserName}", saveId, user.Name);
+                }
+            }
 
             var joinMsg = new ChatMessageDto
             {
@@ -154,6 +170,20 @@ namespace AARC.WebApi.Services.Chat
             var user = GetCurrentUser();
             _logger.LogInformation("[ChatHub] 通知踢出编辑用户 room={RoomName}, user={UserName}", roomName, user.Name);
             await Clients.Group(roomName).SendAsync("KickEditingUser", roomName);
+        }
+
+        /// <summary>
+        /// 获取指定存档当前编辑者加入聊天房间的 Unix 时间戳（毫秒）。
+        /// 若尚未记录，则返回 null。
+        /// </summary>
+        public long? GetEditorJoinedAt(int saveId)
+        {
+            _logger.LogInformation("[ChatHub] 获取编辑者加入时间 saveId={SaveId}, caller={ConnectionId}", saveId, Context.ConnectionId);
+            if (_editorJoinedAt.TryGetValue(saveId, out var dt))
+            {
+                return new DateTimeOffset(dt).ToUnixTimeMilliseconds();
+            }
+            return null;
         }
 
         /// <summary>

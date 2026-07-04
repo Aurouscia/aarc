@@ -32,7 +32,15 @@
 - **不检查 `LastActive`**：因为从前端发起“请出”到真正调用 `Kick` 之间，被踢用户可能又保存了一次；空闲时间检查只由前端负责。
 - 将 `HeartbeatAt` 设为当前时间，`HeartbeatUserId` 设为请求者，完成强制接管。
 
-### 3.2 `ChatHub.NotifyKickEditingUser(string roomName)`
+### 3.2 `ChatHub` 编辑者加入时间记录
+
+位置：`AARC.WebApi/Services/Chat/ChatHub.cs`
+
+- 静态字典 `_editorJoinedAt: ConcurrentDictionary<int, DateTime>`，以存档 Id 为键，记录当前编辑者加入聊天房间的时间。
+- 在 `JoinRoom` 中，如果加入者的 `user.Id` 等于该存档的 `HeartbeatUserId`，则记录/刷新该时间。
+- 提供 `GetEditorJoinedAt(int saveId)` 方法，返回该时间的 Unix 毫秒时间戳；未记录时返回 `null`。
+
+### 3.3 `ChatHub.NotifyKickEditingUser(string roomName)`
 
 位置：`AARC.WebApi/Services/Chat/ChatHub.cs`
 
@@ -40,7 +48,7 @@
 - 向整个房间广播 `KickEditingUser` 事件，使当前编辑者弹出保存并退出提示。
 - 仅做广播，不修改数据库。
 
-### 3.3 `SaveController.Kick(int id)`
+### 3.4 `SaveController.Kick(int id)`
 
 位置：`AARC.WebApi/Controllers/Saves/SaveController.cs`
 
@@ -59,7 +67,7 @@
 | `aarc/src/pages/chat/consts.ts` | 所有时间常量集中定义。 |
 | `aarc/src/pages/chat/ChatRoom.vue` | 聊天主面板、被踢提示 Prompt、保存提醒 Prompt、打开 `KickingSidebar`。 |
 | `aarc/src/pages/chat/KickingSidebar.vue` | “请出/接管”侧栏：显示占用信息、LastActive、接管倒计时、调用后端 Kick。 |
-| `aarc/src/app/com/signalrStore.ts` | 提供 `notifyKickEditingUser` 调用，并监听 `KickEditingUser` 事件通知当前编辑者。 |
+| `aarc/src/app/com/signalrStore.ts` | 提供 `notifyKickEditingUser`、`getEditorJoinedAt` 调用，并监听 `KickEditingUser` 事件通知当前编辑者。 |
 | `aarc/src/pages/editors/Editor.vue` | 接收 `kicked` 事件，释放阻止离开提示并跳回首页；保存成功后重置保存提醒定时器。 |
 
 ### 4.2 常量定义
@@ -91,9 +99,17 @@ SAVE_REMINDER_DELAY_MS = SAVE_REMINDER_INTERVAL_MS - SAVE_REMINDER_EARLY_MS
    - 显示文案：`如果用户无保存操作占用存档 10 分钟以上，你可以将其请出去`。
    - 显示 `上次保存时间：` 后接 `HH:mm:ss` 格式的时间与 `x分x秒前`，时间和 ago 部分以 19px 粗体单独展示。
 
-3. **点击“请出”**
-   - 立即重新加载 `LastActive`。
-   - 检查 `now - LastActiveUnix >= KICK_IDLE_THRESHOLD_MS`：
+3. **加载占用信息**
+   - 每次加载 `loadInfo` 时，同时通过 SignalR 调用 `getEditorJoinedAt(saveId)` 获取当前编辑者加入聊天房间的时间。
+   - 取 **`LastActiveUnix` 与 `editorJoinedAt` 中更晚（更近）的一个** 作为有效参考时间，用于判断是否可以请出。
+   - 侧栏同时显示两个时间：
+     - **大字体**：较近的那个值（较小的“多久前”）。
+     - **小字体**：较远的那个值（较大的“多久前”）。
+     - 例如：上次保存是 20 分钟前，编辑者 3 分钟前刚加入房间，则大字体显示 `编辑者加入时间：HH:mm:ss（3分x秒前）`，小字体显示 `存档上次保存时间：HH:mm:ss（20分x秒前）`。
+
+4. **点击“请出”**
+   - 立即重新加载 `LastActive` 与 `editorJoinedAt`。
+   - 检查 `now - effectiveReferenceUnix >= KICK_IDLE_THRESHOLD_MS`：
      - **未满足**：`showPop('时间未到', 'failed')`，不进入倒计时。
      - **已满足**：
        - 通过 SignalR 调用 `NotifyKickEditingUser(roomName)`，通知当前编辑者弹出保存并退出提示。

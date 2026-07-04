@@ -264,6 +264,19 @@ export const useSignalrStore = defineStore('signalr', () => {
         }
     }
 
+    async function getEditorJoinedAt(saveId: number): Promise<number | null> {
+        if (!connection.value) return null
+        try {
+            const res = await connection.value.invoke<number | null>("GetEditorJoinedAt", saveId)
+            console.log(`[signalr]获取编辑者加入时间 ${saveId}: ${res}`)
+            return res
+        } catch (e: any) {
+            error.value = e?.message ?? '获取编辑者加入时间失败'
+            console.error(`[signalr]获取编辑者加入时间 ${saveId} 失败`, e)
+            return null
+        }
+    }
+
     function clearDisabledRoom(roomName: string): void {
         disabledRooms.value.delete(roomName)
     }
@@ -296,6 +309,7 @@ export const useSignalrStore = defineStore('signalr', () => {
         sendMessage,
         disableChat,
         notifyKickEditingUser,
+        getEditorJoinedAt,
         clearMessages,
         clearDisabledRoom,
         clearPendingKickEditingUser,

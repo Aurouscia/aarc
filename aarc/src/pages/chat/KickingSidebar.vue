@@ -25,6 +25,7 @@ const kickingSidebar = useTemplateRef('kickingSidebar')
 
 const lastActive = ref<string | null>(null)
 const lastActiveUnix = ref<number | null>(null)
+const editorJoinedAt = ref<number | null>(null)
 const now = ref(Date.now())
 let nowTimer: number | null = null
 const takeoverWaiting = ref(false)
@@ -33,20 +34,37 @@ const takeoverRemainingMs = ref(0)
 let takeoverTimer: number | null = null
 let infoRefreshTimer: number | null = null
 
-const lastActiveAgo = computed(() => {
-    const ts = lastActiveUnix.value
+function formatTimeText(ts: number | null): string {
+    if (!ts) return '未记录'
+    const d = new Date(ts)
+    const pad = (n: number) => n.toString().padStart(2, '0')
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+function formatAgo(ts: number | null): string | null {
     if (!ts) return null
     const diff = now.value - ts
     if (diff < 0) return null
     return `${msToMinSec(diff)}前`
+}
+
+const effectiveReferenceUnix = computed(() => {
+    const la = lastActiveUnix.value
+    const ej = editorJoinedAt.value
+    if (la && ej) return Math.max(la, ej)
+    return la ?? ej ?? null
 })
-const lastActiveTimeText = computed(() => {
-    const ts = lastActiveUnix.value
-    if (!ts) return ''
-    const d = new Date(ts)
-    const pad = (n: number) => n.toString().padStart(2, '0')
-    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+const recentIsEditorJoined = computed(() => {
+    const la = lastActiveUnix.value
+    const ej = editorJoinedAt.value
+    if (!la) return ej !== null
+    if (!ej) return false
+    return ej > la
 })
+
+const lastActiveTimeText = computed(() => formatTimeText(lastActiveUnix.value))
+const lastActiveAgo = computed(() => formatAgo(lastActiveUnix.value))
+const editorJoinedTimeText = computed(() => formatTimeText(editorJoinedAt.value))
+const editorJoinedAgo = computed(() => formatAgo(editorJoinedAt.value))
 const idleThresholdText = computed(() => minText(KICK_IDLE_THRESHOLD_MS))
 const takeoverWaitSeconds = computed(() => Math.ceil(takeoverRemainingMs.value / SECOND_MS))
 
@@ -67,13 +85,18 @@ function stopNowTimer() {
 
 async function loadLastActive() {
     try {
-        const info = await api.save.loadInfo(props.saveId)
+        const [info, joinedAt] = await Promise.all([
+            api.save.loadInfo(props.saveId),
+            signalrStore.getEditorJoinedAt(props.saveId)
+        ])
         lastActive.value = info?.lastActive ?? null
         lastActiveUnix.value = info?.lastActiveUnix ?? null
+        editorJoinedAt.value = joinedAt ?? null
     } catch (e: any) {
         console.error('[KickingSidebar] 加载 LastActive 失败', e)
         lastActive.value = null
         lastActiveUnix.value = null
+        editorJoinedAt.value = null
     }
 }
 
@@ -98,7 +121,7 @@ function onKickingSidebarFold() {
 
 async function startTakeover() {
     await loadLastActive()
-    const ts = lastActiveUnix.value
+    const ts = effectiveReferenceUnix.value
     if (!ts || now.value - ts < KICK_IDLE_THRESHOLD_MS) {
         showPop('时间未到', 'failed')
         return
@@ -166,10 +189,23 @@ defineExpose({ extend })
             <div v-else-if="takeoverWaiting" class="takeoverWaiting">已通知编辑者离开，{{ takeoverWaitSeconds }} 秒后可强制接管</div>
             <button v-else-if="takeoverReady" class="danger" @click="takeoverSave">接管存档</button>
             <p class="occupancyText">如果用户无保存操作占用存档{{ idleThresholdText }}以上，你可以将其请出去</p>
-            <p class="lastActiveText">上次保存时间：</p>
-            <div class="lastActiveDetail">
-                <span>{{ lastActiveTimeText || '加载中...' }}</span>
-                <span v-if="lastActiveAgo">（{{ lastActiveAgo }}）</span>
+            <div class="referenceDisplay">
+                <div class="referencePrimary">
+                    <p class="referenceLabel">{{ recentIsEditorJoined ? '编辑者加入时间' : '上次保存时间' }}：</p>
+                    <div class="referenceTime">
+                        <span>{{ recentIsEditorJoined ? editorJoinedTimeText : lastActiveTimeText }}</span>
+                        <span v-if="recentIsEditorJoined ? editorJoinedAgo : lastActiveAgo">
+                            （{{ recentIsEditorJoined ? editorJoinedAgo : lastActiveAgo }}）
+                        </span>
+                    </div>
+                </div>
+                <div class="referenceSecondary">
+                    <span>{{ recentIsEditorJoined ? '存档上次保存时间' : '编辑者加入时间' }}：</span>
+                    <span>{{ recentIsEditorJoined ? lastActiveTimeText : editorJoinedTimeText }}</span>
+                    <span v-if="recentIsEditorJoined ? lastActiveAgo : editorJoinedAgo">
+                        （{{ recentIsEditorJoined ? lastActiveAgo : editorJoinedAgo }}）
+                    </span>
+                </div>
             </div>
         </div>
         <div v-else class="guestSection">
@@ -210,18 +246,29 @@ defineExpose({ extend })
         font-size: 13px;
         color: #856404;
     }
-    .lastActiveText {
-        margin: 0;
-        font-size: 13px;
-        color: #333;
+    .referenceDisplay {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }
-    .lastActiveDetail {
-        font-size: 19px;
-        font-weight: bold;
-        color: #333;
-        span {
-            margin-right: 4px;
+    .referencePrimary {
+        .referenceLabel {
+            margin: 0;
+            font-size: 13px;
+            color: #333;
         }
+        .referenceTime {
+            font-size: 19px;
+            font-weight: bold;
+            color: #333;
+            span {
+                margin-right: 4px;
+            }
+        }
+    }
+    .referenceSecondary {
+        font-size: 12px;
+        color: #666;
     }
     .takeoverWaiting {
         font-size: 14px;
