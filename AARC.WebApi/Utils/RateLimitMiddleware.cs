@@ -1,5 +1,6 @@
 using AARC.WebApi.Controllers.System;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace AARC.WebApi.Utils;
@@ -9,7 +10,7 @@ public class RateLimitMiddleware
     private readonly RequestDelegate _next;
     private readonly IMemoryCache _cache;
     private static RateLimitAttribute DefaultRateLimitAttribute 
-        => new(20, 10);
+        => new(20, 20);
 
     public RateLimitMiddleware(RequestDelegate next, IMemoryCache cache)
     {
@@ -26,6 +27,13 @@ public class RateLimitMiddleware
         // 如果是对于 ProxyController 的请求：直接放行
         var desc = endpoint.Metadata.GetMetadata<ControllerActionDescriptor>();
         if(desc is not null && desc.ControllerTypeInfo.Name == nameof(ProxyController)) {
+            await _next(context);
+            return;
+        }
+
+        // 如果是 SignalR Hub 请求：直接放行，避免 WebSocket/长轮询的频繁请求被限流
+        if (endpoint.Metadata.GetMetadata<HubMetadata>() is not null)
+        {
             await _next(context);
             return;
         }

@@ -151,7 +151,7 @@ namespace AARC.WebApi.Controllers.Saves
         }
         [AllowAnonymous]
         [HttpPost]
-        [RateLimit(40, 10)]
+        [RateLimit(20, 10)]
         public SaveDto? LoadInfo(int id)
         {
             authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.View, true);
@@ -160,7 +160,7 @@ namespace AARC.WebApi.Controllers.Saves
         }
         [AllowAnonymous]
         [HttpPost]
-        [RateLimit(5, 5)]
+        [RateLimit(5, 10)]
         public SaveDto? LoadStatus(int id, bool needComments = false)
         {
             var data = saveRepo.LoadStatus(id);
