@@ -7,6 +7,7 @@ import { useEnvStore } from '@/models/stores/envStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { storeToRefs } from 'pinia';
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { devSave } from '@/data/dev/devSave';
 import { useApiStore } from '@/app/com/apiStore';
 import { normalizeSave } from '@/models/save/saveNormalize';
@@ -23,6 +24,7 @@ import { DocumentHiddenLongWatcher } from '@/utils/eventUtils/documentHiddenLong
 import HiddenLongWarnPrompt from './components/HiddenLongWarnPrompt.vue';
 import WarnRulePrompts from './components/WarnRulePrompts.vue';
 import ChatRoom from '@/pages/chat/ChatRoom.vue';
+import { useTemplateRef } from 'vue';
 import { useIconStore } from '@/models/stores/iconStore';
 import { autoUpdateDataSources } from '@/models/save/dataSourceOps';
 import { compressObjectToGzip } from '@/utils/dataUtils/compressObjectToGzip';
@@ -41,6 +43,7 @@ import { renderAndUploadCloudSvg } from '@/models/save/cloudSvgOps';
 const heartbeatIntervalSecs = 3 * 60 // 每3分钟心跳一次
 
 const props = defineProps<{saveId:string}>()
+const router = useRouter()
 const { someonesSavesRoute } = useSavesRoutesJump()
 const enteredFromStore = useEnteredCanvasFromStore()
 const { goBackToWhereWeEntered } = enteredFromStore
@@ -56,6 +59,7 @@ const undoStore = useUndoStore()
 const api = useApiStore()
 const userInfoStore = useUserInfoStore()
 const signalrStore = useSignalrStore()
+const chatRoom = useTemplateRef('chatRoom')
 const saveIdNum = computed(()=>parseInt(props.saveId))
 const { loadedSave } = storeToRefs(useLoadedSave())
 const loadComplete = ref(false)
@@ -85,6 +89,10 @@ async function disableChat(){
     saveStore.save.meta.chatEnabled = false
     await signalrStore.disableChat(saveIdNum.value.toString())
     await saveData(false)
+}
+function onKicked(){
+    releasePreventLeaving()
+    router.replace('/')
 }
 
 async function load() {
@@ -234,6 +242,7 @@ async function saveData(mustBackup:boolean){
     }
     if(resp){
         releasePreventLeaving()
+        chatRoom.value?.resetSaveReminderTimer()
         showPop('保存成功', 'success')
 
         //次要任务：更新缩略图，无论是否成功都不影响主流程
@@ -384,7 +393,7 @@ onBeforeUnmount(()=>{
     <div class="cache-preventer"><input :id="cachePreventerInputId"/></div>
     <DontUseWeirdBrowser></DontUseWeirdBrowser>
     <div v-if="loadComplete && !isNaN(saveIdNum)" class="chatRoomWrap">
-        <ChatRoom :saveId="saveIdNum" :enabled="chatEnabled" :canEnable="chatCanEnable" @enable="enableChat" @disable="disableChat" />
+        <ChatRoom ref="chatRoom" :saveId="saveIdNum" :enabled="chatEnabled" :isOwner="chatCanEnable" :viewOnly="viewOnly" @enable="enableChat" @disable="disableChat" @kicked="onKicked" />
     </div>
 </template>
 

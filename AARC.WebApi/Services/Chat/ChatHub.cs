@@ -144,6 +144,19 @@ namespace AARC.WebApi.Services.Chat
         }
 
         /// <summary>
+        /// 通知房间内当前编辑用户：所有者即将接管存档，请在限定时间内保存并退出
+        /// </summary>
+        public async Task NotifyKickEditingUser(string roomName)
+        {
+            if (string.IsNullOrWhiteSpace(roomName))
+                throw new RqEx("房间名不能为空");
+
+            var user = GetCurrentUser();
+            _logger.LogInformation("[ChatHub] 通知踢出编辑用户 room={RoomName}, user={UserName}", roomName, user.Name);
+            await Clients.Group(roomName).SendAsync("KickEditingUser", roomName);
+        }
+
+        /// <summary>
         /// 同步某房间最近的全部历史消息（最近 50 条）
         /// </summary>
         public async Task SyncHistory(string roomName)

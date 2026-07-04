@@ -21,6 +21,8 @@ export const useSignalrStore = defineStore('signalr', () => {
     const messages = ref<ChatMessage[]>([])
     const joinedRooms = ref<Set<string>>(new Set())
     const disabledRooms = ref<Set<string>>(new Set())
+    // 待处理的踢出编辑用户通知（按房间）
+    const pendingKickEditingUserRooms = ref<Set<string>>(new Set())
     // 每个房间最后收到消息的时间戳（毫秒），用于重连后同步
     const lastReceivedTimes = ref<Record<string, number | undefined>>({})
     const seenMessageIds = ref<Set<string>>(new Set())
@@ -103,6 +105,11 @@ export const useSignalrStore = defineStore('signalr', () => {
         conn.on("ChatDisabled", (roomName: string) => {
             disabledRooms.value.add(roomName)
             console.log(`[signalr]房间 ${roomName} 的聊天功能已被禁用`)
+        })
+
+        conn.on("KickEditingUser", (roomName: string) => {
+            pendingKickEditingUserRooms.value.add(roomName)
+            console.log(`[signalr]收到踢出编辑用户通知 ${roomName}`)
         })
 
         conn.on("LoadHistory", (history: ChatMessage[]) => {
@@ -244,8 +251,25 @@ export const useSignalrStore = defineStore('signalr', () => {
         }
     }
 
+    async function notifyKickEditingUser(roomName: string): Promise<boolean> {
+        if (!roomName.trim() || !connection.value) return false
+        try {
+            console.log(`[signalr]通知房间 ${roomName} 的编辑用户即将被请出`)
+            await connection.value.invoke("NotifyKickEditingUser", roomName.trim())
+            return true
+        } catch (e: any) {
+            error.value = e?.message ?? '通知编辑用户失败'
+            console.error(`[signalr]通知房间 ${roomName} 编辑用户失败`, e)
+            return false
+        }
+    }
+
     function clearDisabledRoom(roomName: string): void {
         disabledRooms.value.delete(roomName)
+    }
+
+    function clearPendingKickEditingUser(roomName: string): void {
+        pendingKickEditingUserRooms.value.delete(roomName)
     }
 
     function clearMessages(): void {
@@ -262,6 +286,7 @@ export const useSignalrStore = defineStore('signalr', () => {
         messages,
         joinedRooms,
         disabledRooms,
+        pendingKickEditingUserRooms,
         error,
         isConnected,
         startConnection,
@@ -270,8 +295,10 @@ export const useSignalrStore = defineStore('signalr', () => {
         leaveRoom,
         sendMessage,
         disableChat,
+        notifyKickEditingUser,
         clearMessages,
         clearDisabledRoom,
+        clearPendingKickEditingUser,
         getRoomMessages,
         syncHistory
     }

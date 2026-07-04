@@ -71,3 +71,10 @@ export function fromYMD(val:string|undefined, showErr?:(msg:string)=>void){
     }
     return date.getTime()
 }
+
+export function msToMinSec(ms:number){
+    if(ms < 0) ms = 0
+    const minutes = Math.floor(ms / 60000)
+    const seconds = Math.floor((ms % 60000) / 1000)
+    return `${minutes}分${seconds}秒`
+}

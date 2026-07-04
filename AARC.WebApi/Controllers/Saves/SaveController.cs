@@ -200,6 +200,14 @@ namespace AARC.WebApi.Controllers.Saves
             saveRepo.HeartbeatRelease(id);
             return true;
         }
+        [HttpPost]
+        [UserCheck]
+        public bool Kick(int id)
+        {
+            EnsureOwner(id);
+            saveRepo.Kick(id);
+            return true;
+        }
         [HttpGet]
         public List<SaveBackupInfo> GetBackupList(int id)
         {

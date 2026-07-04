@@ -1,35 +1,58 @@
 <script setup lang="ts">
 import { useSignalrStore, ChatMessage } from '@/app/com/signalrStore'
 import { useUserInfoStore } from '@/app/globalStores/userInfo'
+import { useApiStore } from '@/app/com/apiStore'
+import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents'
 import { UserType } from '@/app/com/apiGenerated'
 import { guideInfo } from '@/app/guideInfo'
 import { useChatMsgsReadStore } from '@/app/globalStores/chatMsgsReadStore'
 import SideBar from '@/components/common/SideBar.vue'
+import KickingSidebar from './KickingSidebar.vue'
 import messageIcon from '@/assets/ui/message.svg'
 import { disableContextMenu, enableContextMenu } from '@/utils/eventUtils/contextMenu'
+import {
+    KICK_PROMPT_WAIT_MS,
+    SAVE_REMINDER_DELAY_MS,
+    SAVE_REMINDER_EARLY_MS,
+    SECOND_MS,
+    secText
+} from './consts'
 import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import Notice from '@/components/common/Notice.vue'
+import Prompt from '@/components/common/Prompt.vue'
 
 const props = defineProps<{
     saveId: number
     enabled: boolean
-    canEnable: boolean
+    isOwner: boolean
+    viewOnly: boolean
 }>()
 const emit = defineEmits<{
     enable: []
     disable: []
+    kicked: []
 }>()
 
 const signalrStore = useSignalrStore()
 const userInfoStore = useUserInfoStore()
 const chatMsgsReadStore = useChatMsgsReadStore()
+const api = useApiStore()
+const { showPop } = useUniqueComponentsStore()
 const sidebar = useTemplateRef('sidebar')
+const kickingSidebar = useTemplateRef<InstanceType<typeof KickingSidebar>>('kickingSidebar')
 const messagesRef = useTemplateRef('messages')
 
 const messageInput = ref('')
 const localError = ref<string | null>(null)
 const isSidebarOpen = ref(false)
 const atBottom = ref(true)
+const showKickPrompt = ref(false)
+const kickCountdown = ref(KICK_PROMPT_WAIT_MS / SECOND_MS)
+let kickTimer: number | null = null
+const showSaveReminderPrompt = ref(false)
+const saveReminderRemainingMs = ref(SAVE_REMINDER_DELAY_MS)
+let saveReminderTimer: number | null = null
+let saveReminderCountdownTimer: number | null = null
 
 const roomName = computed(() => props.saveId.toString())
 const messages = computed(() => signalrStore.getRoomMessages(roomName.value))
@@ -49,6 +72,7 @@ const canSend = computed(() => (userInfoStore.userInfo.type ?? UserType.Tourist)
 const unreadCount = computed(() => messages.value.filter(
     msg => !msg.isSystem && !chatMsgsReadStore.isRead(props.saveId, msg.sentAt)
 ).length)
+const saveReminderSeconds = computed(() => Math.ceil(saveReminderRemainingMs.value / SECOND_MS))
 
 watch(messages, async (newVal) => {
     if (isSidebarOpen.value && newVal.length > 0) {
@@ -66,6 +90,25 @@ watch(effectiveEnabled, async (enabled) => {
         await onSidebarExtend()
     }
 })
+
+watch(() => signalrStore.pendingKickEditingUserRooms.has(roomName.value), (hasKick) => {
+    if (hasKick && !props.viewOnly && !showKickPrompt.value) {
+        signalrStore.clearPendingKickEditingUser(roomName.value)
+        showKickPrompt.value = true
+        kickCountdown.value = KICK_PROMPT_WAIT_MS / SECOND_MS
+        kickTimer = window.setInterval(() => {
+            kickCountdown.value--
+            if (kickCountdown.value <= 0) {
+                if (kickTimer !== null) {
+                    window.clearInterval(kickTimer)
+                    kickTimer = null
+                }
+                showKickPrompt.value = false
+                emit('kicked')
+            }
+        }, SECOND_MS)
+    }
+}, { immediate: true })
 
 async function joinRoom() {
     localError.value = null
@@ -127,6 +170,63 @@ function open() {
     sidebar.value?.extend()
 }
 
+function openKickingSidebar() {
+    kickingSidebar.value?.extend()
+}
+
+function resetSaveReminderTimer() {
+    if (saveReminderTimer !== null) {
+        window.clearTimeout(saveReminderTimer)
+        saveReminderTimer = null
+    }
+    if (saveReminderCountdownTimer !== null) {
+        window.clearInterval(saveReminderCountdownTimer)
+        saveReminderCountdownTimer = null
+    }
+    showSaveReminderPrompt.value = false
+    saveReminderRemainingMs.value = SAVE_REMINDER_DELAY_MS
+    saveReminderTimer = window.setTimeout(() => {
+        saveReminderTimer = null
+        if (effectiveEnabled.value && !props.viewOnly) {
+            showSaveReminderPrompt.value = true
+            saveReminderRemainingMs.value = SAVE_REMINDER_EARLY_MS
+            if (saveReminderCountdownTimer === null) {
+                saveReminderCountdownTimer = window.setInterval(() => {
+                    saveReminderRemainingMs.value -= SECOND_MS
+                    if (saveReminderRemainingMs.value <= 0) {
+                        if (saveReminderCountdownTimer !== null) {
+                            window.clearInterval(saveReminderCountdownTimer)
+                            saveReminderCountdownTimer = null
+                        }
+                    }
+                }, SECOND_MS)
+            }
+        }
+    }, SAVE_REMINDER_DELAY_MS)
+}
+
+function closeSaveReminderPrompt() {
+    showSaveReminderPrompt.value = false
+    if (saveReminderCountdownTimer !== null) {
+        window.clearInterval(saveReminderCountdownTimer)
+        saveReminderCountdownTimer = null
+    }
+}
+
+async function tryEnable() {
+    try {
+        const status = await api.save.loadStatus(props.saveId, false)
+        const currentUserId = userInfoStore.userInfo.id
+        if (status?.editingByUserId && status.editingByUserId > 0 && status.editingByUserId !== currentUserId) {
+            showPop('只能在自己编辑时启用', 'failed')
+            return
+        }
+        emit('enable')
+    } catch (e: any) {
+        console.error('[ChatRoom] 启用聊天前检查失败', e)
+    }
+}
+
 function isScrolledToBottom(el: HTMLElement | null): boolean {
     if (!el) return true
     return el.scrollHeight <= el.clientHeight + el.scrollTop + 2
@@ -154,16 +254,29 @@ function fold() {
     sidebar.value?.fold()
 }
 
-defineExpose({ open, fold })
+defineExpose({ open, fold, resetSaveReminderTimer })
 
 onMounted(async () => {
     console.log(`[ChatRoom] 组件挂载 saveId=${props.saveId} effectiveEnabled=${effectiveEnabled.value}`)
+    resetSaveReminderTimer()
     if (!effectiveEnabled.value) return
     await joinRoom()
     await signalrStore.syncHistory(roomName.value)
 })
 
 onUnmounted(async () => {
+    if (kickTimer !== null) {
+        window.clearInterval(kickTimer)
+        kickTimer = null
+    }
+    if (saveReminderTimer !== null) {
+        window.clearTimeout(saveReminderTimer)
+        saveReminderTimer = null
+    }
+    if (saveReminderCountdownTimer !== null) {
+        window.clearInterval(saveReminderCountdownTimer)
+        saveReminderCountdownTimer = null
+    }
     await leaveRoom()
     await signalrStore.stopConnection()
     signalrStore.clearMessages()
@@ -171,6 +284,17 @@ onUnmounted(async () => {
 </script>
 
 <template>
+<Prompt v-if="showKickPrompt" :bgClickClose="false">
+    <div class="kickPrompt">
+        <p class="kickTitle">请在{{ secText(KICK_PROMPT_WAIT_MS) }}内保存并退出</p>
+        <p class="kickCountdown">{{ kickCountdown }} 秒后自动退出</p>
+    </div>
+</Prompt>
+<Prompt v-if="showSaveReminderPrompt" :bgClickClose="false" closeBtn="我知道了" @close="closeSaveReminderPrompt">
+    <div class="saveReminderPrompt">
+        <p>已很长时间未保存，请尽快进行一次保存操作，否则 {{ saveReminderSeconds }} 秒后可能被存档所有者请出</p>
+    </div>
+</Prompt>
 <div class="chatRoomOuter">
     <div class="chatBtn" @click="open" title="打开聊天">
         <img :src="messageIcon" alt="消息"/>
@@ -178,7 +302,10 @@ onUnmounted(async () => {
     </div>
     <SideBar ref="sidebar" @extend="onSidebarExtend" @fold="onSidebarFold" :shrink-way="'v-show'">
         <div v-if="effectiveEnabled" class="chatRoom">
-            <div class="header">房间：{{ roomName }}</div>
+            <div class="header">
+                <span>房间：{{ roomName }}</span>
+                <button class="minor" @click="openKickingSidebar">请出</button>
+            </div>
             <div class="status">
                 <span v-if="signalrStore.isConnected" class="connected">已连接</span>
                 <span v-else class="disconnected">未连接</span>
@@ -187,7 +314,7 @@ onUnmounted(async () => {
             <div v-if="localError || signalrStore.error" class="error">
                 {{ localError || signalrStore.error }}
             </div>
-            <div v-else-if="canEnable" class="disableChatWrap">
+            <div v-else-if="isOwner" class="disableChatWrap">
                 <button class="lite" @click="emit('disable')">关闭聊天功能</button>
             </div>
             <div ref="messages" class="messages" @scroll="checkAtBottom">
@@ -219,19 +346,42 @@ onUnmounted(async () => {
         <div v-else class="chatDisabled">
             <div class="header">房间：{{ roomName }}</div>
             <div class="disabledTip">当前存档未启用聊天功能</div>
-            <button v-if="canEnable" class="enableBtn" @click="emit('enable')">启用</button>
+            <div class="disabledTip">启用后方可发送消息和请出挂机者</div>
+            <button v-if="isOwner" class="enableBtn" @click="tryEnable">启用</button>
             <div v-else class="contactTip">请联系存档所有者启用</div>
-            <Notice v-if="canEnable" :type="'info'">
+            <Notice v-if="isOwner" :type="'info'">
                 如果遇到类似“丢消息”的问题，请反馈：{{ guideInfo.findHelp }}
             </Notice>
         </div>
     </SideBar>
+    <KickingSidebar v-if="effectiveEnabled" ref="kickingSidebar" :saveId="saveId" :isOwner="isOwner" />
 </div>
 </template>
 
 <style lang="scss" scoped>
 .chatRoomOuter {
     display: inline-block;
+}
+.kickPrompt {
+    text-align: center;
+    .kickTitle {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 0 0 8px 0;
+    }
+    .kickCountdown {
+        font-size: 14px;
+        color: #666;
+        margin: 0;
+    }
+}
+.saveReminderPrompt {
+    text-align: center;
+    p {
+        font-size: 16px;
+        font-weight: bold;
+        margin: 0;
+    }
 }
 .chatBtn {
     width: 30px;
@@ -278,7 +428,9 @@ onUnmounted(async () => {
     .header {
         font-size: 18px;
         font-weight: bold;
-        text-align: center;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
     .status {
         font-size: 14px;

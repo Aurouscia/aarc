@@ -411,6 +411,34 @@ namespace AARC.WebApi.Repos.Saves
             }
         }
 
+        /// <summary>
+        /// 所有者强制接管存档：将心跳设为当前用户
+        /// 注意：本方法不检查 LastActive，因为通知到实际执行之间可能又发生了保存；
+        /// 是否满足“长时间未保存”的条件由前端在调用前判断
+        /// </summary>
+        public void Kick(int id)
+        {
+            lock (HeartbeatLock)
+            {
+                var save = Existing
+                    .Where(x => x.Id == id)
+                    .Select(x => new { x.OwnerUserId, x.HeartbeatUserId })
+                    .FirstOrDefault();
+                if (save is null)
+                    throw new RqEx("找不到当前存档");
+                var uid = httpUserIdProvider.RequireUserId();
+                if (save.OwnerUserId != uid)
+                    throw new RqEx("非本存档所有者");
+                if (save.HeartbeatUserId == uid)
+                    throw new RqEx("你已经是当前编辑者");
+                Existing.Where(x => x.Id == id)
+                    .ExecuteUpdate(spc => spc
+                        .SetProperty(x => x.HeartbeatAt, DateTime.Now)
+                        .SetProperty(x => x.HeartbeatUserId, uid)
+                    );
+            }
+        }
+
         private static void ValidateDto(SaveDto saveDto)
         {
             if (string.IsNullOrWhiteSpace(saveDto.Name))
