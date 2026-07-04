@@ -2,6 +2,7 @@
 import Cvs from '@/components/Cvs.vue';
 import Menu from '@/components/Menu.vue';
 import UnsavedLeavingWarning from '@/components/common/UnsavedLeavingWarning.vue';
+import DontUseWeirdBrowser from './components/DontUseWeirdBrowser.vue';
 import { useSaveStore } from '@/models/stores/saveStore';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
