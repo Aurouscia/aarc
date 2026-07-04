@@ -98,12 +98,13 @@ watch(()=>newAg.value.to, (to) => {
         newAg.value.toId = 0
     }
 })
-const newAgToName = computed(() => {
+const newAgToName = computed<string>(() => {
     if(!newAg.value.toId)
         return ''
     if(newAg.value.to == AuthGrantTo.User){
-        return nameMapStore.userNameMap.get(newAg.value.toId)
+        return nameMapStore.userNameMap.get(newAg.value.toId)?.at(0)?.toString() ?? "??"
     }
+    return "??"
 })
 
 const showAllowAllMemberWarning = ref(false)
