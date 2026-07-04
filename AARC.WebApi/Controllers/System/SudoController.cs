@@ -2,10 +2,13 @@ using AARC.WebApi.Models.Db.Context;
 using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Enums.AuthGrantTypes;
 using AARC.WebApi.Models.DbModels.Identities;
+using AARC.WebApi.Repos;
 using AARC.WebApi.Repos.Identities;
 using AARC.WebApi.Services.App.Config;
 using AARC.WebApi.Services.Files;
+using AARC.WebApi.Services.Identities;
 using AARC.WebApi.Services.Saves;
+using AARC.WebApi.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,7 +21,8 @@ namespace AARC.WebApi.Controllers.System
         SaveBackupFileService saveBackupFileService,
         MasterKeyChecker masterKeyChecker,
         AarcContext context,
-        NewestSavesCacheService newestSavesCache
+        NewestSavesCacheService newestSavesCache,
+        UserHistoryService userHistoryService
         ) : Controller
     {
         [HttpPost]
@@ -33,6 +37,91 @@ namespace AARC.WebApi.Controllers.System
                 return $"创建成功，密码为 {initialPwd} ，立即登录并更改";
             else
                 return errmsg ?? "未知错误";
+        }
+
+        [HttpPost]
+        public string InitUsersFromCsv(
+            [FromForm] string? csv,
+            [FromForm] string masterKey)
+        {
+            masterKeyChecker.Check(masterKey);
+            if (string.IsNullOrWhiteSpace(csv))
+                return "csv 内容为空";
+
+            var rows = new List<(string name, string password, UserType type)>();
+            var lines = csv.ReplaceLineEndings().Split(Environment.NewLine);
+            foreach (var rawLine in lines)
+            {
+                var line = rawLine.Trim();
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+                var cols = line.Split(',', StringSplitOptions.TrimEntries);
+                if (cols.Length != 3)
+                    return $"行格式错误（需要恰好三列）：{line}";
+                var name = cols[0];
+                var password = cols[1];
+                UserType type;
+                if (byte.TryParse(cols[2], out var typeValue))
+                {
+                    if (!Enum.IsDefined(typeof(UserType), typeValue))
+                        return $"用户类型数值错误：{cols[2]}";
+                    type = (UserType)typeValue;
+                }
+                else if (!Enum.TryParse<UserType>(cols[2], true, out type))
+                {
+                    return $"用户类型错误：{cols[2]}";
+                }
+                if (name.Length < 1 || name.Length > Models.DbModels.Identities.User.nameMaxLength)
+                    return $"用户名长度错误：{name}";
+                if (password.Length < 6 || password.Length > 20)
+                    return $"密码长度错误：{name}";
+                rows.Add((name, password, type));
+            }
+
+            if (rows.Count == 0)
+                return "没有有效数据";
+
+            var duplicatedInCsv = rows
+                .GroupBy(x => x.name)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+            if (duplicatedInCsv.Count > 0)
+                return $"csv 内用户名重复：{string.Join(", ", duplicatedInCsv)}";
+
+            var names = rows.Select(x => x.name).ToList();
+            var existingNames = context.Users
+                .Existing()
+                .Where(x => names.Contains(x.Name))
+                .Select(x => x.Name)
+                .ToList();
+            if (existingNames.Count > 0)
+                return $"以下用户名已存在：{string.Join(", ", existingNames)}";
+
+            using var t = context.Database.BeginTransaction();
+            try
+            {
+                foreach (var row in rows)
+                {
+                    var user = new User
+                    {
+                        Name = row.name,
+                        Password = UserPwdEncryption.Encrypt(row.password),
+                        Type = row.type
+                    };
+                    context.Users.Add(user);
+                    context.SaveChanges();
+                    userHistoryService.RecordRegister(user.Id);
+                }
+                context.SaveChanges();
+                t.Commit();
+                return $"成功初始化 {rows.Count} 个用户";
+            }
+            catch
+            {
+                t.Rollback();
+                throw;
+            }
         }
         [HttpPost]
         public string RunBackupCleanup([FromForm]string masterKey)

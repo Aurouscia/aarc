@@ -13,6 +13,13 @@ async function initAdmin() {
     initAdminResMsg.value = await api.sudo.initAdmin(initAdminUserName.value, masterKey.value)
 }
 
+const initUsersCsv = ref<string>()
+const initUsersResMsg = ref<string>()
+async function initUsersFromCsv() {
+    initUsersResMsg.value = undefined
+    initUsersResMsg.value = await api.sudo.initUsersFromCsv(initUsersCsv.value, masterKey.value)
+}
+
 const runBackupCleanupResMsg = ref<string>()
 async function runBackupCleanup() {
     runBackupCleanupResMsg.value = undefined
@@ -46,6 +53,10 @@ async function setUserAsAdmin() {
             @click="mode='initAdmin';initAdminResMsg = undefined">
             初始化管理员账号
         </button>
+        <button :class="mode=='initUsersFromCsv'?'confirm':'minor'"
+            @click="mode='initUsersFromCsv';initUsersResMsg = undefined">
+            批量初始化用户
+        </button>
         <button :class="mode=='runBackupCleanup'?'confirm':'minor'"
             @click="mode='runBackupCleanup';runBackupCleanupResMsg = undefined">
             运行备份清理
@@ -69,6 +80,12 @@ async function setUserAsAdmin() {
             <input v-model="masterKey" placeholder="masterKey">
             <button v-if="!initAdminResMsg" @click="initAdmin" class="ok">初始化账号</button>
             <div v-else>{{ initAdminResMsg }}</div>
+        </template>
+        <template v-if="mode=='initUsersFromCsv'">
+            <textarea v-model="initUsersCsv" placeholder="用户名,密码,UserType" rows="12" cols="60"></textarea>
+            <input v-model="masterKey" placeholder="masterKey">
+            <button v-if="!initUsersResMsg" @click="initUsersFromCsv" class="ok">批量初始化</button>
+            <div v-else>{{ initUsersResMsg }}</div>
         </template>
         <template v-if="mode=='runBackupCleanup'">
             <input v-model="masterKey" placeholder="masterKey">
