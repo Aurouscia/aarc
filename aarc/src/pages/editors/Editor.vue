@@ -35,6 +35,8 @@ import SavingDisabledWarning from './components/SavingDisabledWarning.vue';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
 import { useSignalrStore } from '@/app/com/signalrStore';
+import { useKickedFromCanvasStore } from '@/app/globalStores/kickedFromCanvas';
+import { KICK_PROMPT_WAIT_MS } from '@/pages/chat/consts';
 import { coordRound } from '@/utils/coordUtils/coordRound';
 import { useUndoStore } from '@/models/stores/utils/undoStore';
 import { isFocusingInput } from '@/utils/domUtils/focusingInput';
@@ -60,6 +62,7 @@ const undoStore = useUndoStore()
 const api = useApiStore()
 const userInfoStore = useUserInfoStore()
 const signalrStore = useSignalrStore()
+const kickedFromCanvasStore = useKickedFromCanvasStore()
 const chatRoom = useTemplateRef('chatRoom')
 const saveIdNum = computed(()=>parseInt(props.saveId))
 const { loadedSave } = storeToRefs(useLoadedSave())
@@ -97,6 +100,12 @@ function onKicked(){
 }
 
 async function load() {
+    if(!isNaN(saveIdNum.value)){
+        if(kickedFromCanvasStore.isStillKicked(saveIdNum.value, KICK_PROMPT_WAIT_MS)){
+            router.replace({name: kickedName})
+            return
+        }
+    }
     loadedSave.value = true
     if(!isNaN(saveIdNum.value)){
         const userInfo = await userInfoStore.getIdentityInfo(true)

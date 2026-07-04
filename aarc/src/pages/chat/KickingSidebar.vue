@@ -29,7 +29,6 @@ const editorJoinedAt = ref<number | null>(null)
 const now = ref(Date.now())
 let nowTimer: number | null = null
 const takeoverWaiting = ref(false)
-const takeoverReady = ref(false)
 const takeoverRemainingMs = ref(0)
 let takeoverTimer: number | null = null
 let infoRefreshTimer: number | null = null
@@ -120,6 +119,9 @@ function onKickingSidebarFold() {
 }
 
 async function startTakeover() {
+    if (!window.confirm('确认要请出当前编辑用户吗？')) {
+        return
+    }
     await loadLastActive()
     const ts = effectiveReferenceUnix.value
     if (!ts || now.value - ts < KICK_IDLE_THRESHOLD_MS) {
@@ -133,7 +135,6 @@ async function startTakeover() {
         takeoverTimer = null
     }
     takeoverWaiting.value = true
-    takeoverReady.value = false
     takeoverRemainingMs.value = KICK_TAKEOVER_WAIT_MS
     takeoverTimer = window.setInterval(() => {
         takeoverRemainingMs.value -= SECOND_MS
@@ -143,7 +144,7 @@ async function startTakeover() {
                 takeoverTimer = null
             }
             takeoverWaiting.value = false
-            takeoverReady.value = true
+            takeoverSave()
         }
     }, SECOND_MS)
 }
@@ -185,9 +186,8 @@ defineExpose({ extend })
 <SideBar ref="kickingSidebar" :shrink-way="'v-show'" @extend="onKickingSidebarExtend" @fold="onKickingSidebarFold">
     <div class="kickingSidebarContent">
         <div v-if="isOwner" class="ownerSection">
-            <button v-if="!takeoverWaiting && !takeoverReady" class="danger" @click="startTakeover">请出</button>
-            <div v-else-if="takeoverWaiting" class="takeoverWaiting">已通知编辑者离开，{{ takeoverWaitSeconds }} 秒后可强制接管</div>
-            <button v-else-if="takeoverReady" class="danger" @click="takeoverSave">接管存档</button>
+            <button v-if="!takeoverWaiting" class="danger" @click="startTakeover">请出</button>
+            <div v-else class="takeoverWaiting">已通知其离开，{{ takeoverWaitSeconds }} 秒后强制接管</div>
             <p class="occupancyText">如果用户无保存操作占用存档{{ idleThresholdText }}以上，你可以将其请出去</p>
             <div class="referenceDisplay">
                 <div class="referencePrimary">

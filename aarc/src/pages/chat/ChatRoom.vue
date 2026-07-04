@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useSignalrStore, ChatMessage } from '@/app/com/signalrStore'
+import { useKickedFromCanvasStore } from '@/app/globalStores/kickedFromCanvas'
 import { useUserInfoStore } from '@/app/globalStores/userInfo'
 import { useApiStore } from '@/app/com/apiStore'
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents'
@@ -33,6 +34,7 @@ const emit = defineEmits<{
 }>()
 
 const signalrStore = useSignalrStore()
+const kickedFromCanvasStore = useKickedFromCanvasStore()
 const userInfoStore = useUserInfoStore()
 const chatMsgsReadStore = useChatMsgsReadStore()
 const api = useApiStore()
@@ -94,6 +96,7 @@ watch(() => signalrStore.pendingKickEditingUserRooms.has(roomName.value), (hasKi
     if (hasKick && !props.viewOnly && !showKickPrompt.value) {
         signalrStore.clearPendingKickEditingUser(roomName.value)
         showKickPrompt.value = true
+        kickedFromCanvasStore.markKicked(props.saveId)
         kickCountdown.value = KICK_PROMPT_WAIT_MS / SECOND_MS
         kickTimer = window.setInterval(() => {
             kickCountdown.value--

@@ -68,7 +68,8 @@
 | `aarc/src/pages/chat/ChatRoom.vue` | 聊天主面板、被踢提示 Prompt、保存提醒 Prompt、打开 `KickingSidebar`。 |
 | `aarc/src/pages/chat/KickingSidebar.vue` | “请出/接管”侧栏：显示占用信息、LastActive、接管倒计时、调用后端 Kick。 |
 | `aarc/src/app/com/signalrStore.ts` | 提供 `notifyKickEditingUser`、`getEditorJoinedAt` 调用，并监听 `KickEditingUser` 事件通知当前编辑者。 |
-| `aarc/src/pages/editors/Editor.vue` | 接收 `kicked` 事件，释放阻止离开提示并跳回首页；保存成功后重置保存提醒定时器。 |
+| `aarc/src/app/globalStores/kickedFromCanvas.ts` | 持久化记录每个存档弹出“请保存并退出”提示的时间；每次读取时自动清理过期记录。 |
+| `aarc/src/pages/editors/Editor.vue` | 加载存档前检查是否处于被踢宽限期；接收 `kicked` 事件，释放阻止离开提示并跳回 `kickedName`；保存成功后重置保存提醒定时器。 |
 
 ### 4.2 常量定义
 
@@ -113,12 +114,10 @@ SAVE_REMINDER_DELAY_MS = SAVE_REMINDER_INTERVAL_MS - SAVE_REMINDER_EARLY_MS
      - **未满足**：`showPop('时间未到', 'failed')`，不进入倒计时。
      - **已满足**：
        - 通过 SignalR 调用 `NotifyKickEditingUser(roomName)`，通知当前编辑者弹出保存并退出提示。
-       - 隐藏“请出”按钮，开始 20 秒倒计时，显示`请等待 x 秒`。
+       - 隐藏“请出”按钮，开始 20 秒倒计时，显示`已通知其离开，x 秒后强制接管`。
 
-4. **倒计时结束**
-   - 显示“接管存档”按钮。
-
-5. **点击“接管存档”**
+5. **倒计时结束**
+   - 自动调用 `api.save.kick(saveId)` 强制接管存档，无需再手动点击按钮。
    - 调用 `api.save.kick(saveId)`。
    - 成功：`showPop('已接管存档', 'success')`，1 秒后 `window.location.reload()`。
 
@@ -133,10 +132,14 @@ SAVE_REMINDER_DELAY_MS = SAVE_REMINDER_INTERVAL_MS - SAVE_REMINDER_EARLY_MS
 2. `ChatHub` 向房间广播 `KickEditingUser` 事件。
 3. 当前实际编辑者（`viewOnly === false`）收到事件后：
    - 显示 Prompt：`请在 20 秒内保存并退出`。
+   - 同时调用 `kickedFromCanvasStore.markKicked(saveId)`，将当前时间持久化到 `kickedFromCanvas` Store。
    - 开始 20 秒倒计时。
-4. 倒计时结束：
+4. `Editor.vue` 每次 `load()` 的最开头会检查：
+   - 若 `kickedFromCanvasStore.isStillKicked(saveId, KICK_PROMPT_WAIT_MS)` 为 `true`（即当前时间仍在被踢提示出现时间 + 20 秒内），直接 `router.replace({name: kickedName})`。
+   - 这防止用户在宽限期内刷新页面重新进入编辑器。
+5. 倒计时结束：
    - ChatRoom 向 Editor 发射 `kicked` 事件。
-   - Editor 调用 `releasePreventLeaving()`，然后 `router.replace('/')`。
+   - Editor 调用 `releasePreventLeaving()`，然后 `router.replace({name: kickedName})`。
 
 ### 4.6 保存提醒
 
