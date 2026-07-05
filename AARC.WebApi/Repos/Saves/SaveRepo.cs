@@ -11,6 +11,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace AARC.WebApi.Repos.Saves
@@ -265,7 +266,7 @@ namespace AARC.WebApi.Repos.Saves
             if (updated == 0)
                 throw new RqEx("找不到该存档");
         }
-        public void UpdateDataAndDiff(int id, string data, int staCount, int lineCount)
+        public void UpdateDataAndDiff(int id, string data, JsonDocument newData, int staCount, int lineCount)
         {
             var uid = httpUserIdProvider.RequireUserId();
             Heartbeat(id, HeartbeatType.Renewal);
@@ -277,7 +278,8 @@ namespace AARC.WebApi.Repos.Saves
                 var dataOriginal = SaveDataCompression.Decompress(model.DataCompressed) 
                     ?? model.Data 
                     ?? "{}";
-                saveDiffService.CreateDiff(dataOriginal, data, id, uid, false);
+                using var oldData = JsonDocument.Parse(dataOriginal);
+                saveDiffService.CreateDiff(oldData, newData, id, uid, false);
                 model.Data = null;  // 清空旧字段
                 model.DataCompressed = SaveDataCompression.Compress(data);  // 存储压缩数据
                 model.StaCount = staCount;

@@ -16,7 +16,7 @@ public class SaveDiffService(
 {
     private DbSet<SaveDiff> SaveDiffs => context.SaveDiffs;
     private IQueryable Users => context.Users.Existing();
-    public void CreateDiff(string oldSave, string newSave, int saveId, int userId, bool saveChanges)
+    public void CreateDiff(JsonDocument oldSave, JsonDocument newSave, int saveId, int userId, bool saveChanges)
     {
         var options = CreateOptions();
         var diffNode = DiffGenerator.Diff(oldSave, newSave, options);

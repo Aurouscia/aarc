@@ -7,6 +7,7 @@ using AARC.WebApi.Services.Files;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IO.Compression;
+using System.Text.Json;
 using AARC.WebApi.Models.Db.Context;
 using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Enums.AuthGrantTypes;
@@ -327,19 +328,29 @@ namespace AARC.WebApi.Controllers.Saves
             int id, string data, int staCount, int lineCount, bool enforce, bool mustBackup = false)
         {
             bool isOwner = IsOwner(id);
-            if (isOwner)
+            if (!isOwner && enforce)
+                throw new RqEx("非本存档所有者");
+            if (string.IsNullOrWhiteSpace(data))
+                throw new RqEx("数据为空");
+            try
             {
-                // 是所有者：可自由决定是不是enforce，且更新无需记录Diff
-                saveRepo.UpdateData(id, data, staCount, lineCount, enforce);
+                using var newDataDoc = JsonDocument.Parse(data);
+                if (isOwner)
+                {
+                    // 是所有者：可自由决定是不是enforce，且更新无需记录Diff
+                    saveRepo.UpdateData(id, data, staCount, lineCount, enforce);
+                }
+                else
+                {
+                    // 非所有者：需要有当前画布的编辑权限
+                    authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.Edit, false);
+                    // 非所有者：更新的同时记录Diff（传入已解析的JsonDocument，避免重复Parse）
+                    saveRepo.UpdateDataAndDiff(id, data, newDataDoc, staCount, lineCount);
+                }
             }
-            else
+            catch (JsonException)
             {
-                if(enforce) // 非所有者：enforce抛错
-                    throw new RqEx("非本存档所有者");
-                // 非所有者：需要有当前画布的编辑权限
-                authGrantCheckService.CheckFor(AuthGrantOn.Save, id, (byte)AuthGrantTypeOfSave.Edit, false);
-                // 非所有者：更新的同时记录Diff
-                saveRepo.UpdateDataAndDiff(id, data, staCount, lineCount);
+                throw new RqEx($"数据异常，请重试");
             }
             
             // 更新当前用户的"上次活跃"
