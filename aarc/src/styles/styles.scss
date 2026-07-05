@@ -61,6 +61,9 @@ h1.h1WithBtns{
     flex-wrap: wrap;
     column-gap: 20px;
     row-gap: 10px;
+    label{
+        letter-spacing: normal;
+    }
     div{
         display: flex;
         align-items: center;

@@ -71,14 +71,16 @@ namespace AARC.WebApi.Repos.Saves
             base.Update(model, true);
         }
 
-        public List<SaveWarnDto> GetAllWarns()
+        public List<SaveWarnDto> GetAllWarns(bool mineOnly)
         {
+            var uid = mineOnly ? httpUserIdProvider.RequireUserId() : 0;
             var q = ExistingAndValid.Where(x => x.Type == SaveCommentType.Warn);
             var temp = (
                 from c in q
                 join s in Context.Saves.Existing() on c.SaveId equals s.Id
                 join u in Context.Users.Existing() on c.OwnerUserId equals u.Id
                 join su in Context.Users.Existing() on s.OwnerUserId equals su.Id
+                where !mineOnly || s.OwnerUserId == uid
                 select new
                 {
                     Comment = c,

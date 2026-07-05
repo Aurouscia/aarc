@@ -60,9 +60,9 @@ namespace AARC.WebApi.Controllers.Saves
         }
 
         [HttpGet]
-        public List<SaveWarnDto> GetAllWarns()
+        public List<SaveWarnDto> GetAllWarns(bool mineOnly = true)
         {
-            return saveCommentRepo.GetAllWarns();
+            return saveCommentRepo.GetAllWarns(mineOnly);
         }
     }
 }

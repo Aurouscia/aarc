@@ -4,7 +4,7 @@ import { SaveWarnDto } from '@/app/com/apiGenerated';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { useEditorsRoutesJump } from '@/pages/editors/routes/routesJump';
 import { useEnteredCanvasFromStore } from '@/app/globalStores/enteredCanvasFrom';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const api = useApiStore()
@@ -16,6 +16,7 @@ const { setEnteredFrom } = useEnteredCanvasFromStore()
 const warns = ref<SaveWarnDto[]>([])
 const loading = ref(false)
 const error = ref('')
+const mineOnly = ref(true)
 
 const isAdmin = computed(() => userInfoStore.isAdmin)
 
@@ -23,7 +24,7 @@ async function loadWarns() {
     loading.value = true
     error.value = ''
     try {
-        const res = await api.saveComment.getAllWarns()
+        const res = await api.saveComment.getAllWarns(mineOnly.value)
         if (res) {
             warns.value = res
         }
@@ -71,6 +72,10 @@ async function deprecateWarn(id: number | undefined) {
     }
 }
 
+watch(mineOnly, () => {
+    loadWarns()
+})
+
 onMounted(() => {
     loadWarns()
 })
@@ -78,7 +83,14 @@ onMounted(() => {
 
 <template>
     <div class="save-warns-page">
-        <h1>存档问题提醒</h1>
+        <h1 class="h1WithBtns">
+            <span>存档问题提醒</span>
+            <div>
+                <label class="mine-only-check">
+                    <input v-model="mineOnly" type="checkbox" /> 只看我的
+                </label>
+            </div>
+        </h1>
         <div v-if="loading" class="loading">
             加载中...
         </div>
@@ -129,6 +141,19 @@ onMounted(() => {
         font-size: 24px;
         margin-bottom: 20px;
         color: #2c3e50;
+    }
+
+    .mine-only-check {
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+        color: #555;
+        cursor: pointer;
+        user-select: none;
+
+        input {
+            cursor: pointer;
+        }
     }
 
     .no-auth,
