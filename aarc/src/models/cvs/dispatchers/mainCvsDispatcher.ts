@@ -21,7 +21,7 @@ import { useWatermarkCvsWorker } from "../workers/watermarkCvsWorker";
 import { useRenderOptionsStore } from "@/models/stores/renderOptionsStore";
 import { useBgRefImageCvsWorker } from "../workers/bgRefImageCvsWorker";
 import { useGridCvsWorker } from "../workers/gridCvsWorker";
-import { Context as SvgCanvasContext } from 'svgcanvas';
+import { Context as SvgCanvasContext } from '@aurouscia/svgcanvas';
 import { optimizeSvg } from "@/utils/svgUtils/optimizeSvg";
 import { useSaveStore } from "@/models/stores/saveStore";
 

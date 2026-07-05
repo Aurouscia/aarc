@@ -1,6 +1,6 @@
 import { convertLineSeppedToCommaSepped } from "@/utils/lang/fontStr";
 import { TextMetricsSelected } from "@/utils/type/TextMetricsSelected";
-import type { Context as SvgCanvasContext } from "svgcanvas";
+import type { Context as SvgCanvasContext } from "@aurouscia/svgcanvas";
 
 export type Cvs2dContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | SvgCanvasContext
 
@@ -82,23 +82,10 @@ export class CvsContext{
         const m = this.b.ctx2d.measureText(text)
         const scale = this.b.scale || 1
         if(m){
-            if('actualBoundingBoxAscent' in m && 'actualBoundingBoxDescent' in m){
-                return {
-                    width: m.width / scale,
-                    actualBoundingBoxAscent: m.actualBoundingBoxAscent / scale,
-                    actualBoundingBoxDescent: m.actualBoundingBoxDescent / scale
-                }
-            }
-            else{
-                // svgcanvas 的类型声明较保守，运行时通常仍返回完整 TextMetrics；
-                // 此处兜底避免类型声明不全时破坏布局
-                const ascent = m.width * 0.6
-                const descent = m.width * 0.3
-                return {
-                    width: m.width / scale,
-                    actualBoundingBoxAscent: ascent / scale,
-                    actualBoundingBoxDescent: descent / scale
-                }
+            return {
+                width: m.width / scale,
+                actualBoundingBoxAscent: m.actualBoundingBoxAscent / scale,
+                actualBoundingBoxDescent: m.actualBoundingBoxDescent / scale
             }
         }
         else{

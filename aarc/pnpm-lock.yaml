@@ -20,18 +20,15 @@ importers:
       '@aurouscia/keyboard-shortcut':
         specifier: ^3.0.0
         version: 3.0.0
+      '@aurouscia/svgcanvas':
+        specifier: ^2.6.1
+        version: 2.6.1
       '@aurouscia/vite-app-version':
         specifier: ^0.2.0
         version: 0.2.0
       '@microsoft/signalr':
         specifier: ^10.0.0
         version: 10.0.0
-      '@types/svgcanvas':
-        specifier: ^2.6.0
-        version: 2.6.0
-      '@types/upng-js':
-        specifier: ^2.1.5
-        version: 2.1.5
       axios:
         specifier: ^1.15.1
         version: 1.15.1
@@ -65,9 +62,6 @@ importers:
       rfdc:
         specifier: ^1.4.1
         version: 1.4.1
-      svgcanvas:
-        specifier: ^2.6.0
-        version: 2.6.0
       svgo:
         specifier: ^4.0.1
         version: 4.0.1
@@ -96,6 +90,9 @@ importers:
       '@types/omggif':
         specifier: ^1.0.5
         version: 1.0.5
+      '@types/upng-js':
+        specifier: ^2.1.5
+        version: 2.1.5
       '@vitejs/plugin-vue':
         specifier: ^6.0.6
         version: 6.0.6(vite@7.3.1(@types/node@25.6.0)(sass@1.99.0)(tsx@4.22.4))(vue@3.5.32(typescript@6.0.3))
@@ -142,6 +139,9 @@ packages:
 
   '@aurouscia/signalr-comment-fixer@1.0.0':
     resolution: {integrity: sha512-/9IU82/aA4mgUOgYTk52kDceiHZyhY6n+Qi5PBUBioAqVnMF9CczqqsPY9dymZ3M4RrrQ4QzC4K6tjV3pmZDig==}
+
+  '@aurouscia/svgcanvas@2.6.1':
+    resolution: {integrity: sha512-+BMRhYgZOUAz78tWc8jWZ+kBBcTEt9byHJY7w9t9LbTuZcY7ghtRkUvJYmglrC4rLdrJ44jVlN3tiYyvy5897g==, tarball: https://registry.npmjs.org/@aurouscia/svgcanvas/-/svgcanvas-2.6.1.tgz}
 
   '@aurouscia/vite-app-version@0.2.0':
     resolution: {integrity: sha512-4kW0V1XTZKM01LCridmD23TF/8hfLlZyCCouWstsubnguZFPLLL6sF00I2ho827sX1YH6SLbWpQeY92vi5YDVg==}
@@ -747,9 +747,6 @@ packages:
   '@types/omggif@1.0.5':
     resolution: {integrity: sha512-gDQJflz1rOgEcUXkMAl80bDGN46f5mp8GbcM5dyvq+zsFV6YRBRtmNxlJJ5mjY77T7BRkRFzdIBVmK90QYhCxA==}
 
-  '@types/svgcanvas@2.6.0':
-    resolution: {integrity: sha512-zfYGB1fCpR6KdyoYK4uzJ3Nmqm1wfYcVmVe41daAUhJUX49k2HmuNWfM6RXeTkrh19D25b/I82iBO9GgEKneOQ==}
-
   '@types/upng-js@2.1.5':
     resolution: {integrity: sha512-CzXg1lcCcWzrmYmke9BLbBPzb2DpdC1bXuXf0BtK3Bygvsozslei8S1bheDI1QUfZzZpMeQI5fywfnMj4CxocQ==}
 
@@ -1338,9 +1335,6 @@ packages:
     resolution: {integrity: sha512-H+ue8Zo4vJmV2nRjpx86P35lzwDT3nItnIsocgumgr0hHMQ+ZGq5vrERg9kJBo5AWGmxZDhzDo+WVIJqkB0cGA==}
     engines: {node: '>=16'}
 
-  svgcanvas@2.6.0:
-    resolution: {integrity: sha512-H/2iVTLyuLxbLNYArnTaR8RmCR7fi8Gx7Hul7+lnPcN/b6AXLS56iVzUudgfMmkKrF9+GvXm+YJlT9Tg4eIj3A==}
-
   svgo@4.0.1:
     resolution: {integrity: sha512-XDpWUOPC6FEibaLzjfe0ucaV0YrOjYotGJO1WpF0Zd+n6ZGEQUsSugaoLq9QkEZtAfQIxT42UChcssDVPP3+/w==}
     engines: {node: '>=16'}
@@ -1558,6 +1552,8 @@ snapshots:
   '@aurouscia/keyboard-shortcut@3.0.0': {}
 
   '@aurouscia/signalr-comment-fixer@1.0.0': {}
+
+  '@aurouscia/svgcanvas@2.6.1': {}
 
   '@aurouscia/vite-app-version@0.2.0': {}
 
@@ -1914,8 +1910,6 @@ snapshots:
       undici-types: 7.19.2
 
   '@types/omggif@1.0.5': {}
-
-  '@types/svgcanvas@2.6.0': {}
 
   '@types/upng-js@2.1.5': {}
 
@@ -2559,8 +2553,6 @@ snapshots:
   superjson@2.2.6:
     dependencies:
       copy-anything: 4.0.5
-
-  svgcanvas@2.6.0: {}
 
   svgo@4.0.1:
     dependencies:

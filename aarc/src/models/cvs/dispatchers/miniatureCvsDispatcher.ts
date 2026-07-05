@@ -3,7 +3,7 @@ import { useLineSimplifiedCvsWorker } from "../workers/lineSimplifiedCvsWorker";
 import { CvsBlock, CvsContext } from "../common/cvsContext";
 import { useSaveStore } from "@/models/stores/saveStore";
 import { Line } from "@/models/save";
-import { Context as SvgCanvasContext } from 'svgcanvas';
+import { Context as SvgCanvasContext } from '@aurouscia/svgcanvas';
 import { optimizeSvg } from "@/utils/svgUtils/optimizeSvg";
 
 export const useMiniatureCvsDispatcher = defineStore('miniatureCvsDispatcher', ()=>{
