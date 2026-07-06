@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { ref, onMounted, useTemplateRef, watch } from 'vue';
-import { UserFileDto } from '@/app/com/apiGenerated';
+import { UserFileDto, UserFileType } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import Loading from '@/components/common/Loading.vue';
 import SideBar from '@/components/common/SideBar.vue';
-import FileUpload from '@/components/common/FileUpload.vue';
+import UserFileUpload from '@/components/common/userFile/UserFileUpload.vue';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import linkIcon from '@/assets/ui/chain.svg';
 import settingsIcon from '@/assets/ui/gear.svg';
@@ -219,7 +219,7 @@ onMounted(async() => {
             </p>
         </div>
     </div>
-    <FileUpload ref="uploadSidebar" :on-success="onUploadSuccess" />
+    <UserFileUpload ref="uploadSidebar" :type="UserFileType.Icon" :on-success="onUploadSuccess" />
     <SideBar ref="editSidebar">
         <h1>编辑资源</h1>
         <table class="fullWidth"><tbody>

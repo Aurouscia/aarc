@@ -21,7 +21,7 @@ namespace AARC.WebApi.Repos.Files
         private const int fileSizeLimitMB = 5;
         private const int fileSizeLimitMBOfSvg = 1;
         private readonly static string[] extAllowed 
-            = [".png", ".jpg", ".jpeg", ".svg", ".webp"];
+            = [".png", ".jpg", ".jpeg", ".svg", ".webp", ".json"];
         public void Add(
             IFormFile? f,
             IFormFile? thumb,

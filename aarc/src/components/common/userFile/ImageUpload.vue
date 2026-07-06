@@ -6,7 +6,7 @@ import { debounce } from '@/utils/lang/debounce';
 import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { UserFileType } from '@/app/com/apiGenerated';
-import SideBar from './SideBar.vue';
+import SideBar from '../SideBar.vue';
 
 const props = defineProps<{
     onSuccess?: () => void;
@@ -265,7 +265,7 @@ onUnmounted(() => {
     if (thumbUrl.value) URL.revokeObjectURL(thumbUrl.value);
 });
 
-defineExpose({ open });
+defineExpose({ open, close });
 </script>
 
 <template>
