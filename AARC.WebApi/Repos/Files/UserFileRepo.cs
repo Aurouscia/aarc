@@ -15,6 +15,7 @@ namespace AARC.WebApi.Repos.Files
         AarcContext context,
         UserFileService userFileService,
         HttpUserIdProvider httpUserIdProvider,
+        UserFavoriteRepo userFavoriteRepo,
         IMapper mapper
         ) : Repo<UserFile>(context)
     {
@@ -126,6 +127,16 @@ namespace AARC.WebApi.Repos.Files
                 dto.UrlOriginal = userFileService.GetUrl(dto.StoreName, thumb: false);
                 res.Add(dto);
             }
+            var ids = res.Select(x => x.Id).ToList();
+            var favMap = userFavoriteRepo.GetFavoriteIdMap(UserFavoriteType.UserFile, ids);
+            foreach (var dto in res)
+            {
+                if (favMap.TryGetValue(dto.Id, out var favId) && favId > 0)
+                {
+                    dto.IsFavorited = true;
+                    dto.FavoriteId = favId;
+                }
+            }
             return res;
         }
 
@@ -171,6 +182,8 @@ namespace AARC.WebApi.Repos.Files
         public string? Intro { get; set; }
         public int Size { get; set; }
         public string? LastActive { get; set; }
+        public bool IsFavorited { get; set; }
+        public int FavoriteId { get; set; }
     }
 
     public class UserFileProfile : Profile

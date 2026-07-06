@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import { ref, onMounted, useTemplateRef, watch } from 'vue';
-import { UserFileDto, UserFileType } from '@/app/com/apiGenerated';
+import { UserFileDto, UserFileType, UserFavoriteType } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import Loading from '@/components/common/Loading.vue';
 import SideBar from '@/components/common/SideBar.vue';
 import UserFileUpload from '@/components/common/userFile/UserFileUpload.vue';
+import UserFavoriteStar from '@/pages/components/UserFavoriteStar.vue';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import linkIcon from '@/assets/ui/chain.svg';
 import settingsIcon from '@/assets/ui/gear.svg';
@@ -192,6 +193,13 @@ onMounted(async() => {
                         <div class="file-op">
                             <!-- 为链接图标添加点击事件 -->
                             <img :src="linkIcon" @click="copyImageLink(file)" title="复制原图片链接" />
+                            <UserFavoriteStar
+                                class="file-op-fav-star"
+                                :type="UserFavoriteType.UserFile"
+                                :objectId="file.id!"
+                                :isFavorited="file.isFavorited"
+                                @updated="(val) => { file.isFavorited = val }"
+                            />
                             <img :src="settingsIcon" @click="startEditing(file)"/>
                         </div>
                     </div>
@@ -331,6 +339,14 @@ onMounted(async() => {
         overflow: hidden;
     }
 
+    .file-op-fav-star {
+        :deep(.user-favorite-star) {
+            width: 16px;
+            height: 16px;
+            padding: 0;
+        }
+    }
+
     .preview-image {
         width: 100%;
         height: 100%;
@@ -356,7 +372,7 @@ onMounted(async() => {
     }
 
     .file-info {
-        padding: 10px;
+        padding: 7px;
         text-align: center;
         background-color: #fff;
         height: 65px;
@@ -364,7 +380,7 @@ onMounted(async() => {
     }
 
     .file-name {
-        margin: 0 0 5px 0;
+        margin: 0 0 8px 0;
         font-size: 14px;
         font-weight: 500;
         color: #333;
@@ -388,6 +404,7 @@ onMounted(async() => {
         }
         .file-op{
             display: flex;
+            align-items: center;
             gap: 6px;
             img{
                 width: 16px;

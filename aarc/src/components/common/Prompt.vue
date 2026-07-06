@@ -51,19 +51,21 @@ onMounted(()=>{
 </script>
 
 <template>
-    <div class="prompt fixFill">
-        <div class="background fixFill" @click="()=>{bgClickClose && emit('close')}"></div>
-        <div class="panel">
-            <slot></slot>
-            <button v-if="closeBtn" class="closeBtn" @click="handleCloseBtnClick"
-                :class="closeBtnActive?'':'minor'">
-                {{ closeBtnText }}
-                <template v-if="closeBtnCountDown >= 0">
-                    ({{ closeBtnCountDown }})
-                </template>
-            </button>
+    <Teleport to="body">
+        <div class="prompt fixFill">
+            <div class="background fixFill" @click="()=>{bgClickClose && emit('close')}"></div>
+            <div class="panel">
+                <slot></slot>
+                <button v-if="closeBtn" class="closeBtn" @click="handleCloseBtnClick"
+                    :class="closeBtnActive?'':'minor'">
+                    {{ closeBtnText }}
+                    <template v-if="closeBtnCountDown >= 0">
+                        ({{ closeBtnCountDown }})
+                    </template>
+                </button>
+            </div>
         </div>
-    </div>
+    </Teleport>
 </template>
 
 <style scoped>
