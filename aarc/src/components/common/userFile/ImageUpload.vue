@@ -2,6 +2,7 @@
 import { ref, watch, onUnmounted, computed } from 'vue';
 import { resizeImage } from '@aurouscia/image-compress';
 import { dataSizeStr } from '@/utils/fileUtils/dataSizeStr';
+import { isSvg } from '@/utils/fileUtils/ext';
 import { debounce } from '@/utils/lang/debounce';
 import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
@@ -39,9 +40,6 @@ const processError = ref<string>();
 const originalSizeStr = computed(() =>
     file.value ? dataSizeStr(file.value.size) : '-'
 );
-
-let skipNextHeightUpdate = false;
-let skipNextWidthUpdate = false;
 
 async function processImage() {
     if (!file.value) return;
@@ -92,46 +90,118 @@ async function processThumb() {
     }
 }
 
-const debouncedProcessImage = debounce(processImage, 200);
+const debouncedProcessImage = debounce(processImage, 500);
 
-watch(width, () => {
-    if (skipNextWidthUpdate) {
-        skipNextWidthUpdate = false;
-        return;
-    }
-    if (!originalWidth.value || !originalHeight.value) return;
-    skipNextHeightUpdate = true;
-    height.value = Math.round(
-        (width.value * originalHeight.value) / originalWidth.value
-    );
-    debouncedProcessImage();
-});
-
-watch(height, () => {
-    if (skipNextHeightUpdate) {
-        skipNextHeightUpdate = false;
-        return;
-    }
-    if (!originalWidth.value || !originalHeight.value) return;
-    skipNextWidthUpdate = true;
-    width.value = Math.round(
-        (height.value * originalWidth.value) / originalHeight.value
-    );
-    debouncedProcessImage();
-});
+watch(width, debouncedProcessImage);
+watch(height, debouncedProcessImage);
 watch(quality, debouncedProcessImage);
 
 function initDimensions(imgWidth: number, imgHeight: number) {
     originalWidth.value = imgWidth;
     originalHeight.value = imgHeight;
-    const max = Math.max(imgWidth, imgHeight);
-    if (max <= 256) {
-        width.value = imgWidth;
-        height.value = imgHeight;
+    const ow = imgWidth;
+    const oh = imgHeight;
+    const max = Math.max(ow, oh);
+    let w: number;
+    let h: number;
+    if (max <= 1024) {
+        w = ow;
+        h = oh;
     } else {
-        const ratio = 256 / max;
-        width.value = Math.round(imgWidth * ratio);
-        height.value = Math.round(imgHeight * ratio);
+        const ratio = 1024 / max;
+        w = Math.round(ow * ratio);
+        h = Math.round(oh * ratio);
+    }
+    // 保证较小的一边至少为 8，并按原比例缩放另一边
+    if (w < 8) {
+        w = 8;
+        h = Math.round((w * oh) / ow);
+    }
+    if (h < 8) {
+        h = 8;
+        w = Math.round((h * ow) / oh);
+    }
+    // 不超过原图尺寸
+    if (w > ow) {
+        w = ow;
+        h = oh;
+    }
+    if (h > oh) {
+        h = oh;
+        w = ow;
+    }
+    width.value = w;
+    height.value = h;
+}
+
+function applyDimension(dimension: 'width' | 'height', raw: number) {
+    const ow = originalWidth.value;
+    const oh = originalHeight.value;
+    let target = Math.max(8, raw);
+    if (dimension === 'width' && ow > 0) target = Math.min(target, ow);
+    if (dimension === 'height' && oh > 0) target = Math.min(target, oh);
+
+    if (!ow || !oh) {
+        if (dimension === 'width') width.value = target;
+        else height.value = target;
+        return;
+    }
+
+    let w =
+        dimension === 'width'
+            ? target
+            : Math.round((target * ow) / oh);
+    let h =
+        dimension === 'height'
+            ? target
+            : Math.round((target * oh) / ow);
+
+    // 保证较小的一边至少为 8，并按原比例缩放另一边
+    if (w < 8) {
+        w = 8;
+        h = Math.round((w * oh) / ow);
+    }
+    if (h < 8) {
+        h = 8;
+        w = Math.round((h * ow) / oh);
+    }
+
+    // 不超过原图尺寸
+    if (w > ow) {
+        w = ow;
+        h = oh;
+    }
+    if (h > oh) {
+        h = oh;
+        w = ow;
+    }
+
+    width.value = w;
+    height.value = h;
+}
+
+function parseDimensionInput(value: string): number {
+    const n = parseInt(value, 10);
+    return Number.isFinite(n) ? n : 0;
+}
+
+function onWidthChange(e: Event) {
+    applyDimension(
+        'width',
+        parseDimensionInput((e.target as HTMLInputElement).value)
+    );
+}
+
+function onHeightChange(e: Event) {
+    applyDimension(
+        'height',
+        parseDimensionInput((e.target as HTMLInputElement).value)
+    );
+}
+
+function openProcessedInNewTab() {
+    if (processedUrl.value) {
+        window.open(processedUrl.value, '_blank');
     }
 }
 
@@ -230,12 +300,26 @@ async function upload() {
         showPop('请输入显示名称', 'failed');
         return;
     }
+    const fileIsSvg = isSvg(file.value.name);
+    if (fileIsSvg) {
+        if (!thumbBlob.value) {
+            showPop('您的设备过旧\n请更换设备重试', 'failed');
+            return;
+        }
+    } else {
+        if (!processedBlob.value || !thumbBlob.value) {
+            showPop('您的设备过旧\n请更换设备重试', 'failed');
+            return;
+        }
+    }
     uploading.value = true;
     try {
-        const thumb = thumbBlob.value ?? processedBlob.value;
+        const mainFile = fileIsSvg ? file.value : processedBlob.value!;
+        const mainFileName = fileIsSvg ? file.value.name : 'processed.webp';
+        const thumb = thumbBlob.value!;
         const res = await api.userFile.upload(
-            { data: file.value, fileName: file.value.name },
-            thumb ? { data: thumb, fileName: 'thumb.webp' } : undefined,
+            { data: mainFile, fileName: mainFileName },
+            { data: thumb, fileName: 'thumb.webp' },
             displayName.value.trim(),
             undefined,
             UserFileType.Icon
@@ -298,7 +382,12 @@ defineExpose({ open, close });
                 </div>
                 <div class="infoRow">
                     <span class="label">原图大小：</span>
-                    <span class="value">{{ originalSizeStr }}</span>
+                    <span class="value">
+                        {{ originalSizeStr }}
+                        <template v-if="originalWidth && originalHeight">
+                            （{{ originalWidth }}×{{ originalHeight }}）
+                        </template>
+                    </span>
                 </div>
             </div>
 
@@ -312,17 +401,21 @@ defineExpose({ open, close });
                     <div class="controlRow">
                         <label>宽</label>
                         <input
-                            v-model.number="width"
+                            :value="width"
                             type="number"
-                            min="1"
+                            :min="8"
+                            :max="originalWidth || undefined"
+                            @change="onWidthChange"
                         />
                     </div>
                     <div class="controlRow">
                         <label>高</label>
                         <input
-                            v-model.number="height"
+                            :value="height"
                             type="number"
-                            min="1"
+                            :min="8"
+                            :max="originalHeight || undefined"
+                            @change="onHeightChange"
                         />
                     </div>
                 </div>
@@ -344,28 +437,28 @@ defineExpose({ open, close });
 
             <div v-if="file" class="previews">
                 <div class="previewBlock">
-                    <div class="previewTitle">原图</div>
-                    <img v-if="originalUrl" :src="originalUrl" alt="原图预览" />
-                </div>
-                <div class="previewBlock">
                     <div class="previewTitle">
-                        处理后
+                        处理后（点击预览）
                         <span v-if="processing" class="processing">处理中…</span>
                     </div>
                     <img
                         v-if="processedUrl"
+                        class="processed-preview"
                         :src="processedUrl"
                         alt="处理后预览"
+                        title="点击在新标签页打开"
+                        @click="openProcessedInNewTab"
                     />
                     <div class="processedSize">大小：{{ processedSizeStr }}</div>
                 </div>
                 <div class="previewBlock">
                     <div class="previewTitle">
-                        缩略图（长边 256px）
+                        缩略图
                         <span v-if="thumbProcessing" class="processing">处理中…</span>
                     </div>
                     <img
                         v-if="thumbUrl"
+                        class="thumb-preview"
                         :src="thumbUrl"
                         alt="缩略图预览"
                     />
@@ -531,6 +624,17 @@ defineExpose({ open, close });
             display: block;
             margin: 0 auto;
             border-radius: 4px;
+        }
+        img.thumb-preview {
+            width: 128px;
+            height: 128px;
+            max-width: 128px;
+            max-height: 128px;
+            object-fit: contain;
+            background-color: #eee;
+        }
+        img.processed-preview {
+            cursor: pointer;
         }
         .processedSize {
             text-align: center;
