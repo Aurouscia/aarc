@@ -45,6 +45,12 @@ const originalSizeStr = computed(() =>
 const fileIsSvg = computed(() =>
     file.value ? isSvg(file.value.name) : false
 );
+const showNameHint = computed(() => {
+    const name = displayName.value.trim();
+    if (!name) return false;
+    const hyphenCount = (name.match(/-/g) || []).length;
+    return hyphenCount !== 1;
+});
 
 async function processImage() {
     if (!file.value) return;
@@ -228,7 +234,6 @@ function onFileSelected(selected: File) {
     if (processedUrl.value) URL.revokeObjectURL(processedUrl.value);
     if (thumbUrl.value) URL.revokeObjectURL(thumbUrl.value);
     file.value = selected;
-    displayName.value = selected.name;
     originalUrl.value = URL.createObjectURL(selected);
 
     const img = new Image();
@@ -317,10 +322,12 @@ async function upload() {
         showPop('请先选择文件', 'failed');
         return;
     }
-    if (!displayName.value.trim()) {
-        showPop('请输入显示名称', 'failed');
+    const trimmedName = displayName.value.trim();
+    if (!trimmedName) {
+        showPop('名称不能为空', 'failed');
         return;
     }
+    displayName.value = trimmedName;
     const keepSvgOriginal = fileIsSvg.value && !convertSvgToBitmap.value;
     if (keepSvgOriginal) {
         if (!thumbBlob.value) {
@@ -416,8 +423,14 @@ defineExpose({ open, close });
 
             <div class="inputRow">
                 <label>显示名称</label>
-                <input v-model="displayName" placeholder="输入显示名称" />
+                <input v-model="displayName" placeholder="分类名-图片名" />
             </div>
+            <Notice
+                v-if="showNameHint"
+                :type="'warn'"
+            >
+                建议使用“A-B”格式的名称，中间用连字符（减号）隔开，A表示分类名，这样可以让资源更便于筛选和使用
+            </Notice>
 
             <div v-if="file" class="controls">
                 <div v-if="fileIsSvg" class="controlRow svgConvertRow">
