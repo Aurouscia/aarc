@@ -8,6 +8,7 @@ import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { UserFileType } from '@/app/com/apiGenerated';
 import SideBar from '../SideBar.vue';
+import Notice from '../Notice.vue';
 
 const props = defineProps<{
     onSuccess?: () => void;
@@ -32,6 +33,7 @@ const originalHeight = ref(0);
 const width = ref(256);
 const height = ref(256);
 const quality = ref(0.5);
+const convertSvgToBitmap = ref(false);
 const processing = ref(false);
 const thumbProcessing = ref(false);
 const uploading = ref(false);
@@ -40,9 +42,13 @@ const processError = ref<string>();
 const originalSizeStr = computed(() =>
     file.value ? dataSizeStr(file.value.size) : '-'
 );
+const fileIsSvg = computed(() =>
+    file.value ? isSvg(file.value.name) : false
+);
 
 async function processImage() {
     if (!file.value) return;
+    if (fileIsSvg.value && !convertSvgToBitmap.value) return;
     processing.value = true;
     processError.value = undefined;
     try {
@@ -95,6 +101,18 @@ const debouncedProcessImage = debounce(processImage, 500);
 watch(width, debouncedProcessImage);
 watch(height, debouncedProcessImage);
 watch(quality, debouncedProcessImage);
+
+watch(convertSvgToBitmap, (newVal) => {
+    if (newVal) {
+        processImage();
+    } else {
+        if (processedUrl.value) URL.revokeObjectURL(processedUrl.value);
+        processedUrl.value = undefined;
+        processedBlob.value = undefined;
+        processedSizeStr.value = '-';
+        processError.value = undefined;
+    }
+});
 
 function initDimensions(imgWidth: number, imgHeight: number) {
     originalWidth.value = imgWidth;
@@ -223,7 +241,9 @@ function onFileSelected(selected: File) {
             h = 512;
         }
         initDimensions(w, h);
-        processImage();
+        if (!fileIsSvg.value || convertSvgToBitmap.value) {
+            processImage();
+        }
         processThumb();
     };
     img.onerror = () => {
@@ -279,6 +299,7 @@ function reset() {
     width.value = 256;
     height.value = 256;
     quality.value = 0.5;
+    convertSvgToBitmap.value = false;
     processError.value = undefined;
 }
 
@@ -300,8 +321,8 @@ async function upload() {
         showPop('请输入显示名称', 'failed');
         return;
     }
-    const fileIsSvg = isSvg(file.value.name);
-    if (fileIsSvg) {
+    const keepSvgOriginal = fileIsSvg.value && !convertSvgToBitmap.value;
+    if (keepSvgOriginal) {
         if (!thumbBlob.value) {
             showPop('您的设备过旧\n请更换设备重试', 'failed');
             return;
@@ -314,8 +335,10 @@ async function upload() {
     }
     uploading.value = true;
     try {
-        const mainFile = fileIsSvg ? file.value : processedBlob.value!;
-        const mainFileName = fileIsSvg ? file.value.name : 'processed.webp';
+        const mainFile = keepSvgOriginal ? file.value : processedBlob.value!;
+        const mainFileName = keepSvgOriginal
+            ? file.value.name
+            : 'processed.webp';
         const thumb = thumbBlob.value!;
         const res = await api.userFile.upload(
             { data: mainFile, fileName: mainFileName },
@@ -397,59 +420,70 @@ defineExpose({ open, close });
             </div>
 
             <div v-if="file" class="controls">
-                <div class="dimensionRow">
-                    <div class="controlRow">
-                        <label>宽</label>
-                        <input
-                            :value="width"
-                            type="number"
-                            :min="8"
-                            :max="originalWidth || undefined"
-                            @change="onWidthChange"
-                        />
-                    </div>
-                    <div class="controlRow">
-                        <label>高</label>
-                        <input
-                            :value="height"
-                            type="number"
-                            :min="8"
-                            :max="originalHeight || undefined"
-                            @change="onHeightChange"
-                        />
-                    </div>
+                <div v-if="fileIsSvg" class="controlRow svgConvertRow">
+                    <label>转换为位图</label>
+                    <input v-model="convertSvgToBitmap" type="checkbox" />
                 </div>
-                <div class="ratioHint">已锁定长宽比</div>
-                <div class="controlRow qualityRow">
-                    <label>质量</label>
-                    <input
-                        v-model.number="quality"
-                        type="range"
-                        min="0.01"
-                        max="1"
-                        step="0.01"
-                    />
-                    <span class="qualityValue">{{ Math.round(quality * 100) }}%</span>
-                </div>
+                <template v-if="!fileIsSvg || convertSvgToBitmap">
+                    <div class="dimensionRow">
+                        <div class="controlRow">
+                            <label>宽</label>
+                            <input
+                                :value="width"
+                                type="number"
+                                :min="8"
+                                :max="originalWidth || undefined"
+                                @change="onWidthChange"
+                            />
+                        </div>
+                        <div class="controlRow">
+                            <label>高</label>
+                            <input
+                                :value="height"
+                                type="number"
+                                :min="8"
+                                :max="originalHeight || undefined"
+                                @change="onHeightChange"
+                            />
+                        </div>
+                    </div>
+                    <div class="ratioHint">已锁定长宽比</div>
+                    <div class="controlRow qualityRow">
+                        <label>质量</label>
+                        <input
+                            v-model.number="quality"
+                            type="range"
+                            min="0.01"
+                            max="1"
+                            step="0.01"
+                        />
+                        <span class="qualityValue">{{ Math.round(quality * 100) }}%</span>
+                    </div>
+                </template>
             </div>
 
             <div v-if="processError" class="error">{{ processError }}</div>
 
             <div v-if="file" class="previews">
                 <div class="previewBlock">
-                    <div class="previewTitle">
+                    <div v-if="!fileIsSvg || convertSvgToBitmap" class="previewTitle">
                         处理后（点击预览）
                         <span v-if="processing" class="processing">处理中…</span>
                     </div>
-                    <img
-                        v-if="processedUrl"
-                        class="processed-preview"
-                        :src="processedUrl"
-                        alt="处理后预览"
-                        title="点击在新标签页打开"
-                        @click="openProcessedInNewTab"
-                    />
-                    <div class="processedSize">大小：{{ processedSizeStr }}</div>
+                    <template v-if="fileIsSvg && !convertSvgToBitmap">
+                        <div class="svgKeepHint">svg将保持原样上传 ({{ originalSizeStr }})</div>
+                    </template>
+                    <template v-else>
+                        <img
+                            v-if="processedUrl"
+                            class="processed-preview"
+                            :src="processedUrl"
+                            alt="处理后预览"
+                            title="点击在新标签页打开"
+                            @click="openProcessedInNewTab"
+                        />
+                        <div class="processedSize">大小：{{ processedSizeStr }}</div>
+                    </template>
                 </div>
                 <div class="previewBlock">
                     <div class="previewTitle">
@@ -465,6 +499,13 @@ defineExpose({ open, close });
                     <div class="processedSize">大小：{{ thumbSizeStr }}</div>
                 </div>
             </div>
+
+            <Notice
+                v-if="fileIsSvg && file && file.size > 30 * 1024 && !convertSvgToBitmap"
+                :type="'warn'"
+            >
+                过大的SVG图片可能在使用中造成卡顿，建议勾选“转换为位图”以获得更佳体验
+            </Notice>
 
             <button
                 class="uploadBtn"
@@ -593,6 +634,16 @@ defineExpose({ open, close });
         font-size: 12px;
         color: #999;
     }
+    .svgConvertRow {
+        label {
+            width: 80px;
+        }
+        input[type='checkbox'] {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+        }
+    }
 }
 
 .error {
@@ -626,10 +677,10 @@ defineExpose({ open, close });
             border-radius: 4px;
         }
         img.thumb-preview {
-            width: 128px;
-            height: 128px;
-            max-width: 128px;
-            max-height: 128px;
+            width: 64px;
+            height: 64px;
+            max-width: 64px;
+            max-height: 64px;
             object-fit: contain;
             background-color: #eee;
         }
@@ -641,6 +692,12 @@ defineExpose({ open, close });
             font-size: 12px;
             color: #666;
             margin-top: 6px;
+        }
+        .svgKeepHint {
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+            padding: 20px 0;
         }
     }
 }
