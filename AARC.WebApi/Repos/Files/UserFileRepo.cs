@@ -1,5 +1,6 @@
 ﻿using AARC.WebApi.Models.Db.Context;
 using AARC.WebApi.Models.Db.Context.Specific;
+using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Files;
 using AARC.WebApi.Models.DbModels.Saves;
 using AARC.WebApi.Services.App.HttpAuthInfo;
@@ -21,7 +22,12 @@ namespace AARC.WebApi.Repos.Files
         private const int fileSizeLimitMBOfSvg = 1;
         private readonly static string[] extAllowed 
             = [".png", ".jpg", ".jpeg", ".svg", ".webp"];
-        public void Add(IFormFile? f, string? displayName, string? intro)
+        public void Add(
+            IFormFile? f,
+            IFormFile? thumb,
+            string? displayName,
+            string? intro,
+            UserFileType type = UserFileType.Icon)
         {
             if (f is null)
                 throw new RqEx("上传失败");
@@ -40,14 +46,18 @@ namespace AARC.WebApi.Repos.Files
                 if (f.Length > fileSizeLimitMBOfSvg * 1024 * 1024)
                     throw new RqEx($"svg文件不能大于 {fileSizeLimitMBOfSvg}MB");
             }
-            userFileService.Write(f.OpenReadStream(), fileName, out var storeName, out int size);
+            userFileService.Write(
+                f.OpenReadStream(), fileName,
+                thumb?.OpenReadStream(),
+                out var storeName, out int size);
             UserFile userFile = new()
             {
                 DisplayName = displayName ?? Path.GetRandomFileName(),
                 StoreName = storeName,
                 Intro = intro,
                 OwnerUserId = uid,
-                Size = size
+                Size = size,
+                Type = type
             };
             Add(userFile);
         }

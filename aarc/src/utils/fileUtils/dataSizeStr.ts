@@ -1,12 +1,18 @@
-const _1k = 1000
-const _1m = _1k*1000
-const _1g = _1m*1000
-export function dataSizeStr(bytes:number){
-    if(bytes<_1k)
-        return bytes+"B";
-    if(bytes<_1m)
-        return (bytes/_1k).toFixed(1)+"K";
-    if(bytes<_1g) 
-        return (bytes/(_1m)).toFixed(1)+"M"
-    return (bytes/(_1g)).toFixed(2)+"G"
+const units = ['B', 'K', 'M', 'G', 'T'] as const;
+const base = 1024;
+
+export function dataSizeStr(bytes: number): string {
+    if (!Number.isFinite(bytes) || bytes < 0) {
+        return '-';
+    }
+    if (bytes === 0) {
+        return '0B';
+    }
+    const exp = Math.min(
+        Math.floor(Math.log(bytes) / Math.log(base)),
+        units.length - 1
+    );
+    const value = bytes / Math.pow(base, exp);
+    const digits = value < 10 && !Number.isInteger(value) ? 1 : 0;
+    return value.toFixed(digits) + units[exp];
 }

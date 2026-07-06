@@ -4,6 +4,7 @@ import { UserFileDto } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import Loading from '@/components/common/Loading.vue';
 import SideBar from '@/components/common/SideBar.vue';
+import FileUpload from '@/components/common/FileUpload.vue';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import linkIcon from '@/assets/ui/chain.svg';
 import settingsIcon from '@/assets/ui/gear.svg';
@@ -87,13 +88,6 @@ const isCreating = ref(false)
 const editingId = ref(0)
 const editingName = ref('')
 const editingIntro = ref('')
-const editingFile = ref<File>()
-function handleFileChange(e: Event){
-    const input = e?.target as HTMLInputElement|undefined
-    if(input?.files && input.files.length > 0){
-        editingFile.value = input.files[0]
-    }
-}
 
 function startCreating(){
     resetEditing()
@@ -110,23 +104,10 @@ function startEditing(dto: UserFileDto){
 }
 
 async function done(){
-    let res: boolean|undefined
-    if(isCreating.value){
-        if(!editingFile.value){
-            showPop('请选择文件', 'failed')
-            return
-        }
-        res = await api.userFile.upload({
-            fileName: editingFile.value.name, data: editingFile.value
-        }, editingName.value, editingIntro.value)
-    }
-    else
-    {
-        res = await api.userFile.edit(editingId.value, editingName.value, editingIntro.value)
-    }
+    const res = await api.userFile.edit(editingId.value, editingName.value, editingIntro.value)
     if(res){
         resetEditing()
-        showPop('上传成功', 'success')
+        showPop('保存成功', 'success')
         sidebar.value?.fold()
         await loadFileList(true)
     }
@@ -135,7 +116,10 @@ function resetEditing(){
     editingId.value = 0
     editingName.value = ''
     editingIntro.value = ''
-    editingFile.value = undefined
+}
+
+function onSidebarFold(){
+    loadFileList(true)
 }
 
 function copyImageLink(file: UserFileDto) {
@@ -243,45 +227,45 @@ onMounted(async() => {
             </p>
         </div>
     </div>
-    <SideBar ref="sidebar">
-        <h1>{{ isCreating? '上传资源' : '编辑资源' }}</h1>
-        <table class="fullWidth"><tbody>
-            <tr>
-                <td>名称</td>
-                <td>
-                    <input v-model="editingName" />
-                </td>
-            </tr>
-            <tr>
-                <td>简介</td>
-                <td>
-                    <input v-model="editingIntro" />
-                </td>
-            </tr>
-            <tr v-if="isCreating">
-                <td colspan="2">
-                    <input type="file" @change="handleFileChange" accept="png, jpg, jpeg, svg, webp" placeholder="选择文件"/>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <button @click="done">确认</button>
-                </td>
-            </tr>
-        </tbody></table>
-        <Notice v-if="isCreating" :title="'用法'" type="info">
-            <div class="create-notice">
-                <p>完成创建后，点击链接图标复制图片链接，然后在编辑器设置中粘贴使用。</p>
-                <p>更方便的使用方式敬请期待更新。</p>
-                <p>如果图片过大，请使用 <a href="https://imageresizer.com/">https://imageresizer.com</a> 缩小你的图片到限制以下。</p>
+    <SideBar ref="sidebar" @fold="onSidebarFold">
+        <template v-if="isCreating">
+            <h1>上传资源</h1>
+            <FileUpload />
+            <Notice :title="'用法'" type="info">
+                <div class="create-notice">
+                    <p>完成创建后，点击链接图标复制图片链接，然后在编辑器设置中粘贴使用。</p>
+                    <p>更方便的使用方式敬请期待更新。</p>
+                </div>
+            </Notice>
+            <Notice :title="'名称建议'" type="info">
+                建议使用“A-B”格式的名称，中间用连字符隔开，A表示分类名，这样可以让资源更便于筛选和使用
+            </Notice>
+        </template>
+        <template v-else>
+            <h1>编辑资源</h1>
+            <table class="fullWidth"><tbody>
+                <tr>
+                    <td>名称</td>
+                    <td>
+                        <input v-model="editingName" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>简介</td>
+                    <td>
+                        <input v-model="editingIntro" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button @click="done">确认</button>
+                    </td>
+                </tr>
+            </tbody></table>
+            <div class="delete-btn-container">
+                <button @click="deleteFile(editingId)" class="minor">删除资源</button>
             </div>
-        </Notice>
-        <Notice v-if="isCreating" :title="'名称建议'" type="info">
-            建议使用“A-B”格式的名称，中间用连字符隔开，A表示分类名，这样可以让资源更便于筛选和使用
-        </Notice>
-        <div v-if="!isCreating" class="delete-btn-container">
-            <button @click="deleteFile(editingId)" class="minor">删除资源</button>
-        </div>
+        </template>
     </SideBar>
 </template>
 

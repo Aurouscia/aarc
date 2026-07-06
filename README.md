@@ -125,10 +125,6 @@ http://aarc.jowei19.com
 详情请访问 https://automapper.io 并检查其中“免费使用”的条件  
 - 可：在上述链接获取许可证key并填入配置文件的`AutoMapper:LicenseKey`处  
 - 或：确认自己满足“免费使用”条件并自行承担法律风险
-### ImageSharp
-本项目的依赖项`ImageSharp`属于`Six Labors`，使用Six Labors Split License许可证  
-详情请访问 https://sixlabors.com/products/imagesharp 并检查其中“免费使用”的条件
-
 ## 帮助
 **部署/开发遇到问题，请加qq群 798877093 联系作者**  
 **使用遇到问题，请加qq群 1083848751 联系作者或其他用户**

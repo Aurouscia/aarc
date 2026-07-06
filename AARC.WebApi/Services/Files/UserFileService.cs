@@ -1,5 +1,4 @@
 ﻿using AARC.WebApi.Utils;
-using AARC.WebApi.Utils.ImageProcessing;
 using Microsoft.Extensions.FileProviders;
 
 namespace AARC.WebApi.Services.Files
@@ -17,15 +16,18 @@ namespace AARC.WebApi.Services.Files
         public const string userFileAccessPath = "/userfile";
         public const string userFileThumbAccessPath = "/userfile/thumb";
         public const string userFileThumbNameSuffix = "_tb";
-        public readonly string[] userFileNoThumbExt = [".svg"];
+        public const string thumbFileExt = ".webp";
+        public readonly string[] userFileNoThumbExt = []; // 所有类型都支持前端上传缩略图
         /// <summary>
-        /// 按约定路径保存文件，按需生成thumb
+        /// 按约定路径保存文件，可选同时保存前端生成的thumb
         /// </summary>
-        /// <param name="s">文件流（不需要可seek）</param>
+        /// <param name="originalStream">原文件流（不需要可seek）</param>
         /// <param name="originalName">原名称（用来判断后缀名）</param>
+        /// <param name="thumbStream">前端生成的缩略图流，应为 webp 格式；svg 请传 null</param>
         /// <returns>保存后的名称</returns>
         public void Write(
-            Stream s, string originalName,
+            Stream originalStream, string originalName,
+            Stream? thumbStream,
             out string storeName, out int size)
         {
             var ext = Path.GetExtension(originalName)?.ToLower();
@@ -34,14 +36,13 @@ namespace AARC.WebApi.Services.Files
             DirectoryInfo baseDir = GetBaseDir();
             string tempPath = Path.Combine(baseDir.FullName, Path.GetRandomFileName());
             FileStream? tempS = null;
-            MemoryStream? thumbS = new();
             try
             {
                 // 将上传的文件写入临时文件，并计算其md5值
                 tempS = File.Open(tempPath, FileMode.Create);
-                s.CopyTo(tempS);
+                originalStream.CopyTo(tempS);
                 tempS.Flush();
-                s.Close();
+                originalStream.Close();
                 tempS.Seek(0, SeekOrigin.Begin);
                 var md5 = tempS.GetMD5();
 
@@ -49,25 +50,18 @@ namespace AARC.WebApi.Services.Files
                 string finalDir = GetTargetSubdir(md5).FullName;
                 string finalPath = Path.Combine(finalDir, finalName);
 
-                // 按需生成略缩图（thumb）文件
-                if (!userFileNoThumbExt.Contains(ext))
+                // 保存前端上传的缩略图（如果有）
+                if (thumbStream is not null && !userFileNoThumbExt.Contains(ext))
                 {
                     string thumbName = GetThumbName(finalName);
                     string thumbPath = Path.Combine(finalDir, thumbName);
                     if (!File.Exists(thumbPath))
                     {
-                        tempS.Seek(0, SeekOrigin.Begin);
-                        bool needThumb = ImageThumbHelper.Thumb(tempS, thumbS);
-                        if (needThumb)
-                        {
-                            var thumbFs = File.Create(thumbPath);
-                            thumbS.Seek(0, SeekOrigin.Begin);
-                            thumbS.CopyTo(thumbFs);
-                            thumbFs.Flush();
-                            thumbFs.Close();
-                        }
-                        thumbS.Close();
+                        using var thumbFs = File.Create(thumbPath);
+                        thumbStream.CopyTo(thumbFs);
+                        thumbFs.Flush();
                     }
+                    thumbStream.Close();
                 }
                 tempS.Close();
 
@@ -85,8 +79,6 @@ namespace AARC.WebApi.Services.Files
             {
                 if (ex.InnerException is OutOfMemoryException)
                     throw new RqEx("服务器内存不足，请联系管理员");
-                if (ex.InnerException is SixLabors.ImageSharp.Memory.InvalidMemoryOperationException)
-                    throw new RqEx("图片过大，请缩小后重试");
                 string msg = ex.Message;
                 if (!msg.Contains("图片"))
                     msg = "图片：" + msg;
@@ -94,9 +86,9 @@ namespace AARC.WebApi.Services.Files
             }
             finally
             {
-                s.Close();
+                originalStream.Close();
                 tempS?.Close();
-                thumbS?.Close();
+                thumbStream?.Close();
                 if (File.Exists(tempPath))
                     File.Delete(tempPath);
             }
@@ -153,7 +145,7 @@ namespace AARC.WebApi.Services.Files
         {
             string nameNoExt = Path.GetFileNameWithoutExtension(originalName);
             string thumbName = nameNoExt + userFileThumbNameSuffix;
-            thumbName = Path.ChangeExtension(thumbName, ImageThumbHelper.thumbFileExt);
+            thumbName = Path.ChangeExtension(thumbName, thumbFileExt);
             return thumbName;
         }
     }

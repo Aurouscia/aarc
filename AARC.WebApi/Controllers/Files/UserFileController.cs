@@ -18,10 +18,12 @@ namespace AARC.WebApi.Controllers.Files
         [UserCheck(UserType.Member)]
         public bool Upload(
             IFormFile? userFile,
+            IFormFile? userFileThumb,
             [FromForm]string? displayName,
-            [FromForm]string? intro)
+            [FromForm]string? intro,
+            [FromForm]UserFileType type = UserFileType.Icon)
         {
-            userFileRepo.Add(userFile, displayName, intro);
+            userFileRepo.Add(userFile, userFileThumb, displayName, intro, type);
             return true;
         }
 
