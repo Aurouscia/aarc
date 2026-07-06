@@ -9,7 +9,6 @@ import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import linkIcon from '@/assets/ui/chain.svg';
 import settingsIcon from '@/assets/ui/gear.svg';
 import copy from 'copy-to-clipboard';
-import Notice from '@/components/common/Notice.vue';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { isSvg } from '@/utils/fileUtils/ext';
 import { useUserFileListLocalConfigStore } from '@/app/localConfig/userFileListLocalConfig';
@@ -83,42 +82,35 @@ watch(search, (newVal, oldVal) => {
     }
 })
 
-const sidebar = useTemplateRef('sidebar')
-const isCreating = ref(false)
+const editSidebar = useTemplateRef('editSidebar')
+const uploadSidebar = useTemplateRef('uploadSidebar')
 const editingId = ref(0)
 const editingName = ref('')
 const editingIntro = ref('')
 
 function startCreating(){
-    resetEditing()
-    isCreating.value = true
-    sidebar.value?.extend()
+    uploadSidebar.value?.open()
 }
 function startEditing(dto: UserFileDto){
-    resetEditing()
-    isCreating.value = false
     editingId.value = dto.id || 0
     editingName.value = dto.displayName || ''
     editingIntro.value = dto.intro || ''
-    sidebar.value?.extend()
+    editSidebar.value?.extend()
 }
 
 async function done(){
     const res = await api.userFile.edit(editingId.value, editingName.value, editingIntro.value)
     if(res){
-        resetEditing()
+        editingId.value = 0
+        editingName.value = ''
+        editingIntro.value = ''
         showPop('保存成功', 'success')
-        sidebar.value?.fold()
+        editSidebar.value?.fold()
         await loadFileList(true)
     }
 }
-function resetEditing(){
-    editingId.value = 0
-    editingName.value = ''
-    editingIntro.value = ''
-}
 
-function onSidebarFold(){
+function onUploadSuccess(){
     loadFileList(true)
 }
 
@@ -143,7 +135,7 @@ function deleteFile(fileId:number){
     api.userFile.delete(fileId).then((res)=>{
         if(res){
             showPop('删除成功','success')
-            sidebar.value?.fold()
+            editSidebar.value?.fold()
             loadFileList(true)
         }
     })
@@ -227,45 +219,31 @@ onMounted(async() => {
             </p>
         </div>
     </div>
-    <SideBar ref="sidebar" @fold="onSidebarFold">
-        <template v-if="isCreating">
-            <h1>上传资源</h1>
-            <FileUpload />
-            <Notice :title="'用法'" type="info">
-                <div class="create-notice">
-                    <p>完成创建后，点击链接图标复制图片链接，然后在编辑器设置中粘贴使用。</p>
-                    <p>更方便的使用方式敬请期待更新。</p>
-                </div>
-            </Notice>
-            <Notice :title="'名称建议'" type="info">
-                建议使用“A-B”格式的名称，中间用连字符隔开，A表示分类名，这样可以让资源更便于筛选和使用
-            </Notice>
-        </template>
-        <template v-else>
-            <h1>编辑资源</h1>
-            <table class="fullWidth"><tbody>
-                <tr>
-                    <td>名称</td>
-                    <td>
-                        <input v-model="editingName" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>简介</td>
-                    <td>
-                        <input v-model="editingIntro" />
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <button @click="done">确认</button>
-                    </td>
-                </tr>
-            </tbody></table>
-            <div class="delete-btn-container">
-                <button @click="deleteFile(editingId)" class="minor">删除资源</button>
-            </div>
-        </template>
+    <FileUpload ref="uploadSidebar" :on-success="onUploadSuccess" />
+    <SideBar ref="editSidebar">
+        <h1>编辑资源</h1>
+        <table class="fullWidth"><tbody>
+            <tr>
+                <td>名称</td>
+                <td>
+                    <input v-model="editingName" />
+                </td>
+            </tr>
+            <tr>
+                <td>简介</td>
+                <td>
+                    <input v-model="editingIntro" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button @click="done">确认</button>
+                </td>
+            </tr>
+        </tbody></table>
+        <div class="delete-btn-container">
+            <button @click="deleteFile(editingId)" class="minor">删除资源</button>
+        </div>
     </SideBar>
 </template>
 

@@ -6,10 +6,16 @@ import { debounce } from '@/utils/lang/debounce';
 import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { UserFileType } from '@/app/com/apiGenerated';
+import SideBar from './SideBar.vue';
+
+const props = defineProps<{
+    onSuccess?: () => void;
+}>();
 
 const api = useApiStore();
 const { showPop } = useUniqueComponentsStore();
 
+const sidebarRef = ref<InstanceType<typeof SideBar>>();
 const file = ref<File>();
 const displayName = ref('');
 const isDragging = ref(false);
@@ -206,6 +212,15 @@ function reset() {
     processError.value = undefined;
 }
 
+function open() {
+    reset();
+    sidebarRef.value?.extend();
+}
+
+function close() {
+    sidebarRef.value?.fold();
+}
+
 async function upload() {
     if (!file.value) {
         showPop('请先选择文件', 'failed');
@@ -227,7 +242,9 @@ async function upload() {
         );
         if (res) {
             showPop('上传成功', 'success');
+            close();
             reset();
+            props.onSuccess?.();
         } else {
             showPop('上传失败', 'failed');
         }
@@ -247,119 +264,124 @@ onUnmounted(() => {
     if (processedUrl.value) URL.revokeObjectURL(processedUrl.value);
     if (thumbUrl.value) URL.revokeObjectURL(thumbUrl.value);
 });
+
+defineExpose({ open });
 </script>
 
 <template>
-    <div class="fileUpload">
-        <div
-            class="dropZone"
-            :class="{ dragging: isDragging }"
-            @click="openFileInput"
-            @drop="handleDrop"
-            @dragover="handleDragOver"
-            @dragleave="handleDragLeave"
-        >
-            <input
-                id="fileUploadInput"
-                type="file"
-                accept="image/png, image/jpeg, image/webp, image/svg+xml"
-                @change="handleFileChange"
-            />
-            <div class="dropZoneText">
-                <span>点击或拖动文件到此处</span>
-            </div>
-        </div>
-
-        <div v-if="file" class="fileInfo">
-            <div class="infoRow">
-                <span class="label">文件：</span>
-                <span class="value fileName" :title="file.name">{{ file.name }}</span>
-            </div>
-            <div class="infoRow">
-                <span class="label">原图大小：</span>
-                <span class="value">{{ originalSizeStr }}</span>
-            </div>
-        </div>
-
-        <div class="inputRow">
-            <label>显示名称</label>
-            <input v-model="displayName" placeholder="输入显示名称" />
-        </div>
-
-        <div v-if="file" class="controls">
-            <div class="dimensionRow">
-                <div class="controlRow">
-                    <label>宽</label>
-                    <input
-                        v-model.number="width"
-                        type="number"
-                        min="1"
-                    />
-                </div>
-                <div class="controlRow">
-                    <label>高</label>
-                    <input
-                        v-model.number="height"
-                        type="number"
-                        min="1"
-                    />
-                </div>
-            </div>
-            <div class="ratioHint">已锁定长宽比</div>
-            <div class="controlRow qualityRow">
-                <label>质量</label>
+    <SideBar ref="sidebarRef">
+        <div class="fileUpload">
+            <h1>上传资源</h1>
+            <div
+                class="dropZone"
+                :class="{ dragging: isDragging }"
+                @click="openFileInput"
+                @drop="handleDrop"
+                @dragover="handleDragOver"
+                @dragleave="handleDragLeave"
+            >
                 <input
-                    v-model.number="quality"
-                    type="range"
-                    min="0.01"
-                    max="1"
-                    step="0.01"
+                    id="fileUploadInput"
+                    type="file"
+                    accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                    @change="handleFileChange"
                 />
-                <span class="qualityValue">{{ Math.round(quality * 100) }}%</span>
-            </div>
-        </div>
-
-        <div v-if="processError" class="error">{{ processError }}</div>
-
-        <div v-if="file" class="previews">
-            <div class="previewBlock">
-                <div class="previewTitle">原图</div>
-                <img v-if="originalUrl" :src="originalUrl" alt="原图预览" />
-            </div>
-            <div class="previewBlock">
-                <div class="previewTitle">
-                    处理后
-                    <span v-if="processing" class="processing">处理中…</span>
+                <div class="dropZoneText">
+                    <span>点击或拖动文件到此处</span>
                 </div>
-                <img
-                    v-if="processedUrl"
-                    :src="processedUrl"
-                    alt="处理后预览"
-                />
-                <div class="processedSize">大小：{{ processedSizeStr }}</div>
             </div>
-            <div class="previewBlock">
-                <div class="previewTitle">
-                    缩略图（长边 256px）
-                    <span v-if="thumbProcessing" class="processing">处理中…</span>
-                </div>
-                <img
-                    v-if="thumbUrl"
-                    :src="thumbUrl"
-                    alt="缩略图预览"
-                />
-                <div class="processedSize">大小：{{ thumbSizeStr }}</div>
-            </div>
-        </div>
 
-        <button
-            class="uploadBtn"
-            :disabled="uploading || !file"
-            @click="upload"
-        >
-            {{ uploading ? '上传中…' : '上传' }}
-        </button>
-    </div>
+            <div v-if="file" class="fileInfo">
+                <div class="infoRow">
+                    <span class="label">文件：</span>
+                    <span class="value fileName" :title="file.name">{{ file.name }}</span>
+                </div>
+                <div class="infoRow">
+                    <span class="label">原图大小：</span>
+                    <span class="value">{{ originalSizeStr }}</span>
+                </div>
+            </div>
+
+            <div class="inputRow">
+                <label>显示名称</label>
+                <input v-model="displayName" placeholder="输入显示名称" />
+            </div>
+
+            <div v-if="file" class="controls">
+                <div class="dimensionRow">
+                    <div class="controlRow">
+                        <label>宽</label>
+                        <input
+                            v-model.number="width"
+                            type="number"
+                            min="1"
+                        />
+                    </div>
+                    <div class="controlRow">
+                        <label>高</label>
+                        <input
+                            v-model.number="height"
+                            type="number"
+                            min="1"
+                        />
+                    </div>
+                </div>
+                <div class="ratioHint">已锁定长宽比</div>
+                <div class="controlRow qualityRow">
+                    <label>质量</label>
+                    <input
+                        v-model.number="quality"
+                        type="range"
+                        min="0.01"
+                        max="1"
+                        step="0.01"
+                    />
+                    <span class="qualityValue">{{ Math.round(quality * 100) }}%</span>
+                </div>
+            </div>
+
+            <div v-if="processError" class="error">{{ processError }}</div>
+
+            <div v-if="file" class="previews">
+                <div class="previewBlock">
+                    <div class="previewTitle">原图</div>
+                    <img v-if="originalUrl" :src="originalUrl" alt="原图预览" />
+                </div>
+                <div class="previewBlock">
+                    <div class="previewTitle">
+                        处理后
+                        <span v-if="processing" class="processing">处理中…</span>
+                    </div>
+                    <img
+                        v-if="processedUrl"
+                        :src="processedUrl"
+                        alt="处理后预览"
+                    />
+                    <div class="processedSize">大小：{{ processedSizeStr }}</div>
+                </div>
+                <div class="previewBlock">
+                    <div class="previewTitle">
+                        缩略图（长边 256px）
+                        <span v-if="thumbProcessing" class="processing">处理中…</span>
+                    </div>
+                    <img
+                        v-if="thumbUrl"
+                        :src="thumbUrl"
+                        alt="缩略图预览"
+                    />
+                    <div class="processedSize">大小：{{ thumbSizeStr }}</div>
+                </div>
+            </div>
+
+            <button
+                class="uploadBtn"
+                :disabled="uploading || !file"
+                @click="upload"
+            >
+                {{ uploading ? '上传中…' : '上传' }}
+            </button>
+        </div>
+    </SideBar>
 </template>
 
 <style scoped lang="scss">
@@ -522,5 +544,15 @@ onUnmounted(() => {
 .uploadBtn {
     width: 100%;
     margin: 0;
+}
+
+h1 {
+    text-align: center;
+    padding: 0px 0px 4px;
+    margin: 6px 0px 4px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    border-bottom: none;
 }
 </style>
