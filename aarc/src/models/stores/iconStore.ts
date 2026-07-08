@@ -4,6 +4,8 @@ import { computed, ref } from "vue";
 import { TextTagIcon } from "../save";
 import { convertToProxyUrlIfNeeded } from "@/utils/urlUtils/proxyUrl";
 import { checkUrlIsImage } from "@/utils/urlUtils/checkUrl";
+import { useUserFileFavoriteStore } from "./utils/userFileFavoriteStore";
+import { UserFileDto } from "@/app/com/apiGenerated";
 
 export interface TextTagIconData{
     img?:HTMLImageElement
@@ -19,7 +21,8 @@ export interface TextTagIconDisplayItem{
 
 const maxLoadWaitMs = 8000
 export const useIconStore = defineStore('iconStore', ()=>{
-    const { save } = storeToRefs(useSaveStore())
+    const saveStore = useSaveStore()
+    const { save } = storeToRefs(saveStore)
     const data = ref(new Map<number, TextTagIconData>())
     async function ensureAllLoaded():Promise<number[]>{
         const proms:Promise<void>[] = []
@@ -158,6 +161,35 @@ export const useIconStore = defineStore('iconStore', ()=>{
             return
         const prefix = getPrefixFromIconName(icon.name)
         prefixSelected.value = prefix ?? noPrefix
+    }
+
+    const { onFavoriteFileSelected } = storeToRefs(useUserFileFavoriteStore())
+    onFavoriteFileSelected.value = async (userFile:UserFileDto)=>{
+        if(!save.value) return
+        const name = userFile.displayName
+        if(!name) return
+        const url = userFile.urlOriginal
+        if(!url) return
+        const absoluteUrl = url.startsWith('/') ? window.location.origin + url : url
+        save.value.textTagIcons ??= []
+        const existing = save.value.textTagIcons.find(x=>x.name === name)
+        let iconId:number
+        if(existing){
+            if(!window.confirm(`已存在${name}确认要覆盖吗？`))
+                return
+            existing.url = absoluteUrl
+            iconId = existing.id
+        }else{
+            iconId = saveStore.getNewId()
+            save.value.textTagIcons.push({
+                id: iconId,
+                name,
+                url: absoluteUrl,
+                width: 50
+            })
+        }
+        await ensureAllLoaded()
+        enforcePrefixSelectedTo(iconId)
     }
 
     return {

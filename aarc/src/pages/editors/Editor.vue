@@ -25,6 +25,7 @@ import { DocumentHiddenLongWatcher } from '@/utils/eventUtils/documentHiddenLong
 import HiddenLongWarnPrompt from './components/HiddenLongWarnPrompt.vue';
 import WarnRulePrompts from './components/WarnRulePrompts.vue';
 import ChatRoom from '@/pages/chat/ChatRoom.vue';
+import UserFileFavorites from '@/components/common/userFile/UserFileFavorites.vue';
 import { useTemplateRef } from 'vue';
 import { useIconStore } from '@/models/stores/iconStore';
 import { autoUpdateDataSources } from '@/models/save/dataSourceOps';
@@ -407,6 +408,7 @@ onBeforeUnmount(()=>{
     <div v-if="loadComplete && !isNaN(saveIdNum)" class="chatRoomWrap">
         <ChatRoom ref="chatRoom" :saveId="saveIdNum" :enabled="chatEnabled" :isOwner="chatCanEnable" :viewOnly="viewOnly" @enable="enableChat" @disable="disableChat" @kicked="onKicked" />
     </div>
+    <UserFileFavorites ref="userFileFavorites" />
 </template>
 
 <style scoped lang="scss">

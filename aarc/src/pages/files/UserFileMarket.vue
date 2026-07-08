@@ -19,15 +19,22 @@ async function loadRecommend() {
 }
 
 async function doSearch() {
-    hasSearched.value = true
     if (!searchStr.value.trim()) {
+        hasSearched.value = false
         searchResults.value = []
         return
     }
+    hasSearched.value = true
     const res = await api.userFile.search(searchStr.value, 'time', 0, 50)
     if (res) {
         searchResults.value = res
     }
+}
+
+function clearSearch() {
+    searchStr.value = ''
+    hasSearched.value = false
+    searchResults.value = []
 }
 
 onMounted(() => {
@@ -38,7 +45,8 @@ onMounted(() => {
 <template>
     <h1 class="h1WithBtns">
         资源广场
-        <div>
+        <div class="search-control">
+            <button v-show="searchStr" class="lite" @click="clearSearch">清空搜索</button>
             <input v-model="searchStr" @blur="doSearch" @keyup.enter="doSearch" placeholder="搜索资源名"/>
         </div>
     </h1>
@@ -58,6 +66,7 @@ onMounted(() => {
             :allow-edit="false"
         />
     </div>
+    <div class="usage-hint">此处会显示作者公开的资源，收藏后，你可以在编辑器内的“文本标签图标”处添加它们，并通过标签插入指定图片到画布中</div>
 </template>
 
 <style scoped lang="scss">
@@ -66,5 +75,19 @@ onMounted(() => {
         font-size: 18px;
         margin: 10px 0;
     }
+}
+.search-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    input {
+        width: 120px;
+        margin: 0;
+    }
+}
+.usage-hint{
+    color: #999;
+    text-align: center;
+    margin: 20px;
 }
 </style>

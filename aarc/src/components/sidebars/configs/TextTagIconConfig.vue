@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue';
-import { storeToRefs } from 'pinia';
+
 import ConfigSection from './shared/ConfigSection.vue';
 import { useIconStore } from '@/models/stores/iconStore';
 import { useMainCvsDispatcher } from '@/models/cvs/dispatchers/mainCvsDispatcher';
 import { TextTagIcon } from '@/models/save';
 import { useSaveStore } from '@/models/stores/saveStore';
+import { useUserFileFavoriteStore } from '@/models/stores/utils/userFileFavoriteStore';
+import { storeToRefs } from 'pinia';
 
 const saveStore = useSaveStore()
 const iconStore = useIconStore()
+const { openFavoritesSidebar } = storeToRefs(useUserFileFavoriteStore())
 const mainCvs = useMainCvsDispatcher()
 const rr = ()=>mainCvs.renderMainCvs({})
 const { ensureAllLoaded, ensurePrefixSelectedValid, enforcePrefixSelectedTo } = iconStore
@@ -60,6 +63,7 @@ onMounted(async()=>{
 <template>
 <ConfigSection :title="'文本标签图标'">
     <div v-if="ok" class="ttIconConfig">
+        <button class="add-from-favorites" @click="openFavoritesSidebar()">添加资源</button>
         <div class="ttIconPrefixSelect">
             图标组
             <select v-model="prefixSelected">
@@ -110,6 +114,9 @@ onMounted(async()=>{
     display: flex;
     flex-direction: column;
     align-items: stretch;
+}
+.add-from-favorites{
+    margin: 10px auto;
 }
 .ttIconPrefixSelect{
     background-color: cornflowerblue;

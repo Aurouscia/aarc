@@ -15,6 +15,7 @@ namespace AARC.WebApi.Controllers.Files
     [RateLimit(20, 60)]
     public class UserFavoriteController(
         UserFavoriteRepo userFavoriteRepo,
+        UserFileRepo userFileRepo,
         SaveRepo saveRepo,
         SaveDtoEnrichService saveDtoEnrichService
         ) : Controller
@@ -108,6 +109,20 @@ namespace AARC.WebApi.Controllers.Files
         {
             userFavoriteRepo.DeleteGroup(type, groupName);
             return true;
+        }
+
+        [HttpGet]
+        [UserCheck]
+        public List<UserFileDto> GetUserFiles(
+            UserFavoriteType type,
+            string? search = null,
+            int skip = 0,
+            int take = 30)
+        {
+            if (take > 30)
+                take = 30;
+            var ids = userFavoriteRepo.GetUserFileFavoriteIds(type, search, skip, take);
+            return userFileRepo.GetUserFileDtosByIds(ids);
         }
     }
 

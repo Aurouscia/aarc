@@ -1,4 +1,5 @@
 ﻿using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.Db.Context.Specific;
 using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Files;
 using AARC.WebApi.Services.App.HttpAuthInfo;
@@ -103,6 +104,34 @@ namespace AARC.WebApi.Repos.Files
             if (hasMore)
                 ids.RemoveAt(ids.Count - 1);
             return new UserFavoriteIdPage { Ids = ids, HasMore = hasMore };
+        }
+
+        public List<int> GetUserFileFavoriteIds(UserFavoriteType type, string? search, int skip, int take)
+        {
+            var uid = httpUserIdProvider.RequireUserId();
+            var q = Existing
+                .Where(x =>
+                    x.OwnerUserId == uid
+                    && x.Type == type
+                    && x.ObjectId > 0);
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var userFileQ = Context.UserFiles.Existing();
+                userFileQ = Context is AarcSqliteContext
+                    ? userFileQ.Where(x => x.DisplayName.ToLower().Contains(search.ToLower()))
+                    : userFileQ.Where(x => x.DisplayName.Contains(search));
+                var matchedIds = userFileQ.Select(x => x.Id).ToList();
+                q = q.Where(x => matchedIds.Contains(x.ObjectId));
+            }
+            var ids = q
+                .GroupBy(x => x.ObjectId)
+                .Select(g => new { ObjectId = g.Key, LastActive = g.Max(x => x.LastActive) })
+                .OrderByDescending(x => x.LastActive)
+                .Skip(skip)
+                .Take(take)
+                .Select(x => x.ObjectId)
+                .ToList();
+            return ids;
         }
 
         public bool SetGroups(UserFavoriteType type, int objectId, List<string> groups)
