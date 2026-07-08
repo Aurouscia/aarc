@@ -164,6 +164,9 @@ async function load() {
         }
         if(viewOnly.value){
             preventLeavingDisabled.value = true //浏览模式，不阻止未保存退出
+            if(notOwner){
+                useIconStore().accessBlocked = true //浏览模式且不是所有者：隐藏图标栏目
+            }
         }
         else{
             startHeartbeat()

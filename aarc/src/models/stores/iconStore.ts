@@ -24,6 +24,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
     const saveStore = useSaveStore()
     const { save } = storeToRefs(saveStore)
     const data = ref(new Map<number, TextTagIconData>())
+    const accessBlocked = ref(false)
     async function ensureAllLoaded():Promise<number[]>{
         const proms:Promise<void>[] = []
         const icons = save.value?.textTagIcons ?? []
@@ -200,6 +201,7 @@ export const useIconStore = defineStore('iconStore', ()=>{
         prefixedIcons,
         prefixSelected,
         ensurePrefixSelectedValid,
-        enforcePrefixSelectedTo
+        enforcePrefixSelectedTo,
+        accessBlocked
     }
 })

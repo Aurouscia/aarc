@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AuthGrant, AuthGrantOn, AuthGrantTo, AuthGrantTypeOfSave, UserDtoSimple } from '@/app/com/apiGenerated';
+import { AuthGrant, AuthGrantOn, AuthGrantTo, AuthGrantTypeOfSave, AuthGrantTypeOfUserFile, UserDtoSimple } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import { useNameMapStore } from '@/app/globalStores/nameMap';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
@@ -151,6 +151,10 @@ const isSaveFork = computed(()=>{
     return props.on == AuthGrantOn.Save && props.type == AuthGrantTypeOfSave.Fork
 })
 
+const isUserFileAllow = computed(()=>{
+    return props.on == AuthGrantOn.UserFile && props.type == AuthGrantTypeOfUserFile.View
+})
+
 onMounted(async() => {
     await load()
 })
@@ -221,6 +225,12 @@ onMounted(async() => {
                 <p>允许他人另存：</p>
                 <p>代表你授权他人随意修改你作品的复制版，虽然你可以修改权限设置，但对于已被他人另存的作品，授权无法撤回。</p>
                 <p>请不要尝试“必须保留原作者名”等君子协定，原则上平台不会负责处理有关纠纷。</p>
+            </div>
+        </td>
+        <td colspan="3" v-else-if="isUserFileAllow">
+            <div class="smallNoteVital about">
+                <p>公开资源：</p>
+                <p>代表你同意他人使用你的资源，该许可无法撤回，即使后续移除授权，他人的存档仍能加载你的资源。</p>
             </div>
         </td>
         <td colspan="3" v-else>

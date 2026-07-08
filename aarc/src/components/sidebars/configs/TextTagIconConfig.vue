@@ -15,7 +15,7 @@ const { openFavoritesSidebar } = storeToRefs(useUserFileFavoriteStore())
 const mainCvs = useMainCvsDispatcher()
 const rr = ()=>mainCvs.renderMainCvs({})
 const { ensureAllLoaded, ensurePrefixSelectedValid, enforcePrefixSelectedTo } = iconStore
-const { prefixes, prefixSelected, prefixedIcons } = storeToRefs(iconStore)
+const { prefixes, prefixSelected, prefixedIcons, accessBlocked } = storeToRefs(iconStore)
 
 const hideImgs = ref(false) //使img标签强制重新创建，否则无响应式效果
 const creatingIcon = ref<TextTagIcon>({id:0})
@@ -62,7 +62,10 @@ onMounted(async()=>{
 
 <template>
 <ConfigSection :title="'文本标签图标'">
-    <div v-if="ok" class="ttIconConfig">
+    <div v-if="accessBlocked">
+        抱歉，本栏目仅限编辑者或所有者查看
+    </div>
+    <div v-else-if="ok" class="ttIconConfig">
         <button class="add-from-favorites" @click="openFavoritesSidebar()">添加资源</button>
         <div class="ttIconPrefixSelect">
             图标组
@@ -119,7 +122,7 @@ onMounted(async()=>{
     margin: 10px auto;
 }
 .ttIconPrefixSelect{
-    background-color: cornflowerblue;
+    background-color: #ccc;
     color: white;
     align-self: stretch;
     width: unset;
