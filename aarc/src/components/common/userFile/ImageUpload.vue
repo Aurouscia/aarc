@@ -422,7 +422,7 @@ defineExpose({ open, close });
             </div>
 
             <div class="inputRow">
-                <label>显示名称</label>
+                <label>显示名称:</label>
                 <input v-model="displayName" placeholder="分类名-图片名" />
             </div>
             <Notice
@@ -434,13 +434,13 @@ defineExpose({ open, close });
 
             <div v-if="file" class="controls">
                 <div v-if="fileIsSvg" class="controlRow svgConvertRow">
-                    <label>转换为位图</label>
+                    <label>转换为位图:</label>
                     <input v-model="convertSvgToBitmap" type="checkbox" />
                 </div>
                 <template v-if="!fileIsSvg || convertSvgToBitmap">
                     <div class="dimensionRow">
                         <div class="controlRow">
-                            <label>宽</label>
+                            <label>宽:</label>
                             <input
                                 :value="width"
                                 type="number"
@@ -450,7 +450,7 @@ defineExpose({ open, close });
                             />
                         </div>
                         <div class="controlRow">
-                            <label>高</label>
+                            <label>高:</label>
                             <input
                                 :value="height"
                                 type="number"
@@ -462,7 +462,7 @@ defineExpose({ open, close });
                     </div>
                     <div class="ratioHint">已锁定长宽比</div>
                     <div class="controlRow qualityRow">
-                        <label>质量</label>
+                        <label>质量:</label>
                         <input
                             v-model.number="quality"
                             type="range"
@@ -514,7 +514,7 @@ defineExpose({ open, close });
             </div>
 
             <Notice
-                v-if="fileIsSvg && file && file.size > 30 * 1024 && !convertSvgToBitmap"
+                v-if="fileIsSvg && file && file.size > 100 * 1024 && !convertSvgToBitmap"
                 :type="'warn'"
             >
                 过大的SVG图片可能在使用中造成卡顿，建议勾选“转换为位图”以获得更佳体验

@@ -19,8 +19,8 @@ namespace AARC.WebApi.Repos.Files
         IMapper mapper
         ) : Repo<UserFile>(context)
     {
-        private const int fileSizeLimitMB = 5;
-        private const int fileSizeLimitMBOfSvg = 1;
+        private const int fileSizeLimitMB = 3;
+        private const int fileSizeLimitKBOfSvg = 800;
         private readonly static string[] extAllowed 
             = [".png", ".jpg", ".jpeg", ".svg", ".webp", ".json"];
         public void Add(
@@ -41,11 +41,11 @@ namespace AARC.WebApi.Repos.Files
             if (!extAllowed.Contains(extLower))
                 throw new RqEx("不支持这种后缀名");
             if (f.Length > fileSizeLimitMB * 1024 * 1024)
-                throw new RqEx($"文件不能大于 {fileSizeLimitMB}MB");
+                throw new RqEx($"文件不能大于 {fileSizeLimitMB}MB\n请调低质量或尺寸");
             if (extLower == ".svg")
             {
-                if (f.Length > fileSizeLimitMBOfSvg * 1024 * 1024)
-                    throw new RqEx($"svg文件不能大于 {fileSizeLimitMBOfSvg}MB");
+                if (f.Length > fileSizeLimitKBOfSvg * 1024)
+                    throw new RqEx($"svg文件不能大于 {fileSizeLimitKBOfSvg}KB\n请勾选转换位图");
             }
             userFileService.Write(
                 f.OpenReadStream(), fileName,
