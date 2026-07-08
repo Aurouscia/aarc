@@ -9,6 +9,7 @@ namespace AARC.WebApi.Services.Identities.AuthGrants;
 public class AuthGrantCheckService(
     AarcContext context,
     HttpUserInfoService userInfoService,
+    HttpUserIdProvider userIdProvider,
     AuthGrantOwnerService authGrantOwnerService)
 {
     public void CheckFor(AuthGrantOn on, int onId, byte type, bool defaultAllow)
@@ -35,8 +36,18 @@ public class AuthGrantCheckService(
         var isSaveEditing = 
             on == AuthGrantOn.Save 
             && type == (byte)AuthGrantTypeOfSave.Edit;
+        // 先从 HttpUserIdProvider 安全读取 uid（未登录时为 0）
+        int uid = userIdProvider.UserIdLazy.Value;
+        bool isAdmin = false;
+        bool isMember = false;
+        if (uid > 0)
+        {
+            // 仅对已登录用户读取身份信息，避免未登录时抛出异常
+            isAdmin = userInfoService.IsAdmin;
+            isMember = userInfoService.IsMember;
+        }
+
         // 如果是管理员，且不是“存档编辑”，直接allow所有
-        bool isAdmin = userInfoService.IsAdmin;
         if (isAdmin && !isSaveEditing)
         { 
             return Enumerable.Repeat(AuthGrantCheckResult.Allow, onIds.Count).ToList();
@@ -51,8 +62,6 @@ public class AuthGrantCheckService(
         
         // 准备结果数组，遍历每一个onId
         var res = new List<AuthGrantCheckResult>(onIds.Count);
-        bool isMember = userInfoService.IsMember;
-        int uid = userInfoService.UserInfo.Value.Id;
         for (int i = 0; i < onIds.Count; i++)
         {
             AuthGrantCheckResult result = AuthGrantCheckResult.Default;

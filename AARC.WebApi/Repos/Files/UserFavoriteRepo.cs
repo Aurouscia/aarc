@@ -66,8 +66,8 @@ namespace AARC.WebApi.Repos.Files
 
         public Dictionary<int, int> GetFavoriteIdMap(UserFavoriteType type, List<int> objectIds)
         {
-            var uid = httpUserIdProvider.RequireUserId();
-            if (objectIds.Count == 0)
+            var uid = httpUserIdProvider.UserIdLazy.Value;
+            if (uid <= 0 || objectIds.Count == 0)
                 return [];
             var existingMap = Existing
                 .Where(x =>

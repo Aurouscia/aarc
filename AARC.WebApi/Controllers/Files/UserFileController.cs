@@ -57,5 +57,12 @@ namespace AARC.WebApi.Controllers.Files
         {
             return userFileRepo.GetPrefixes();
         }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public List<UserFileDto> Search(string search, string? orderby = null, int skip = 0, int take = 50)
+        {
+            return userFileRepo.SearchAccessible(search, orderby, skip, take);
+        }
     }
 }

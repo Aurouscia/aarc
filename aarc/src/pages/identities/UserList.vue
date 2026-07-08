@@ -7,7 +7,7 @@ import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { storeToRefs } from 'pinia';
 import { useSavesRoutesJump } from '../saves/routes/routesJump';
 import { useUserListLocalConfigStore } from '@/app/localConfig/userListLocalConfig';
-import { AuthGrantOn, AuthGrantTypeOfSave, UserDto, UserType } from '@/app/com/apiGenerated';
+import { AuthGrantOn, AuthGrantTypeOfSave, AuthGrantTypeOfUserFile, UserDto, UserType } from '@/app/com/apiGenerated';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { WithIntroShow } from '@/utils/type/WithIntroShow';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
@@ -278,7 +278,7 @@ onMounted(async()=>{
 </SideBar>
 <SideBar ref="fileAuthGrantSidebar">
     <h1>资源授权管理</h1>
-    <AuthGrantEdit :on="AuthGrantOn.UserFile" :on-id="0" :type="0"/>
+    <AuthGrantEdit :on="AuthGrantOn.UserFile" :on-id="0" :type="AuthGrantTypeOfUserFile.View"/>
     <div class="smallNote">
         注：这里是全局设置，对所有资源有效，但可以被单个资源的设置覆盖。
     </div>

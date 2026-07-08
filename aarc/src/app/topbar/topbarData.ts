@@ -3,7 +3,7 @@ import { TopbarModel, TopbarModelItem } from "./topbarModel";
 import { aboutName, loginName, userCreditName, userHistoriesName, userListName } from "@/pages/identities/routes/routesNames";
 import { faq } from "@/pages/homes/routes/routesNames";
 import { useCommonLocalConfigStore } from "@/app/localConfig/commonLocalConfig";
-import { userFileList } from "@/pages/files/routes/routesNames";
+import { userFileList, userFileMarket } from "@/pages/files/routes/routesNames";
 import { useUserListLocalConfigStore } from "../localConfig/userListLocalConfig";
 import { deriveRailchessName, deriveWikiName, forkAarcName, sponsorWxName } from "@/pages/etc/routes/routesNames";
 
@@ -48,6 +48,10 @@ export async function getTopbarData(): Promise<TopbarModel> {
                 {
                     title: "我的资源",
                     link: { name: userFileList }
+                },
+                {
+                    title: "资源广场",
+                    link: { name: userFileMarket }
                 }
             ]
         }

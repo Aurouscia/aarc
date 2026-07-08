@@ -1,13 +1,17 @@
 ﻿using AARC.WebApi.Models.Db.Context;
 using AARC.WebApi.Models.Db.Context.Specific;
 using AARC.WebApi.Models.DbModels.Enums;
+using AARC.WebApi.Models.DbModels.Enums.AuthGrantTypes;
 using AARC.WebApi.Models.DbModels.Files;
+using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Models.DbModels.Saves;
 using AARC.WebApi.Services.App.HttpAuthInfo;
 using AARC.WebApi.Services.App.Mapping;
 using AARC.WebApi.Services.Files;
+using AARC.WebApi.Services.Identities.AuthGrants;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace AARC.WebApi.Repos.Files
 {
@@ -16,7 +20,8 @@ namespace AARC.WebApi.Repos.Files
         UserFileService userFileService,
         HttpUserIdProvider httpUserIdProvider,
         UserFavoriteRepo userFavoriteRepo,
-        IMapper mapper
+        IMapper mapper,
+        AuthGrantCheckService authGrantCheckService
         ) : Repo<UserFile>(context)
     {
         private const int fileSizeLimitMB = 3;
@@ -157,6 +162,76 @@ namespace AARC.WebApi.Repos.Files
                 .Distinct()
                 .OrderBy(x => x)
                 .ToList();
+        }
+
+        public List<UserFileDto> SearchAccessible(string? search, string? orderby, int skip, int take)
+        {
+            take = Math.Clamp(take, 1, 50);
+            var q = Existing.AsNoTracking();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                q = Context is AarcSqliteContext
+                    ? q.Where(x => x.DisplayName.ToLower().Contains(search.ToLower()))
+                    : q.Where(x => x.DisplayName.Contains(search));
+            }
+            q = orderby?.ToLower() switch
+            {
+                "time" => q.OrderByDescending(x => x.LastActive),
+                "name" => q.OrderBy(x => x.DisplayName),
+                _ => q.OrderByDescending(x => x.LastActive)
+            };
+            const int candidatePoolSize = 300;
+            var candidates = q
+                .Take(candidatePoolSize)
+                .Select(x => new { x.Id, x.OwnerUserId })
+                .ToList();
+            if (candidates.Count == 0)
+                return [];
+            var candidateIds = candidates.Select(x => x.Id).ToList();
+            var accessible = authGrantCheckService
+                .CalculateFor(AuthGrantOn.UserFile, candidateIds, (byte)AuthGrantTypeOfUserFile.View, defaultAllow: false);
+            var accessibleOrderedIds = candidates
+                .Where((x, i) => accessible.ElementAtOrDefault(i))
+                .Select(x => x.Id)
+                .Skip(skip)
+                .Take(take)
+                .ToList();
+            return GetUserFileDtosByIds(accessibleOrderedIds);
+        }
+
+        public List<UserFileDto> GetUserFileDtosByIds(List<int> ids)
+        {
+            if (ids.Count == 0)
+                return [];
+            var temp = (
+                from f in Existing.Where(x => ids.Contains(x.Id))
+                join u in Context.Users on f.OwnerUserId equals u.Id
+                select new { UserFile = f, OwnerName = u.Name }
+            ).ToList();
+            var dtoMap = temp.ToDictionary(
+                t => t.UserFile.Id,
+                t =>
+                {
+                    var dto = mapper.Map<UserFile, UserFileDto>(t.UserFile);
+                    dto.OwnerUserName = t.OwnerName;
+                    dto.UrlThumb = userFileService.GetUrl(dto.StoreName, thumb: true);
+                    dto.UrlOriginal = userFileService.GetUrl(dto.StoreName, thumb: false);
+                    return dto;
+                });
+            var res = ids.Select(id => dtoMap.TryGetValue(id, out var dto) ? dto : null)
+                .Where(x => x is not null)
+                .Cast<UserFileDto>()
+                .ToList();
+            var favMap = userFavoriteRepo.GetFavoriteIdMap(UserFavoriteType.UserFile, res.Select(x => x.Id).ToList());
+            foreach (var dto in res)
+            {
+                if (favMap.TryGetValue(dto.Id, out var favId) && favId > 0)
+                {
+                    dto.IsFavorited = true;
+                    dto.FavoriteId = favId;
+                }
+            }
+            return res;
         }
 
         private static void CheckModel(string? displayName, string? intro)

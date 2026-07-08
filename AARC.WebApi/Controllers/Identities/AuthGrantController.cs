@@ -44,6 +44,6 @@ namespace AARC.WebApi.Controllers.Identities
         /// 为了确保前端生成 AuthGrantType 有关enum类型
         /// </summary>
         [HttpGet]
-        public bool Types(AuthGrantTypeOfSave t0) => true;
+        public bool Types(AuthGrantTypeOfSave t0, AuthGrantTypeOfUserFile t1) => true;
     }
 }
