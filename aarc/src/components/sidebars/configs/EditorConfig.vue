@@ -13,7 +13,7 @@ onMounted(()=>{
 </script>
 
 <template>
-<ConfigSection :title="'编辑器（新）'">
+<ConfigSection :title="'编辑器'">
     <table><tbody>
         <tr><th>重复站名检测</th></tr>
         <tr>

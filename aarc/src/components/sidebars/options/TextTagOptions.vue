@@ -90,7 +90,7 @@ defineExpose({
                                 <option v-for="ic in iconStore.prefixedIcons" :value="ic.i.id">{{ ic.i.name }}</option>
                             </select>
                         </div>
-                        <div class="smallNote">“设置-文本标签图标”<br/>中可添加更多图标</div>
+                        <div class="smallNote">“设置-文本标签图标”<br/>中可添加更多图标以及调整尺寸</div>
                     </td>
                 </tr>
                 <tr v-if="editing.forId">

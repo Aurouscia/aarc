@@ -30,9 +30,30 @@ namespace AARC.WebApi.Controllers.Files
 
             const int latestPoolSize = 300;
 
+            // 粗略筛选：找出含有"允许所有人查看"授权的资源
+            //（包括针对本体的授权和针对所有者的全局授权）
+            var grantedFileIds = context.AuthGrants.AsNoTracking().Existing()
+                .Where(x => x.On == AuthGrantOn.UserFile
+                            && x.Type == (byte)AuthGrantTypeOfUserFile.View
+                            && x.To == AuthGrantTo.All
+                            && x.Flag == true
+                            && x.OnId > 0)
+                .Select(x => x.OnId)
+                .ToList();
+
+            var grantedOwnerIds = context.AuthGrants.AsNoTracking().Existing()
+                .Where(x => x.On == AuthGrantOn.UserFile
+                            && x.Type == (byte)AuthGrantTypeOfUserFile.View
+                            && x.To == AuthGrantTo.All
+                            && x.Flag == true
+                            && x.UserId > 0)
+                .Select(x => x.UserId)
+                .ToList();
+
             var latestFiles = (
                 from f in context.UserFiles.AsNoTracking().Existing()
                 join u in context.Users.AsNoTracking().Existing() on f.OwnerUserId equals u.Id
+                where grantedFileIds.Contains(f.Id) || grantedOwnerIds.Contains(f.OwnerUserId)
                 orderby f.LastActive descending
                 select new { f.Id, f.OwnerUserId }
             ).Take(latestPoolSize).ToList();
