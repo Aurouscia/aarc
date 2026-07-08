@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, onMounted, useTemplateRef, watch } from 'vue';
-import { UserFileDto, UserFileType, UserFavoriteType } from '@/app/com/apiGenerated';
+import { UserFileDto, UserFileType, UserFavoriteType, AuthGrantOn } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import Loading from '@/components/common/Loading.vue';
 import SideBar from '@/components/common/SideBar.vue';
@@ -13,6 +13,7 @@ import copy from 'copy-to-clipboard';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { isSvg } from '@/utils/fileUtils/ext';
 import { useUserFileListLocalConfigStore } from '@/app/localConfig/userFileListLocalConfig';
+import AuthGrantEdit from '../components/AuthGrantEdit.vue';
 
 const fileList = ref<UserFileDto[]>();
 const api = useApiStore()
@@ -249,6 +250,13 @@ onMounted(async() => {
                 </td>
             </tr>
         </tbody></table>
+        <h1 style="margin-top: 30px;">授权管理</h1>
+        <div class="auth-grant-section">
+            <AuthGrantEdit :on="AuthGrantOn.UserFile" :on-id="editingId" :type="0"/>
+            <div class="smallNote">
+                注：此处设置仅对当前资源有效，如果需要对全部资源生效，请使用“顶部栏-用户-资源授权管理”
+            </div>
+        </div>
         <div class="delete-btn-container">
             <button @click="deleteFile(editingId)" class="minor">删除资源</button>
         </div>

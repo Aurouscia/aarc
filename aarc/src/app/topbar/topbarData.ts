@@ -94,10 +94,17 @@ export async function getTopbarData(): Promise<TopbarModel> {
                     }
                 },
                 {
-                    title: "个人授权管理",
+                    title: "作品授权管理",
                     link: { name: userListName },
                     beforeJump: ()=>{
-                        userList.openingSelfEdit = 'authGrant'
+                        userList.openingSelfEdit = 'saveAuthGrant'
+                    }
+                },
+                {
+                    title: "资源授权管理",
+                    link: { name: userListName },
+                    beforeJump: ()=>{
+                        userList.openingSelfEdit = 'fileAuthGrant'
                     }
                 },
                 {
