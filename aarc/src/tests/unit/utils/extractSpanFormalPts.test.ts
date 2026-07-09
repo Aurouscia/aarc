@@ -95,4 +95,68 @@ describe('extractSpanFormalPts', () => {
     const result = extractSpanFormalPts(allFormalPts, span)
     expect(result).toEqual([])
   })
+
+  it('fromIdx === toIdx 时应返回单个点', () => {
+    // pts=[A,B,C], span B→B（零长度）
+    const allFormalPts: FormalPt[] = [
+      makeFp(0), makeFp(0), makeFp(0),
+      makeFp(1),
+      makeFp(2), makeFp(2),
+      makeFp(3)
+    ]
+    const span: FlatSpan = { fromIdx: 1, toIdx: 1, fromPt: 20, toPt: 20 }
+    const result = extractSpanFormalPts(allFormalPts, span)
+
+    expect(result.length).toBe(1)
+    expect(result[0].afterIdxEqv).toBe(1)
+  })
+
+  it('formalPts 中不存在对应 fromIdx 时应返回空数组', () => {
+    const allFormalPts: FormalPt[] = [makeFp(0), makeFp(0), makeFp(1)]
+    const span: FlatSpan = { fromIdx: 5, toIdx: 1, fromPt: 50, toPt: 20 }
+    const result = extractSpanFormalPts(allFormalPts, span)
+    expect(result).toEqual([])
+  })
+
+  it('formalPts 中不存在对应 toIdx 时应返回空数组', () => {
+    const allFormalPts: FormalPt[] = [makeFp(0), makeFp(0), makeFp(1)]
+    const span: FlatSpan = { fromIdx: 0, toIdx: 5, fromPt: 10, toPt: 50 }
+    const result = extractSpanFormalPts(allFormalPts, span)
+    expect(result).toEqual([])
+  })
+
+  it('无插值点（direct seg）的 formalPts 也能正确截取', () => {
+    // 自由点相邻区间可能出现：A(0), B(1), C(2)，没有 itp
+    const allFormalPts: FormalPt[] = [
+      makeFp(0),
+      makeFp(1),
+      makeFp(2)
+    ]
+    const span: FlatSpan = { fromIdx: 0, toIdx: 2, fromPt: 10, toPt: 30 }
+    const result = extractSpanFormalPts(allFormalPts, span)
+
+    expect(result.length).toBe(3)
+    expect(result.map(x => x.afterIdxEqv)).toEqual([0, 1, 2])
+  })
+
+  it('多个连续 span 截取后不会互相越界', () => {
+    // pts=[A,B,C,D], 对应 afterIdxEqv: [0,0,1,1,1,2,2,3]
+    // span A→B 和 B→C 连续截取
+    const allFormalPts: FormalPt[] = [
+      makeFp(0), makeFp(0),
+      makeFp(1),
+      makeFp(1), makeFp(1),
+      makeFp(2),
+      makeFp(2),
+      makeFp(3)
+    ]
+    const spanAB: FlatSpan = { fromIdx: 0, toIdx: 1, fromPt: 10, toPt: 20 }
+    const spanBC: FlatSpan = { fromIdx: 1, toIdx: 2, fromPt: 20, toPt: 30 }
+
+    const resAB = extractSpanFormalPts(allFormalPts, spanAB)
+    const resBC = extractSpanFormalPts(allFormalPts, spanBC)
+
+    expect(resAB.map(x => x.afterIdxEqv)).toEqual([0, 0, 1])
+    expect(resBC.map(x => x.afterIdxEqv)).toEqual([1, 1, 1, 2])
+  })
 })
