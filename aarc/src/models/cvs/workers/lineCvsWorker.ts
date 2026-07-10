@@ -29,7 +29,7 @@ import { coordDist } from "@/utils/coordUtils/coordDist";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useConfigStore } from "@/models/stores/configStore";
 import { FormalizedLine, SpanRenderInfo, useFormalizedLineStore } from "@/models/stores/saveDerived/formalizedLineStore";
-import { rayRel } from "@/utils/rayUtils/rayParallel";
+import { rayRel, WayRel } from "@/utils/rayUtils/rayParallel";
 import { defineStore } from "pinia";
 import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
 import { getByIndexInRing, isRing, isRingByFormalPts } from "@/utils/lineUtils/isRing";
@@ -43,6 +43,116 @@ import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
 import { formalize } from "@/utils/lineUtils/formalize";
 
 type LineRenderType = 'both'|'body'|'carpet'
+
+type GetTurnRadiusOf = (lineInfo: Line, rel: WayRel) => number
+
+/**
+ * 将一组 formalized 线路点连接成 canvas 路径。
+ *
+ * 核心思路：
+ * - 相邻两段直线的转角处，用圆角（arc）代替尖角；
+ * - 直线部分只画到“切点”（sok），圆角部分用切点-顶点-切点三点画弧；
+ * - 环线与非环线的“处理单个转角”逻辑完全相同，区别仅在于：
+ *   1. 起始/结束位置不同；
+ *   2. 环线首点的前一段是“倒数第二点 → 首点”。
+ *   因此把公共转角处理提取到同一个循环中。
+ *
+ * 注意：当前统一使用 drawArcByThreePoints 的默认 'formal' 模式，
+ *      自由点（free）的任意角度圆角集成需在此显式传入 mode: 'free'。
+ */
+export function linkPts(
+    ctx:CvsContext,
+    formalPts:FormalPt[],
+    lineInfo:Line,
+    getTurnRadiusOf:GetTurnRadiusOf
+){
+    // 点数不足时无法形成线段，直接返回
+    if(formalPts.length<=1){
+        return;
+    }
+    // 判断是否为环线：首末 formal 点坐标重合
+    const isRingLine = isRingByFormalPts(formalPts)
+    // 提取所有 formal 点的实际坐标，后续几何计算只依赖位置
+    const pts = formalPts.map(x=>x.pos)
+
+    // 确定需要处理“转角”的索引范围，以及获取每个转角前一点索引的规则
+    let cornerStartIdx:number
+    let cornerEndIdx:number          // 包含该索引
+    let getPrevIdx:(i:number)=>number
+    if(!isRingLine){
+        // 非环线：转角在 pts[1] .. pts[n-2]，前一点就是 i-1
+        cornerStartIdx = 1
+        cornerEndIdx = pts.length - 2
+        getPrevIdx = i => i - 1
+        // 路径从第一个点开始
+        ctx.moveTo(...pts[0])
+    }else{
+        // 环线：转角在 pts[0] .. pts[n-2]（pts[n-1] 与 pts[0] 重合）
+        // 首点的前一段是“倒数第二点 → 首点”
+        cornerStartIdx = 0
+        cornerEndIdx = pts.length - 2
+        getPrevIdx = i => i === 0 ? pts.length - 2 : i - 1
+    }
+
+    // 初始化“进入”第一个转角的前一段状态
+    const initialPrevIdx = getPrevIdx(cornerStartIdx)
+    let prevPt:Coord = pts[initialPrevIdx]
+    let prevToNowRay:FormalRay = twinPts2Ray(prevPt, pts[cornerStartIdx])
+    let prevDist:number = coordDist(prevPt, pts[cornerStartIdx])
+    // 环线专用：保存头部切点，最后 lineTo 回到该点以闭合路径
+    let ringHeadStartSok:Coord | undefined
+
+    for(let i=cornerStartIdx;i<=cornerEndIdx;i++){
+        const nowPt = pts[i]
+        const nextPt = pts[i+1]
+
+        // 下一段直线的长度
+        const nextDist = coordDist(nowPt, nextPt)
+        // 从当前点指向下一个点的 8 方向射线
+        const nowToNextRay = twinPts2Ray(nowPt, nextPt)
+
+        // 两段射线的方向关系：parallel / 90 / 45 / 135
+        const rel = rayRel(prevToNowRay, nowToNextRay)
+        // 根据线路配置和转角关系获取理论圆角半径
+        const turnRadius = getTurnRadiusOf(lineInfo, rel)
+        // 实际圆角半径不能超过前后线段长度的一半，防止弧越界
+        const taRadius = Math.min(turnRadius, prevDist/2, nextDist/2)
+
+        // prevBias: 从当前点指向前一个点的 8 方向单位向量（SgnCoord）
+        const prevBias = twinPts2SgnCoord(nowPt, prevPt)
+        // prevSok: 沿 prevBias 方向从当前点回退 taRadius 得到的切点
+        const prevSok = applyBias(nowPt, prevBias, taRadius)
+        // nextBias: 从当前点指向下一个点的 8 方向单位向量
+        const nextBias = twinPts2SgnCoord(nowPt, nextPt)
+        // nextSok: 沿 nextBias 方向从当前点前进 taRadius 得到的切点
+        const nextSok = applyBias(nowPt, nextBias, taRadius)
+
+        if(isRingLine && i === cornerStartIdx){
+            // 环线首点：从头部切点开始路径，并保存该切点用于最后闭合
+            ctx.moveTo(...prevSok)
+            ringHeadStartSok = prevSok
+        }else{
+            // 先画到前一段的切点
+            ctx.lineTo(...prevSok)
+        }
+        // 用 prevSok（弧起点）、nowPt（弧经过点）、nextSok（弧终点）画圆角
+        drawArcByThreePoints(ctx, prevSok, nowPt, nextSok)
+
+        // 为下一次迭代更新状态
+        prevDist = nextDist;
+        prevToNowRay = nowToNextRay;
+        prevPt = nowPt;
+    }
+
+    // 路径收尾
+    if(!isRingLine){
+        // 非环线：从最后一个转角切点画直线到最后一个点
+        ctx.lineTo(...pts[pts.length-1])
+    }else if(ringHeadStartSok){
+        // 环线：从最后一个转角切点画直线回到头部切点，平滑闭合
+        ctx.lineTo(...ringHeadStartSok)
+    }
+}
 
 export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     const saveStore = useSaveStore();
@@ -103,7 +213,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 const formalPts = formalizedLineStore.getLinesFormalPts(l.id) ?? []
                 const buildPath = () => {
                     ctx.beginPath()
-                    linkPts(ctx, formalPts, l)
+                    linkPts(ctx, formalPts, l, cs.getTurnRadiusOf)
                 }
                 buildPath()
                 doRender(ctx, l, undefined, undefined, 'both', 'base', buildPath)
@@ -117,7 +227,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 const formalPts = formalizedLineStore.getLinesFormalPts(l.id) ?? []
                 const buildPath = () => {
                     ctx.beginPath()
-                    linkPts(ctx, formalPts, l)
+                    linkPts(ctx, formalPts, l, cs.getTurnRadiusOf)
                 }
                 buildPath()
                 doRender(ctx, l, undefined, undefined, 'carpet', undefined, buildPath)
@@ -205,7 +315,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             formalizedSegs.push({lineId:line.id, pts:formalized})
             const buildPath = () => {
                 ctx.beginPath()
-                linkPts(ctx, formalized, line)
+                linkPts(ctx, formalized, line, cs.getTurnRadiusOf)
             }
             buildPath()
             const enforceLineWidth = line.isFilled ? 1 : undefined
@@ -215,76 +325,6 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         return {
             relatedPts,
             formalizedSegs
-        }
-    }
-    function linkPts(ctx:CvsContext, formalPts:FormalPt[], lineInfo:Line){
-        if(formalPts.length<=1){
-            return;
-        }
-        const isRingLine = isRingByFormalPts(formalPts)
-        const pts = formalPts.map(x=>x.pos)
-        const first = pts[0]
-        const second = pts[1]
-        if(!isRingLine){
-            ctx.moveTo(...first)
-            let prevPt:Coord = first
-            let prevToNowRay:FormalRay = twinPts2Ray(first, second)
-            let prevDist:number = coordDist(first, second);
-            for(let i=1;i<pts.length;i++){
-                const nowPt = pts[i]
-                if(i==pts.length-1){
-                    ctx.lineTo(...nowPt)
-                    break;
-                }
-                const nextPt = pts[i+1]
-                const nextDist = coordDist(nowPt, nextPt)
-                const nowToNextRay = twinPts2Ray(nowPt, nextPt)
-                const rel = rayRel(prevToNowRay, nowToNextRay)
-                const turnRadius = cs.getTurnRadiusOf(lineInfo, rel)
-                const taRadius = Math.min(turnRadius, prevDist/2, nextDist/2)
-                const prevBias = twinPts2SgnCoord(nowPt, prevPt)
-                const prevSok = applyBias(nowPt, prevBias, taRadius)
-                const nextBias = twinPts2SgnCoord(nowPt, nextPt) 
-                const nextSok = applyBias(nowPt, nextBias, taRadius)
-                ctx.lineTo(...prevSok)
-                drawArcByThreePoints(ctx, prevSok, nowPt, nextSok)
-                prevDist = nextDist;
-                prevToNowRay = nowToNextRay;
-                prevPt = nowPt;
-            }
-        }else{
-            const lastButOnePt = pts[pts.length-2]
-            let prevPt:Coord = lastButOnePt
-            let prevToNowRay:FormalRay = twinPts2Ray(lastButOnePt, first)
-            let prevDist:number = coordDist(lastButOnePt, first);
-            let ringHeadStartSok:Coord = [0,0]
-            for(let i=0;i<pts.length;i++){
-                const nowPt = pts[i]
-                if(i===pts.length-1){
-                    ctx.lineTo(...ringHeadStartSok)
-                    break;
-                }
-                const nextPt = pts[i+1]
-                const nextDist = coordDist(nowPt, nextPt)
-                const nowToNextRay = twinPts2Ray(nowPt, nextPt)
-                const rel = rayRel(prevToNowRay, nowToNextRay)
-                const turnRadius = cs.getTurnRadiusOf(lineInfo, rel)
-                const taRadius = Math.min(turnRadius, prevDist/2, nextDist/2)
-                const prevBias = twinPts2SgnCoord(nowPt, prevPt)
-                const prevSok = applyBias(nowPt, prevBias, taRadius)
-                const nextBias = twinPts2SgnCoord(nowPt, nextPt) 
-                const nextSok = applyBias(nowPt, nextBias, taRadius)
-                if(i===0){
-                    ctx.moveTo(...prevSok)
-                    ringHeadStartSok = prevSok
-                }
-                else
-                    ctx.lineTo(...prevSok)
-                drawArcByThreePoints(ctx, prevSok, nowPt, nextSok)
-                prevDist = nextDist;
-                prevToNowRay = nowToNextRay;
-                prevPt = nowPt;
-            }
         }
     }
     interface SpanRenderOptions {
@@ -350,7 +390,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         for (const info of infos) {
             const buildPath = () => {
                 ctx.beginPath()
-                linkPts(ctx, info.formalPts, info.line)
+                linkPts(ctx, info.formalPts, info.line, cs.getTurnRadiusOf)
             }
             buildPath()
             doRenderSpan(ctx, info.line, {
@@ -405,7 +445,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             const buildPath = () => {
                 ctx.beginPath()
                 for (const info of groupInfos) {
-                    linkPts(ctx, info.formalPts, info.line)
+                    linkPts(ctx, info.formalPts, info.line, cs.getTurnRadiusOf)
                 }
             }
             buildPath()
