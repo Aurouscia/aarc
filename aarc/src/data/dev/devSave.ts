@@ -110,7 +110,8 @@ export const devSave:Save = {
             sta: ControlPointSta.sta,
             name: '钢铁厂',
             nameS: 'GangTieChang',
-            nameP: [-12.727922058, 12.727922058]
+            nameP: [-12.727922058, 12.727922058],
+            free: true
         },
         {
             id: 13,

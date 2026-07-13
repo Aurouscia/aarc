@@ -8,6 +8,14 @@ import { WayRel } from "@/utils/rayUtils/rayParallel"
 import rfdc from "rfdc"
 import { removeKeyIfSame } from "@/utils/lang/removeKeyIfSame"
 import { isKeyOf } from "@/utils/type/IsKeyOf"
+import { isZero } from "@/utils/sgn"
+
+// 45°/135° 圆角半径缩放系数（原魔数提取，供 numeric 与 WayRel 分支共用）
+// tan(67.5°) = sqrt(2)+1 ≈ 2.4142135
+export const turn45Tan67_5 = 2.4142135
+// 0.618 为视觉微调系数：45° 圆角比直角略小，135° 略大
+export const turn45VisualFactor = 0.618
+export const turn45Ratio = turn45Tan67_5 * turn45VisualFactor
 
 export const configDefault:Config = {
     bgColor: '#ffffff',
@@ -141,7 +149,7 @@ export const useConfigStore = defineStore('config', ()=>{
             return config.value.colorPresetIsland
         return 'black'
     }
-    function getTurnRadiusOf(line:Line|number, turnRel:WayRel, justify:'outer'|'middle'|'inner' = 'inner'){
+    function getTurnRadiusOf(line:Line|number, turnRel:WayRel|number, justify:'outer'|'middle'|'inner' = 'inner'){
         let lineWidthRatio = (typeof line == 'number' ? line : line.width) || 1
         let base = config.value.lineTurnAreaRadius;
         if(typeof line !== 'number' && line.type===LineType.common)
@@ -155,12 +163,18 @@ export const useConfigStore = defineStore('config', ()=>{
         }
         if(radius<0)
             radius = 0
-        //tan(67.5°)=2.4142135
-        //0.618 仅仅是我感觉比直角小点好看些，但是又不知道缩小多少合适
+        // 任意角度（以弧度传入）时，默认半径保持与 90° 相同；
+        // 若接近 45° 或 135°，则保持与原 8 方向一致的行为。
+        else if(typeof turnRel === 'number'){
+            if(isZero(turnRel - Math.PI / 4))
+                radius /= turn45Ratio
+            else if(isZero(turnRel - 3 * Math.PI / 4))
+                radius *= turn45Ratio
+        }
         else if(turnRel === '45')
-            radius /= 2.4142135*0.618 
+            radius /= turn45Ratio
         else if(turnRel === '135'){
-            radius *= 2.4142135*0.618
+            radius *= turn45Ratio
         }
         return radius
     }

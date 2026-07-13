@@ -23,8 +23,10 @@
 
 import { useSaveStore } from "../../stores/saveStore";
 import { ControlPoint, Line, LineType } from "../../save";
-import { applyBias } from "@/utils/coordUtils/coordBias";
+import { applyBias, applyBiasFree } from "@/utils/coordUtils/coordBias";
 import { Coord, FormalPt, FormalRay, twinPts2Ray, twinPts2SgnCoord } from "../../coord";
+import { coordDotProduct, coordCrossProduct, makeCoordLength1 } from "@/utils/coordUtils/coordMath";
+import { isZero } from "@/utils/sgn";
 import { coordDist } from "@/utils/coordUtils/coordDist";
 import { useEnvStore } from "@/models/stores/envStore";
 import { useConfigStore } from "@/models/stores/configStore";
@@ -44,7 +46,7 @@ import { formalize } from "@/utils/lineUtils/formalize";
 
 type LineRenderType = 'both'|'body'|'carpet'
 
-type GetTurnRadiusOf = (lineInfo: Line, rel: WayRel) => number
+export type GetTurnRadiusOf = (lineInfo: Line, rel: WayRel | number) => number
 
 /**
  * 将一组 formalized 线路点连接成 canvas 路径。
@@ -105,27 +107,77 @@ export function linkPts(
     for(let i=cornerStartIdx;i<=cornerEndIdx;i++){
         const nowPt = pts[i]
         const nextPt = pts[i+1]
+        const nowFormal = formalPts[i]
+        const nextFormal = formalPts[i+1]
+        const prevFormal = formalPts[getPrevIdx(i)]
 
         // 下一段直线的长度
         const nextDist = coordDist(nowPt, nextPt)
         // 从当前点指向下一个点的 8 方向射线
         const nowToNextRay = twinPts2Ray(nowPt, nextPt)
 
-        // 两段射线的方向关系：parallel / 90 / 45 / 135
-        const rel = rayRel(prevToNowRay, nowToNextRay)
-        // 根据线路配置和转角关系获取理论圆角半径
-        const turnRadius = getTurnRadiusOf(lineInfo, rel)
-        // 实际圆角半径不能超过前后线段长度的一半，防止弧越界
-        const taRadius = Math.min(turnRadius, prevDist/2, nextDist/2)
+        // 判断当前转角是否涉及自由点/直接段
+        const isFreeCorner = prevFormal.free || nowFormal.free || nextFormal.free
 
-        // prevBias: 从当前点指向前一个点的 8 方向单位向量（SgnCoord）
-        const prevBias = twinPts2SgnCoord(nowPt, prevPt)
-        // prevSok: 沿 prevBias 方向从当前点回退 taRadius 得到的切点
-        const prevSok = applyBias(nowPt, prevBias, taRadius)
-        // nextBias: 从当前点指向下一个点的 8 方向单位向量
-        const nextBias = twinPts2SgnCoord(nowPt, nextPt)
-        // nextSok: 沿 nextBias 方向从当前点前进 taRadius 得到的切点
-        const nextSok = applyBias(nowPt, nextBias, taRadius)
+        let prevSok: Coord
+        let nextSok: Coord
+        let arcMode: 'formal' | 'free' = 'formal'
+
+        if(isFreeCorner){
+            // ---------- 自由角度分支：使用浮点向量计算真实夹角与切点 ----------
+            arcMode = 'free'
+            const v1: Coord = [nowPt[0] - prevPt[0], nowPt[1] - prevPt[1]]
+            const v2: Coord = [nextPt[0] - nowPt[0], nextPt[1] - nowPt[1]]
+            const len1 = Math.hypot(v1[0], v1[1])
+            const len2 = Math.hypot(v2[0], v2[1])
+
+            // 若任一段退化成长度为 0，则不画弧
+            if(isZero(len1) || isZero(len2)){
+                prevSok = nowPt
+                nextSok = nowPt
+            } else {
+                const u1 = makeCoordLength1(v1)
+                const u2 = makeCoordLength1(v2)
+                const dot = coordDotProduct(u1, u2)
+                const cross = coordCrossProduct(u1, u2)
+
+                // 两段线近乎平行（同向或反向），不画弧，由 drawArcByThreePoints 退化处理
+                if(isZero(cross)){
+                    prevSok = nowPt
+                    nextSok = nowPt
+                } else {
+                    // 内角 theta = atan2(|cross|, -dot)，范围 [0, pi]
+                    // theta=pi 时直线；theta=0 时反向（U 弯），cross 已为 0 被过滤
+                    const theta = Math.atan2(Math.abs(cross), -dot)
+                    const turnRadius = getTurnRadiusOf(lineInfo, theta)
+                    const d = Math.min(
+                        turnRadius / Math.tan(theta / 2),
+                        len1 / 2,
+                        len2 / 2
+                    )
+                    // 沿入射方向反向回退 d，沿出射方向前进 d
+                    prevSok = applyBiasFree(nowPt, [-u1[0], -u1[1]], d)
+                    nextSok = applyBiasFree(nowPt, u2, d)
+                }
+            }
+        } else {
+            // ---------- 8 方向 formal 分支 ----------
+            // 两段射线的方向关系：parallel / 90 / 45 / 135
+            const rel = rayRel(prevToNowRay, nowToNextRay)
+            // 根据线路配置和转角关系获取理论圆角半径
+            const turnRadius = getTurnRadiusOf(lineInfo, rel)
+            // 实际圆角半径不能超过前后线段长度的一半，防止弧越界
+            const taRadius = Math.min(turnRadius, prevDist/2, nextDist/2)
+
+            // prevBias: 从当前点指向前一个点的 8 方向单位向量（SgnCoord）
+            const prevBias = twinPts2SgnCoord(nowPt, prevPt)
+            // prevSok: 沿 prevBias 方向从当前点回退 taRadius 得到的切点
+            prevSok = applyBias(nowPt, prevBias, taRadius)
+            // nextBias: 从当前点指向下一个点的 8 方向单位向量
+            const nextBias = twinPts2SgnCoord(nowPt, nextPt)
+            // nextSok: 沿 nextBias 方向从当前点前进 taRadius 得到的切点
+            nextSok = applyBias(nowPt, nextBias, taRadius)
+        }
 
         if(isRingLine && i === cornerStartIdx){
             // 环线首点：从头部切点开始路径，并保存该切点用于最后闭合
@@ -136,7 +188,7 @@ export function linkPts(
             ctx.lineTo(...prevSok)
         }
         // 用 prevSok（弧起点）、nowPt（弧经过点）、nextSok（弧终点）画圆角
-        drawArcByThreePoints(ctx, prevSok, nowPt, nextSok)
+        drawArcByThreePoints(ctx, prevSok, nowPt, nextSok, arcMode)
 
         // 为下一次迭代更新状态
         prevDist = nextDist;

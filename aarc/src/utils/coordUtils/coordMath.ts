@@ -51,3 +51,10 @@ export function coordTwinExtend(head:Coord, afterHead:Coord, by:number){
     const adjusted = coordMut(diff, by/diffLength)
     return coordAdd(head, adjusted)
 }
+
+/** 将向量的长度归一化为 1（零向量返回 [0,0]） */
+export function makeCoordLength1(v:Coord):Coord{
+    const len = Math.hypot(v[0], v[1])
+    if(len === 0) return [0, 0]
+    return [v[0] / len, v[1] / len]
+}

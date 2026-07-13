@@ -14,6 +14,10 @@ export interface FormalSeg {
     itp: Coord[]
     b: Coord
     ill: number
+    /** 当区段至少一端是“自由点”时为 true，表示该区间应直接连接、不参与病态矫正 */
+    direct?: boolean
+    aFree?: boolean
+    bFree?: boolean
 }
 
 /**
@@ -63,25 +67,29 @@ export function formalize(pts: ControlPoint[], idxOffset = 0): FormalPt[] {
         formalSegs.pop()
     }
     const formalPts: FormalPt[] = []
-    formalPts.push({ pos: formalSegs[0].a, afterIdxEqv: 0 + idxOffset })
+    formalPts.push({ pos: formalSegs[0].a, afterIdxEqv: 0 + idxOffset, free: formalSegs[0].aFree })
     for (let i = 0; i < formalSegs.length; i++) {
         const seg = formalSegs[i]
         seg.itp.forEach(p => formalPts.push({ pos: p, afterIdxEqv: i + idxOffset }))
-        formalPts.push({ pos: seg.b, afterIdxEqv: i + 1 + idxOffset })
+        formalPts.push({ pos: seg.b, afterIdxEqv: i + 1 + idxOffset, free: seg.bFree })
     }
     return formalPts
 }
 
 export function formalizeSeg(a: ControlPoint, b: ControlPoint): FormalSeg {
+    const originalA = a;
+    const originalB = b;
+    // 自由点相邻区间直接连接，不再做规范化插值/矫正
+    if (a.free || b.free) {
+        return { a: originalA.pos, itp: [], b: originalB.pos, ill: 0, direct: true, aFree: originalA.free, bFree: originalB.free };
+    }
     let xDiff = a.pos[0] - b.pos[0]
     let yDiff = a.pos[1] - b.pos[1]
     const rel = coordRelDiff(xDiff, yDiff)
     const pr = rel.posRel
     const rv = rel.rev;
     if (pr == 's')
-        return { a: a.pos, itp: [], b: b.pos, ill: 0 };
-    const originalA = a;
-    const originalB = b;
+        return { a: originalA.pos, itp: [], b: originalB.pos, ill: 0, aFree: originalA.free, bFree: originalB.free };
     if (rel.rev) {
         const temp = a;
         a = b;
@@ -122,7 +130,7 @@ export function formalizeSeg(a: ControlPoint, b: ControlPoint): FormalSeg {
             itp = coordFill(a.pos, b.pos, xDiff, yDiff, pr, rv, 'top')
         }
     }
-    return { a: originalA.pos, b: originalB.pos, itp, ill }
+    return { a: originalA.pos, b: originalB.pos, itp, ill, aFree: originalA.free, bFree: originalB.free }
 }
 
 export function illPosedSegJustify(segs: FormalSeg[]) {
@@ -140,8 +148,8 @@ export function illPosedSegJustify(segs: FormalSeg[]) {
             //如果是中间段，让前后两段矫正它
             const prevSeg = segs[i - 1]
             const nextSeg = segs[i + 1]
-            const prevHelps = prevSeg.ill < thisSeg.ill
-            const nextHelps = nextSeg.ill < thisSeg.ill
+            const prevHelps = !prevSeg.direct && prevSeg.ill < thisSeg.ill
+            const nextHelps = !nextSeg.direct && nextSeg.ill < thisSeg.ill
             if (prevHelps && nextHelps) {
                 const prevRef = prevSeg.itp.length == 0 ? prevSeg.a : prevSeg.itp[prevSeg.itp.length - 1]
                 const prevRay = twinPts2Ray(prevRef, prevSeg.b)
@@ -179,7 +187,7 @@ export function illPosedSegJustify(segs: FormalSeg[]) {
             let itsc: Coord | undefined
             if (i == segs.length - 1) {
                 const prevSeg = segs[i - 1]
-                const canHelp = prevSeg.ill <= thisSeg.ill && prevSeg.ill < 2
+                const canHelp = !prevSeg.direct && prevSeg.ill <= thisSeg.ill && prevSeg.ill < 2
                 const needHelp = thisSeg.ill > 0
                 if (needHelp && canHelp) {
                     const neibRef = prevSeg.itp.length == 0 ? prevSeg.a : prevSeg.itp[prevSeg.itp.length - 1]
@@ -190,7 +198,7 @@ export function illPosedSegJustify(segs: FormalSeg[]) {
                 }
             } else if (i == 0) {
                 const nextSeg = segs[i + 1]
-                const canHelp = nextSeg.ill <= thisSeg.ill && nextSeg.ill < 2
+                const canHelp = !nextSeg.direct && nextSeg.ill <= thisSeg.ill && nextSeg.ill < 2
                 const needHelp = thisSeg.ill > 0
                 if (canHelp && needHelp) {
                     const neibRef = nextSeg.itp.length == 0 ? nextSeg.b : nextSeg.itp[0]

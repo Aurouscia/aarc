@@ -8,9 +8,9 @@ function pt(
   pos: Coord,
   dir: ControlPointDir = ControlPointDir.vertical,
   id = 0,
-  isFree = false
+  free = false
 ): ControlPoint {
-  return { id, pos, dir, sta: 0, isFree } as ControlPoint
+  return { id, pos, dir, sta: 0, free }
 }
 
 function getAfterIdxEqv(res: ReturnType<typeof formalize>) {
@@ -242,7 +242,7 @@ describe('formalize', () => {
   // ==================== 自由点 TODO 测试（实现后取消 skip/todo） ====================
   // 这些用例描述自由点引入后的期望行为，作为实现约束。
 
-  it.todo('中间单个自由点使其前后两个区间变为 direct seg（不插值）', () => {
+  it('中间单个自由点使其前后两个区间变为 direct seg（不插值）', () => {
     // A -> B(free) -> C
     // A->B 与 B->C 都应为 direct seg，结果只有 A, B, C 三个 formal 点
     const a = pt([0, 0], ControlPointDir.vertical, 1)
@@ -254,7 +254,7 @@ describe('formalize', () => {
     expect(getAfterIdxEqv(res)).toEqual([0, 1, 2])
   })
 
-  it.todo('相邻两个自由点之间也是 direct seg', () => {
+  it('相邻两个自由点之间也是 direct seg', () => {
     const a = pt([0, 0], ControlPointDir.vertical, 1)
     const b = pt([10, 10], ControlPointDir.vertical, 2, true)
     const c = pt([20, 0], ControlPointDir.vertical, 3, true)
@@ -265,7 +265,7 @@ describe('formalize', () => {
     expect(getAfterIdxEqv(res)).toEqual([0, 1, 2, 3])
   })
 
-  it.todo('自由点相邻的病态段不会被矫正', () => {
+  it('自由点相邻的病态段不会被矫正', () => {
     // A -> B(free) -> C，其中 A->B 是 vertical 对角线（×-×）
     // 由于 B 是自由点，A->B 是 direct seg，不应被 B->C 矫正
     const a = pt([0, 0], ControlPointDir.vertical, 1)
@@ -276,7 +276,7 @@ describe('formalize', () => {
     expect(getPos(res)).toEqual([a.pos, b.pos, c.pos])
   })
 
-  it.todo('自由点不会作为健康段去矫正别人的病态段', () => {
+  it('自由点不会作为健康段去矫正别人的病态段', () => {
     // A -> B(free) -> C -> D
     // A->B 与 B->C 都是 direct seg；C->D 是 vertical 对角线病态段
     // 只有 B->C 是 direct，不能作为 helper 去矫正 C->D
@@ -291,7 +291,7 @@ describe('formalize', () => {
     expect(cToDFormalPts.length).toBe(1)
   })
 
-  it.todo('自由点在线路首尾只影响相邻的一个区间', () => {
+  it('自由点在线路首尾只影响相邻的一个区间', () => {
     const a = pt([0, 0], ControlPointDir.vertical, 1, true)
     const b = pt([10, 10], ControlPointDir.vertical, 2)
     const c = pt([20, 0], ControlPointDir.vertical, 3)
@@ -300,5 +300,17 @@ describe('formalize', () => {
     // A->B direct，B->C 正常 formalize
     expect(getAfterIdxEqv(res).at(0)).toBe(0)
     expect(getAfterIdxEqv(res).at(-1)).toBe(2)
+  })
+
+  it('控制点对应的 formal 点应正确携带 free 标记，插值点不携带', () => {
+    const a = pt([0, 0], ControlPointDir.vertical, 1)
+    const b = pt([20, 10], ControlPointDir.vertical, 2, true)
+    const c = pt([40, 0], ControlPointDir.vertical, 3)
+    const res = formalize([a, b, c])
+
+    // A 和 C 是普通点，B 是自由点；中间无插值点
+    expect(res[0].free).toBeFalsy()
+    expect(res[1].free).toBe(true)
+    expect(res[2].free).toBeFalsy()
   })
 })
