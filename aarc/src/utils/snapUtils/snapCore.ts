@@ -1,4 +1,4 @@
-import { collapseWay, Coord, FreeRay, SgnCoord } from "@/models/coord";
+import { Coord, FreeRay, SgnCoord } from "@/models/coord";
 import { ControlPoint, ControlPointDir } from "@/models/save";
 import { isZero } from "@/utils/sgn";
 import { applyBias } from "@/utils/coordUtils/coordBias";
@@ -122,7 +122,7 @@ export interface SnapGridResult {
  * @param intv 网格间距
  * @param cvsWidth 画布宽度
  * @param cvsHeight 画布高度
- * @param freeAxis 自由度方向，限制只能沿该方向移动
+ * @param freeWay 自由度方向（单位向量），限制只能沿该方向移动
  * @param thrs 吸附阈值
  * @param ensureSnap 为 true 时使用极大阈值，强制吸附到最近网格线
  */
@@ -131,7 +131,7 @@ export function snapGrid(
     intv: number,
     cvsWidth: number,
     cvsHeight: number,
-    freeAxis?: SgnCoord,
+    freeWay?: Coord,
     thrs?: number,
     ensureSnap?: boolean
 ): SnapGridResult | undefined {
@@ -143,12 +143,13 @@ export function snapGrid(
     let yDiff = 0;//与足够近的横线（如果有）的y之差
     let xMatched = false;//是否距离竖线足够近
     let yMatched = false;//是否距离横线足够近
-    const freeWay = collapseWay(freeAxis)
 
+    const onlyVert = freeWay && isZero(freeWay[0])
+    const onlyHori = freeWay && isZero(freeWay[1])
     const a = Math.abs
 
-    //寻找是否有足够近的竖线，如果自由度只有上下就不找
-    if (freeWay !== 'vert') {
+    //寻找是否有足够近的竖线，如果只能上下移动（wx=0）就不找
+    if (!onlyVert) {
         let cursor = intv;
         while (cursor < cvsWidth) {
             const xDiffHere = ptPos[0] - cursor
@@ -164,8 +165,8 @@ export function snapGrid(
             cursor += intv
         }
     }
-    //寻找是否有足够近的横线，如果自由度只有左右就不找
-    if (freeWay !== 'hori') {
+    //寻找是否有足够近的横线，如果只能左右移动（wy=0）就不找
+    if (!onlyHori) {
         let cursor = intv;
         while (cursor < cvsHeight) {
             const yDiffHere = ptPos[1] - cursor
@@ -185,61 +186,43 @@ export function snapGrid(
     const snapLines: FreeRay[] = []
     let snapX = false
     let snapY = false
-    if (freeWay === 'vert') {
-        pos[1] -= yDiff;
-        snapY = yMatched
-    } else if (freeWay === 'hori') {
-        pos[0] -= xDiff;
-        snapX = xMatched
-    } else if (freeWay === 'fall' || freeWay === 'rise') {
-        let diff = 0;
-        if (xMatched) {
-            if (!yMatched) {
-                //有足够近竖线，但没有足够近横线
-                diff = xDiff
-                snapX = true
-            }
-            else {
-                //横竖都有足够近的
-                const diffSame = freeWay === 'fall' ? (isZero(xDiff - yDiff)) : (isZero(xDiff + yDiff))
-                if (diffSame) {
-                    //正好横、竖、延长线都能匹配
+    if (freeWay) {
+        const [wx, wy] = freeWay
+        let t = 0
+        if (onlyVert) {
+            t = -yDiff / wy
+            snapY = yMatched
+        } else if (onlyHori) {
+            t = -xDiff / wx
+            snapX = xMatched
+        } else if (xMatched || yMatched) {
+            let tx: number | undefined
+            let ty: number | undefined
+            if (xMatched) tx = -xDiff / wx
+            if (yMatched) ty = -yDiff / wy
+            if (tx !== undefined && ty !== undefined) {
+                // 射线恰好穿过网格交点：横竖同时匹配
+                if (isZero(tx - ty)) {
+                    t = tx
                     snapX = true
                     snapY = true
-                    diff = yDiff
+                } else if (Math.abs(tx) < Math.abs(ty)) {
+                    t = tx
+                    snapX = true
                 } else {
-                    //没有那么巧
-                    const xDiffSmaller = Math.abs(xDiff) < Math.abs(yDiff)
-                    if (xDiffSmaller) {
-                        diff = xDiff
-                        snapX = true
-                    } else {
-                        diff = yDiff
-                        snapY = true
-                    }
+                    t = ty
+                    snapY = true
                 }
-            }
-        }
-        else if (yMatched) {
-            //有足够近横线，但没有足够近竖线
-            diff = yDiff
-            snapY = true
-        }
-        //都没有（什么都不做）
-
-        //应用坐标差，修正位置
-        if (freeWay === 'fall') {
-            pos[0] -= diff;
-            pos[1] -= diff;
-        } else {
-            if (snapY) {
-                pos[0] += diff
-                pos[1] -= diff
+            } else if (tx !== undefined) {
+                t = tx
+                snapX = true
             } else {
-                pos[0] -= diff
-                pos[1] += diff
+                t = ty!
+                snapY = true
             }
         }
+        pos[0] += t * wx
+        pos[1] += t * wy
     } else {
         pos[0] -= xDiff;
         pos[1] -= yDiff;
@@ -265,7 +248,8 @@ export function snapGrid(
 /** 邻点延长线吸附结果 */
 export interface SnapNeighborExtendsResult {
     snapRes?: Coord
-    freeAxis?: SgnCoord
+    /** 自由度方向（单位向量）：后续网格吸附只能沿该方向滑动 */
+    freeWay?: Coord
     snapLines: FreeRay[]
 }
 
@@ -313,15 +297,7 @@ function getAngleCosSin(angleDeg: number): [number, number] {
     return [Math.cos(rad), Math.sin(rad)]
 }
 
-/** 将已知角度映射到 8 方向 freeAxis；未知角度返回 undefined */
-function angleToSgnCoord(angleDeg: number): SgnCoord | undefined {
-    const a = normalizeAngleDeg(angleDeg)
-    if (a === 0) return [1, 0]
-    if (a === 45) return [1, 1]
-    if (a === 90) return [0, 1]
-    if (a === 135) return [1, -1]
-    return undefined
-}
+
 
 /** 交点吸附允许的最大距离（相对 thrs 的倍数）：交点离 pt 超过 2*thrs 时放弃该第二射线 */
 const maxCrossDistFactor = 2
@@ -388,7 +364,7 @@ export function snapNeighborExtends(
     }
 
     const firstCand = cands[0]
-    const firstCandWay = angleToSgnCoord(firstCand.angleDeg)
+    const firstCandFreeWay: Coord = getAngleCosSin(firstCand.angleDeg)
     const firstLine = toRay(firstCand, firstCand.snapTo)
     snapLines.push(firstLine)
 
@@ -408,7 +384,7 @@ export function snapNeighborExtends(
             return { snapRes: intersection, snapLines }
         }
     }
-    return { snapRes: firstCand.snapTo, freeAxis: firstCandWay, snapLines }
+    return { snapRes: firstCand.snapTo, freeWay: firstCandFreeWay, snapLines }
 }
 
 /** 点间吸附配置 */

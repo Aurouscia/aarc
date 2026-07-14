@@ -1,4 +1,4 @@
-import { Coord, FreeRay, SgnCoord } from "@/models/coord";
+import { Coord, FreeRay } from "@/models/coord";
 import { useSaveStore } from "./saveStore";
 import { ControlPoint } from "@/models/save";
 import { defineStore, storeToRefs } from "pinia";
@@ -44,17 +44,17 @@ export const useSnapStore = defineStore('snap',()=>{
             return interPtRes
         }
         let neibRes:Coord|undefined = undefined
-        let freeAxis:SgnCoord|undefined = undefined
+        let freeWay:Coord|undefined = undefined
         if(snapNeighborExtendsEnabled.value){
             const neibExtend = snapNeighborExtends(pt)
             neibRes = neibExtend.snapRes
-            freeAxis = neibExtend.freeAxis
-            if(neibRes && (!freeAxis || !snapGridEnabled.value)){
+            freeWay = neibExtend.freeWay
+            if(neibRes && (!freeWay || !snapGridEnabled.value)){
                 return neibRes
             }
         }
         if(snapGridEnabled.value){
-            const gridRes = snapGrid(neibRes || pt.pos, freeAxis)
+            const gridRes = snapGrid(neibRes || pt.pos, freeWay)
             if(gridRes){
                 return gridRes
             }
@@ -75,8 +75,8 @@ export const useSnapStore = defineStore('snap',()=>{
     function snapNameStatus(pt:ControlPoint):{type:'vague'|'accu'}|undefined{
         return getNameSnapStatus(pt, snapStaNameTo.value)
     }
-    function snapNeighborExtends(pt:ControlPoint):{snapRes?:Coord, freeAxis?:SgnCoord}{
-        const { snapRes, freeAxis, snapLines: lines } = snapNeighborExtendsCore(
+    function snapNeighborExtends(pt:ControlPoint):{snapRes?:Coord, freeWay?:Coord}{
+        const { snapRes, freeWay, snapLines: lines } = snapNeighborExtendsCore(
             pt,
             saveStore.getNeighborByPt(pt.id),
             cs.config.snapOctaRayPtPtThrs,
@@ -84,7 +84,7 @@ export const useSnapStore = defineStore('snap',()=>{
             cs.config.snapRayAngles
         )
         snapLines.value.push(...lines)
-        return { snapRes, freeAxis }
+        return { snapRes, freeWay }
     }
     function snapInterPt(pt:ControlPoint, noBias:boolean):Coord|undefined{
         const ptSnapSizes = getLinesDecidedPtSnapSizes(pt.id) || [1]
@@ -105,7 +105,7 @@ export const useSnapStore = defineStore('snap',()=>{
         snapInterPtTargets.value = { ...targets, matched }
         return matched
     }
-    function snapGrid(ptPos:Coord, freeAxis?:SgnCoord, clearSnapLines?:boolean, ensureSnap?:boolean):Coord|undefined{
+    function snapGrid(ptPos:Coord, freeWay?:Coord, clearSnapLines?:boolean, ensureSnap?:boolean):Coord|undefined{
         if(clearSnapLines)
             snapLines.value = []
         if(!snapGridEnabled.value)
@@ -118,7 +118,7 @@ export const useSnapStore = defineStore('snap',()=>{
             intv,
             cvsWidth.value,
             cvsHeight.value,
-            freeAxis,
+            freeWay,
             cs.config.snapGridThrs,
             ensureSnap
         )

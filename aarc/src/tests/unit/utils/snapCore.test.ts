@@ -131,22 +131,34 @@ describe('snapGrid', () => {
     expect(res?.pos).toEqual([100, 100])
   })
 
-  it('freeAxis=竖向时只吸附 y 坐标', () => {
+  it('freeWay=竖向时只吸附 y 坐标', () => {
     const res = snapGrid([12, 18], 10, 100, 100, [0, 1])
     expect(res?.pos).toEqual([12, 20])
     expect(res?.snapLines).toHaveLength(2)
   })
 
-  it('freeAxis=横向时只吸附 x 坐标', () => {
+  it('freeWay=横向时只吸附 x 坐标', () => {
     const res = snapGrid([12, 18], 10, 100, 100, [1, 0])
     expect(res?.pos).toEqual([10, 18])
     expect(res?.snapLines).toHaveLength(2)
   })
 
-  it('freeAxis=fall 对角线时沿对角线吸附', () => {
+  it('freeWay=fall 对角线时沿对角线吸附', () => {
     // 点 (12,12) 到网格线 x=10 差 2，y=10 差 2，正好同时满足 fall 对角线
     const res = snapGrid([12, 12], 10, 100, 100, [1, 1])
     expect(res?.pos).toEqual([10, 10])
+  })
+
+  it('freeWay 为 30° 方向时，沿射线滑动到最近竖直网格线', () => {
+    // ptPos=[12, 18]，30° 射线；最近竖线 x=10，xDiff=2，沿 30° 方向需移动 t=-2/cos30°
+    const angle = 30 * Math.PI / 180
+    const cos = Math.cos(angle)
+    const sin = Math.sin(angle)
+    const res = snapGrid([12, 18], 10, 100, 100, [cos, sin])
+    const t = -2 / cos
+    expect(res?.pos[0]).toBeCloseTo(12 + t * cos)
+    expect(res?.pos[1]).toBeCloseTo(18 + t * sin)
+    expect(res?.snapLines).toHaveLength(2)
   })
 
   it('命中 x 和 y 网格线时生成 4 条辅助线', () => {
@@ -399,18 +411,21 @@ describe('snapNeighborExtends', () => {
     expect(res.snapRes![1]).toBeCloseTo(0.433, 2)
   })
 
-  it('45° 时 freeAxis 为 fall', () => {
+  it('45° 时 freeWay 为 45° 单位向量', () => {
     const pt = makePt(1, [0, 0], ControlPointDir.incline)
     const neighbor = makePt(2, [6, 4], ControlPointDir.incline)
     const res = snapNeighborExtends(pt, [neighbor], 2, false, ['45'])
-    expect(res.freeAxis).toEqual([1, 1])
+    expect(res.freeWay![0]).toBeCloseTo(Math.sqrt(2) / 2)
+    expect(res.freeWay![1]).toBeCloseTo(Math.sqrt(2) / 2)
   })
 
-  it('任意角度时 freeAxis 为 undefined', () => {
+  it('任意角度时 freeWay 为对应单位向量', () => {
     const pt = makePt(1, [1, 0])
     const neighbor = makePt(2, [0, 0])
     const res = snapNeighborExtends(pt, [neighbor], 10, false, ['30'])
-    expect(res.freeAxis).toBeUndefined()
+    const angle = 30 * Math.PI / 180
+    expect(res.freeWay![0]).toBeCloseTo(Math.cos(angle))
+    expect(res.freeWay![1]).toBeCloseTo(Math.sin(angle))
   })
 })
 
