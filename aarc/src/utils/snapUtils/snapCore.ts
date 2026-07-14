@@ -311,18 +311,23 @@ export function snapNeighborExtends(
     neighbors: ControlPoint[],
     thrs: number,
     onlySameDir: boolean,
-    snapRayAngles: string[]
+    snapRayAngles: string[],
+    snapRayAnglesForFree?: string[]
 ): SnapNeighborExtendsResult {
     const pos = pt.pos
     const dir = pt.dir
     const cands: { dist: number, snapTo: Coord, source: ControlPoint, angleDeg: number }[] = []
 
-    // 解析字符串为角度，归一化并去重
-    const angles = snapRayAngles
-        .map(parseSnapRayAngle)
-        .filter((a): a is number => a !== undefined)
-        .map(normalizeAngleDeg)
-        .filter((a, i, arr) => arr.indexOf(a) === i)
+    function resolveAngles(sourcePt: ControlPoint): number[] {
+        const raw = (sourcePt.free || pt.free) && snapRayAnglesForFree
+            ? snapRayAnglesForFree
+            : snapRayAngles
+        return raw
+            .map(parseSnapRayAngle)
+            .filter((a): a is number => a !== undefined)
+            .map(normalizeAngleDeg)
+            .filter((a, i, arr) => arr.indexOf(a) === i)
+    }
 
     neighbors.forEach(n => {
         if (onlySameDir && dir !== n.dir)
@@ -330,7 +335,7 @@ export function snapNeighborExtends(
         const xDiff = n.pos[0] - pos[0]
         const yDiff = n.pos[1] - pos[1]
 
-        for (const angleDeg of angles) {
+        for (const angleDeg of resolveAngles(n)) {
             const [cos, sin] = getAngleCosSin(angleDeg)
             // 有符号垂直距离：点在直线哪一侧
             const dSigned = xDiff * sin - yDiff * cos

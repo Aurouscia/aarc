@@ -81,7 +81,8 @@ export const useSnapStore = defineStore('snap',()=>{
             saveStore.getNeighborByPt(pt.id),
             cs.config.snapOctaRayPtPtThrs,
             snapNeighborExtendsOnlySameDir.value,
-            cs.config.snapRayAngles
+            cs.config.snapRayAngles,
+            cs.config.snapRayAnglesForFree
         )
         snapLines.value.push(...lines)
         return { snapRes, freeWay }

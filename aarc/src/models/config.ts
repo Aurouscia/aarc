@@ -56,6 +56,7 @@ export interface Config{
     snapOctaRayPtNameThrs: number,
     snapGridThrs: number,
     snapRayAngles: string[],
+    snapRayAnglesForFree: string[],
 
     colorPresetArea: string,
     colorPresetWater :string,

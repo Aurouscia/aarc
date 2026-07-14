@@ -67,6 +67,7 @@ export const configDefault:Config = {
     snapOctaRayPtNameThrs: 6,
     snapGridThrs: 6,
     snapRayAngles: ['0', '45', '90', '135'],
+    snapRayAnglesForFree: ['0', '45', '90', '135'],
 
     colorPresetArea: '#cccccc',
     colorPresetWater: '#c3e5eb',
@@ -132,14 +133,18 @@ export const useConfigStore = defineStore('config', ()=>{
         console.log('写入后的配置：', deepClone(config.value))
     }
 
-    /** 确保 snapRayAngles 为字符串数组（兼容旧存档/手动编辑的 number[]） */
+    /** 确保 snapRayAngles / snapRayAnglesForFree 为字符串数组（兼容旧存档/手动编辑的 number[]） */
     function normalizeSnapRayAngles(){
-        const raw = config.value.snapRayAngles
+        normalizeSnapRayAngleKey('snapRayAngles')
+        normalizeSnapRayAngleKey('snapRayAnglesForFree')
+    }
+    function normalizeSnapRayAngleKey(key: 'snapRayAngles' | 'snapRayAnglesForFree'){
+        const raw = config.value[key]
         if(!Array.isArray(raw)){
-            config.value.snapRayAngles = [...configDefault.snapRayAngles]
+            config.value[key] = [...configDefault[key]]
             return
         }
-        config.value.snapRayAngles = raw.map(v => String(v))
+        config.value[key] = raw.map(v => String(v))
     }
 
     const clickPtThrsSq = computed<number>(()=>

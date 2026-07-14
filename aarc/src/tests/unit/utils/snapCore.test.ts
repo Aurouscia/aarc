@@ -14,14 +14,16 @@ function makePt(
   id: number,
   pos: [number, number],
   dir: ControlPointDir = ControlPointDir.vertical,
-  nameP?: [number, number]
+  nameP?: [number, number],
+  free?: boolean
 ): ControlPoint {
   return {
     id,
     pos,
     dir,
     sta: ControlPointSta.sta,
-    nameP
+    nameP,
+    free
   }
 }
 
@@ -426,6 +428,29 @@ describe('snapNeighborExtends', () => {
     const angle = 30 * Math.PI / 180
     expect(res.freeWay![0]).toBeCloseTo(Math.cos(angle))
     expect(res.freeWay![1]).toBeCloseTo(Math.sin(angle))
+  })
+
+  it('非 free 点间使用 snapRayAngles', () => {
+    const pt = makePt(1, [2, 1])
+    const neighbor = makePt(2, [0, 0])
+    // 非 free：用 0°，点投影到 x 轴
+    const res = snapNeighborExtends(pt, [neighbor], 10, false, ['0'], ['90'])
+    expect(res.snapRes).toEqual([2, 0])
+  })
+
+  it('当前点为 free 点时使用 snapRayAnglesForFree', () => {
+    const pt = makePt(1, [2, 1], ControlPointDir.vertical, undefined, true)
+    const neighbor = makePt(2, [0, 0])
+    // free：用 90°，点投影到 y 轴
+    const res = snapNeighborExtends(pt, [neighbor], 10, false, ['0'], ['90'])
+    expect(res.snapRes).toEqual([0, 1])
+  })
+
+  it('邻点为 free 点时也使用 snapRayAnglesForFree', () => {
+    const pt = makePt(1, [2, 1])
+    const neighbor = makePt(2, [0, 0], ControlPointDir.vertical, undefined, true)
+    const res = snapNeighborExtends(pt, [neighbor], 10, false, ['0'], ['90'])
+    expect(res.snapRes).toEqual([0, 1])
   })
 })
 

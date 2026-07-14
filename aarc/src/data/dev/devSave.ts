@@ -487,7 +487,8 @@ export const devSave:Save = {
         }
     ],
     config:{
-        snapRayAngles: ['4:3', '60', '90', '135']
+        snapRayAngles: ['0', '45', '90', '135'],
+        snapRayAnglesForFree: ['4:3', '60']
     },
     meta:{}
 }
