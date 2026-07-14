@@ -1,4 +1,4 @@
-import { Coord, FormalRay } from "@/models/coord";
+import { Coord, FormalRay, FreeRay } from "@/models/coord";
 import { rayToCoordDist } from "./rayToCoordDist";
 import { sqrt2, sqrt2half } from "@/utils/consts";
 import { isZero } from "@/utils/sgn";
@@ -45,4 +45,18 @@ export function rayIntersect(a:FormalRay, b:FormalRay, perpOnly?:boolean){
     // if(!raySameWay(bSourceToResWay, b))
     //     return;
     // return res;
+}
+
+/** 求两条任意角度射线的交点（按无限直线处理） */
+export function freeRayIntersect(a:FreeRay, b:FreeRay):Coord|undefined{
+    const [a1, a2] = a.way
+    const [b1, b2] = b.way
+    const det = a1 * b2 - a2 * b1
+    if(isZero(det)){
+        return undefined // 平行或共线
+    }
+    const dx = b.source[0] - a.source[0]
+    const dy = b.source[1] - a.source[1]
+    const t = (dx * b2 - dy * b1) / det
+    return [a.source[0] + t * a1, a.source[1] + t * a2]
 }

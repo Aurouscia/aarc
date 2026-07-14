@@ -1,4 +1,4 @@
-import { Coord, FormalRay, SgnCoord } from "@/models/coord";
+import { Coord, FreeRay, SgnCoord } from "@/models/coord";
 import { useSaveStore } from "./saveStore";
 import { ControlPoint } from "@/models/save";
 import { defineStore, storeToRefs } from "pinia";
@@ -22,7 +22,7 @@ export const useSnapStore = defineStore('snap',()=>{
     const staClusterStore = useStaClusterStore()
     const editorLocalConfig = useEditorLocalConfigStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
-    const snapLines = ref<FormalRay[]>([])
+    const snapLines = ref<FreeRay[]>([])
     const snapGridIntv = ref<number>()
     const snappingNamePtId = ref<number>()
     const snapStaNameTo = computed<Coord[]>(()=>{
@@ -80,7 +80,8 @@ export const useSnapStore = defineStore('snap',()=>{
             pt,
             saveStore.getNeighborByPt(pt.id),
             cs.config.snapOctaRayPtPtThrs,
-            snapNeighborExtendsOnlySameDir.value
+            snapNeighborExtendsOnlySameDir.value,
+            cs.config.snapRayAngles
         )
         snapLines.value.push(...lines)
         return { snapRes, freeAxis }

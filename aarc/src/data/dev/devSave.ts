@@ -486,6 +486,8 @@ export const devSave:Save = {
             overwriteSameName: true
         }
     ],
-    config:{},
+    config:{
+        snapRayAngles: ['4:3', '60', '135']
+    },
     meta:{}
 }

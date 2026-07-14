@@ -66,6 +66,7 @@ export const configDefault:Config = {
     snapOctaClingPtNameThrs: 8,
     snapOctaRayPtNameThrs: 6,
     snapGridThrs: 6,
+    snapRayAngles: ['0', '45', '90', '135'],
 
     colorPresetArea: '#cccccc',
     colorPresetWater: '#c3e5eb',
@@ -105,6 +106,7 @@ export const useConfigStore = defineStore('config', ()=>{
             return;
         const sc = saveStore.save.config;
         Object.assign(config.value, sc)
+        normalizeSnapRayAngles()
     }
     function writeConfigToSave(){
         const configNow = deepClone(config.value)
@@ -126,7 +128,18 @@ export const useConfigStore = defineStore('config', ()=>{
                 delete config.value[k]
             }
         }
+        normalizeSnapRayAngles()
         console.log('写入后的配置：', deepClone(config.value))
+    }
+
+    /** 确保 snapRayAngles 为字符串数组（兼容旧存档/手动编辑的 number[]） */
+    function normalizeSnapRayAngles(){
+        const raw = config.value.snapRayAngles
+        if(!Array.isArray(raw)){
+            config.value.snapRayAngles = [...configDefault.snapRayAngles]
+            return
+        }
+        config.value.snapRayAngles = raw.map(v => String(v))
     }
 
     const clickPtThrsSq = computed<number>(()=>

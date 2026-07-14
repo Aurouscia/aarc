@@ -1,11 +1,11 @@
-import { collapseWay, Coord, FormalRay, SgnCoord } from "@/models/coord";
+import { collapseWay, Coord, FreeRay, SgnCoord } from "@/models/coord";
 import { ControlPoint, ControlPointDir } from "@/models/save";
-import { isZero, sgn } from "@/utils/sgn";
+import { isZero } from "@/utils/sgn";
 import { applyBias } from "@/utils/coordUtils/coordBias";
 import { coordDist, coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { crossAddNums } from "@/utils/lang/crossAddNums";
 import { numberCmpEpsilon, sqrt2half } from "@/utils/consts";
-import { rayIntersect } from "@/utils/rayUtils/rayIntersection";
+import { freeRayIntersect } from "@/utils/rayUtils/rayIntersection";
 
 /** 站名吸附的候选方向配置 */
 export type StaNameDiagonalMode = 'inner' | 'outer' | 'both'
@@ -111,7 +111,7 @@ export function getNameSnapStatus(
 /** 网格吸附结果 */
 export interface SnapGridResult {
     pos: Coord
-    snapLines: FormalRay[]
+    snapLines: FreeRay[]
 }
 
 /**
@@ -182,7 +182,7 @@ export function snapGrid(
         }
     }
     const pos = [...ptPos] as Coord
-    const snapLines: FormalRay[] = []
+    const snapLines: FreeRay[] = []
     let snapX = false
     let snapY = false
     if (freeWay === 'vert') {
@@ -266,8 +266,65 @@ export function snapGrid(
 export interface SnapNeighborExtendsResult {
     snapRes?: Coord
     freeAxis?: SgnCoord
-    snapLines: FormalRay[]
+    snapLines: FreeRay[]
 }
+
+/** 将角度（度）归一化到 [0, 180) */
+function normalizeAngleDeg(angleDeg: number): number {
+    return ((angleDeg % 180) + 180) % 180
+}
+
+/** 解析角度配置字符串，支持 "30" 或 "2:3" / "2：3" 比例写法，返回角度（度） */
+export function parseSnapRayAngle(s: string): number | undefined {
+    const trimmed = s.trim()
+    if (!trimmed) return undefined
+
+    // 比例写法：2:3 或 2：3，表示 arctan(2/3)
+    const ratioMatch = trimmed.match(/^(\d+(?:\.\d+)?)\s*[:：]\s*(\d+(?:\.\d+)?)$/)
+    if (ratioMatch) {
+        const a = parseFloat(ratioMatch[1])
+        const b = parseFloat(ratioMatch[2])
+        return Math.atan2(a, b) * 180 / Math.PI
+    }
+
+    // 包含冒号但不是有效比例格式，返回 undefined
+    if (trimmed.includes(':') || trimmed.includes('：')) {
+        return undefined
+    }
+
+    // 普通数字：必须整个字符串都是有效数字
+    if (!/^-?\d+(?:\.\d+)?$/.test(trimmed)) {
+        return undefined
+    }
+    const num = parseFloat(trimmed)
+    if (!isNaN(num)) return num
+
+    return undefined
+}
+
+/** 获取角度的精确 cos/sin；对 0/45/90/135 返回精确值避免浮点误差 */
+function getAngleCosSin(angleDeg: number): [number, number] {
+    const a = normalizeAngleDeg(angleDeg)
+    if (a === 0) return [1, 0]
+    if (a === 45) return [sqrt2half, sqrt2half]
+    if (a === 90) return [0, 1]
+    if (a === 135) return [-sqrt2half, sqrt2half]
+    const rad = a * Math.PI / 180
+    return [Math.cos(rad), Math.sin(rad)]
+}
+
+/** 将已知角度映射到 8 方向 freeAxis；未知角度返回 undefined */
+function angleToSgnCoord(angleDeg: number): SgnCoord | undefined {
+    const a = normalizeAngleDeg(angleDeg)
+    if (a === 0) return [1, 0]
+    if (a === 45) return [1, 1]
+    if (a === 90) return [0, 1]
+    if (a === 135) return [1, -1]
+    return undefined
+}
+
+/** 交点吸附允许的最大距离（相对 thrs 的倍数）：交点离 pt 超过 2*thrs 时放弃该第二射线 */
+const maxCrossDistFactor = 2
 
 /**
  * 基于邻点延长线计算吸附位置。
@@ -277,95 +334,81 @@ export function snapNeighborExtends(
     pt: ControlPoint,
     neighbors: ControlPoint[],
     thrs: number,
-    onlySameDir: boolean
+    onlySameDir: boolean,
+    snapRayAngles: string[]
 ): SnapNeighborExtendsResult {
     const pos = pt.pos
     const dir = pt.dir
-    const cands: { dist: number, snapTo: Coord, source: ControlPoint }[] = []
-    const tryCand = (dist: number, snapTo: Coord, source: ControlPoint) => {
-        if (cands.length < 2) {
-            if (cands.length == 0 || cands[0].dist < dist) {
-                cands.push({ dist, snapTo, source })
-                return true;
-            } else {
-                cands[1] = cands[0]
-                cands[0] = { dist, snapTo, source };
-                return true
-            }
-        }
-        if (dist < cands[0].dist) {
-            cands[1] = cands[0]
-            cands[0] = { dist, snapTo, source };
-            return true
-        }
-        else if (dist < cands[1].dist) {
-            cands[1] = { dist, snapTo, source };
-            return true
-        }
-        return false
-    }
+    const cands: { dist: number, snapTo: Coord, source: ControlPoint, angleDeg: number }[] = []
+
+    // 解析字符串为角度，归一化并去重
+    const angles = snapRayAngles
+        .map(parseSnapRayAngle)
+        .filter((a): a is number => a !== undefined)
+        .map(normalizeAngleDeg)
+        .filter((a, i, arr) => arr.indexOf(a) === i)
 
     neighbors.forEach(n => {
         if (onlySameDir && dir !== n.dir)
             return
         const xDiff = n.pos[0] - pos[0]
         const yDiff = n.pos[1] - pos[1]
-        if (true) {//dir === ControlPointDir.vertical || n.dir === ControlPointDir.vertical){
-            const xDiffAbs = Math.abs(xDiff)
-            const yDiffAbs = Math.abs(yDiff)
-            const dist = Math.min(xDiffAbs, yDiffAbs)
+
+        for (const angleDeg of angles) {
+            const [cos, sin] = getAngleCosSin(angleDeg)
+            // 有符号垂直距离：点在直线哪一侧
+            const dSigned = xDiff * sin - yDiff * cos
+            const dist = Math.abs(dSigned)
             if (dist < thrs) {
-                let snapTo: Coord = [...pos];
-                if (tryCand(dist, snapTo, n)) {
-                    if (xDiffAbs < yDiffAbs) {
-                        snapTo[0] = n.pos[0]
-                    } else {
-                        snapTo[1] = n.pos[1]
-                    }
-                }
-            }
-        }
-        if (true) {//dir === ControlPointDir.incline || n.dir === ControlPointDir.incline){
-            const diffdiff = xDiff * yDiff > 0 ? (yDiff - xDiff) : (yDiff + xDiff)
-            const dist = Math.abs(diffdiff) * sqrt2half
-            if (dist < thrs) {
-                let snapTo: Coord = [0, 0];
-                if (tryCand(dist, snapTo, n)) {
-                    if (xDiff * yDiff > 0) {
-                        snapTo[0] = pos[0] - diffdiff / 2;
-                        snapTo[1] = pos[1] + diffdiff / 2
-                    }
-                    else {
-                        snapTo[0] = pos[0] + diffdiff / 2;
-                        snapTo[1] = pos[1] + diffdiff / 2
-                    }
-                }
+                // 投影到直线上
+                const snapTo: Coord = [
+                    pos[0] + dSigned * sin,
+                    pos[1] - dSigned * cos
+                ]
+                cands.push({ dist, snapTo, source: n, angleDeg })
             }
         }
     })
+    cands.sort((a, b) => a.dist - b.dist)
 
-    const snapLines: FormalRay[] = []
-    if (cands.length > 0) {
-        cands.forEach(c => {
-            const xDiff = c.snapTo[0] - c.source.pos[0]
-            const yDiff = c.snapTo[1] - c.source.pos[1]
-            snapLines.push({
-                source: c.source.pos,
-                way: [
-                    sgn(xDiff),
-                    sgn(yDiff)
-                ]
-            })
-        })
-        const firstCandWay = snapLines[0].way
-        if (cands.length > 1) {
-            const intersection = rayIntersect(snapLines[0], snapLines[1])
-            if (intersection)
-                return { snapRes: intersection, snapLines }
+    const snapLines: FreeRay[] = []
+    if (cands.length === 0)
+        return { snapLines }
+
+    // toward：让 way 朝向吸附目标一侧，保证单向渲染的射线覆盖吸附位置
+    // （如 240° 侧吸附时，way 取 60° 的反方向）
+    const toRay = (c: { source: ControlPoint, angleDeg: number }, toward: Coord): FreeRay => {
+        let [cos, sin] = getAngleCosSin(c.angleDeg)
+        const dot = (toward[0] - c.source.pos[0]) * cos + (toward[1] - c.source.pos[1]) * sin
+        if (dot < 0) {
+            cos = -cos
+            sin = -sin
         }
-        return { snapRes: cands[0].snapTo, freeAxis: firstCandWay, snapLines }
+        return { source: c.source.pos, way: [cos, sin] }
     }
-    return { snapLines }
+
+    const firstCand = cands[0]
+    const firstCandWay = angleToSgnCoord(firstCand.angleDeg)
+    const firstLine = toRay(firstCand, firstCand.snapTo)
+    snapLines.push(firstLine)
+
+    // 找第二条可用于求交的射线：来自不同发射源，且交点不能离 pt 太远
+    // （同源射线交点恒为发射源；近平行射线交点会跑到很远，均不稳定）
+    const maxCrossDistSq = (maxCrossDistFactor * thrs) ** 2
+    for (let i = 1; i < cands.length; i++) {
+        const c = cands[i]
+        if (c.source.id === firstCand.source.id)
+            continue
+        const rawSecondLine = toRay(c, c.snapTo) // 朝向不影响交点计算（按无限直线处理）
+        const intersection = freeRayIntersect(firstLine, rawSecondLine)
+        if (!intersection)
+            continue
+        if (coordDistSqLessThan(intersection, pos, maxCrossDistSq)) {
+            snapLines.push(toRay(c, intersection))
+            return { snapRes: intersection, snapLines }
+        }
+    }
+    return { snapRes: firstCand.snapTo, freeAxis: firstCandWay, snapLines }
 }
 
 /** 点间吸附配置 */
