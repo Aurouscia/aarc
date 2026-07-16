@@ -5,6 +5,7 @@ import { localConfigKeyPrefix } from "./common/keyPrefix";
 export const useEditorLocalConfigStore = defineStore('editorLocalConfig',()=>{
     const staNameFob = ref<number|string>()
     const lineFob = ref<number|string>()
+    const staFob = ref<number|string>()
     const tabForPinyinConvert = ref<boolean>(false)
     const duplicateNameDistThrs = ref<number|string>(200)
     const allowMergePtAndTerrain = ref<boolean>(true)
@@ -25,6 +26,7 @@ export const useEditorLocalConfigStore = defineStore('editorLocalConfig',()=>{
     return {
         staNameFob,
         lineFob,
+        staFob,
         tabForPinyinConvert,
         duplicateNameDistThrs,
         allowMergePtAndTerrain,
