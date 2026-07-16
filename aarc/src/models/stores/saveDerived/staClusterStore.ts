@@ -28,6 +28,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     const configClingingDist = cs.config.snapOctaClingPtPtDist
 
     const staClusters = ref<ControlPoint[][]>()
+    const maxSizeCache = new Map<string, number>()
     function getStaClusters(){
         if(!staClusters.value){
             initNeighbors()
@@ -68,10 +69,12 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             numberCmpEpsilon
         )
         makeClustersFromNeighbors()
+        maxSizeCache.clear()
     }
     function cleanClustersFromDeletedPt(ptId:number){
         neighbors = cleanNeighborsForDeletedPt(neighbors, ptId)
         makeClustersFromNeighbors()
+        maxSizeCache.clear()
     }
 
     function tryTransferStaNameWithinCluster(sta:ControlPoint){
@@ -90,12 +93,18 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         return target
     }
     function getMaxSizePtWithinCluster(ptId:number, sizeType:'ptSize'|'ptNameSize'|'ptNameSnapSize'){
+        const key = `${ptId}|${sizeType}`
+        const cached = maxSizeCache.get(key)
+        if(cached !== undefined)
+            return cached
         const get = sizeType === 'ptSize' 
             ? (id:number)=>saveStore.getLinesDecidedPtSize(id)
             : sizeType === 'ptNameSize'
             ? (id:number)=>saveStore.getLinesDecidedPtNameSize(id)
             : (id:number)=>saveStore.getLinesDecidedPtNameSnapSize(id)
-        return getMaxSizePtWithinClusterPure(ptId, getStaClusters() || [], get)
+        const res = getMaxSizePtWithinClusterPure(ptId, getStaClusters() || [], get)
+        maxSizeCache.set(key, res)
+        return res
     }
     function getRectOfCluster(cluster: ControlPoint[]|undefined):Coord[] {
         if (!cluster || cluster.length === 0)
@@ -105,6 +114,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     function clearItems(){
         staClusters.value = undefined
         neighbors = {}
+        maxSizeCache.clear()
     }
     function getStaClusterById(ptId:number){
         return getStaClusterByIdPure(ptId, getStaClusters() || [], id => saveStore.getPtById(id))

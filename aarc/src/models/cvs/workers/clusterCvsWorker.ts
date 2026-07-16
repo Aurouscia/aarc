@@ -8,6 +8,8 @@ import { useSaveStore } from "@/models/stores/saveStore";
 import { sqrt2half } from "@/utils/consts";
 import { usePointLinkStore } from "@/models/stores/pointLinkStore";
 import { isZero } from "@/utils/sgn";
+import { useCvsBlocksControlStore } from "../common/cvs";
+import { useRenderOptionsStore } from "@/models/stores/renderOptionsStore";
 
 interface ClusterPoly{
     coords:Coord[]
@@ -20,6 +22,9 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const cs = useConfigStore()
     const pointLinkStore = usePointLinkStore()
+    const cvsBlocksControlStore = useCvsBlocksControlStore()
+    const renderOptionsStore = useRenderOptionsStore()
+    const clusterPolyCache = new Map<string, ClusterPoly>()
 
     function getClustersRenderingData(){
         let clusters = staClusterStore.getStaClusters() || []
@@ -39,6 +44,33 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         polysByLink.forEach(p=>p.isFromLink=true)
         polys.push(...polysByLink)
         return polys
+    }
+    function getClusterOmitPadding(maxStaSize:number){
+        // carpet 层绘制宽度最大：(ptStaSize + ptStaLineWidth) * size * 2
+        const maxLineWidth = (cs.config.ptStaSize + cs.config.ptStaLineWidth) * maxStaSize * 2
+        return maxLineWidth / 2
+    }
+    function checkOmittableClusterPts(c:ControlPoint[], maxStaSize:number){
+        const { cvsWidth, cvsHeight } = saveStore
+        const { left, right, top, bottom } = cvsBlocksControlStore.blockTotalBoundary
+        const padding = getClusterOmitPadding(maxStaSize)
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+        for(const pt of c){
+            const [x, y] = pt.pos
+            if(x < minX) minX = x
+            if(x > maxX) maxX = x
+            if(y < minY) minY = y
+            if(y > maxY) maxY = y
+        }
+        if((maxX + padding)/cvsWidth < left)
+            return true
+        if((minX - padding)/cvsWidth > right)
+            return true
+        if((maxY + padding)/cvsHeight < top)
+            return true
+        if((minY - padding)/cvsHeight > bottom)
+            return true
+        return false
     }
 
     function renderClusters(ctx:CvsContext, data:ClusterPoly[], 
@@ -130,6 +162,14 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
                 return
             let poly:Coord[] = []
             const maxStaSize = Math.max(...sizes)
+            if(!renderOptionsStore.exporting && checkOmittableClusterPts(c, maxStaSize))
+                return
+            const cacheKey = getClusterPolyCacheKey(c, asIs)
+            const cached = clusterPolyCache.get(cacheKey)
+            if(cached){
+                polys.push(cached)
+                return
+            }
             if(asIs){
                 poly = c.map(x=>x.pos)
             }
@@ -154,13 +194,19 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
                     }
                 }
             }
-            polys.push({
+            const polyData:ClusterPoly = {
                 coords:poly,
                 maxStaSize,
                 ill:isIllPosedPoly(poly)
-            })
+            }
+            clusterPolyCache.set(cacheKey, polyData)
+            polys.push(polyData)
         })
         return polys
+    }
+    function getClusterPolyCacheKey(c:ControlPoint[], asIs?:'asIs'){
+        const parts = c.map(pt => `${pt.id}:${pt.pos[0]},${pt.pos[1]}:${pt.dir ?? ''}:${saveStore.getLinesDecidedPtSize(pt.id)}`)
+        return `${parts.join('|')}|${asIs ?? ''}`
     }
     function clusterToPolyVert(cluster:ControlPoint[]){
         let l = 1e10

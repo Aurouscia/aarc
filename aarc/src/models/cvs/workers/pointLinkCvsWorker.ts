@@ -7,34 +7,58 @@ import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore"
 import { coordTwinShrink } from "@/utils/coordUtils/coordMath";
 import { autoDash } from "@/utils/drawUtils/autoDash";
 import { Coord } from "@/models/coord";
+import { useCvsBlocksControlStore } from "../common/cvs";
+import { useRenderOptionsStore } from "@/models/stores/renderOptionsStore";
 
 export const usePointLinkCvsWorker = defineStore('pointLinkCvsWorker',()=>{
     const saveStore = useSaveStore()
     const staClusterStore = useStaClusterStore()
     const cs = useConfigStore()
+    const cvsBlocksControlStore = useCvsBlocksControlStore()
+    const renderOptionsStore = useRenderOptionsStore()
     function renderAllLinks(ctx:CvsContext, renderLayer:'carpet'|'body'|'core'){
         const links = saveStore.save?.pointLinks
         if(links){
             for(const link of links){
-                renderLink(ctx, link, renderLayer)
+                const pts:ControlPoint[] = []
+                for(const ptId of link.pts){
+                    const pt = saveStore.getPtById(ptId)
+                    if(pt)
+                        pts.push(pt)
+                }
+                if(pts.length<2)
+                    continue //已失效的link
+                if(pts[0].id === pts[1].id)
+                    continue //同一点
+                const sizes = pts.map(x=>{return{id:x.id, size:staClusterStore.getMaxSizePtWithinCluster(x.id, 'ptSize')}})
+                const sizeRatio = Math.min(...sizes.map(x=>x.size))
+                if(!renderOptionsStore.exporting && checkOmittableLink(pts, sizeRatio))
+                    continue
+                renderLink(ctx, link, renderLayer, pts, sizes, sizeRatio)
             }
         }
     }
-    function renderLink(ctx:CvsContext, link:ControlPointLink, renderLayer:'carpet'|'body'|'core'){
-        const pts:ControlPoint[] = []
-        for(const ptId of link.pts){
-            const pt = saveStore.getPtById(ptId)
-            if(pt)
-                pts.push(pt)
-            else
-                return //已失效的link
-        }
-        if(pts.length<2)
-            return //已失效的link
-        if(pts[0].id === pts[1].id)
-            return //同一点
-        const sizes = pts.map(x=>{return{id:x.id, size:staClusterStore.getMaxSizePtWithinCluster(x.id, 'ptSize')}})
-        const sizeRatio = Math.min(...sizes.map(x=>x.size))
+    function checkOmittableLink(pts:ControlPoint[], sizeRatio:number){
+        const { cvsWidth, cvsHeight } = saveStore
+        const { left, right, top, bottom } = cvsBlocksControlStore.blockTotalBoundary
+        // fat link carpet 最宽：(ptStaLineWidth*3.5 + ptStaLineWidth) * sizeRatio
+        const maxLineWidth = (cs.config.ptStaLineWidth * 3.5 + cs.config.ptStaLineWidth) * sizeRatio
+        const padding = maxLineWidth / 2
+        const minX = Math.min(pts[0].pos[0], pts[1].pos[0]) - padding
+        const maxX = Math.max(pts[0].pos[0], pts[1].pos[0]) + padding
+        const minY = Math.min(pts[0].pos[1], pts[1].pos[1]) - padding
+        const maxY = Math.max(pts[0].pos[1], pts[1].pos[1]) + padding
+        if(maxX/cvsWidth < left)
+            return true
+        if(minX/cvsWidth > right)
+            return true
+        if(maxY/cvsHeight < top)
+            return true
+        if(minY/cvsHeight > bottom)
+            return true
+        return false
+    }
+    function renderLink(ctx:CvsContext, link:ControlPointLink, renderLayer:'carpet'|'body'|'core', pts:ControlPoint[], sizes:{id:number, size:number}[], sizeRatio:number){
         if(link.type === ControlPointLinkType.fat){
             const bodyLineWidth = cs.config.ptStaLineWidth*3.5
             ctx.beginPath()
