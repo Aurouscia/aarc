@@ -50,9 +50,14 @@ function cloneNeighbors(neighbors: Neighbors): Neighbors {
     return res
 }
 
+function getGridKey(x: number, y: number, cellSize: number): string {
+    return `${Math.floor(x / cellSize)},${Math.floor(y / cellSize)}`
+}
+
 /**
  * 根据所有点构建邻接表
- * 只考虑 sta 类型的点，并跳过 X/Y 单边距离超过 2.5 倍吸附阈值的点以优化性能
+ * 只考虑 sta 类型的点，使用均匀网格索引将时间复杂度从 O(n^2) 降到 O(n*k)
+ * （k 为单个网格及周围 8 格内平均点数）
  */
 export function buildNeighbors(
     pts: ControlPoint[],
@@ -61,23 +66,46 @@ export function buildNeighbors(
     epsilon: number
 ): Neighbors {
     const neighbors: Neighbors = {}
-    const skipClingingCheckThrs = 2.5 * configClingingDist
+    const skipThrs = 2.5 * configClingingDist
+    const cellSize = skipThrs
     const staPts = pts.filter(pt => pt.sta == ControlPointSta.sta)
-    for (let i = 0; i < staPts.length - 1; i++) {
-        for (let j = i + 1; j < staPts.length; j++) {
-            const a = staPts[i]
-            const b = staPts[j]
-            if (Math.abs(a.pos[0] - b.pos[0]) > skipClingingCheckThrs)
-                continue
-            if (Math.abs(a.pos[1] - b.pos[1]) > skipClingingCheckThrs)
-                continue
-            if (ptClingingPure(a, b, configClingingDist, getSnapSize, epsilon)) {
-                if (!neighbors[a.id])
-                    neighbors[a.id] = new Set<number>()
-                if (!neighbors[b.id])
-                    neighbors[b.id] = new Set<number>()
-                neighbors[a.id]?.add(b.id)
-                neighbors[b.id]?.add(a.id)
+    if (skipThrs <= 0 || staPts.length === 0)
+        return neighbors
+
+    const grid = new Map<string, ControlPoint[]>()
+    for (const pt of staPts) {
+        const key = getGridKey(pt.pos[0], pt.pos[1], cellSize)
+        const cell = grid.get(key)
+        if (cell)
+            cell.push(pt)
+        else
+            grid.set(key, [pt])
+    }
+
+    for (const pt of staPts) {
+        const cx = Math.floor(pt.pos[0] / cellSize)
+        const cy = Math.floor(pt.pos[1] / cellSize)
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                const cell = grid.get(`${cx + dx},${cy + dy}`)
+                if (!cell)
+                    continue
+                for (const other of cell) {
+                    if (other.id <= pt.id)
+                        continue
+                    if (Math.abs(pt.pos[0] - other.pos[0]) > skipThrs)
+                        continue
+                    if (Math.abs(pt.pos[1] - other.pos[1]) > skipThrs)
+                        continue
+                    if (ptClingingPure(pt, other, configClingingDist, getSnapSize, epsilon)) {
+                        if (!neighbors[pt.id])
+                            neighbors[pt.id] = new Set<number>()
+                        if (!neighbors[other.id])
+                            neighbors[other.id] = new Set<number>()
+                        neighbors[pt.id]?.add(other.id)
+                        neighbors[other.id]?.add(pt.id)
+                    }
+                }
             }
         }
     }

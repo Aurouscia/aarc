@@ -8,6 +8,7 @@ import {
   getStaClusterByIdPure,
   isPtSinglePure,
   makeClustersFromNeighborsPure,
+  Neighbors,
   ptClingingPure,
   resolveStaNamePure,
   tryTransferStaNameWithinClusterPure,
@@ -112,7 +113,74 @@ describe('staClusterStore.pure - buildNeighbors', () => {
     expect(neighbors[1]?.has(3)).toBe(false)
     expect(neighbors[2]?.has(4)).toBe(false)
   })
+
+  it('负坐标点应正确聚类', () => {
+    const pts = [pt(1, [-10, -10]), pt(2, [-10.5, -10.5]), pt(3, [-100, -100])]
+    const neighbors = buildNeighbors(pts, configClingingDist, snapSizeOne, numberCmpEpsilon)
+    expect(neighbors[1]?.has(2)).toBe(true)
+    expect(neighbors[1]?.has(3)).toBe(false)
+  })
+
+  it('恰好在网格边界上的点不应遗漏邻接', () => {
+    // cellSize = 2.5 * 25 = 62.5
+    // 让点分别位于 (62.4, 0) 和 (62.6, 0)，跨越 x=62.5 网格边界但仍非常接近
+    const pts = [pt(1, [62.4, 0]), pt(2, [62.6, 0])]
+    const neighbors = buildNeighbors(pts, configClingingDist, snapSizeOne, numberCmpEpsilon)
+    expect(neighbors[1]?.has(2)).toBe(true)
+  })
+
+  it('网格结果应与暴力 O(n^2) 结果一致（混合密度）', () => {
+    const pts: ControlPoint[] = []
+    let id = 1
+    // 5 个密集簇
+    for (let c = 0; c < 5; c++) {
+      const baseX = c * 200
+      const baseY = c * 150
+      for (let i = 0; i < 30; i++) {
+        pts.push(pt(id++, [baseX + i * 0.3, baseY + (i % 5) * 0.3]))
+      }
+    }
+    // 100 个随机分散点（使用确定性伪随机）
+    let seed = 12345
+    for (let i = 0; i < 100; i++) {
+      seed = (seed * 9301 + 49297) % 233280
+      const x = (seed / 233280) * 2000 - 1000
+      seed = (seed * 9301 + 49297) % 233280
+      const y = (seed / 233280) * 2000 - 1000
+      pts.push(pt(id++, [x, y]))
+    }
+
+    const grid = buildNeighbors(pts, configClingingDist, snapSizeOne, numberCmpEpsilon)
+    const brute = buildNeighborsBruteForce(pts, configClingingDist, snapSizeOne, numberCmpEpsilon)
+    expect(grid).toEqual(brute)
+  })
 })
+
+function buildNeighborsBruteForce(
+  pts: ControlPoint[],
+  configClingingDist: number,
+  getSnapSize: (id: number) => number,
+  epsilon: number
+) {
+  const neighbors: Neighbors = {}
+  const skipThrs = 2.5 * configClingingDist
+  const staPts = pts.filter(p => p.sta === ControlPointSta.sta)
+  for (let i = 0; i < staPts.length - 1; i++) {
+    for (let j = i + 1; j < staPts.length; j++) {
+      const a = staPts[i]
+      const b = staPts[j]
+      if (Math.abs(a.pos[0] - b.pos[0]) > skipThrs) continue
+      if (Math.abs(a.pos[1] - b.pos[1]) > skipThrs) continue
+      if (ptClingingPure(a, b, configClingingDist, getSnapSize, epsilon)) {
+        if (!neighbors[a.id]) neighbors[a.id] = new Set<number>()
+        if (!neighbors[b.id]) neighbors[b.id] = new Set<number>()
+        neighbors[a.id]?.add(b.id)
+        neighbors[b.id]?.add(a.id)
+      }
+    }
+  }
+  return neighbors
+}
 
 describe('staClusterStore.pure - makeClustersFromNeighborsPure', () => {
   it('空邻接表应返回空 clusters', () => {
