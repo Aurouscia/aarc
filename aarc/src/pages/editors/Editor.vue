@@ -7,7 +7,7 @@ import { useSaveStore } from '@/models/stores/saveStore';
 import { useEnvStore } from '@/models/stores/envStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { storeToRefs } from 'pinia';
-import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { devSave } from '@/data/dev/devSave';
 import { useApiStore } from '@/app/com/apiStore';
@@ -176,6 +176,9 @@ async function load() {
         if(statusRes && !enteredFromStore.isCommentPromptChecked(saveIdNum.value)){
             saveStatus.value = statusRes
         }
+        // loadStatus 完成后再启动 SignalR，避免 negotiate 与关键加载请求竞争 HTTP 连接
+        await nextTick()
+        chatRoom.value?.initChatConnection()
     }
     else if(isDemo.value){
         saveStore.save = normalizeSave(deepClone(devSave))

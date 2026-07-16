@@ -18,6 +18,7 @@ import {
     SECOND_MS
 } from './consts'
 import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { HubConnectionState } from '@microsoft/signalr'
 import Notice from '@/components/common/Notice.vue'
 import Prompt from '@/components/common/Prompt.vue'
 
@@ -45,6 +46,12 @@ const messagesRef = useTemplateRef('messages')
 
 const messageInput = ref('')
 const localError = ref<string | null>(null)
+const isJoining = ref(false)
+const isConnecting = computed(() =>
+    isJoining.value ||
+    signalrStore.connectionState === HubConnectionState.Connecting ||
+    signalrStore.connectionState === HubConnectionState.Reconnecting
+)
 const isSidebarOpen = ref(false)
 const atBottom = ref(true)
 const showKickPrompt = ref(false)
@@ -113,10 +120,16 @@ watch(() => signalrStore.pendingKickEditingUserRooms.has(roomName.value), (hasKi
 }, { immediate: true })
 
 async function joinRoom() {
+    if (isJoining.value) return
     localError.value = null
-    const ok = await signalrStore.joinRoom(roomName.value)
-    if (!ok) {
-        localError.value = signalrStore.error
+    isJoining.value = true
+    try {
+        const ok = await signalrStore.joinRoom(roomName.value)
+        if (!ok) {
+            localError.value = signalrStore.error
+        }
+    } finally {
+        isJoining.value = false
     }
 }
 
@@ -149,17 +162,22 @@ function messageClass(msg: ChatMessage): string {
     return 'other'
 }
 
-async function onSidebarExtend() {
-    isSidebarOpen.value = true
-    enableContextMenu()
-    if (!effectiveEnabled.value) return
-    if (!isInRoom.value) {
-        await joinRoom()
-    }
+async function syncHistoryAndMarkRead() {
     await signalrStore.syncHistory(roomName.value)
     if (messages.value.length > 0) {
         const latest = messages.value[messages.value.length - 1]
         chatMsgsReadStore.markRead(props.saveId, latest.sentAt)
+    }
+}
+
+function onSidebarExtend() {
+    isSidebarOpen.value = true
+    enableContextMenu()
+    if (!effectiveEnabled.value) return
+    if (!isInRoom.value) {
+        joinRoom().then(() => syncHistoryAndMarkRead())
+    } else {
+        syncHistoryAndMarkRead()
     }
 }
 
@@ -256,15 +274,17 @@ function fold() {
     sidebar.value?.fold()
 }
 
-defineExpose({ open, fold, resetSaveReminderTimer })
+defineExpose({ open, fold, resetSaveReminderTimer, initChatConnection })
 
-onMounted(async () => {
+onMounted(() => {
     console.log(`[ChatRoom] 组件挂载 saveId=${props.saveId} effectiveEnabled=${effectiveEnabled.value}`)
     resetSaveReminderTimer()
-    if (!effectiveEnabled.value) return
-    await joinRoom()
-    await signalrStore.syncHistory(roomName.value)
 })
+
+function initChatConnection() {
+    if (!effectiveEnabled.value || isInRoom.value) return
+    joinRoom().then(() => signalrStore.syncHistory(roomName.value))
+}
 
 onUnmounted(async () => {
     if (kickTimer !== null) {
@@ -310,10 +330,12 @@ onUnmounted(async () => {
             </div>
             <div class="status">
                 <span v-if="signalrStore.isConnected" class="connected">已连接</span>
+                <span v-else-if="isConnecting" class="connecting">连接中...</span>
                 <span v-else class="disconnected">未连接</span>
                 <span v-if="isInRoom" class="joined">已加入</span>
             </div>
-            <div v-if="localError || signalrStore.error" class="error">
+            <div v-if="isConnecting" class="connectingTip">请稍候，正在连接聊天服务器...</div>
+            <div v-else-if="localError || signalrStore.error" class="error">
                 {{ localError || signalrStore.error }}
             </div>
             <div v-else-if="isOwner" class="disableChatWrap">
@@ -339,10 +361,10 @@ onUnmounted(async () => {
                     v-model="messageInput"
                     type="text"
                     :placeholder="canSend ? '输入消息...' : '仅转正用户可发送消息'"
-                    :disabled="!isInRoom || !canSend"
+                    :disabled="!isInRoom || !canSend || isConnecting"
                     @keyup.enter="sendMessage"
                 />
-                <button @click="sendMessage" :disabled="!isInRoom || !canSend || !messageInput.trim()">发送</button>
+                <button @click="sendMessage" :disabled="!isInRoom || !canSend || !messageInput.trim() || isConnecting">发送</button>
             </div>
         </div>
         <div v-else class="chatDisabled">
@@ -449,6 +471,14 @@ onUnmounted(async () => {
         .joined {
             color: #4a90e2;
         }
+        .connecting {
+            color: #4a90e2;
+        }
+    }
+    .connectingTip {
+        text-align: center;
+        color: #4a90e2;
+        font-size: 14px;
     }
     .error {
         color: red;

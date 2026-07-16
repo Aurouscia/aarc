@@ -32,6 +32,9 @@ export const useSignalrStore = defineStore('signalr', () => {
 
     const isConnected = computed(() => connection.value?.state === HubConnectionState.Connected)
 
+    // 防止多个并发的 ensureConnected 各自启动一条新连接
+    let connectingPromise: Promise<HubConnection> | null = null
+
     function getHubUrl(): string {
         const baseUrl = import.meta.env.VITE_ApiUrlBase as string | undefined
         if (!baseUrl) {
@@ -47,7 +50,13 @@ export const useSignalrStore = defineStore('signalr', () => {
         if (!apiStore.jwtToken) {
             throw new Error('未登录，无法连接聊天服务器')
         }
-        return await startConnection()
+        if (connectingPromise) {
+            return await connectingPromise
+        }
+        connectingPromise = startConnection().finally(() => {
+            connectingPromise = null
+        })
+        return await connectingPromise
     }
 
     async function startConnection() {
@@ -62,6 +71,7 @@ export const useSignalrStore = defineStore('signalr', () => {
             .withAutomaticReconnect()
             .configureLogging(LogLevel.Warning)
             .build()
+        connectionState.value = HubConnectionState.Connecting
 
         conn.onclose((err) => {
             connectionState.value = HubConnectionState.Disconnected
@@ -151,6 +161,7 @@ export const useSignalrStore = defineStore('signalr', () => {
         try {
             await conn.start()
         } catch (e: any) {
+            connectionState.value = HubConnectionState.Disconnected
             const msg = e?.message ?? '连接聊天服务器失败'
             error.value = msg
             showPop(msg, 'failed')
