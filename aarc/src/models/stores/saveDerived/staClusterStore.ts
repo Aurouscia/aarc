@@ -3,13 +3,13 @@ import { defineStore } from "pinia";
 import { useSaveStore } from "../saveStore";
 import { useConfigStore } from "../configStore";
 
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { numberCmpEpsilon } from "@/utils/consts";
 import { Coord } from '@/models/coord';
 import {
     buildNeighbors,
     cleanNeighborsForDeletedPt,
-    getMaxSizePtWithinClusterPure,
+    getClusterMaxSizePure,
     getRectOfClusterPure,
     getStaClusterByIdPure,
     isPtSinglePure,
@@ -28,7 +28,18 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     const configClingingDist = cs.config.snapOctaClingPtPtDist
 
     const staClusters = ref<ControlPoint[][]>()
-    const maxSizeCache = new Map<string, number>()
+    const staBelongToCluster = computed<Record<number, ControlPoint[]|undefined>>(()=>{
+        const clusters = staClusters.value
+        if(!clusters)
+            return {}
+        const res:Record<number, ControlPoint[]|undefined> = {}
+        for(const c of clusters){
+            for(const pt of c){
+                res[pt.id] = c
+            }
+        }
+        return res
+    })
     function getStaClusters(){
         if(!staClusters.value){
             initNeighbors()
@@ -69,12 +80,10 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             numberCmpEpsilon
         )
         makeClustersFromNeighbors()
-        maxSizeCache.clear()
     }
     function cleanClustersFromDeletedPt(ptId:number){
         neighbors = cleanNeighborsForDeletedPt(neighbors, ptId)
         makeClustersFromNeighbors()
-        maxSizeCache.clear()
     }
 
     function tryTransferStaNameWithinCluster(sta:ControlPoint){
@@ -93,18 +102,12 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         return target
     }
     function getMaxSizePtWithinCluster(ptId:number, sizeType:'ptSize'|'ptNameSize'|'ptNameSnapSize'){
-        const key = `${ptId}|${sizeType}`
-        const cached = maxSizeCache.get(key)
-        if(cached !== undefined)
-            return cached
         const get = sizeType === 'ptSize' 
             ? (id:number)=>saveStore.getLinesDecidedPtSize(id)
             : sizeType === 'ptNameSize'
             ? (id:number)=>saveStore.getLinesDecidedPtNameSize(id)
             : (id:number)=>saveStore.getLinesDecidedPtNameSnapSize(id)
-        const res = getMaxSizePtWithinClusterPure(ptId, getStaClusters() || [], get)
-        maxSizeCache.set(key, res)
-        return res
+        return getClusterMaxSizePure(staBelongToCluster.value[ptId], get, ptId)
     }
     function getRectOfCluster(cluster: ControlPoint[]|undefined):Coord[] {
         if (!cluster || cluster.length === 0)
@@ -114,7 +117,6 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     function clearItems(){
         staClusters.value = undefined
         neighbors = {}
-        maxSizeCache.clear()
     }
     function getStaClusterById(ptId:number){
         return getStaClusterByIdPure(ptId, getStaClusters() || [], id => saveStore.getPtById(id))

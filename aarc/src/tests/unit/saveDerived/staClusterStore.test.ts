@@ -518,6 +518,41 @@ describe('staClusterStore - cluster/query', () => {
     expect(size).toBe(3)
   })
 
+  it('getMaxSizePtWithinCluster 在线路尺寸变化后应返回新尺寸', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0.5] }
+      ],
+      lines: [
+        { id: 1, pts: [1, 2], name: 'L1', nameSub: '', color: '#000', type: 0, ptSize: 3 }
+      ]
+    })
+    const saveStore = setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    expect(store.getMaxSizePtWithinCluster(1, 'ptSize')).toBe(3)
+    saveStore.save!.lines[0].ptSize = 5
+    expect(store.getMaxSizePtWithinCluster(1, 'ptSize')).toBe(5)
+  })
+
+  it('getMaxSizePtWithinCluster 不应将小于 1 的尺寸钳位到 1', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0.5] }
+      ],
+      lines: [
+        { id: 1, pts: [1, 2], name: 'L1', nameSub: '', color: '#000', type: 0, ptNameSize: 0.5 }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const size = store.getMaxSizePtWithinCluster(1, 'ptNameSize')
+    expect(size).toBe(0.5)
+  })
+
   it('getRectOfCluster 应返回四角点', () => {
     const save = createEmptySave({
       points: [

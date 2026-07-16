@@ -10,6 +10,7 @@ import { CvsContext } from "../common/cvsContext";
 import { useCvsBlocksControlStore } from "../common/cvs";
 import { Coord, SgnCoord } from "@/models/coord";
 import { useStaClusterStore } from "@/models/stores/saveDerived/staClusterStore";
+import { getClusterMaxSizePure } from "@/models/stores/saveDerived/staClusterStore.pure";
 import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
 import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
 import { drawRect } from "@/utils/drawUtils/drawRect";
@@ -56,9 +57,9 @@ export const useStaNameCvsWorker = defineStore('staNameCvsWorker', ()=>{
         const clusterMaxSizes = new Map<ControlPoint[], { ptSize:number, ptNameSize:number, ptNameSnapSize:number }>()
         clusters.forEach(cluster=>{
             clusterMaxSizes.set(cluster, {
-                ptSize: Math.max(1, ...cluster.map(pt => saveStore.getLinesDecidedPtSize(pt.id))),
-                ptNameSize: Math.max(1, ...cluster.map(pt => saveStore.getLinesDecidedPtNameSize(pt.id))),
-                ptNameSnapSize: Math.max(1, ...cluster.map(pt => saveStore.getLinesDecidedPtNameSnapSize(pt.id)))
+                ptSize: getClusterMaxSizePure(cluster, id => saveStore.getLinesDecidedPtSize(id)),
+                ptNameSize: getClusterMaxSizePure(cluster, id => saveStore.getLinesDecidedPtNameSize(id)),
+                ptNameSnapSize: getClusterMaxSizePure(cluster, id => saveStore.getLinesDecidedPtNameSnapSize(id))
             })
         })
         const precomputed: StaNamePrecomputed = { clusterForPt, clusterMaxSizes }

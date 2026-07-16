@@ -3,6 +3,7 @@ import {
   buildNeighbors,
   cleanNeighborsForDeletedPt,
   expandSetInNeighbors,
+  getClusterMaxSizePure,
   getMaxSizePtWithinClusterPure,
   getRectOfClusterPure,
   getStaClusterByIdPure,
@@ -320,6 +321,31 @@ describe('staClusterStore.pure - tryTransferStaNameWithinClusterPure', () => {
   it('单点 cluster 不应转移', () => {
     const sta = pt(1, [0, 0], ControlPointSta.sta, { name: 'A', nameP: [100, 0] })
     expect(tryTransferStaNameWithinClusterPure(sta, [sta])).toBeUndefined()
+  })
+})
+
+describe('staClusterStore.pure - getClusterMaxSizePure', () => {
+  it('cluster 存在时返回其中最大尺寸', () => {
+    const cluster = [pt(1, [0, 0]), pt(2, [1, 0]), pt(3, [2, 0])]
+    expect(getClusterMaxSizePure(cluster, id => id)).toBe(3)
+  })
+
+  it('未聚类且提供 fallback 时返回 fallback 点尺寸', () => {
+    expect(getClusterMaxSizePure(undefined, () => 5, 1)).toBe(5)
+  })
+
+  it('cluster 为空且提供 fallback 时返回 fallback 点尺寸', () => {
+    expect(getClusterMaxSizePure([], () => 5, 1)).toBe(5)
+  })
+
+  it('cluster 为空且无 fallback 时返回 1', () => {
+    expect(getClusterMaxSizePure([], () => 5)).toBe(1)
+  })
+
+  it('不将小于 1 的尺寸钳位到 1', () => {
+    const cluster = [pt(1, [0, 0]), pt(2, [1, 0])]
+    const getSize = (id: number) => id === 1 ? 0.3 : 0.7
+    expect(getClusterMaxSizePure(cluster, getSize)).toBe(0.7)
   })
 })
 

@@ -261,17 +261,27 @@ export function tryTransferStaNameWithinClusterPure(
     return undefined
 }
 
+export function getClusterMaxSizePure(
+    cluster: ControlPoint[] | undefined,
+    getSize: (id: number) => number,
+    fallbackPtId?: number
+): number {
+    const ids = cluster && cluster.length > 0
+        ? cluster.map(x => x.id)
+        : (fallbackPtId !== undefined ? [fallbackPtId] : [])
+    const sizes = ids.map(id => getSize(id))
+    if (sizes.length === 0)
+        return 1
+    return Math.max(...sizes)
+}
+
 export function getMaxSizePtWithinClusterPure(
     ptId: number,
     clusters: ControlPoint[][],
     getSize: (id: number) => number
 ): number {
     const cluster = clusters.find(c => c.find(p => p.id === ptId))
-    const ids = cluster ? cluster.map(x => x.id) : [ptId]
-    const sizes = ids.map(id => getSize(id))
-    if (sizes.length === 0)
-        return 1
-    return Math.max(...sizes)
+    return getClusterMaxSizePure(cluster, getSize, ptId)
 }
 
 export function getRectOfClusterPure(cluster: ControlPoint[]): Coord[] {
