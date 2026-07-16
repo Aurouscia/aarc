@@ -377,3 +377,232 @@ describe('staClusterStore - getStaName', () => {
     })
   })
 })
+
+describe('staClusterStore - cluster/query', () => {
+  beforeEach(() => {
+    resetIdCounter()
+    createTestPinia()
+  })
+
+  function setupSaveStore(save: ReturnType<typeof createEmptySave>) {
+    const saveStore = useSaveStore()
+    saveStore.save = save
+    return saveStore
+  }
+
+  it('getStaClusters 应懒加载并正确聚类', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0.5] },
+        { ...createPoint(3), pos: [100, 100] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const clusters = store.getStaClusters()
+
+    expect(clusters).toHaveLength(1)
+    expect(clusters?.[0].map(p => p.id).sort()).toEqual([1, 2])
+  })
+
+  it('getStaClusters 不包含孤立单点', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [100, 100] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const clusters = store.getStaClusters()
+
+    expect(clusters).toHaveLength(0)
+  })
+
+  it('updateClustersBecauseOf 应在点移动后更新 cluster', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0.5] },
+        { ...createPoint(3), pos: [100, 100] }
+      ]
+    })
+    const saveStore = setupSaveStore(save)
+    const store = useStaClusterStore()
+    store.getStaClusters()
+
+    const movedPt = saveStore.getPtById(3)!
+    movedPt.pos = [0.6, 0.6]
+    store.updateClustersBecauseOf(movedPt)
+
+    const clusters = store.getStaClusters()
+    expect(clusters).toHaveLength(1)
+    expect(clusters?.[0].map(p => p.id).sort()).toEqual([1, 2, 3])
+  })
+
+  it('updateClustersBecauseOf 在点变为 plain 后应将其移出 cluster', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0.5] }
+      ]
+    })
+    const saveStore = setupSaveStore(save)
+    const store = useStaClusterStore()
+    store.getStaClusters()
+
+    const pt = saveStore.getPtById(2)!
+    pt.sta = 0 // plain
+    store.updateClustersBecauseOf(pt)
+
+    const clusters = store.getStaClusters()
+    expect(clusters).toHaveLength(0)
+  })
+
+  it('cleanClustersFromDeletedPt 应在删除点后更新 cluster', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0.5] },
+        { ...createPoint(3), pos: [1, 1] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+    store.getStaClusters()
+
+    store.cleanClustersFromDeletedPt(2)
+
+    const clusters = store.getStaClusters()
+    // 删除 pt2 后，pt1 与 pt3 距离仍小于阈值，应保持在一个 cluster
+    expect(clusters).toHaveLength(1)
+    expect(clusters?.[0].map(p => p.id).sort()).toEqual([1, 3])
+  })
+
+  it('tryTransferStaNameWithinCluster 应把名称转移到更近点', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0], name: 'A', nameP: [15, 0] },
+        { ...createPoint(2), pos: [14, 0] }
+      ]
+    })
+    const saveStore = setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const sta = saveStore.getPtById(1)!
+    const target = store.tryTransferStaNameWithinCluster(sta)
+
+    expect(target).toBeDefined()
+    expect(target?.id).toBe(2)
+    expect(target?.name).toBe('A')
+    expect(target?.nameP).toEqual([1, 0])
+  })
+
+  it('getMaxSizePtWithinCluster 应返回 cluster 中最大尺寸', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0.5] }
+      ],
+      lines: [
+        { id: 1, pts: [1, 2], name: 'L1', nameSub: '', color: '#000', type: 0, ptSize: 3 }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const size = store.getMaxSizePtWithinCluster(1, 'ptSize')
+    expect(size).toBe(3)
+  })
+
+  it('getRectOfCluster 应返回四角点', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [10, 5] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+    const cluster = store.getStaClusters()?.[0]
+
+    const rect = store.getRectOfCluster(cluster)
+
+    expect(rect).toContainEqual([10, 5])
+    expect(rect).toContainEqual([10, 0])
+    expect(rect).toContainEqual([0, 5])
+    expect(rect).toContainEqual([0, 0])
+  })
+
+  it('getRectOfCluster 对空 cluster 应返回空数组', () => {
+    setupSaveStore(createEmptySave())
+    const store = useStaClusterStore()
+    expect(store.getRectOfCluster(undefined)).toEqual([])
+  })
+
+  it('getStaClusterById 应返回点所在 cluster', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0.5] },
+        { ...createPoint(3), pos: [100, 100] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const cluster = store.getStaClusterById(1)
+    expect(cluster.map(p => p.id).sort()).toEqual([1, 2])
+  })
+
+  it('getStaClusterById 对未聚类点应返回单点', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [100, 100] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const cluster = store.getStaClusterById(2)
+    expect(cluster).toHaveLength(1)
+    expect(cluster[0].id).toBe(2)
+  })
+
+  it('isPtSingle 应正确判断未聚类点', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0.5] },
+        { ...createPoint(3), pos: [100, 100] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    expect(store.isPtSingle(1)).toBe(false)
+    expect(store.isPtSingle(3)).toBe(true)
+  })
+
+  it('clearItems 应清空 cluster 缓存并在下次访问时重新计算', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0.5] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+    const clustersBefore = store.getStaClusters()
+
+    store.clearItems()
+
+    // clearItems 后内部缓存被清空，再次访问会重新计算，结果应保持一致
+    const clustersAfter = store.getStaClusters()
+    expect(clustersAfter).toEqual(clustersBefore)
+  })
+})
