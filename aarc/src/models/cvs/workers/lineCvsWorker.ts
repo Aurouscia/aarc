@@ -35,6 +35,7 @@ import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
 import { getByIndexInRing, isRing, isRingByFormalPts } from "@/utils/lineUtils/isRing";
 import { drawArcByThreePoints } from "@/utils/drawUtils/drawArc";
 import { CvsContext } from "../common/cvsContext";
+import { useCvsBlocksControlStore } from "../common/cvs";
 import { LineStrokeTarget, strokeStyledLine } from "../common/strokeStyledLine";
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
@@ -180,6 +181,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     const cvsFrameStore = useCvsFrameStore()
     const editorLocalConfigStore = useEditorLocalConfigStore()
     const renderOptionsStore = useRenderOptionsStore()
+    const cvsBlocksControlStore = useCvsBlocksControlStore()
 
     const lineFobThrsBase = 0.000001
 
@@ -191,6 +193,24 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         const ratio = cs.config.lineTurnAreaRadius / viewRectArea
         const thrs = lineFobThrsBase * (Number(editorLocalConfigStore.lineFob) || 1)
         return ratio < thrs
+    }
+    function getLineOmitPadding(line:Line[]){
+        const maxLineWidth = Math.max(...line.map(l => (l.width || 1) * cs.config.lineWidth))
+        return cs.config.lineTurnAreaRadius + maxLineWidth + cs.config.lineCarpetWiden
+    }
+    function checkOmittableLine(minX:number, maxX:number, minY:number, maxY:number, line:Line[]){
+        const { cvsWidth, cvsHeight } = saveStore
+        const { left, right, top, bottom } = cvsBlocksControlStore.blockTotalBoundary
+        const padding = getLineOmitPadding(line)
+        if((maxX + padding)/cvsWidth < left)
+            return true
+        if((minX - padding)/cvsWidth > right)
+            return true
+        if((maxY + padding)/cvsHeight < top)
+            return true
+        if((minY - padding)/cvsHeight > bottom)
+            return true
+        return false
     }
     function renderAllLines(ctx:CvsContext, ltype?:LineType, rtype?:LineRenderType){
         if(!saveStore.save){
@@ -227,12 +247,26 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         if(line.length===0)
             return
         
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
         for(const l of line){
             const pts = saveStore.getPtsByIds(l.pts)
             if(pts.length<=1)
                 return;
             const formalPts = formalize(pts)
             formalizedLineStore.setLinesFormalPts(l.id, formalPts)
+            for(const fp of formalPts){
+                const [x, y] = fp.pos
+                if(x < minX) minX = x
+                if(x > maxX) maxX = x
+                if(y < minY) minY = y
+                if(y > maxY) maxY = y
+            }
+        }
+
+        // 填充地形或导出时不能省略，避免内容缺失
+        const isFilledTerrain = line.some(l => l.isFilled && l.type === LineType.terrain)
+        if(!isFilledTerrain && !renderOptionsStore.exporting && checkOmittableLine(minX, maxX, minY, maxY, line)){
+            return
         }
 
         const includeCarpet = !rtype || rtype == 'carpet' || rtype == 'both'
