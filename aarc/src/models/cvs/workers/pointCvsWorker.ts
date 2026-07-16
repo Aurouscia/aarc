@@ -108,36 +108,15 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
         staColorCache.set(key, res)
         return res
     }
-    // 临时诊断：汇总 renderAllPoints 中各阶段耗时
-    interface PointRenderDiag{
-        count: number
-        omitCount: number
-        omitTime: number
-        calcTime: number
-        drawTime: number
-    }
-    let pointRenderDiag: PointRenderDiag | undefined
-    function resetPointRenderDiag(){
-        pointRenderDiag = { count:0, omitCount:0, omitTime:0, calcTime:0, drawTime:0 }
-    }
     function renderAllPoints(ctx:CvsContext, onlyVisiblePts?:boolean, noOmit?:boolean){
         if(!saveStore.save)
             return
         staColorCache = new Map()
-        resetPointRenderDiag()
         const viewRect = cvsFrameStore.getViewRectSideLengths()
         staFobViewRectArea = viewRect[0] * viewRect[1]
-        const t0 = performance.now()
         const allPts = saveStore.save.points
         for(const pt of allPts){
             renderPoint(ctx, pt, {active:false, staOnly:onlyVisiblePts, noOmit})
-        }
-        const total = performance.now() - t0
-        if(pointRenderDiag && allPts.length > 0){
-            const d = pointRenderDiag
-            console.log(`[点渲染诊断] 总:${total.toFixed(1)}ms 点数:${allPts.length} 省略:${d.omitCount}/${allPts.length} ` +
-                `omit:${d.omitTime.toFixed(1)}ms calc:${d.calcTime.toFixed(1)}ms draw:${d.drawTime.toFixed(1)}ms ` +
-                `avg:${(total / allPts.length).toFixed(3)}ms/点`)
         }
     }
     function renderLinePoints(ctx:CvsContext, line:Line){
@@ -160,32 +139,18 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     function renderPoint(ctx:CvsContext, pt:ControlPoint, options:PointRenderOptions){
         const pos = pt.pos;
         const { active, staOnly, noOmit } = options
-        const t1 = performance.now()
         if(!noOmit && checkOmittable(pos)){
-            if(pointRenderDiag){
-                pointRenderDiag.omitCount++
-                pointRenderDiag.omitTime += performance.now() - t1
-                pointRenderDiag.count++
-            }
             return
         }
-        const t2 = performance.now()
-        if(pointRenderDiag) pointRenderDiag.omitTime += t2 - t1
         let markColor = '#999'
         const relatedLines = saveStore.getLinesByPt(pt.id)
         if(relatedLines.length>0 && relatedLines.every(x=>saveStore.isLineTypeWithoutSta(x.type)))
             pt.sta = ControlPointSta.plain //自动设置车站类型
         let staType = pt.sta
         if(staType !== ControlPointSta.sta && staOnly){
-            if(pointRenderDiag){
-                pointRenderDiag.calcTime += performance.now() - t2
-                pointRenderDiag.count++
-            }
             return
         }
         const sizeRatio = saveStore.getLinesDecidedPtSize(pt.id)
-        const t3 = performance.now()
-        if(pointRenderDiag) pointRenderDiag.calcTime += t3 - t2
         const fob = !active && staShouldSimplify()
         if(fob){
             if(staType === ControlPointSta.sta){
@@ -194,10 +159,6 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
                 ctx.fillStyle = cs.config.ptStaFillColor
                 ctx.arc(pos[0], pos[1], arcRadius, 0, 2*Math.PI)
                 ctx.fill()
-            }
-            if(pointRenderDiag){
-                pointRenderDiag.drawTime += performance.now() - t3
-                pointRenderDiag.count++
             }
             return
         }
@@ -244,10 +205,6 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             ctx.arc(pos[0], pos[1], arcRadius, 0, 2*Math.PI)
             ctx.fill()
             ctx.stroke()
-        }
-        if(pointRenderDiag){
-            pointRenderDiag.drawTime += performance.now() - t3
-            pointRenderDiag.count++
         }
     }
     function renderInterPtSnapTargets(ctx:CvsContext){
