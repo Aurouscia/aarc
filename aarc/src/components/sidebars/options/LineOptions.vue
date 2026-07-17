@@ -268,7 +268,7 @@ onMounted(()=>{
         </td>
     </tr>
     <tr v-if="line.type===LineType.common">
-        <td>吸附</td>
+        <td>站间<br/>吸附</td>
         <td class="viewableRange">
             <input type="range" v-model.number="props.line.ptSnapSize"
                 :min="0"
