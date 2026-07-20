@@ -2,11 +2,12 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { createTestPinia } from '../../helpers/piniaTestHelper'
 import { useSaveStore } from '@/models/stores/saveStore'
 import { useStaClusterStore } from '@/models/stores/saveDerived/staClusterStore'
-import { ControlPointLinkType } from '@/models/save'
+import { ControlPointLinkType, ControlPointSta } from '@/models/save'
 // 注意：虽然代码不再限制 link 类型，但测试中仍使用 ControlPointLinkType 来创建不同类型的 link
 import {
   resetIdCounter,
   createPoint,
+  createLine,
   createEmptySave
 } from '../../helpers/saveFactory'
 
@@ -375,5 +376,520 @@ describe('staClusterStore - getStaName', () => {
       expect(result.name).toBe('北京南站')
       expect(result.nameSub).toBe('BeijingSouth')
     })
+  })
+})
+
+
+describe('staClusterStore - getStaClusters', () => {
+  beforeEach(() => {
+    resetIdCounter()
+    createTestPinia()
+  })
+
+  function setupSaveStore(save: ReturnType<typeof createEmptySave>) {
+    const saveStore = useSaveStore()
+    saveStore.save = save
+    return saveStore
+  }
+
+  it('默认位置相邻点应聚成同一个 cluster', () => {
+    const save = createEmptySave({
+      points: [createPoint(1), createPoint(2), createPoint(3)]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const clusters = store.getStaClusters()
+
+    expect(clusters).toHaveLength(1)
+    expect(clusters![0].map(p => p.id).sort((a, b) => a - b)).toEqual([1, 2, 3])
+  })
+
+  it('距离超过吸附阈值的点不应聚类', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [100, 100] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const clusters = store.getStaClusters()
+
+    expect(clusters).toHaveLength(0)
+  })
+
+  it('非 sta 状态的点不应参与聚类', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0], sta: ControlPointSta.plain },
+        { ...createPoint(3), pos: [1, 0] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const clusters = store.getStaClusters()
+
+    expect(clusters).toHaveLength(1)
+    expect(clusters![0].map(p => p.id).sort((a, b) => a - b)).toEqual([1, 3])
+  })
+
+  it('链状点集应聚成同一个 cluster', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [20, 0] },
+        { ...createPoint(3), pos: [40, 0] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const clusters = store.getStaClusters()
+
+    expect(clusters).toHaveLength(1)
+    expect(clusters![0].map(p => p.id).sort((a, b) => a - b)).toEqual([1, 2, 3])
+  })
+
+  it('动态尺寸应影响 cluster 吸附距离', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [40, 0] }
+      ],
+      lines: [
+        createLine([1], { ptSnapSize: 3 })
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const clusters = store.getStaClusters()
+
+    // 默认吸附距离 25，点 1 尺寸放大到 3 后吸附距离变为 25 * ((3+1)/2) = 50，40 < 50 应聚类
+    expect(clusters).toHaveLength(1)
+    expect(clusters![0].map(p => p.id).sort((a, b) => a - b)).toEqual([1, 2])
+  })
+})
+
+describe('staClusterStore - updateClustersBecauseOf', () => {
+  beforeEach(() => {
+    resetIdCounter()
+    createTestPinia()
+  })
+
+  function setupSaveStore(save: ReturnType<typeof createEmptySave>) {
+    const saveStore = useSaveStore()
+    saveStore.save = save
+    return saveStore
+  }
+
+  it('将点移动靠近另一孤立点时应形成新 cluster', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [100, 0] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+    store.getStaClusters()
+
+    const pt2 = save.points.find(p => p.id === 2)!
+    pt2.pos = [0.5, 0]
+    store.updateClustersBecauseOf(pt2)
+
+    const clusters = store.getStaClusters()
+    expect(clusters).toHaveLength(1)
+    expect(clusters![0].map(p => p.id).sort((a, b) => a - b)).toEqual([1, 2])
+  })
+
+  it('将点移远离 cluster 时应与原点断开连接', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0] },
+        { ...createPoint(3), pos: [100, 0] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+    store.getStaClusters()
+
+    const pt2 = save.points.find(p => p.id === 2)!
+    pt2.pos = [100, 0]
+    store.updateClustersBecauseOf(pt2)
+
+    // 点 1 孤立，不再与点 2/3 同 cluster；点 2 与点 3 聚类
+    expect(store.getStaClusterById(1).map(p => p.id)).toEqual([1])
+    expect(store.getStaClusterById(2).map(p => p.id).sort((a, b) => a - b)).toEqual([2, 3])
+  })
+
+  it('将点的 sta 改为 plain 时应从 cluster 中移除', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+    store.getStaClusters()
+
+    const pt2 = save.points.find(p => p.id === 2)!
+    pt2.sta = ControlPointSta.plain
+    store.updateClustersBecauseOf(pt2)
+
+    const clusters = store.getStaClusters()
+    expect(clusters).toHaveLength(0)
+  })
+
+  it('将点的 sta 改为 sta 时应重新参与聚类', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [0.5, 0], sta: ControlPointSta.plain }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+    store.getStaClusters()
+
+    const pt2 = save.points.find(p => p.id === 2)!
+    pt2.sta = ControlPointSta.sta
+    store.updateClustersBecauseOf(pt2)
+
+    const clusters = store.getStaClusters()
+    expect(clusters).toHaveLength(1)
+    expect(clusters![0].map(p => p.id).sort((a, b) => a - b)).toEqual([1, 2])
+  })
+})
+
+describe('staClusterStore - cleanClustersFromDeletedPt', () => {
+  beforeEach(() => {
+    resetIdCounter()
+    createTestPinia()
+  })
+
+  function setupSaveStore(save: ReturnType<typeof createEmptySave>) {
+    const saveStore = useSaveStore()
+    saveStore.save = save
+    return saveStore
+  }
+
+  it('删除 cluster 中一个点后其余点若仍相邻则应保留 cluster', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [10, 0] },
+        { ...createPoint(3), pos: [5, 10] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+    store.getStaClusters()
+
+    const saveStore = useSaveStore()
+    saveStore.deletedPoint(2)
+
+    const clusters = store.getStaClusters()
+    expect(clusters).toHaveLength(1)
+    expect(clusters![0].map(p => p.id).sort((a, b) => a - b)).toEqual([1, 3])
+  })
+
+  it('删除 cluster 中所有点后 cluster 应为空', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [10, 0] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+    store.getStaClusters()
+
+    const saveStore = useSaveStore()
+    saveStore.deletedPoint(1)
+    saveStore.deletedPoint(2)
+
+    const clusters = store.getStaClusters()
+    expect(clusters).toHaveLength(0)
+  })
+})
+
+describe('staClusterStore - tryTransferStaNameWithinCluster', () => {
+  beforeEach(() => {
+    resetIdCounter()
+    createTestPinia()
+  })
+
+  function setupSaveStore(save: ReturnType<typeof createEmptySave>) {
+    const saveStore = useSaveStore()
+    saveStore.save = save
+    return saveStore
+  }
+
+  it('名称位置离 cluster 内其他点近得多时应转移名称', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0], name: '东直门', nameP: [20, 0] },
+        { ...createPoint(2), pos: [10, 0] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const pt1 = save.points.find(p => p.id === 1)!
+    const transferred = store.tryTransferStaNameWithinCluster(pt1)
+
+    expect(transferred).toBeDefined()
+    expect(transferred!.id).toBe(2)
+    expect(transferred!.name).toBe('东直门')
+    expect(transferred!.nameP).toEqual([10, 0])
+  })
+
+  it('名称位置没有明显更近时不应转移名称', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0], name: '东直门', nameP: [15, 0] },
+        { ...createPoint(2), pos: [0.5, 0] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const pt1 = save.points.find(p => p.id === 1)!
+    const transferred = store.tryTransferStaNameWithinCluster(pt1)
+
+    expect(transferred).toBeUndefined()
+  })
+
+  it('点没有 nameP 时不应转移', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0], name: '东直门' },
+        { ...createPoint(2), pos: [10, 0] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const pt1 = save.points.find(p => p.id === 1)!
+    const transferred = store.tryTransferStaNameWithinCluster(pt1)
+
+    expect(transferred).toBeUndefined()
+  })
+
+  it('cluster 中只有一个点时不应转移', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0], name: '东直门', nameP: [20, 0] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const pt1 = save.points.find(p => p.id === 1)!
+    const transferred = store.tryTransferStaNameWithinCluster(pt1)
+
+    expect(transferred).toBeUndefined()
+  })
+})
+
+describe('staClusterStore - getMaxSizePtWithinCluster', () => {
+  beforeEach(() => {
+    resetIdCounter()
+    createTestPinia()
+  })
+
+  function setupSaveStore(save: ReturnType<typeof createEmptySave>) {
+    const saveStore = useSaveStore()
+    saveStore.save = save
+    return saveStore
+  }
+
+  it('单点且无线路时返回默认尺寸 1', () => {
+    const save = createEmptySave({
+      points: [createPoint(1)]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    expect(store.getMaxSizePtWithinCluster(1, 'ptSize')).toBe(1)
+    expect(store.getMaxSizePtWithinCluster(1, 'ptNameSize')).toBe(1)
+    expect(store.getMaxSizePtWithinCluster(1, 'ptNameSnapSize')).toBe(1)
+  })
+
+  it('cluster 内应返回指定类型的最大尺寸', () => {
+    const save = createEmptySave({
+      points: [
+        createPoint(1),
+        createPoint(2)
+      ],
+      lines: [
+        createLine([1], { ptSize: 2, ptNameSize: 3, ptNameSnapSize: 4 }),
+        createLine([2], { ptSize: 5, ptNameSize: 6, ptNameSnapSize: 7 })
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    store.getStaClusters() // 确保聚类已初始化
+
+    expect(store.getMaxSizePtWithinCluster(1, 'ptSize')).toBe(5)
+    expect(store.getMaxSizePtWithinCluster(1, 'ptNameSize')).toBe(6)
+    expect(store.getMaxSizePtWithinCluster(1, 'ptNameSnapSize')).toBe(7)
+  })
+})
+
+describe('staClusterStore - getRectOfCluster', () => {
+  beforeEach(() => {
+    resetIdCounter()
+    createTestPinia()
+  })
+
+  function setupSaveStore(save: ReturnType<typeof createEmptySave>) {
+    const saveStore = useSaveStore()
+    saveStore.save = save
+    return saveStore
+  }
+
+  it('应返回 cluster 的四角点', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [10, 10] },
+        { ...createPoint(3), pos: [10, 0] },
+        { ...createPoint(4), pos: [0, 10] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const cluster = store.getStaClusters()![0]
+    const rect = store.getRectOfCluster(cluster)
+
+    expect(rect).toEqual([
+      [10, 10],
+      [10, 0],
+      [0, 10],
+      [0, 0]
+    ])
+  })
+
+  it('cluster 为 undefined 时应返回空数组', () => {
+    const save = createEmptySave({ points: [] })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    expect(store.getRectOfCluster(undefined)).toEqual([])
+  })
+})
+
+describe('staClusterStore - getStaClusterById and isPtSingle', () => {
+  beforeEach(() => {
+    resetIdCounter()
+    createTestPinia()
+  })
+
+  function setupSaveStore(save: ReturnType<typeof createEmptySave>) {
+    const saveStore = useSaveStore()
+    saveStore.save = save
+    return saveStore
+  }
+
+  it('getStaClusterById 应返回点所在的 cluster', () => {
+    const save = createEmptySave({
+      points: [createPoint(1), createPoint(2), createPoint(3)]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const cluster = store.getStaClusterById(2)
+    expect(cluster.map(p => p.id).sort((a, b) => a - b)).toEqual([1, 2, 3])
+  })
+
+  it('getStaClusterById 对孤立点应返回单点数组', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [100, 100] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const cluster = store.getStaClusterById(2)
+    expect(cluster.map(p => p.id)).toEqual([2])
+  })
+
+  it('getStaClusterById 对不存在的点应返回空数组', () => {
+    const save = createEmptySave({ points: [] })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    expect(store.getStaClusterById(999)).toEqual([])
+  })
+
+  it('isPtSingle 对孤立点应返回 true', () => {
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [0, 0] },
+        { ...createPoint(2), pos: [100, 100] }
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    expect(store.isPtSingle(2)).toBe(true)
+  })
+
+  it('isPtSingle 对 cluster 中的点应返回 false', () => {
+    const save = createEmptySave({
+      points: [createPoint(1), createPoint(2)]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    expect(store.isPtSingle(1)).toBe(false)
+  })
+
+  it('isPtSingle 对不存在的点应返回 false', () => {
+    const save = createEmptySave({ points: [] })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    expect(store.isPtSingle(999)).toBe(false)
+  })
+})
+
+describe('staClusterStore - clearItems', () => {
+  beforeEach(() => {
+    resetIdCounter()
+    createTestPinia()
+  })
+
+  function setupSaveStore(save: ReturnType<typeof createEmptySave>) {
+    const saveStore = useSaveStore()
+    saveStore.save = save
+    return saveStore
+  }
+
+  it('clearItems 后再次访问应重新初始化聚类', () => {
+    const save = createEmptySave({
+      points: [createPoint(1), createPoint(2)]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    store.getStaClusters()
+    store.clearItems()
+
+    const clusters = store.getStaClusters()
+    expect(clusters).toHaveLength(1)
+    expect(clusters![0].map(p => p.id).sort((a, b) => a - b)).toEqual([1, 2])
   })
 })
