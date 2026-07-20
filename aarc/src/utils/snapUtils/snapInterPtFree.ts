@@ -2,24 +2,17 @@ import { Coord, FreeRay } from "@/models/coord";
 import { ControlPoint } from "@/models/save";
 import {
     coordAdd,
-    coordSub,
     coordMut,
     coordInv,
     coordDotProduct,
     coordCrossProduct,
-    coordTo0DistSq,
     makeCoordLength1
 } from "@/utils/coordUtils/coordMath";
 import { freeRayIntersect } from "@/utils/rayUtils/rayIntersection";
 import { isZero } from "@/utils/sgn";
+import { PtDirectionInfo } from "@/utils/ptUtils/ptDirection";
 
-/** free 点在某条线路上的前后相邻点 */
-export interface AdjacentSeg {
-    /** opt 前一个点 */
-    prev?: ControlPoint
-    /** opt 后一个点 */
-    next?: ControlPoint
-}
+export type { PtDirectionInfo } from "@/utils/ptUtils/ptDirection";
 
 /** 逆时针旋转 90° */
 function perpCCW(v: Coord): Coord {
@@ -38,8 +31,10 @@ function ray(source: Coord, way: Coord): FreeRay {
  * @returns 垂直于 lineDir 的单位向量，指向 towards 所在半平面
  */
 function innerNormal(lineDir: Coord, towards: Coord): Coord {
-    const perp = makeCoordLength1(perpCCW(lineDir))
-    return coordDotProduct(perp, towards) >= 0 ? perp : coordInv(perp)
+    const perp = perpCCW(lineDir)
+    const len = Math.hypot(perp[0], perp[1])
+    const unitPerp: Coord = [perp[0] / len, perp[1] / len]
+    return coordDotProduct(unitPerp, towards) >= 0 ? unitPerp : coordInv(unitPerp)
 }
 
 /**
@@ -47,30 +42,31 @@ function innerNormal(lineDir: Coord, towards: Coord): Coord {
  *
  * @param opt 目标 free 点
  * @param snapDist 吸附距离
- * @param adjacentSeg opt 在线路上的前后相邻点；若为 undefined 则视为孤立点
+ * @param directionInfo 由 freePtDirectionStore 提供的方向信息；若为 undefined 则视为孤立点
  * @returns 候选位置数组，按 [B, 内侧交点, 外侧交点, AB 外侧垂足, BC 外侧垂足] 顺序
  */
 export function computeFreeSnapCandidates(
     opt: ControlPoint,
     snapDist: number,
-    adjacentSeg: AdjacentSeg | undefined
+    directionInfo: PtDirectionInfo | undefined
 ): Coord[] {
     const B = opt.pos
-    const { prev: A, next: C } = adjacentSeg ?? {}
 
-    const hasA = A !== undefined && !isZero(coordTo0DistSq(coordSub(A.pos, B)))
-    const hasC = C !== undefined && !isZero(coordTo0DistSq(coordSub(C.pos, B)))
+    const prev = directionInfo?.prev
+    const next = directionInfo?.next
+    const hasPrev = prev !== undefined
+    const hasNext = next !== undefined
 
     // 孤立点：只返回 B 本身
-    if (!hasA && !hasC) {
+    if (!hasPrev && !hasNext) {
         return [[...B] as Coord]
     }
 
-    const uBA = hasA ? makeCoordLength1(coordSub(A.pos, B)) : undefined
-    const uBC = hasC ? makeCoordLength1(coordSub(C.pos, B)) : undefined
+    const uBA = prev?.dir
+    const uBC = next?.dir
 
     // 端点退化：只有单侧，生成 B + 两个垂向点
-    if (!hasA || !hasC) {
+    if (!hasPrev || !hasNext) {
         const u = (uBC ?? uBA)!
         const side = makeCoordLength1(perpCCW(u))
         const d = snapDist
@@ -122,3 +118,4 @@ export function computeFreeSnapCandidates(
 
     return [p1, p2, p3, p4, p5]
 }
+

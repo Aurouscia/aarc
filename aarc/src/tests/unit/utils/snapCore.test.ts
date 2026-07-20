@@ -9,7 +9,8 @@ import {
   snapInterPt,
   parseSnapRayAngle
 } from '@/utils/snapUtils/snapCore'
-import { computeFreeSnapCandidates, AdjacentSeg } from '@/utils/snapUtils/snapInterPtFree'
+import { computeFreeSnapCandidates } from '@/utils/snapUtils/snapInterPtFree'
+import { computePtDirectionInfo, PtDirectionInfo } from '@/utils/ptUtils/ptDirection'
 
 function makePt(
   id: number,
@@ -26,6 +27,17 @@ function makePt(
     nameP,
     free
   }
+}
+
+function toPtDirectionInfo(
+  B: ControlPoint,
+  prev?: ControlPoint,
+  next?: ControlPoint
+): PtDirectionInfo {
+  return computePtDirectionInfo(B.pos, {
+    prev: prev ? { pos: prev.pos } : undefined,
+    next: next ? { pos: next.pos } : undefined
+  })
 }
 
 describe('calcStaNameSnapCandidates', () => {
@@ -543,8 +555,8 @@ describe('computeFreeSnapCandidates', () => {
     const A = makePt(10, [0, 0])
     const B = makePt(11, [1, 0], ControlPointDir.vertical, undefined, true)
     const C = makePt(12, [3, 1])
-    const seg: AdjacentSeg = { prev: A, next: C }
-    const cands = computeFreeSnapCandidates(B, 0.1, seg)
+    const info = toPtDirectionInfo(B, A, C)
+    const cands = computeFreeSnapCandidates(B, 0.1, info)
     expect(cands).toHaveLength(5)
 
     // 点1：B 本身
@@ -569,8 +581,8 @@ describe('computeFreeSnapCandidates', () => {
   it('端点 free 点只有单侧时生成 3 个候选点', () => {
     const B = makePt(11, [1, 0], ControlPointDir.vertical, undefined, true)
     const C = makePt(12, [3, 1])
-    const seg: AdjacentSeg = { next: C }
-    const cands = computeFreeSnapCandidates(B, 0.1, seg)
+    const info = toPtDirectionInfo(B, undefined, C)
+    const cands = computeFreeSnapCandidates(B, 0.1, info)
     expect(cands).toHaveLength(3)
     expect(cands[0]).toEqual([1, 0])
     // 其余两点关于 B 对称分布在 BC 垂线上
@@ -584,8 +596,8 @@ describe('computeFreeSnapCandidates', () => {
     const A = makePt(10, [0, 0])
     const B = makePt(11, [1, 0], ControlPointDir.vertical, undefined, true)
     const C = makePt(12, [2, 0])
-    const seg: AdjacentSeg = { prev: A, next: C }
-    const cands = computeFreeSnapCandidates(B, 0.1, seg)
+    const info = toPtDirectionInfo(B, A, C)
+    const cands = computeFreeSnapCandidates(B, 0.1, info)
     expect(cands).toHaveLength(3)
     expect(cands[0]).toEqual([1, 0])
     // 垂向分布
@@ -605,8 +617,8 @@ describe('computeFreeSnapCandidates', () => {
     const A = makePt(10, [1, 0]) // 与 B 重合
     const B = makePt(11, [1, 0], ControlPointDir.vertical, undefined, true)
     const C = makePt(12, [3, 1])
-    const seg: AdjacentSeg = { prev: A, next: C }
-    const cands = computeFreeSnapCandidates(B, 0.1, seg)
+    const info = toPtDirectionInfo(B, A, C)
+    const cands = computeFreeSnapCandidates(B, 0.1, info)
     // A 无效，退化为端点情况，生成 3 个候选
     expect(cands).toHaveLength(3)
   })
@@ -615,8 +627,8 @@ describe('computeFreeSnapCandidates', () => {
     const A = makePt(10, [0, 0])
     const B = makePt(11, [1, 0], ControlPointDir.vertical, undefined, true)
     const C = makePt(12, [3, 1])
-    const seg: AdjacentSeg = { prev: A, next: C }
-    const cands = computeFreeSnapCandidates(B, 0, seg)
+    const info = toPtDirectionInfo(B, A, C)
+    const cands = computeFreeSnapCandidates(B, 0, info)
     expect(cands).toHaveLength(5)
     cands.forEach(c => {
       expect(c).toEqual([1, 0])

@@ -7,7 +7,7 @@ import { makeCoordLength1 } from "@/utils/coordUtils/coordMath";
 import { crossAddNums } from "@/utils/lang/crossAddNums";
 import { numberCmpEpsilon, sqrt2half } from "@/utils/consts";
 import { freeRayIntersect } from "@/utils/rayUtils/rayIntersection";
-import { computeFreeSnapCandidates, AdjacentSeg } from "./snapInterPtFree";
+import { computeFreeSnapCandidates, PtDirectionInfo } from "./snapInterPtFree";
 
 /** 站名吸附的候选方向配置 */
 export type StaNameDiagonalMode = 'inner' | 'outer' | 'both'
@@ -445,7 +445,7 @@ export function snapInterPt(
     cfg: SnapInterPtConfig,
     getPtSnapSizes?: (id: number) => number[] | undefined,
     noBias?: boolean,
-    getAdjacentSegs?: (id: number) => AdjacentSeg | undefined
+    getPtDirectionInfo?: (id: number) => PtDirectionInfo | undefined
 ): SnapInterPtResult {
     const { snapDistBase, snapThrs } = cfg
     const targets: SnapInterPtResult['targets'] = { snapPoss: [], snapToPts: [] }
@@ -464,8 +464,8 @@ export function snapInterPt(
 
         if (opt.free) {
             snapDists.forEach(snapDist => {
-                const adjacentSeg = getAdjacentSegs?.(opt.id)
-                const candidates = computeFreeSnapCandidates(opt, snapDist, adjacentSeg)
+                const directionInfo = getPtDirectionInfo?.(opt.id)
+                const candidates = computeFreeSnapCandidates(opt, snapDist, directionInfo)
                 candidates.forEach(candidate => {
                     targets.snapPoss.push(candidate)
                     const dist = coordDist(pt.pos, candidate)
