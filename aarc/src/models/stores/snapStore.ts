@@ -14,6 +14,7 @@ import {
     snapNeighborExtends as snapNeighborExtendsCore,
     getNameSnapStatus
 } from "@/utils/snapUtils/snapCore";
+import { AdjacentSeg } from "@/utils/snapUtils/snapInterPtFree";
 
 export const useSnapStore = defineStore('snap',()=>{
     const cs = useConfigStore()
@@ -93,6 +94,19 @@ export const useSnapStore = defineStore('snap',()=>{
         const snapDistLargest = ptSnapSizeLargest * cs.config.snapOctaClingPtPtDist
         const snapThrs = cs.config.snapOctaClingPtPtThrs;
         const pts = saveStore.getPtsInRange(pt.pos, (snapDistLargest + snapThrs)*2, pt.id)
+        const getAdjacentSegs = (id: number): AdjacentSeg | undefined => {
+            const segs = saveStore.adjacentSegs(id)
+            const first = segs[0]
+            if (!first)
+                return undefined
+            const idx = first.pts.findIndex(p => p.id === id)
+            if (idx === -1)
+                return undefined
+            return {
+                prev: first.pts[idx - 1],
+                next: first.pts[idx + 1]
+            }
+        }
         const { matched, targets } = snapInterPtCore(
             pt,
             pts,
@@ -101,7 +115,8 @@ export const useSnapStore = defineStore('snap',()=>{
                 snapThrs
             },
             getLinesDecidedPtSnapSizes,
-            noBias
+            noBias,
+            getAdjacentSegs
         )
         snapInterPtTargets.value = { ...targets, matched }
         return matched

@@ -1,11 +1,13 @@
-import { Coord, FreeRay, SgnCoord } from "@/models/coord";
+import { Coord, FreeRay } from "@/models/coord";
 import { ControlPoint, ControlPointDir } from "@/models/save";
 import { isZero } from "@/utils/sgn";
-import { applyBias } from "@/utils/coordUtils/coordBias";
+import { applyBiasFree } from "@/utils/coordUtils/coordBias";
 import { coordDist, coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
+import { makeCoordLength1 } from "@/utils/coordUtils/coordMath";
 import { crossAddNums } from "@/utils/lang/crossAddNums";
 import { numberCmpEpsilon, sqrt2half } from "@/utils/consts";
 import { freeRayIntersect } from "@/utils/rayUtils/rayIntersection";
+import { computeFreeSnapCandidates, AdjacentSeg } from "./snapInterPtFree";
 
 /** 站名吸附的候选方向配置 */
 export type StaNameDiagonalMode = 'inner' | 'outer' | 'both'
@@ -409,16 +411,41 @@ export interface SnapInterPtResult {
     }
 }
 
+/** 计算非 free 点的标准 4/8 方向单位偏置向量 */
+function computeStandardBiases(
+    pt: ControlPoint,
+    opt: ControlPoint,
+    noBias?: boolean
+): Coord[] {
+    const biases: Coord[] = [[0, 0]]
+    if (!noBias) {
+        if (pt.dir == ControlPointDir.incline || opt.dir == ControlPointDir.incline) {
+            biases.push(
+                makeCoordLength1([-1, -1]),
+                makeCoordLength1([-1, 1]),
+                makeCoordLength1([1, -1]),
+                makeCoordLength1([1, 1])
+            )
+        }
+        if (pt.dir == ControlPointDir.vertical || opt.dir == ControlPointDir.vertical) {
+            biases.push([0, -1], [0, 1], [1, 0], [-1, 0])
+        }
+    }
+    return biases
+}
+
 /**
- * 计算当前点与附近点之间的八方向吸附。
+ * 计算当前点与附近点之间的吸附。
  * 对应原 snapStore 中 snapInterPt 的核心计算。
+ * free 目标点使用基于两侧线段方向的 5 点候选，非 free 点保持原有 4/8 方向逻辑。
  */
 export function snapInterPt(
     pt: ControlPoint,
     nearbyPts: ControlPoint[],
     cfg: SnapInterPtConfig,
     getPtSnapSizes?: (id: number) => number[] | undefined,
-    noBias?: boolean
+    noBias?: boolean,
+    getAdjacentSegs?: (id: number) => AdjacentSeg | undefined
 ): SnapInterPtResult {
     const { snapDistBase, snapThrs } = cfg
     const targets: SnapInterPtResult['targets'] = { snapPoss: [], snapToPts: [] }
@@ -429,31 +456,39 @@ export function snapInterPt(
     let matched: Coord | undefined = undefined
     let minDist = 10000000;
     for (const opt of nearbyPts) {
-        const biases: SgnCoord[] = [[0, 0]]
-        if (!noBias) {
-            if (pt.dir == ControlPointDir.incline || opt.dir == ControlPointDir.incline) {
-                biases.push([-1, -1], [-1, 1], [1, -1], [1, 1])
-            }
-            if (pt.dir == ControlPointDir.vertical || opt.dir == ControlPointDir.vertical) {
-                biases.push([0, -1], [0, 1], [1, 0], [-1, 0])
-            }
-        }
         const ptSnapSizes = getPtSnapSizes?.(pt.id) ?? [1]
         const optSnapSizes = getPtSnapSizes?.(opt.id) ?? [1]
         const sizesAdded = crossAddNums(ptSnapSizes, optSnapSizes).sort()
         const snapDists = sizesAdded.map(x => x / 2 * snapDistBase)
         targets.snapToPts.push(opt)
-        snapDists.forEach(snapDist => {
-            biases.forEach(b => {
-                const biased = applyBias(opt.pos, b, snapDist)
-                targets.snapPoss.push(biased)
-                const dist = coordDist(pt.pos, biased)
-                if (dist < snapThrs && dist < minDist) {
-                    matched = biased;
-                    minDist = dist
-                }
+
+        if (opt.free) {
+            snapDists.forEach(snapDist => {
+                const adjacentSeg = getAdjacentSegs?.(opt.id)
+                const candidates = computeFreeSnapCandidates(opt, snapDist, adjacentSeg)
+                candidates.forEach(candidate => {
+                    targets.snapPoss.push(candidate)
+                    const dist = coordDist(pt.pos, candidate)
+                    if (dist < snapThrs && dist < minDist) {
+                        matched = candidate
+                        minDist = dist
+                    }
+                })
             })
-        })
+        } else {
+            const biases = computeStandardBiases(pt, opt, noBias)
+            snapDists.forEach(snapDist => {
+                biases.forEach(b => {
+                    const biased = applyBiasFree(opt.pos, b, snapDist)
+                    targets.snapPoss.push(biased)
+                    const dist = coordDist(pt.pos, biased)
+                    if (dist < snapThrs && dist < minDist) {
+                        matched = biased
+                        minDist = dist
+                    }
+                })
+            })
+        }
     }
     return { matched, targets }
 }

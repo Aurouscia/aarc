@@ -7,6 +7,7 @@ import { storeToRefs } from 'pinia';
 import { useNameEditStore } from '@/models/stores/nameEditStore';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useBrowserInfoStore } from '@/app/globalStores/browserInfo';
+import { configDefault } from '@/models/stores/configStore';
 
 const saveStore = useSaveStore()
 const envStore = useEnvStore() //envStore.rerender() 默认会自动造成“阻止未保存离开”
@@ -30,12 +31,30 @@ function visibilityChangedHandler(){
     }
 }
 
+const snapRayAnglesText = ref('')
+const snapRayAnglesForFreeText = ref('')
 onMounted(()=>{
     document.addEventListener('visibilitychange', visibilityChangedHandler)
+    snapRayAnglesText.value = config.value.snapRayAngles.join('\n')
+    snapRayAnglesForFreeText.value = config.value.snapRayAnglesForFree.join('\n')
 })
 onUnmounted(()=>{
     document.removeEventListener('visibilitychange', visibilityChangedHandler)
 })
+function applySnapRayAngles(){
+    const angles = snapRayAnglesText.value
+        .split('\n')
+        .map(s => s.trim())
+        .filter(s => s.length > 0)
+    config.value.snapRayAngles = angles.length > 0 ? angles : [...configDefault.snapRayAngles]
+}
+function applySnapRayAnglesForFree(){
+    const angles = snapRayAnglesForFreeText.value
+        .split('\n')
+        .map(s => s.trim())
+        .filter(s => s.length > 0)
+    config.value.snapRayAnglesForFree = angles.length > 0 ? angles : [...configDefault.snapRayAnglesForFree]
+}
 </script>
 
 <template>
@@ -85,6 +104,29 @@ onUnmounted(()=>{
                 可填固定值，例如 200 <br/>
                 可填倍率，例如 *1.5<br/>
                 斜着的填写例如^200，则识别为直角边为200的等腰直角三角形的斜边
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>延长线<br/>吸附<br/>角度</td>
+        <td>
+            <textarea v-model="snapRayAnglesText" rows="4" style="width: 120px;"/><br/>
+            <button class="minor" @click="applySnapRayAngles">应用</button>
+            <div class="explain">
+                一行一个角度（度），自动取模 180。<br/>
+                例如：0、45、90、135<br/>
+                配置 30 表示 30° 和 210° 方向
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>free点<br/>延长线<br/>吸附<br/>角度</td>
+        <td>
+            <textarea v-model="snapRayAnglesForFreeText" rows="4" style="width: 120px;"/><br/>
+            <button class="minor" @click="applySnapRayAnglesForFree">应用</button>
+            <div class="explain">
+                当前点或邻点任意为 free 点时使用。<br/>
+                否则使用上方的普通延长线吸附角度。
             </div>
         </td>
     </tr>

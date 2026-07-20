@@ -9,6 +9,7 @@ import {
   snapInterPt,
   parseSnapRayAngle
 } from '@/utils/snapUtils/snapCore'
+import { computeFreeSnapCandidates, AdjacentSeg } from '@/utils/snapUtils/snapInterPtFree'
 
 function makePt(
   id: number,
@@ -533,5 +534,92 @@ describe('snapInterPt', () => {
     expect(res.matched).toBeUndefined()
     expect(res.targets.snapPoss).toHaveLength(0)
     expect(res.targets.snapToPts).toHaveLength(0)
+  })
+})
+
+
+describe('computeFreeSnapCandidates', () => {
+  it('一般钝角情况生成 5 个候选点', () => {
+    const A = makePt(10, [0, 0])
+    const B = makePt(11, [1, 0], ControlPointDir.vertical, undefined, true)
+    const C = makePt(12, [3, 1])
+    const seg: AdjacentSeg = { prev: A, next: C }
+    const cands = computeFreeSnapCandidates(B, 0.1, seg)
+    expect(cands).toHaveLength(5)
+
+    // 点1：B 本身
+    expect(cands[0]).toEqual([1, 0])
+
+    // 点2：内侧平行线交点，约在 (0.976, 0.1)
+    expect(cands[1][0]).toBeCloseTo(0.976, 3)
+    expect(cands[1][1]).toBeCloseTo(0.1, 3)
+
+    // 点3：外侧平行线交点，约在 (1.024, -0.1)
+    expect(cands[2][0]).toBeCloseTo(1.024, 3)
+    expect(cands[2][1]).toBeCloseTo(-0.1, 3)
+
+    // 点4：B 到 AB 外侧平行线的垂足 = (1, -0.1)
+    expect(cands[3]).toEqual([1, -0.1])
+
+    // 点5：B 到 BC 外侧平行线的垂足，约在 (1.045, -0.089)
+    expect(cands[4][0]).toBeCloseTo(1.045, 3)
+    expect(cands[4][1]).toBeCloseTo(-0.089, 3)
+  })
+
+  it('端点 free 点只有单侧时生成 3 个候选点', () => {
+    const B = makePt(11, [1, 0], ControlPointDir.vertical, undefined, true)
+    const C = makePt(12, [3, 1])
+    const seg: AdjacentSeg = { next: C }
+    const cands = computeFreeSnapCandidates(B, 0.1, seg)
+    expect(cands).toHaveLength(3)
+    expect(cands[0]).toEqual([1, 0])
+    // 其余两点关于 B 对称分布在 BC 垂线上
+    const d0 = Math.hypot(cands[1][0] - 1, cands[1][1] - 0)
+    const d1 = Math.hypot(cands[2][0] - 1, cands[2][1] - 0)
+    expect(d0).toBeCloseTo(0.1, 5)
+    expect(d1).toBeCloseTo(0.1, 5)
+  })
+
+  it('共线 free 点退化为 3 个候选点', () => {
+    const A = makePt(10, [0, 0])
+    const B = makePt(11, [1, 0], ControlPointDir.vertical, undefined, true)
+    const C = makePt(12, [2, 0])
+    const seg: AdjacentSeg = { prev: A, next: C }
+    const cands = computeFreeSnapCandidates(B, 0.1, seg)
+    expect(cands).toHaveLength(3)
+    expect(cands[0]).toEqual([1, 0])
+    // 垂向分布
+    const ys = cands.slice(1).map(c => c[1])
+    expect(ys).toContainEqual(0.1)
+    expect(ys).toContainEqual(-0.1)
+  })
+
+  it('孤立 free 点只返回自身', () => {
+    const B = makePt(11, [5, 5], ControlPointDir.vertical, undefined, true)
+    const cands = computeFreeSnapCandidates(B, 0.1, undefined)
+    expect(cands).toHaveLength(1)
+    expect(cands[0]).toEqual([5, 5])
+  })
+
+  it('相邻点与 B 重合时跳过该侧', () => {
+    const A = makePt(10, [1, 0]) // 与 B 重合
+    const B = makePt(11, [1, 0], ControlPointDir.vertical, undefined, true)
+    const C = makePt(12, [3, 1])
+    const seg: AdjacentSeg = { prev: A, next: C }
+    const cands = computeFreeSnapCandidates(B, 0.1, seg)
+    // A 无效，退化为端点情况，生成 3 个候选
+    expect(cands).toHaveLength(3)
+  })
+
+  it('snapDist 为 0 时所有候选点退化为 B', () => {
+    const A = makePt(10, [0, 0])
+    const B = makePt(11, [1, 0], ControlPointDir.vertical, undefined, true)
+    const C = makePt(12, [3, 1])
+    const seg: AdjacentSeg = { prev: A, next: C }
+    const cands = computeFreeSnapCandidates(B, 0, seg)
+    expect(cands).toHaveLength(5)
+    cands.forEach(c => {
+      expect(c).toEqual([1, 0])
+    })
   })
 })
