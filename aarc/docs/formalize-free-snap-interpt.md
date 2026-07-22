@@ -111,6 +111,10 @@ p2 = intersect(B + d * nAB, uBA, B + d * nBC, uBC)
 p3 = intersect(B - d * nAB, uBA, B - d * nBC, uBC)
 ```
 
+#### 点2、点3 的角度限制
+
+当两侧线段夹角较小（< 80°）时，不再生成内侧/外侧平行线交点；实际实现中**仅在夹角 ≥ 80° 时生成点2、点3**，夹角 < 80° 时只保留点1、点4、点5。
+
 #### 点4：B 到 AB 外侧平行线的垂足
 
 ```ts
@@ -125,7 +129,7 @@ p5 = B - d * nBC
 
 ### 3.4 与 snapDists 的结合
 
-与现有逻辑一致，对每个 `snapDist`（由 `ptSnapSizes` 与 `optSnapSizes` 交叉相加得到）生成上述 5 个候选点，并计算与 `pt.pos` 的距离，取最近且小于 `snapThrs` 的作为 `matched`。
+与现有逻辑一致，对每个 `snapDist`（由 `ptSnapSizes` 与 `optSnapSizes` 交叉相加得到）生成上述 **最多 5 个**候选点，并计算与 `pt.pos` 的距离，取最近且小于 `snapThrs` 的作为 `matched`。
 
 > 点2、点3 到 B 的距离会随夹角变化（约为 `d / cos(θ/2)`，其中 `θ` 为两直线夹角），它们不是简单的固定方向偏置，需要按实际几何位置直接计算。
 
@@ -229,12 +233,15 @@ const getAdjacentSegs = (id: number): AdjacentSeg | undefined => {
 
 ## 7. 测试建议
 
-1. **几何正确性**：给定 `A(0,0)`、`B(1,0)`、`C(3,1)`、`d = 0.1`，验证：
-   - 点1 = (1, 0)
-   - 点2 ≈ (0.976, 0.1)
-   - 点3 ≈ (1.024, -0.1)
-   - 点4 = (1, -0.1)
-   - 点5 ≈ (1.045, -0.089)
+1. **几何正确性**：
+   - 直角情况：给定 `A(0,0)`、`B(1,0)`、`C(1,1)`、`d = 0.1`（夹角 90° ≥ 80°），验证：
+     - 点1 = (1, 0)
+     - 点2 = (0.9, 0.1)
+     - 点3 = (1.1, -0.1)
+     - 点4 = (1, -0.1)
+     - 点5 = (1.1, 0)
+   - 锐角情况：给定 `A(0,0)`、`B(1,0)`、`C(0.5, 0.866)`、`d = 0.1`（夹角 60° < 80°），验证点2、点3**不生成**，只返回点1、点4、点5。
+   - 钝角情况：给定 `A(0,0)`、`B(1,0)`、`C(3,1)`、`d = 0.1`（夹角约 153° ≥ 80°），验证点1~点5 与此前一致。
 2. **退化情况**：
    - 共线：验证只生成 B 与两个垂向点。
    - 端点：验证只使用单侧方向。
@@ -248,7 +255,7 @@ const getAdjacentSegs = (id: number): AdjacentSeg | undefined => {
 
 本方案已实现：
 
-- `src/utils/snapUtils/snapInterPtFree.ts`：新增 `computeFreeSnapCandidates`，负责 5 点候选生成及退化处理。
+- `src/utils/snapUtils/snapInterPtFree.ts`：新增 `computeFreeSnapCandidates`，负责 5 点候选生成及退化处理；已补充夹角 ≥ 80° 才生成内侧/外侧平行线交点的限制，夹角 < 80° 时只保留点1、点4、点5。
 - `src/utils/snapUtils/snapCore.ts`：`snapInterPt` 内按 `opt.free` 分支；free 点调用 `computeFreeSnapCandidates`，非 free 点保持原有 4/8 方向逻辑（抽离为 `computeStandardBiases`）。
 - `src/models/stores/snapStore.ts`：在调用 `snapInterPtCore` 时传入 `getAdjacentSegs`，从 `saveStore.adjacentSegs` 转换得到 `AdjacentSeg`。
 

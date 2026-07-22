@@ -551,7 +551,52 @@ describe('snapInterPt', () => {
 
 
 describe('computeFreeSnapCandidates', () => {
-  it('一般钝角情况生成 5 个候选点', () => {
+  it('直角情况生成 5 个候选点', () => {
+    const A = makePt(10, [0, 0])
+    const B = makePt(11, [1, 0], ControlPointDir.vertical, undefined, true)
+    const C = makePt(12, [1, 1])
+    const info = toPtDirectionInfo(B, A, C)
+    const cands = computeFreeSnapCandidates(B, 0.1, info)
+    expect(cands).toHaveLength(5)
+
+    // 点1：B 本身
+    expect(cands[0]).toEqual([1, 0])
+
+    // 点2：内侧平行线交点 = (0.9, 0.1)
+    expect(cands[1]).toEqual([0.9, 0.1])
+
+    // 点3：外侧平行线交点 = (1.1, -0.1)
+    expect(cands[2]).toEqual([1.1, -0.1])
+
+    // 点4：B 到 AB 外侧平行线的垂足 = (1, -0.1)
+    expect(cands[3]).toEqual([1, -0.1])
+
+    // 点5：B 到 BC 外侧平行线的垂足 = (1.1, 0)
+    expect(cands[4]).toEqual([1.1, 0])
+  })
+
+  it('夹角小于 80° 时不生成平行线交点，只返回 3 个候选点', () => {
+    const A = makePt(10, [0, 0])
+    const B = makePt(11, [1, 0], ControlPointDir.vertical, undefined, true)
+    const C = makePt(12, [0.5, 0.866])
+    const info = toPtDirectionInfo(B, A, C)
+    const cands = computeFreeSnapCandidates(B, 0.1, info)
+    expect(cands).toHaveLength(3)
+
+    // 点1：B 本身
+    expect(cands[0]).toEqual([1, 0])
+
+    // 点4：B 到 AB 外侧平行线的垂足 = (1, -0.1)
+    expect(cands[1]).toEqual([1, -0.1])
+
+    // 点5：B 到 BC 外侧平行线的垂足
+    // nBC: perp of uBC = (-0.5, 0.866) -> (-0.866, -0.5), flip to point to uBA = (1,0): dot = -0.866, flip -> (0.866, 0.5)
+    // p5 = B + d * (0.866, 0.5) = (1+0.0866, 0+0.05) = (1.0866, 0.05)
+    expect(cands[2][0]).toBeCloseTo(1.087, 3)
+    expect(cands[2][1]).toBeCloseTo(0.05, 3)
+  })
+
+  it('夹角大于 100° 时生成 5 个候选点', () => {
     const A = makePt(10, [0, 0])
     const B = makePt(11, [1, 0], ControlPointDir.vertical, undefined, true)
     const C = makePt(12, [3, 1])
