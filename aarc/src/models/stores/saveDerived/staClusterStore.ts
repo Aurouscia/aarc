@@ -22,6 +22,28 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     interface SnapCandidatesInfo {
         candidates: Coord[]
         reach: number
+        bbox: { minX: number; maxX: number; minY: number; maxY: number }
+    }
+
+    function getCandidatesBbox(candidates: Coord[]): { minX: number; maxX: number; minY: number; maxY: number } {
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+        for (const c of candidates) {
+            if (c[0] < minX) minX = c[0]
+            if (c[0] > maxX) maxX = c[0]
+            if (c[1] < minY) minY = c[1]
+            if (c[1] > maxY) maxY = c[1]
+        }
+        return { minX, maxX, minY, maxY }
+    }
+
+    function bboxesCouldCling(
+        bboxA: { minX: number; maxX: number; minY: number; maxY: number },
+        bboxB: { minX: number; maxX: number; minY: number; maxY: number },
+        dist: number
+    ): boolean {
+        if (bboxA.minX - bboxB.maxX > dist || bboxB.minX - bboxA.maxX > dist) return false
+        if (bboxA.minY - bboxB.maxY > dist || bboxB.minY - bboxA.maxY > dist) return false
+        return true
     }
 
     /**
@@ -41,7 +63,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             if (dx > reach) reach = dx
             if (dy > reach) reach = dy
         }
-        return { candidates, reach }
+        return { candidates, reach, bbox: getCandidatesBbox(candidates) }
     }
 
     const staClusters = ref<ControlPoint[][]>()
@@ -75,24 +97,35 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             return;
         neighbors = {}
         const snapInfo: Record<number, SnapCandidatesInfo> = {}
+        let maxReach = 0
         for (const pt of pts) {
-            snapInfo[pt.id] = getPtSnapCandidatesAndReach(pt)
+            const info = getPtSnapCandidatesAndReach(pt)
+            snapInfo[pt.id] = info
+            if (info.reach > maxReach)
+                maxReach = info.reach
         }
-        for (let i = 0; i < pts.length - 1; i++) {
-            for (let j = i + 1; j < pts.length; j++) {
-                const a = pts[i]
-                const b = pts[j]
-                const reachA = snapInfo[a.id].reach
+        // 按 x 坐标排序，用滑动窗口减少 O(n²) 比较
+        const sortedPts = pts.slice().sort((a, b) => a.pos[0] - b.pos[0])
+        for (let i = 0; i < sortedPts.length - 1; i++) {
+            const a = sortedPts[i]
+            const reachA = snapInfo[a.id].reach
+            const bboxA = snapInfo[a.id].bbox
+            for (let j = i + 1; j < sortedPts.length; j++) {
+                const b = sortedPts[j]
+                const xDiff = b.pos[0] - a.pos[0]
+                // x 方向已超出任何可能阈值，后续 j 只会更远
+                if (xDiff > skipClingingCheckThrs + reachA + maxReach)
+                    break
                 const reachB = snapInfo[b.id].reach
                 const checkThrs = skipClingingCheckThrs + reachA + reachB
-                if(Math.abs(a.pos[0] - b.pos[0]) > checkThrs)
+                if (xDiff > checkThrs)
                     continue
-                if(Math.abs(a.pos[1] - b.pos[1]) > checkThrs)
+                if (Math.abs(a.pos[1] - b.pos[1]) > checkThrs)
                     continue
-                if(ptClinging(a, b, snapInfo[a.id].candidates, snapInfo[b.id].candidates)){
-                    if(!neighbors[a.id])
+                if (ptClinging(a, b, snapInfo[a.id].candidates, snapInfo[b.id].candidates, bboxA, snapInfo[b.id].bbox)) {
+                    if (!neighbors[a.id])
                         neighbors[a.id] = new Set<number>()
-                    if(!neighbors[b.id])
+                    if (!neighbors[b.id])
                         neighbors[b.id] = new Set<number>()
                     neighbors[a.id]?.add(b.id)
                     neighbors[b.id]?.add(a.id)
@@ -167,7 +200,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
                 continue
             if(Math.abs(pt.pos[1] - otherPt.pos[1]) > checkThrs)
                 continue
-            if(ptClinging(pt, otherPt, ptInfo.candidates, otherInfo.candidates)){
+            if(ptClinging(pt, otherPt, ptInfo.candidates, otherInfo.candidates, ptInfo.bbox, otherInfo.bbox)){
                 neibs.add(otherPt.id)
                 if(!neighbors[otherPt.id])
                     neighbors[otherPt.id] = new Set<number>()
@@ -190,14 +223,31 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         makeClustersFromNeighbors()
     }
 
-    function ptClinging(a:ControlPoint, b:ControlPoint, candidatesA?:Coord[], candidatesB?:Coord[]):boolean{
+    function ptClinging(a:ControlPoint, b:ControlPoint, candidatesA?:Coord[], candidatesB?:Coord[],
+        bboxA?:{minX:number; maxX:number; minY:number; maxY:number},
+        bboxB?:{minX:number; maxX:number; minY:number; maxY:number}
+    ):boolean{
         const sizeA = saveStore.getLinesDecidedPtSnapSize(a.id)
         const sizeB = saveStore.getLinesDecidedPtSnapSize(b.id)
         const distMut = (sizeA + sizeB)/2
         const clingingDist = configClingingDist * distMut
         const clingingDistSqrBiggerByEpsilon = (clingingDist+numberCmpEpsilon*10)**2 //判断条件应该宽松一些（避免浮点数误差）所以eps*10
-        const candsA = candidatesA ?? getPtSnapCandidatesAndReach(a).candidates
-        const candsB = candidatesB ?? getPtSnapCandidatesAndReach(b).candidates
+        let candsA = candidatesA
+        let candsB = candidatesB
+        let boxA = bboxA
+        let boxB = bboxB
+        if(candsA === undefined || boxA === undefined){
+            const info = getPtSnapCandidatesAndReach(a)
+            candsA = info.candidates
+            boxA = info.bbox
+        }
+        if(candsB === undefined || boxB === undefined){
+            const info = getPtSnapCandidatesAndReach(b)
+            candsB = info.candidates
+            boxB = info.bbox
+        }
+        if(!bboxesCouldCling(boxA, boxB, clingingDist))
+            return false
         for(const ca of candsA){
             for(const cb of candsB){
                 if(coordDistSqLessThan(ca, cb, clingingDistSqrBiggerByEpsilon))
