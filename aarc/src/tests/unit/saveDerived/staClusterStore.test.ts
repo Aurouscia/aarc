@@ -473,6 +473,34 @@ describe('staClusterStore - getStaClusters', () => {
     expect(clusters).toHaveLength(1)
     expect(clusters![0].map(p => p.id).sort((a, b) => a - b)).toEqual([1, 2])
   })
+
+  it('free 点平行线交点候选接近时应聚成同一个 cluster', () => {
+    // 两个 free 点实际距离 50 > 25，按原逻辑不会聚类；
+    // 但它们内侧平行线交点候选距离约 20.7 < 25，应聚类。
+    const save = createEmptySave({
+      points: [
+        { ...createPoint(1), pos: [100, 100], sta: ControlPointSta.sta },
+        { ...createPoint(2), pos: [0, 0], sta: ControlPointSta.sta, free: true },
+        { ...createPoint(3), pos: [100, -100], sta: ControlPointSta.sta },
+        { ...createPoint(4), pos: [-50, 100], sta: ControlPointSta.sta },
+        { ...createPoint(5), pos: [50, 0], sta: ControlPointSta.sta, free: true },
+        { ...createPoint(6), pos: [-50, -100], sta: ControlPointSta.sta }
+      ],
+      lines: [
+        createLine([1, 2, 3]),
+        createLine([4, 5, 6])
+      ]
+    })
+    setupSaveStore(save)
+    const store = useStaClusterStore()
+
+    const clusters = store.getStaClusters()
+
+    expect(clusters).toHaveLength(1)
+    const ids = clusters![0].map(p => p.id).sort((a, b) => a - b)
+    expect(ids).toContain(2)
+    expect(ids).toContain(5)
+  })
 })
 
 describe('staClusterStore - updateClustersBecauseOf', () => {

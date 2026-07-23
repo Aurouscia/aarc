@@ -4,6 +4,8 @@ import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
 import { defineStore } from "pinia";
 import { useSaveStore } from "../saveStore";
 import { useConfigStore } from "../configStore";
+import { useFreePtDirectionStore } from "./freePtDirectionStore";
+import { computeFreeSnapCandidates } from "@/utils/snapUtils/snapInterPtFree";
 import { numberCmpEpsilon } from "@/utils/consts";
 import { computed, ref } from "vue";
 import { Coord } from '@/models/coord';
@@ -11,10 +13,36 @@ import { Coord } from '@/models/coord';
 export const useStaClusterStore = defineStore('staCluster', ()=>{
     const saveStore = useSaveStore()
     const cs = useConfigStore()
+    const freePtDirectionStore = useFreePtDirectionStore()
     saveStore.deletedPoint = cleanClustersFromDeletedPt
     
     const configClingingDist = cs.config.snapOctaClingPtPtDist
     const skipClingingCheckThrs = 2.5*configClingingDist
+
+    interface SnapCandidatesInfo {
+        candidates: Coord[]
+        reach: number
+    }
+
+    /**
+     * 获取点的吸附候选位置及其在 x/y 轴上的最大偏移（reach）。
+     * 对 free 点使用两侧线段方向生成候选（含平行线交点）；
+     * 非 free 点退化为 [pt.pos]，reach 为 0。
+     */
+    function getPtSnapCandidatesAndReach(pt: ControlPoint): SnapCandidatesInfo {
+        const size = saveStore.getLinesDecidedPtSnapSize(pt.id)
+        const snapDist = size * configClingingDist
+        const directionInfo = freePtDirectionStore.getPtDirectionInfo(pt.id)
+        const candidates = computeFreeSnapCandidates(pt, snapDist, directionInfo)
+        let reach = 0
+        for (const c of candidates) {
+            const dx = Math.abs(c[0] - pt.pos[0])
+            const dy = Math.abs(c[1] - pt.pos[1])
+            if (dx > reach) reach = dx
+            if (dy > reach) reach = dy
+        }
+        return { candidates, reach }
+    }
 
     const staClusters = ref<ControlPoint[][]>()
     const staBelongToCluster = computed<Record<number, ControlPoint[]|undefined>>(()=>{
@@ -46,15 +74,22 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         if (!pts)
             return;
         neighbors = {}
+        const snapInfo: Record<number, SnapCandidatesInfo> = {}
+        for (const pt of pts) {
+            snapInfo[pt.id] = getPtSnapCandidatesAndReach(pt)
+        }
         for (let i = 0; i < pts.length - 1; i++) {
             for (let j = i + 1; j < pts.length; j++) {
                 const a = pts[i]
                 const b = pts[j]
-                if(Math.abs(a.pos[0] - b.pos[0]) > skipClingingCheckThrs)
+                const reachA = snapInfo[a.id].reach
+                const reachB = snapInfo[b.id].reach
+                const checkThrs = skipClingingCheckThrs + reachA + reachB
+                if(Math.abs(a.pos[0] - b.pos[0]) > checkThrs)
                     continue
-                if(Math.abs(a.pos[1] - b.pos[1]) > skipClingingCheckThrs)
+                if(Math.abs(a.pos[1] - b.pos[1]) > checkThrs)
                     continue
-                if(ptClinging(a, b)){
+                if(ptClinging(a, b, snapInfo[a.id].candidates, snapInfo[b.id].candidates)){
                     if(!neighbors[a.id])
                         neighbors[a.id] = new Set<number>()
                     if(!neighbors[b.id])
@@ -122,10 +157,17 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             makeClustersFromNeighbors()
             return
         }
+        const ptInfo = getPtSnapCandidatesAndReach(pt)
         for(const otherPt of saveStore.save?.points||[]){
             if(otherPt.sta !== ControlPointSta.sta || otherPt.id==pt.id)
                 continue
-            if(ptClinging(pt, otherPt)){
+            const otherInfo = getPtSnapCandidatesAndReach(otherPt)
+            const checkThrs = skipClingingCheckThrs + ptInfo.reach + otherInfo.reach
+            if(Math.abs(pt.pos[0] - otherPt.pos[0]) > checkThrs)
+                continue
+            if(Math.abs(pt.pos[1] - otherPt.pos[1]) > checkThrs)
+                continue
+            if(ptClinging(pt, otherPt, ptInfo.candidates, otherInfo.candidates)){
                 neibs.add(otherPt.id)
                 if(!neighbors[otherPt.id])
                     neighbors[otherPt.id] = new Set<number>()
@@ -148,14 +190,21 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         makeClustersFromNeighbors()
     }
 
-    function ptClinging(a:ControlPoint, b:ControlPoint):boolean{
+    function ptClinging(a:ControlPoint, b:ControlPoint, candidatesA?:Coord[], candidatesB?:Coord[]):boolean{
         const sizeA = saveStore.getLinesDecidedPtSnapSize(a.id)
         const sizeB = saveStore.getLinesDecidedPtSnapSize(b.id)
         const distMut = (sizeA + sizeB)/2
         const clingingDist = configClingingDist * distMut
         const clingingDistSqrBiggerByEpsilon = (clingingDist+numberCmpEpsilon*10)**2 //判断条件应该宽松一些（避免浮点数误差）所以eps*10
-        const resBool = !!coordDistSqLessThan(a.pos, b.pos, clingingDistSqrBiggerByEpsilon)
-        return resBool
+        const candsA = candidatesA ?? getPtSnapCandidatesAndReach(a).candidates
+        const candsB = candidatesB ?? getPtSnapCandidatesAndReach(b).candidates
+        for(const ca of candsA){
+            for(const cb of candsB){
+                if(coordDistSqLessThan(ca, cb, clingingDistSqrBiggerByEpsilon))
+                    return true
+            }
+        }
+        return false
     }
 
     function tryTransferStaNameWithinCluster(sta:ControlPoint){
