@@ -37,11 +37,14 @@ import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
 import { getByIndexInRing, isRing, isRingByFormalPts } from "@/utils/lineUtils/isRing";
 import { drawArcByThreePoints } from "@/utils/drawUtils/drawArc";
 import { CvsContext } from "../common/cvsContext";
+import { useCvsBlocksControlStore } from "../common/cvs";
 import { LineStrokeTarget, strokeStyledLine } from "../common/strokeStyledLine";
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
 import { useColorProcStore } from "@/models/stores/utils/colorProcStore";
 import { LineStyle } from "@/models/save";
 import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
+import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
+import { useRenderOptionsStore } from "@/models/stores/renderOptionsStore";
 import { formalize } from "@/utils/lineUtils/formalize";
 
 type LineRenderType = 'both'|'body'|'carpet'
@@ -66,7 +69,8 @@ export function linkPts(
     ctx:CvsContext,
     formalPts:FormalPt[],
     lineInfo:Line,
-    getTurnRadiusOf:GetTurnRadiusOf
+    getTurnRadiusOf:GetTurnRadiusOf,
+    simplify?: boolean
 ){
     // 点数不足时无法形成线段，直接返回
     if(formalPts.length<=1){
@@ -76,6 +80,18 @@ export function linkPts(
     const isRingLine = isRingByFormalPts(formalPts)
     // 提取所有 formal 点的实际坐标，后续几何计算只依赖位置
     const pts = formalPts.map(x=>x.pos)
+
+    // 视图足够远时直接连线，不再绘制圆角
+    if(simplify){
+        ctx.moveTo(...pts[0])
+        for(let i=1;i<pts.length;i++){
+            ctx.lineTo(...pts[i])
+        }
+        if(isRingLine){
+            ctx.lineTo(...pts[0])
+        }
+        return
+    }
 
     // 确定需要处理“转角”的索引范围，以及获取每个转角前一点索引的规则
     let cornerStartIdx:number
@@ -214,6 +230,40 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
     const formalizedLineStore = useFormalizedLineStore()
     const cs = useConfigStore();
     const colorProc = useColorProcStore()
+    const cvsFrameStore = useCvsFrameStore()
+    const editorLocalConfigStore = useEditorLocalConfigStore()
+    const renderOptionsStore = useRenderOptionsStore()
+    const cvsBlocksControlStore = useCvsBlocksControlStore()
+
+    const lineFobThrsBase = 0.000001
+
+    function lineShouldSimplify(): boolean {
+        if (renderOptionsStore.exporting) return false
+        const viewRect = cvsFrameStore.getViewRectSideLengths()
+        const viewRectArea = viewRect[0] * viewRect[1]
+        if (!viewRectArea) return false
+        const ratio = cs.config.lineTurnAreaRadius / viewRectArea
+        const thrs = lineFobThrsBase * (Number(editorLocalConfigStore.lineFob) || 1)
+        return ratio < thrs
+    }
+    function getLineOmitPadding(line:Line[]){
+        const maxLineWidth = Math.max(...line.map(l => (l.width || 1) * cs.config.lineWidth))
+        return cs.config.lineTurnAreaRadius + maxLineWidth + cs.config.lineCarpetWiden
+    }
+    function checkOmittableLine(minX:number, maxX:number, minY:number, maxY:number, line:Line[]){
+        const { cvsWidth, cvsHeight } = saveStore
+        const { left, right, top, bottom } = cvsBlocksControlStore.blockTotalBoundary
+        const padding = getLineOmitPadding(line)
+        if((maxX + padding)/cvsWidth < left)
+            return true
+        if((minX - padding)/cvsWidth > right)
+            return true
+        if((maxY + padding)/cvsHeight < top)
+            return true
+        if((minY - padding)/cvsHeight > bottom)
+            return true
+        return false
+    }
     function renderAllLines(ctx:CvsContext, ltype?:LineType, rtype?:LineRenderType){
         if(!saveStore.save){
             return
@@ -249,23 +299,37 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         if(line.length===0)
             return
         
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
         for(const l of line){
             const pts = saveStore.getPtsByIds(l.pts)
             if(pts.length<=1)
                 return;
             const formalPts = formalize(pts)
             formalizedLineStore.setLinesFormalPts(l.id, formalPts)
+            for(const fp of formalPts){
+                const [x, y] = fp.pos
+                if(x < minX) minX = x
+                if(x > maxX) maxX = x
+                if(y < minY) minY = y
+                if(y > maxY) maxY = y
+            }
+        }
+
+        // 填充地形或导出时不能省略，避免内容缺失
+        const isFilledTerrain = line.some(l => l.isFilled && l.type === LineType.terrain)
+        if(!isFilledTerrain && !renderOptionsStore.exporting && checkOmittableLine(minX, maxX, minY, maxY, line)){
+            return
         }
 
         const includeCarpet = !rtype || rtype == 'carpet' || rtype == 'both'
 
         // 简化模式：无视样式和分段，整线统一绘制
-        if(useEditorLocalConfigStore().ignoreStyleAndSpan){
+        if(editorLocalConfigStore.ignoreStyleAndSpan || lineShouldSimplify()){
             for(const l of line){
                 const formalPts = formalizedLineStore.getLinesFormalPts(l.id) ?? []
                 const buildPath = () => {
                     ctx.beginPath()
-                    linkPts(ctx, formalPts, l, cs.getTurnRadiusOf)
+                    linkPts(ctx, formalPts, l, cs.getTurnRadiusOf, lineShouldSimplify())
                 }
                 buildPath()
                 doRender(ctx, l, undefined, undefined, 'both', 'base', buildPath)
@@ -279,7 +343,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
                 const formalPts = formalizedLineStore.getLinesFormalPts(l.id) ?? []
                 const buildPath = () => {
                     ctx.beginPath()
-                    linkPts(ctx, formalPts, l, cs.getTurnRadiusOf)
+                    linkPts(ctx, formalPts, l, cs.getTurnRadiusOf, lineShouldSimplify())
                 }
                 buildPath()
                 doRender(ctx, l, undefined, undefined, 'carpet', undefined, buildPath)
@@ -367,7 +431,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             formalizedSegs.push({lineId:line.id, pts:formalized})
             const buildPath = () => {
                 ctx.beginPath()
-                linkPts(ctx, formalized, line, cs.getTurnRadiusOf)
+                linkPts(ctx, formalized, line, cs.getTurnRadiusOf, lineShouldSimplify())
             }
             buildPath()
             const enforceLineWidth = line.isFilled ? 1 : undefined
@@ -442,7 +506,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
         for (const info of infos) {
             const buildPath = () => {
                 ctx.beginPath()
-                linkPts(ctx, info.formalPts, info.line, cs.getTurnRadiusOf)
+                linkPts(ctx, info.formalPts, info.line, cs.getTurnRadiusOf, lineShouldSimplify())
             }
             buildPath()
             doRenderSpan(ctx, info.line, {
@@ -497,7 +561,7 @@ export const useLineCvsWorker = defineStore('lineCvsWorker', ()=>{
             const buildPath = () => {
                 ctx.beginPath()
                 for (const info of groupInfos) {
-                    linkPts(ctx, info.formalPts, info.line, cs.getTurnRadiusOf)
+                    linkPts(ctx, info.formalPts, info.line, cs.getTurnRadiusOf, lineShouldSimplify())
                 }
             }
             buildPath()

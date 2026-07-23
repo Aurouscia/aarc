@@ -1,14 +1,30 @@
-import { ControlPoint, ControlPointSta } from "@/models/save";
-import { coordDistSq, coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
-import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
+import { ControlPoint } from "@/models/save";
 import { defineStore } from "pinia";
 import { useSaveStore } from "../saveStore";
 import { useConfigStore } from "../configStore";
+<<<<<<< HEAD
 import { useFreePtDirectionStore } from "./freePtDirectionStore";
 import { computeFreeSnapCandidates } from "@/utils/snapUtils/snapInterPtFree";
 import { numberCmpEpsilon } from "@/utils/consts";
+=======
+
+>>>>>>> master
 import { computed, ref } from "vue";
+import { numberCmpEpsilon } from "@/utils/consts";
 import { Coord } from '@/models/coord';
+import {
+    buildNeighbors,
+    cleanNeighborsForDeletedPt,
+    getClusterMaxSizePure,
+    getRectOfClusterPure,
+    getStaClusterByIdPure,
+    isPtSinglePure,
+    makeClustersFromNeighborsPure,
+    Neighbors,
+    resolveStaNamePure,
+    tryTransferStaNameWithinClusterPure,
+    updateNeighborsForMovedPt
+} from "./staClusterStore.pure";
 
 export const useStaClusterStore = defineStore('staCluster', ()=>{
     const saveStore = useSaveStore()
@@ -17,7 +33,6 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     saveStore.deletedPoint = cleanClustersFromDeletedPt
     
     const configClingingDist = cs.config.snapOctaClingPtPtDist
-    const skipClingingCheckThrs = 2.5*configClingingDist
 
     interface SnapCandidatesInfo {
         candidates: Coord[]
@@ -75,7 +90,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         for(const c of clusters){
             for(const pt of c){
                 res[pt.id] = c
-            } 
+            }
         }
         return res
     })
@@ -90,10 +105,11 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     /**
      * 记录每个点的邻点，在有点移动或删除时，需要更新
      */
-    let neighbors:Record<string, Set<number>|undefined> = {}
-    function initNeighbors(): ControlPoint[][] | undefined {
-        const pts = saveStore.save?.points.filter(pt => pt.sta == ControlPointSta.sta)
+    let neighbors:Neighbors = {}
+    function initNeighbors() {
+        const pts = saveStore.save?.points
         if (!pts)
+<<<<<<< HEAD
             return;
         neighbors = {}
         const snapInfo: Record<number, SnapCandidatesInfo> = {}
@@ -132,47 +148,25 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
                 }
             }
         }
+=======
+            return
+        neighbors = buildNeighbors(
+            pts,
+            configClingingDist,
+            id => saveStore.getLinesDecidedPtSnapSize(id),
+            numberCmpEpsilon
+        )
+>>>>>>> master
     }
     function makeClustersFromNeighbors(){
-        const usedPtIds = new Set<number>()
-        staClusters.value = [] // 清空
-        for(const pt of Object.entries(neighbors)){
-            const ptId = Number(pt[0])
-            if(usedPtIds.has(ptId))
-                continue
-            const ptNeibs = pt[1]
-            if(ptNeibs && ptNeibs.size > 0){
-                const newClusterIds = new Set<number>()
-                expandSetInNeighbors(newClusterIds, ptId)
-                if(newClusterIds.size > 0){
-                    const newCluster:ControlPoint[] = []
-                    for(const id of newClusterIds){
-                        const addingPt = saveStore.getPtById(id)
-                        if(addingPt){
-                            newCluster.push(addingPt)
-                            usedPtIds.add(id)
-                        }
-                    }
-                    if(newCluster.length > 0)
-                        staClusters.value.push(newCluster)
-                }
-            }
-        }
+        staClusters.value = makeClustersFromNeighborsPure(
+            neighbors,
+            id => saveStore.getPtById(id)
+        )
     }
-    function expandSetInNeighbors(formingIds:Set<number>, current:number){
-        const currentNeibs = neighbors[current]
-        if(!currentNeibs)
-            return
-        for(const neib of currentNeibs){
-            if(formingIds.has(neib))
-                continue
-            formingIds.add(neib)
-            expandSetInNeighbors(formingIds, neib)
-        }
-    }
-
 
     function updateClustersBecauseOf(pt:ControlPoint){
+<<<<<<< HEAD
         let neibs = neighbors[pt.id]
         if(neibs){
             for(const neib of neibs){
@@ -207,22 +201,24 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
                 neighbors[otherPt.id]?.add(pt.id) 
             }
         }
+=======
+        neighbors = updateNeighborsForMovedPt(
+            neighbors,
+            pt,
+            saveStore.save?.points || [],
+            configClingingDist,
+            id => saveStore.getLinesDecidedPtSnapSize(id),
+            numberCmpEpsilon
+        )
+>>>>>>> master
         makeClustersFromNeighbors()
     }
     function cleanClustersFromDeletedPt(ptId:number){
-        const neibs = neighbors[ptId]
-        if(!neibs)
-            return
-        for(const neib of neibs){
-            const neibNeibs = neighbors[neib]
-            if(neibNeibs){
-                neibNeibs.delete(ptId)
-            }
-        }
-        delete neighbors[ptId]
+        neighbors = cleanNeighborsForDeletedPt(neighbors, ptId)
         makeClustersFromNeighbors()
     }
 
+<<<<<<< HEAD
     function ptClinging(a:ControlPoint, b:ControlPoint, candidatesA?:Coord[], candidatesB?:Coord[],
         bboxA?:{minX:number; maxX:number; minY:number; maxY:number},
         bboxB?:{minX:number; maxX:number; minY:number; maxY:number}
@@ -257,33 +253,22 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         return false
     }
 
+=======
+>>>>>>> master
     function tryTransferStaNameWithinCluster(sta:ControlPoint){
-        if(!sta.nameP)
-            return
         const cluster = getStaClusters()?.find(c=>c.find(s=>s.id === sta.id))
         if(!cluster)
             return
-        const nameGlobalPos = coordAdd(sta.pos, sta.nameP)
-        let originalDistSq = coordDistSq(sta.pos, nameGlobalPos)
-        const transferThrs = 200
-        let minDistSq = 1e10
-        let closestPt:ControlPoint|undefined;
-        cluster.forEach(pt=>{
-            if(pt.id == sta.id)
-                return
-            const distSq = coordDistSq(pt.pos, nameGlobalPos)
-            if(distSq < minDistSq){
-                minDistSq = distSq;
-                closestPt = pt;
-            }
-        })
-        if(closestPt && originalDistSq - minDistSq > transferThrs){
-            const relPosToClosest = coordSub(nameGlobalPos, closestPt.pos)
-            closestPt.name = sta.name
-            closestPt.nameS = sta.nameS
-            closestPt.nameP = relPosToClosest
-            return closestPt
-        }
+        const transfer = tryTransferStaNameWithinClusterPure(sta, cluster)
+        if(!transfer)
+            return
+        const target = saveStore.getPtById(transfer.toId)
+        if(!target)
+            return
+        target.name = transfer.name
+        target.nameS = transfer.nameS
+        target.nameP = transfer.nameP
+        return target
     }
     function getMaxSizePtWithinCluster(ptId:number, sizeType:'ptSize'|'ptNameSize'|'ptNameSnapSize'){
         const get = sizeType === 'ptSize' 
@@ -291,116 +276,32 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             : sizeType === 'ptNameSize'
             ? (id:number)=>saveStore.getLinesDecidedPtNameSize(id)
             : (id:number)=>saveStore.getLinesDecidedPtNameSnapSize(id)
-        const cluster = staBelongToCluster.value[ptId]
-        if(!cluster)
-            return get(ptId)
-        const sizes = cluster.map(x=>get(x.id))
-        if(sizes.length===0)
-            return 1
-        return Math.max(...sizes)
+        return getClusterMaxSizePure(staBelongToCluster.value[ptId], get, ptId)
     }
     function getRectOfCluster(cluster: ControlPoint[]|undefined):Coord[] {
-        //获取四角点
-        if (cluster) {
-            const maxXInCluster = Math.max(...cluster.map(x => x.pos[0]))
-            const maxYInCluster = Math.max(...cluster.map(x => x.pos[1]))
-            const minXInCluster = Math.min(...cluster.map(x => x.pos[0]))
-            const minYInCluster = Math.min(...cluster.map(x => x.pos[1]))
-            return [
-                [maxXInCluster, maxYInCluster],
-                [maxXInCluster, minYInCluster],
-                [minXInCluster, maxYInCluster],
-                [minXInCluster, minYInCluster]
-            ]
-        }
-        return []
+        if (!cluster || cluster.length === 0)
+            return []
+        return getRectOfClusterPure(cluster)
     }
     function clearItems(){
         staClusters.value = undefined
         neighbors = {}
     }
     function getStaClusterById(ptId:number){
-        let clutser = getStaClusters()?.find(cluster =>
-                cluster.some(sta => sta.id === ptId)
-            )
-        if (!clutser){
-            let point = saveStore.getPtById(ptId)
-            if (!point) return []
-            return [point]
-        }
-        return clutser
+        return getStaClusterByIdPure(ptId, getStaClusters() || [], id => saveStore.getPtById(id))
     }
     function getStaName(ptId: number, raw?: boolean): {name: string, nameSub: string, ptId: number} {
-        // 先尝试获取指定点本身的名称
-        const pt = saveStore.getPtById(ptId)
-        if (pt?.name) {
-            return {
-                name: raw ? pt.name : pt.name.replaceAll('\n', ''),
-                nameSub: raw ? (pt.nameS ?? '') : (pt.nameS?.replaceAll('\n', '') ?? ''),
-                ptId
-            }
-        }
-        // 若该点本身无名称，再尝试从所在 cluster（及通过 ptLink 可达的其他 cluster）中获取
-        // 收集所有 cluster（包括 staClusters 中的和单点形成的虚拟 cluster）
-        const allClusters: ControlPoint[][] = [...(getStaClusters() || [])]
-        const clusteredPtIds = new Set<number>()
-        allClusters.forEach(c => c.forEach(p => clusteredPtIds.add(p.id)))
-        // 为未聚类的单点也创建虚拟 cluster
-        const allPts = saveStore.save?.points || []
-        for (const p of allPts) {
-            if (!clusteredPtIds.has(p.id)) {
-                allClusters.push([p])
-            }
-        }
-        // 构建 ptId -> clusterIndex 映射
-        const ptToClusterIdx: Record<number, number> = {}
-        allClusters.forEach((c, idx) => c.forEach(p => ptToClusterIdx[p.id] = idx))
-        // 构建 cluster 邻接图（通过所有类型的 pointLinks）
-        const clusterAdj: Record<number, Set<number>> = {}
-        const links = saveStore.save?.pointLinks || []
-        links.forEach(link => {
-            const c1 = ptToClusterIdx[link.pts[0]]
-            const c2 = ptToClusterIdx[link.pts[1]]
-            if (c1 === undefined || c2 === undefined || c1 === c2) return
-            if (!clusterAdj[c1]) clusterAdj[c1] = new Set()
-            if (!clusterAdj[c2]) clusterAdj[c2] = new Set()
-            clusterAdj[c1].add(c2)
-            clusterAdj[c2].add(c1)
-        })
-        // BFS 从当前 cluster 开始搜索
-        const startIdx = ptToClusterIdx[ptId]
-        if (startIdx !== undefined) {
-            const visited = new Set<number>([startIdx])
-            const queue: number[] = [startIdx]
-            while (queue.length > 0) {
-                const currIdx = queue.shift()!
-                const currCluster = allClusters[currIdx]
-                const namedPt = currCluster.find(x => x.name)
-                if (namedPt && namedPt.name) {
-                    return {
-                        name: raw ? namedPt.name : namedPt.name.replaceAll('\n', ''),
-                        nameSub: raw ? (namedPt.nameS ?? '') : (namedPt.nameS?.replaceAll('\n', '') ?? ''),
-                        ptId: namedPt.id
-                    }
-                }
-                for (const neib of (clusterAdj[currIdx] || [])) {
-                    if (!visited.has(neib)) {
-                        visited.add(neib)
-                        queue.push(neib)
-                    }
-                }
-            }
-        }
-        return { name: `#${ptId}`, nameSub: '', ptId }
+        return resolveStaNamePure(
+            ptId,
+            !!raw,
+            saveStore.save?.points || [],
+            saveStore.save?.pointLinks || [],
+            getStaClusters() || []
+        )
     }
 
     function isPtSingle(ptId: number) {
-        let pt = saveStore.getPtById(ptId)
-        if (!pt) {
-            return false
-        }
-        const cluster = getStaClusterById(ptId)
-        return cluster.length <= 1
+        return isPtSinglePure(ptId, getStaClusters() || [])
     }
     return {
         getStaClusters,
@@ -411,6 +312,7 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
         getRectOfCluster,
         getStaClusterById,
         isPtSingle,
-        getStaName
+        getStaName,
+        cleanClustersFromDeletedPt
     }
 })

@@ -36,10 +36,10 @@ const forkExamples = [
         logo: convertToProxyUrlIfNeeded('http://maritel.jowei19.com/maritelLogo.png', 'icon')
     },
     {
-        name: '善溪官网',
-        subName: '深度定制化开发',
-        url: 'http://tharmcthay.jowei19.com',
-        logo: convertToProxyUrlIfNeeded('http://static.wiki.jowei19.com/upload/709390125.jpg', 'icon')
+        name: '海岏世界观',
+        subName: '原版使用',
+        url: 'http://hwr.whjmctshb.com',
+        logo: convertToProxyUrlIfNeeded('http://hwr.whjmctshb.com/hw.png', 'icon')
     },
     {
         name: '玉河官网',

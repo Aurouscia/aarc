@@ -11,6 +11,9 @@ import { isLineFamily } from "@/utils/lineUtils/isLineFamily";
 import { ptInLineIndices } from "@/utils/lineUtils/ptInLineIndices";
 import { useLineStateStore } from "@/models/stores/saveDerived/state/lineStateStore";
 import { useLineSpanStore } from "@/models/stores/saveDerived/slice/lineSpanStore";
+import { useCvsFrameStore } from "@/models/stores/cvsFrameStore";
+import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
+import { useRenderOptionsStore } from "@/models/stores/renderOptionsStore";
 
 /**
  * 根据站点所在线路的 span 淡化状态，计算车站圆圈应使用的描边颜色。
@@ -72,9 +75,45 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     const cvsBlocksControlStore = useCvsBlocksControlStore()
     const cs = useConfigStore();
     const snapStore = useSnapStore()
+    const cvsFrameStore = useCvsFrameStore()
+    const editorLocalConfigStore = useEditorLocalConfigStore()
+    const renderOptionsStore = useRenderOptionsStore()
+    const staFobThrsBase = 0.000001
+    let staFobViewRectArea = 0
+    function ensureStaFobViewRectArea(){
+        if(staFobViewRectArea > 0)
+            return
+        const viewRect = cvsFrameStore.getViewRectSideLengths()
+        staFobViewRectArea = viewRect[0] * viewRect[1]
+    }
+    function staShouldSimplify():boolean{
+        if(renderOptionsStore.exporting)
+            return false
+        ensureStaFobViewRectArea()
+        if(!staFobViewRectArea)
+            return false
+        const ratio = (cs.config.ptStaSize * 2) / staFobViewRectArea
+        const thrs = staFobThrsBase * (Number(editorLocalConfigStore.staFob) || 1)
+        return ratio < thrs
+    }
+    // 同帧内缓存 getStaColorFromSpan 结果，避免同一线路+同一点的重复计算
+    let staColorCache:Map<string, string|undefined>|undefined
+    function getCachedStaColorFromSpan(line:Line, ptId:number):string|undefined{
+        if(!staColorCache)
+            staColorCache = new Map()
+        const key = `${line.id}|${ptId}`
+        if(staColorCache.has(key))
+            return staColorCache.get(key)
+        const res = getStaColorFromSpan(line, ptId)
+        staColorCache.set(key, res)
+        return res
+    }
     function renderAllPoints(ctx:CvsContext, onlyVisiblePts?:boolean, noOmit?:boolean){
         if(!saveStore.save)
             return
+        staColorCache = new Map()
+        const viewRect = cvsFrameStore.getViewRectSideLengths()
+        staFobViewRectArea = viewRect[0] * viewRect[1]
         const allPts = saveStore.save.points
         for(const pt of allPts){
             renderPoint(ctx, pt, {active:false, staOnly:onlyVisiblePts, noOmit})
@@ -100,16 +139,29 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
     function renderPoint(ctx:CvsContext, pt:ControlPoint, options:PointRenderOptions){
         const pos = pt.pos;
         const { active, staOnly, noOmit } = options
-        if(!noOmit && checkOmittable(pos))
+        if(!noOmit && checkOmittable(pos)){
             return
+        }
         let markColor = '#999'
         const relatedLines = saveStore.getLinesByPt(pt.id)
         if(relatedLines.length>0 && relatedLines.every(x=>saveStore.isLineTypeWithoutSta(x.type)))
             pt.sta = ControlPointSta.plain //自动设置车站类型
         let staType = pt.sta
-        if(staType !== ControlPointSta.sta && staOnly)
+        if(staType !== ControlPointSta.sta && staOnly){
             return
+        }
         const sizeRatio = saveStore.getLinesDecidedPtSize(pt.id)
+        const fob = !active && staShouldSimplify()
+        if(fob){
+            if(staType === ControlPointSta.sta){
+                const arcRadius = cs.config.ptStaSize * sizeRatio
+                ctx.beginPath()
+                ctx.fillStyle = cs.config.ptStaFillColor
+                ctx.arc(pos[0], pos[1], arcRadius, 0, 2*Math.PI)
+                ctx.fill()
+            }
+            return
+        }
         if(staType === ControlPointSta.plain || active){
             const dir = pt.dir === ControlPointDir.incline ? 'incline':'vertical'
             let markSize = cs.config.ptBareSize * sizeRatio;
@@ -139,7 +191,7 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
             const lineWidth = cs.config.ptStaLineWidth * sizeRatio
             if(relatedLines.length>0 && isLineFamily(relatedLines) && !active){
                 const primaryLine = relatedLines.find(l => !l.parent) ?? relatedLines[0]
-                ctx.strokeStyle = getStaColorFromSpan(primaryLine, pt.id) ?? markColor
+                ctx.strokeStyle = getCachedStaColorFromSpan(primaryLine, pt.id) ?? markColor
             }else{
                 ctx.strokeStyle = markColor
                 ctx.beginPath()
