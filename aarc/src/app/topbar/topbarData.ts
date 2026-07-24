@@ -1,4 +1,4 @@
-import { mySavesName, saveToolsName, searchSaveName, saveFoldersName, saveWarnsName, userFavoritesName } from "@/pages/saves/routes/routesNames";
+import { mySavesName, saveToolsName, searchSaveName, saveFoldersName, saveWarnsName, userFavoritesName, recycleBinName } from "@/pages/saves/routes/routesNames";
 import { TopbarModel, TopbarModelItem } from "./topbarModel";
 import { aboutName, loginName, userCreditName, userHistoriesName, userListName } from "@/pages/identities/routes/routesNames";
 import { faq } from "@/pages/homes/routes/routesNames";
@@ -39,6 +39,10 @@ export async function getTopbarData(): Promise<TopbarModel> {
                 {
                     title: "问题提醒",
                     link: { name: saveWarnsName }
+                },
+                {
+                    title: "回收站",
+                    link: { name: recycleBinName }
                 }
             ]
         },

@@ -75,6 +75,15 @@ namespace AARC.WebApi.Controllers.Saves
             saveDtoEnrichService.EnrichFavStatus(page.Saves);
             return page;
         }
+        [HttpGet]
+        [UserCheck]
+        public List<SaveDto> GetMyDeletedSaves()
+        {
+            var list = saveRepo.GetMyDeletedSaves();
+            saveDtoEnrichService.EnrichSaveMini(list);
+            saveDtoEnrichService.EnrichUserName(list, isForMySaves: true);
+            return list;
+        }
         [AllowAnonymous]
         [HttpGet]
         public List<SaveDto> Search(string search, string orderBy, int pageIdx)
@@ -186,6 +195,24 @@ namespace AARC.WebApi.Controllers.Saves
         {
             EnsureOwner(id);
             saveRepo.Remove(id);
+            userRepo.UpdateCurrentUserLastActive();
+            return true;
+        }
+        [HttpPost]
+        [UserCheck]
+        public bool Restore(int id)
+        {
+            EnsureOwner(id);
+            saveRepo.Restore(id);
+            userRepo.UpdateCurrentUserLastActive();
+            return true;
+        }
+        [HttpDelete]
+        [UserCheck]
+        public bool PermanentRemove(int id)
+        {
+            EnsureOwner(id);
+            saveRepo.PermanentRemove(id);
             userRepo.UpdateCurrentUserLastActive();
             return true;
         }
@@ -311,10 +338,13 @@ namespace AARC.WebApi.Controllers.Saves
         [NonAction]
         private bool IsOwner(int saveId)
         {
-            var ownerId = saveRepo.WithId(saveId).Select(x => x.OwnerUserId).FirstOrDefault();
             var userInfo = httpUserInfoService.UserInfo.Value;
             if (userInfo.Id == 0)
                 throw new RqEx("请登录");
+            var ownerId = saveRepo.All
+                .Where(x => x.Id == saveId)
+                .Select(x => x.OwnerUserId)
+                .FirstOrDefault();
             return ownerId == userInfo.Id;
         }
         [NonAction]
