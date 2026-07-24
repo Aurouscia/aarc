@@ -112,7 +112,7 @@ onMounted(async() => {
                 {{ update.date }}
             </div>
         </div>
-        <div class="update-content">{{ update.content }}</div>
+        <div class="update-content" v-html="update.content"></div>
       </li>
     </ul>
   </div>
@@ -200,6 +200,9 @@ onMounted(async() => {
     color: #666;
     font-size: 14px;
     white-space: pre-wrap;
+    &:deep(a){
+        color: cornflowerblue;
+    }
 }
 
 .view-update-btn {
