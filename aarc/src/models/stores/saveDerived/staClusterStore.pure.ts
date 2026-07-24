@@ -2,6 +2,7 @@ import { ControlPoint, ControlPointLink, ControlPointSta } from "@/models/save";
 import { Coord } from '@/models/coord';
 import { coordDistSq, coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
+import { computeFreeSnapCandidates, type PtDirectionInfo } from "@/utils/snapUtils/snapInterPtFree";
 
 export type Neighbors = Record<number, Set<number> | undefined>;
 
@@ -34,6 +35,31 @@ export function getCandidatesBbox(candidates: Coord[]): PtSnapCandidatesInfo['bb
         if (c[1] > maxY) maxY = c[1]
     }
     return { minX, maxX, minY, maxY }
+}
+
+/**
+ * 获取点的吸附候选位置及其在 x/y 轴上的最大偏移（reach）。
+ * 对 free 点使用两侧线段方向生成候选（含平行线交点）；
+ * 非 free 点退化为 [pt.pos]，reach 为 0。
+ */
+export function getPtSnapCandidatesAndReachPure(
+    pt: ControlPoint,
+    getSnapSize: (id: number) => number,
+    getDirectionInfo: (id: number) => PtDirectionInfo | undefined,
+    configClingingDist: number
+): PtSnapCandidatesInfo {
+    const size = getSnapSize(pt.id)
+    const snapDist = size * configClingingDist
+    const directionInfo = getDirectionInfo(pt.id)
+    const candidates = computeFreeSnapCandidates(pt, snapDist, directionInfo)
+    let reach = 0
+    for (const c of candidates) {
+        const dx = Math.abs(c[0] - pt.pos[0])
+        const dy = Math.abs(c[1] - pt.pos[1])
+        if (dx > reach) reach = dx
+        if (dy > reach) reach = dy
+    }
+    return { candidates, reach, bbox: getCandidatesBbox(candidates) }
 }
 
 export function bboxesCouldCling(
