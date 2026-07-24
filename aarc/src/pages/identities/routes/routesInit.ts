@@ -48,7 +48,7 @@ const routes = [
         name:userEmailBindName
     },
     {
-        path:"/UserUpgradeToMember",
+        path:"/UserUpgradeToMember/:mode?",
         component:UserUpgradeToMember,
         name:userUpgradeToMemberName
     },

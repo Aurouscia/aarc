@@ -5,6 +5,7 @@ import { SaveDto } from '@/app/com/apiGenerated';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import defaultMini from '@/assets/defaultMini.svg';
 import SideBar from '@/components/common/SideBar.vue';
+import Notice from '@/components/common/Notice.vue';
 
 const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
@@ -69,6 +70,10 @@ onMounted(() => {
 
 <template>
     <h1>回收站</h1>
+
+    <Notice type="danger">
+        本站预计在2026年8月24日后开始运行“回收站自动清理”，届时加入回收站时长超过30天的存档将被自动永久删除，请互相转告
+    </Notice>
 
     <div v-if="loading" class="empty-tip">加载中...</div>
     <div v-else-if="saves && saves.length === 0" class="empty-tip">回收站为空</div>

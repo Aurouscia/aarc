@@ -3,16 +3,30 @@ import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { guideInfo } from '@/app/guideInfo';
-import { useRouter, RouterLink } from 'vue-router';
-import { ref } from 'vue';
+import { useRouter, useRoute, RouterLink } from 'vue-router';
+import { computed } from 'vue';
 import { forkAarcName } from '@/pages/etc/routes/routesNames';
+import { userUpgradeToMemberName } from './routes/routesNames';
 
 const api = useApiStore()
 const router = useRouter()
+const route = useRoute()
 const { showPop } = useUniqueComponentsStore()
 
-type Mode = 'choice' | 'friend' | 'public'
-const mode = ref<Mode>('choice')
+type Mode = 'choice' | 'friend' | 'public' | 'noNeed'
+const mode = computed<Mode>(() => {
+    const m = route.params.mode
+    if (m === 'friend' || m === 'public' || m === 'noNeed')
+        return m
+    return 'choice'
+})
+
+function goToMode(target: Exclude<Mode, 'choice'>) {
+    router.push({ name: userUpgradeToMemberName, params: { mode: target } })
+}
+function goToChoice() {
+    router.push({ name: userUpgradeToMemberName })
+}
 
 async function upgradeToMember() {
     const res = await api.user.upgradeToMember()
@@ -32,22 +46,25 @@ async function upgradeToMember() {
         <button
             v-if="mode !== 'choice'"
             class="minor other-choices"
-            @click="mode = 'choice'"
+            @click="goToChoice"
         >
             其他协作方式
         </button>
         <div v-if="mode === 'choice'" class="choice">
             <h2 class="choice-title">你需要什么样的协作功能？</h2>
             <div class="choice-btns">
-                <div class="choice-btn primary" @click="mode = 'friend'">
+                <div class="choice-btn primary" @click="goToMode('friend')">
                     👥 我想和认识的朋友一起创作，我的朋友在本站已有正式用户账号
                 </div>
-                <div class="choice-btn" @click="mode = 'public'">
+                <div class="choice-btn" @click="goToMode('public')">
                     🏠 我想进入陌生人的“公共图”创作，或者自己创建“公共图”，以认识更多朋友
                 </div>
                 <RouterLink class="choice-btn-link" :to="{ name: forkAarcName }"><div class="choice-btn">
                     🏦 我想拥有自主可控、不受打扰的团队创作空间
                 </div></RouterLink>
+                <div class="choice-btn" @click="goToMode('noNeed')">
+                    ⛔ 我只想自己创作
+                </div>
             </div>
         </div>
         <template v-else-if="mode === 'friend'">
@@ -56,6 +73,13 @@ async function upgradeToMember() {
                     让已有正式用户账号的朋友在以下位置操作：<br/><br/>
                     <i>顶部栏-作品授权管理-作品编辑-新增授权设置-允许某用户-搜索你的昵称</i><br/><br/>
                     接下来你就可以搜索并收藏他的作品，进行共同创作😊
+                </div>
+            </div>
+        </template>
+        <template v-else-if="mode === 'noNeed'">
+            <div class="rules">
+                <div class="rule">
+                    ✅ 直接继续使用本站即可，无需任何转正操作
                 </div>
             </div>
         </template>
@@ -80,7 +104,7 @@ async function upgradeToMember() {
                 class="upgrade-btn"
                 @click="upgradeToMember"
             >
-                转为正式用户
+                点击此处转为正式用户
             </button>
         </template>
     </div>

@@ -119,7 +119,6 @@ async function done() {
 }
 
 const dangerZone = ref(false)
-const repeatCvsName = ref("")
 const jsonFileInput = useTemplateRef('jsonFileInput')
 const jsonContent = ref<string>()
 const jsonSaveStaCount = ref<number>()
@@ -127,10 +126,8 @@ const jsonSaveLineCount = ref<number>()
 const jsonLastModified = ref<string>()
 
 async function removeCurrentCvs() {
-    if (repeatCvsName.value !== editingSave.value?.name) {
-        showPop('请一字不差输入画布名称', 'failed')
-        return
-    }
+    if (!editingSave.value?.id) return
+    if (!window.confirm('确定将本存档移入回收站？')) return
     const resp = await api.save.remove(editingSave.value.id)
     if (resp) {
         saveInfoSb.value?.fold()
@@ -194,7 +191,6 @@ function resetReplaceJson() {
 function resetDangerZone() {
     resetReplaceJson()
     dangerZone.value = false
-    repeatCvsName.value = ''
 }
 
 async function downloadJson() {
@@ -418,8 +414,8 @@ defineExpose({ startCreating })
                         </div>
                         <div v-show="dangerZone" class="dangerZone">
                             <div class="dangerOpName">删除存档</div>
-                            <input v-model="repeatCvsName" placeholder="输入本存档名称" />
-                            <button v-show="repeatCvsName" class="danger" @click="removeCurrentCvs">删除存档</button>
+                            <div class="deleteHint">删除后30天内可在回收站中恢复</div>
+                            <button class="danger" @click="removeCurrentCvs">删除存档</button>
                         </div>
                     </td>
                 </tr>
@@ -490,6 +486,13 @@ defineExpose({ startCreating })
     .dangerOpName {
         text-align: center;
         color: red;
+    }
+
+    .deleteHint {
+        text-align: center;
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 8px;
     }
 }
 
