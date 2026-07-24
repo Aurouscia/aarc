@@ -1,6 +1,7 @@
 using AARC.WebApi.Models.Db.Context;
 using AARC.WebApi.Models.DbModels;
 using AARC.WebApi.Models.DbModels.Saves;
+using AARC.WebApi.Repos;
 using AARC.WebApi.Services.App.HttpAuthInfo;
 using AARC.WebApi.Services.App.Mapping;
 using AARC.WebApi.Services.Saves;
@@ -148,8 +149,13 @@ namespace AARC.WebApi.Repos.Saves
             var hasChildren = MyFolders.Any(x => x.ParentFolderId == id);
             if (hasChildren)
                 throw new RqEx("请先删除子目录");
-            // 检查是否有存档关联
-            var hasSaves = Context.SaveFolderRelations.Any(x => x.FolderId == id);
+            // 检查是否有未删除的存档关联
+            var hasSaves = (
+                from r in Context.SaveFolderRelations
+                join s in Context.Saves.Existing() on r.SaveId equals s.Id
+                where r.FolderId == id
+                select r
+            ).Any();
             if (hasSaves)
                 throw new RqEx("请先移出目录内的存档");
             base.FakeRemove(folder);
