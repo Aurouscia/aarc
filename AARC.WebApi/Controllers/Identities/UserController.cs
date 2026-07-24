@@ -1,4 +1,4 @@
-﻿using AARC.WebApi.Models.DbModels.Enums;
+using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Repos.Identities;
 using AARC.WebApi.Services.App.ActionFilters;
@@ -36,9 +36,10 @@ namespace AARC.WebApi.Controllers.Identities
         [AllowAnonymous]
         [HttpGet]
         public List<UserHistoryService.UserHistoryDto> LoadHistory(
-            int targetUserId, int operatorUserId, UserHistoryType type, string? comment, int skip)
+            int targetUserId, int operatorUserId, UserHistoryType type, string? comment, int skip,
+            UserType? targetUserType = null)
         {
-            return userHistoryService.Load(targetUserId, operatorUserId, type, comment, skip);
+            return userHistoryService.Load(targetUserId, operatorUserId, type, comment, skip, targetUserType);
         }
 
         [AllowAnonymous]

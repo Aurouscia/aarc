@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { UserDto, UserHistoryDto, UserHistoryType } from '@/app/com/apiGenerated';
+import { UserDto, UserHistoryDto, UserHistoryType, UserType } from '@/app/com/apiGenerated';
 import { useApiStore } from '@/app/com/apiStore';
 import { useNameMapStore } from '@/app/globalStores/nameMap';
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { userTypeReadable } from './models/utils';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import UserSelect from '../components/UserSelect.vue';
@@ -12,7 +12,24 @@ const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
 const targetUserId = ref<number>()
 const operatorUserId = ref<number>()
-const type = ref<UserHistoryType>(UserHistoryType.Unknown)
+
+interface TypeFilter {
+    type: UserHistoryType
+    targetUserType?: UserType
+}
+const typeOptions: TypeFilter[] = [
+    { type: UserHistoryType.Unknown },
+    { type: UserHistoryType.Register },
+    { type: UserHistoryType.Login },
+    { type: UserHistoryType.ChangeType },
+    { type: UserHistoryType.ChangeType, targetUserType: UserType.Tourist },
+    { type: UserHistoryType.ChangeType, targetUserType: UserType.Member },
+    { type: UserHistoryType.ChangeNameOrPassword },
+    { type: UserHistoryType.ChangeCredit },
+]
+const selectedTypeIndex = ref(0)
+const typeFilter = computed(() => typeOptions[selectedTypeIndex.value])
+
 const comment = ref<string>()
 const nameMap = useNameMapStore()
 const userInfo = useUserInfoStore()
@@ -22,7 +39,10 @@ async function load(append?:'append') {
     if(!append){
         list.value = []
     }
-    const res = await api.user.loadHistory(targetUserId.value, operatorUserId.value, type.value, comment.value, list.value.length)
+    const res = await api.user.loadHistory(
+        targetUserId.value, operatorUserId.value,
+        typeFilter.value.type, comment.value, list.value.length,
+        typeFilter.value.targetUserType)
     if(res){
         const newUserIds0 = res.map(x => x.operatorUserId ?? 0)
         const newUserIds1 = res.map(x => x.targetUserId ?? 0)
@@ -34,10 +54,6 @@ async function load(append?:'append') {
     }
 }
 
-const types = ref([
-    UserHistoryType.Unknown, UserHistoryType.Register, UserHistoryType.Login, UserHistoryType.ChangeType,
-    UserHistoryType.ChangeNameOrPassword, UserHistoryType.ChangeCredit
-])
 function typeStr(type?:UserHistoryType){
     if(type == UserHistoryType.Register)
         return '注册'
@@ -51,6 +67,41 @@ function typeStr(type?:UserHistoryType){
         return '修改信用分'
     if(type == UserHistoryType.Unknown)
         return '全部类型'
+}
+function filterTypeStr(filter?:TypeFilter){
+    if(!filter)
+        return '---'
+    if(filter.type == UserHistoryType.Register)
+        return '注册'
+    if(filter.type == UserHistoryType.Login)
+        return '登录'
+    if(filter.type == UserHistoryType.ChangeType){
+        if(filter.targetUserType == UserType.Tourist)
+            return '转为游客'
+        if(filter.targetUserType == UserType.Member)
+            return '转为正式'
+        return '更改类型'
+    }
+    if(filter.type == UserHistoryType.ChangeNameOrPassword)
+        return '重命名或改密码'
+    if(filter.type == UserHistoryType.ChangeCredit)
+        return '修改信用分'
+    if(filter.type == UserHistoryType.Unknown)
+        return '全部类型'
+    return '---'
+}
+function setTypeFilterFromHistory(h:UserHistoryDto){
+    const idx = typeOptions.findIndex(t =>
+        t.type == (h.userHistoryType ?? UserHistoryType.Unknown)
+        && t.targetUserType == h.userTypeNew)
+    selectedTypeIndex.value = idx >= 0 ? idx : 0
+}
+const showCommentActionBtn = computed(() => {
+    return typeFilter.value.type === UserHistoryType.ChangeType
+        && (typeFilter.value.targetUserType === undefined || typeFilter.value.targetUserType === UserType.Member)
+})
+function onCommentAction(){
+    comment.value = comment.value ? undefined : '!自助'
 }
 function detail(uh:UserHistoryDto){
     if(uh.userHistoryType == UserHistoryType.ChangeType)
@@ -74,7 +125,7 @@ function userSelected(forParam:'op'|'tar', u?:UserDto){
     }
 }
 
-watch(()=>[targetUserId.value, operatorUserId.value, type.value, comment.value], ()=>{
+watch(()=>[targetUserId.value, operatorUserId.value, selectedTypeIndex.value, comment.value], ()=>{
     load()
 })
 
@@ -96,13 +147,16 @@ onMounted(()=>{
         </button>
         <button v-else @click="showTarSelect=true">筛选目标</button>
     </template>
-    <button v-if="type" class="off" @click="type = 0">
-        筛选类型：{{ typeStr(type) }}
+    <button v-if="typeFilter.type !== UserHistoryType.Unknown" class="off" @click="selectedTypeIndex = 0">
+        筛选类型：{{ filterTypeStr(typeFilter) }}
     </button>
-    <select v-else v-model.number="type">
-        <option v-for="t in types" :value="t">{{ typeStr(t) }}</option>
+    <select v-else v-model.number="selectedTypeIndex">
+        <option v-for="(t, i) in typeOptions" :value="i">{{ filterTypeStr(t) }}</option>
     </select>
-    <input v-model.lazy.trim="comment" placeholder="筛选备注"/>
+    <input v-model.lazy.trim="comment" placeholder="筛选备注" style="vertical-align: middle;"/>
+    <button v-if="showCommentActionBtn" class="minor" @click="onCommentAction">
+        {{ comment ? '清空备注搜索' : '排除自助' }}
+    </button>
 </div>
 <UserSelect v-if="showOpSelect" @select="u=>userSelected('op', u)"></UserSelect>
 <UserSelect v-if="showTarSelect" @select="u=>userSelected('tar', u)"></UserSelect>
@@ -130,7 +184,7 @@ onMounted(()=>{
             </button>
         </td>
         <td>
-            <button @click="type = h.userHistoryType ?? 0" class="lite">
+            <button @click="setTypeFilterFromHistory(h)" class="lite">
                 {{ typeStr(h.userHistoryType) }}
             </button>
         </td>

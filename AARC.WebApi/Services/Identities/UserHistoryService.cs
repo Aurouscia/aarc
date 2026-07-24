@@ -18,7 +18,8 @@ public class UserHistoryService(
     private DbSet<UserHistory> UserHistories => context.UserHistories;
 
     public List<UserHistoryDto> Load(
-        int targetUserId, int operatorUserId, UserHistoryType type, string? comment, int skip)
+        int targetUserId, int operatorUserId, UserHistoryType type, string? comment, int skip,
+        UserType? targetUserType = null)
     {
         var q = UserHistories.AsQueryable();
         if (userInfoService.IsAdmin)
@@ -37,9 +38,18 @@ public class UserHistoryService(
         }
         if (type != UserHistoryType.Unknown)
             q = q.Where(x => x.UserHistoryType == type);
+        if (type == UserHistoryType.ChangeType && targetUserType.HasValue)
+            q = q.Where(x => x.UserTypeNew == targetUserType.Value);
         if (!string.IsNullOrWhiteSpace(comment))
         {
-            q = q.Where(x => x.Comment != null && x.Comment.Contains(comment));
+            var isNegative = comment.StartsWith('!');
+            var actualComment = isNegative ? comment[1..] : comment;
+            if (!string.IsNullOrWhiteSpace(actualComment))
+            {
+                q = isNegative
+                    ? q.Where(x => x.Comment == null || !x.Comment.Contains(actualComment))
+                    : q.Where(x => x.Comment != null && x.Comment.Contains(actualComment));
+            }
         }
         return q
             .OrderByDescending(x => x.Id)
