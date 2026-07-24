@@ -18,6 +18,12 @@ ASPNETCORE_ENVIRONMENT=Development dotnet run --urls "http://localhost:5250"
 
 对 cs 文件或 csproj 文件进行任何改动后，运行 `dotnet build` 确保没有构建问题
 
+如果 `dotnet build` 因 dll/exe 被正在运行的 WebApi 进程或 Visual Studio 锁定而失败，可改为输出到临时目录验证，验证完成后清理：
+```bash
+dotnet build AARC.WebApi/AARC.WebApi.csproj -o temp-build
+rm -rf temp-build
+```
+
 ## 改动前端代码后
 
 对 vue、ts、json 文件进行任何改动后，运行 `pnpm type-check` 确保没有类型问题
