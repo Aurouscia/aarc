@@ -356,7 +356,9 @@ namespace AARC.WebApi.Controllers.Saves
             // 更新当前用户的"上次活跃"
             userRepo.UpdateCurrentUserLastActive();
             try {
-                saveBackupFileService.Write(data, id, mustBackup);
+                // 强制备份仅允许“存档所有者”且“Member及以上用户”使用
+                var shouldForceBackup = mustBackup && isOwner && httpUserInfoService.IsMember;
+                saveBackupFileService.Write(data, id, shouldForceBackup);
             }
             catch(Exception ex)
             { 
