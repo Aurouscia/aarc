@@ -23,13 +23,10 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
     const saveStore = useSaveStore()
     const cs = useConfigStore()
     const pointLinkStore = usePointLinkStore()
-<<<<<<< HEAD
     const freePtDirectionStore = useFreePtDirectionStore()
-=======
     const cvsBlocksControlStore = useCvsBlocksControlStore()
     const renderOptionsStore = useRenderOptionsStore()
     const clusterPolyCache = new Map<string, ClusterPoly>()
->>>>>>> master
 
     function getClustersRenderingData(){
         let clusters = staClusterStore.getStaClusters() || []
@@ -58,6 +55,9 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
     function checkOmittableClusterPts(c:ControlPoint[], maxStaSize:number){
         const { cvsWidth, cvsHeight } = saveStore
         const { left, right, top, bottom } = cvsBlocksControlStore.blockTotalBoundary
+        // 未初始化/无 block 时不应省略任何 cluster
+        if (left > right || top > bottom)
+            return false
         const padding = getClusterOmitPadding(maxStaSize)
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
         for(const pt of c){
@@ -235,61 +235,10 @@ export const useClusterCvsWorker = defineStore('clusterCvsWorker', ()=>{
         })
         return polys
     }
-<<<<<<< HEAD
-=======
     function getClusterPolyCacheKey(c:ControlPoint[], asIs?:'asIs'){
         const parts = c.map(pt => `${pt.id}:${pt.pos[0]},${pt.pos[1]}:${pt.dir ?? ''}:${saveStore.getLinesDecidedPtSize(pt.id)}`)
         return `${parts.join('|')}|${asIs ?? ''}`
     }
-    function clusterToPolyVert(cluster:ControlPoint[]){
-        let l = 1e10
-        let r = -1e10
-        let t = 1e10
-        let b = -1e10
-        for(let i=0; i<cluster.length; i++){
-            const [x,y] = cluster[i].pos
-            if(x < l)
-                l = x
-            if(x > r)
-                r = x
-            if(y < t)
-                t = y
-            if(y > b)
-                b = y
-        }
-        const poly:Coord[] = [[l,t], [r,t], [r,b], [l,b]]
-        const area = (r-l)*(b-t)
-        return {poly,area}
-    }
-    function clusterToPolyInc(cluster:ControlPoint[]){
-        let lt = 1e10
-        let rb = -1e10
-        let lb = 1e10
-        let rt = -1e10
-        for(let i=0; i<cluster.length; i++){
-            const [x,y] = cluster[i].pos
-            const sum = x+y;
-            const diff = x-y;
-            if(sum < lt)
-                lt = sum
-            if(sum > rb)
-                rb = sum
-            if(diff < lb)
-                lb = diff
-            if(diff > rt)
-                rt = diff
-        }
-        const t:Coord = [(lt+rt)/2, (lt-rt)/2]
-        const l:Coord = [(lt+lb)/2, (lt-lb)/2]
-        const r:Coord = [(rb+rt)/2, (rb-rt)/2]
-        const b:Coord = [(rb+lb)/2, (rb-lb)/2]
-        const poly:Coord[] = [t,l,b,r]
-        const lt2rb = (rb-lt)*sqrt2half
-        const rt2lb = (rt-lb)*sqrt2half
-        const area = lt2rb * rt2lb
-        return {poly,area}
-    }
->>>>>>> master
     function isIllPosedPoly(poly:Coord[]){
         if(poly.length!=4)
             return false

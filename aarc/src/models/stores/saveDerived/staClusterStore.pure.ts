@@ -5,6 +5,12 @@ import { coordAdd, coordSub } from "@/utils/coordUtils/coordMath";
 
 export type Neighbors = Record<number, Set<number> | undefined>;
 
+export interface PtSnapCandidatesInfo {
+    candidates: Coord[]
+    reach: number
+    bbox: { minX: number; maxX: number; minY: number; maxY: number }
+}
+
 export interface StaNameTransfer {
     fromId: number
     toId: number
@@ -19,24 +25,62 @@ export interface StaNameResult {
     ptId: number
 }
 
+export function getCandidatesBbox(candidates: Coord[]): PtSnapCandidatesInfo['bbox'] {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+    for (const c of candidates) {
+        if (c[0] < minX) minX = c[0]
+        if (c[0] > maxX) maxX = c[0]
+        if (c[1] < minY) minY = c[1]
+        if (c[1] > maxY) maxY = c[1]
+    }
+    return { minX, maxX, minY, maxY }
+}
+
+export function bboxesCouldCling(
+    bboxA: PtSnapCandidatesInfo['bbox'],
+    bboxB: PtSnapCandidatesInfo['bbox'],
+    dist: number
+): boolean {
+    if (bboxA.minX - bboxB.maxX > dist || bboxB.minX - bboxA.maxX > dist) return false
+    if (bboxA.minY - bboxB.maxY > dist || bboxB.minY - bboxA.maxY > dist) return false
+    return true
+}
+
 /**
  * 判断两个点是否“吸附”到需要被划入同一个 cluster 的程度
  * @param configClingingDist 全局配置的基础吸附距离
  * @param getSnapSize 根据点 ID 获取该点用于吸附距离计算的尺寸
  * @param epsilon 浮点数比较容差
+ * @param aSnap 点 A 的吸附候选信息（仅 free 相关逻辑使用），不传时退化为标准位置判断
+ * @param bSnap 点 B 的吸附候选信息
  */
 export function ptClingingPure(
     a: ControlPoint,
     b: ControlPoint,
     configClingingDist: number,
     getSnapSize: (id: number) => number,
-    epsilon: number
+    epsilon: number,
+    aSnap?: PtSnapCandidatesInfo,
+    bSnap?: PtSnapCandidatesInfo
 ): boolean {
     const sizeA = getSnapSize(a.id)
     const sizeB = getSnapSize(b.id)
     const distMut = (sizeA + sizeB) / 2
     const clingingDist = configClingingDist * distMut
     const clingingDistSqrBiggerByEpsilon = (clingingDist + epsilon * 10) ** 2
+
+    if (aSnap && bSnap) {
+        if (!bboxesCouldCling(aSnap.bbox, bSnap.bbox, clingingDist))
+            return false
+        for (const ca of aSnap.candidates) {
+            for (const cb of bSnap.candidates) {
+                if (coordDistSqLessThan(ca, cb, clingingDistSqrBiggerByEpsilon))
+                    return true
+            }
+        }
+        return false
+    }
+
     return !!coordDistSqLessThan(a.pos, b.pos, clingingDistSqrBiggerByEpsilon)
 }
 
@@ -58,12 +102,15 @@ function getGridKey(x: number, y: number, cellSize: number): string {
  * 根据所有点构建邻接表
  * 只考虑 sta 类型的点，使用均匀网格索引将时间复杂度从 O(n^2) 降到 O(n*k)
  * （k 为单个网格及周围 8 格内平均点数）
+ * @param getSnapCandidates 可选；提供时会把 free 点吸附候选也纳入判断，
+ * 否则退化为标准位置判断（与 master 版本一致）
  */
 export function buildNeighbors(
     pts: ControlPoint[],
     configClingingDist: number,
     getSnapSize: (id: number) => number,
-    epsilon: number
+    epsilon: number,
+    getSnapCandidates?: (pt: ControlPoint) => PtSnapCandidatesInfo
 ): Neighbors {
     const neighbors: Neighbors = {}
     const skipThrs = 2.5 * configClingingDist
@@ -82,22 +129,69 @@ export function buildNeighbors(
             grid.set(key, [pt])
     }
 
+    // 标准位置判断路径（与 master 版本一致）
+    if (!getSnapCandidates) {
+        for (const pt of staPts) {
+            const cx = Math.floor(pt.pos[0] / cellSize)
+            const cy = Math.floor(pt.pos[1] / cellSize)
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dy = -1; dy <= 1; dy++) {
+                    const cell = grid.get(`${cx + dx},${cy + dy}`)
+                    if (!cell)
+                        continue
+                    for (const other of cell) {
+                        if (other.id <= pt.id)
+                            continue
+                        if (Math.abs(pt.pos[0] - other.pos[0]) > skipThrs)
+                            continue
+                        if (Math.abs(pt.pos[1] - other.pos[1]) > skipThrs)
+                            continue
+                        if (ptClingingPure(pt, other, configClingingDist, getSnapSize, epsilon)) {
+                            if (!neighbors[pt.id])
+                                neighbors[pt.id] = new Set<number>()
+                            if (!neighbors[other.id])
+                                neighbors[other.id] = new Set<number>()
+                            neighbors[pt.id]?.add(other.id)
+                            neighbors[other.id]?.add(pt.id)
+                        }
+                    }
+                }
+            }
+        }
+        return neighbors
+    }
+
+    // 带吸附候选的路径：支持 free 点平行线交点等候选位置
+    const snapInfo = new Map<number, PtSnapCandidatesInfo>()
+    let maxReach = 0
+    for (const pt of staPts) {
+        const info = getSnapCandidates(pt)
+        snapInfo.set(pt.id, info)
+        if (info.reach > maxReach)
+            maxReach = info.reach
+    }
+
+    const cellRadius = maxReach > 0 ? Math.ceil((skipThrs + 2 * maxReach) / cellSize) : 1
+
     for (const pt of staPts) {
         const cx = Math.floor(pt.pos[0] / cellSize)
         const cy = Math.floor(pt.pos[1] / cellSize)
-        for (let dx = -1; dx <= 1; dx++) {
-            for (let dy = -1; dy <= 1; dy++) {
+        const ptSnap = snapInfo.get(pt.id)!
+        for (let dx = -cellRadius; dx <= cellRadius; dx++) {
+            for (let dy = -cellRadius; dy <= cellRadius; dy++) {
                 const cell = grid.get(`${cx + dx},${cy + dy}`)
                 if (!cell)
                     continue
                 for (const other of cell) {
                     if (other.id <= pt.id)
                         continue
-                    if (Math.abs(pt.pos[0] - other.pos[0]) > skipThrs)
+                    const otherSnap = snapInfo.get(other.id)!
+                    const checkThrs = skipThrs + ptSnap.reach + otherSnap.reach
+                    if (Math.abs(pt.pos[0] - other.pos[0]) > checkThrs)
                         continue
-                    if (Math.abs(pt.pos[1] - other.pos[1]) > skipThrs)
+                    if (Math.abs(pt.pos[1] - other.pos[1]) > checkThrs)
                         continue
-                    if (ptClingingPure(pt, other, configClingingDist, getSnapSize, epsilon)) {
+                    if (ptClingingPure(pt, other, configClingingDist, getSnapSize, epsilon, ptSnap, otherSnap)) {
                         if (!neighbors[pt.id])
                             neighbors[pt.id] = new Set<number>()
                         if (!neighbors[other.id])
@@ -170,7 +264,8 @@ export function updateNeighborsForMovedPt(
     allPts: ControlPoint[],
     configClingingDist: number,
     getSnapSize: (id: number) => number,
-    epsilon: number
+    epsilon: number,
+    getSnapCandidates?: (pt: ControlPoint) => PtSnapCandidatesInfo
 ): Neighbors {
     const next = cloneNeighbors(neighbors)
     let neibs = next[pt.id]
@@ -189,10 +284,19 @@ export function updateNeighborsForMovedPt(
     if (pt.sta !== ControlPointSta.sta) {
         return next
     }
+    const ptSnap = getSnapCandidates ? getSnapCandidates(pt) : undefined
     for (const otherPt of allPts) {
         if (otherPt.sta !== ControlPointSta.sta || otherPt.id === pt.id)
             continue
-        if (ptClingingPure(pt, otherPt, configClingingDist, getSnapSize, epsilon)) {
+        const otherSnap = getSnapCandidates ? getSnapCandidates(otherPt) : undefined
+        if (ptSnap && otherSnap) {
+            const checkThrs = 2.5 * configClingingDist + ptSnap.reach + otherSnap.reach
+            if (Math.abs(pt.pos[0] - otherPt.pos[0]) > checkThrs)
+                continue
+            if (Math.abs(pt.pos[1] - otherPt.pos[1]) > checkThrs)
+                continue
+        }
+        if (ptClingingPure(pt, otherPt, configClingingDist, getSnapSize, epsilon, ptSnap, otherSnap)) {
             neibs.add(otherPt.id)
             if (!next[otherPt.id])
                 next[otherPt.id] = new Set<number>()
