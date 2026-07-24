@@ -3,6 +3,7 @@ using AARC.WebApi.Models.Db.Context.Specific;
 using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Services.App.HttpAuthInfo;
+using AARC.WebApi.Services.Files;
 using AARC.WebApi.Services.Identities;
 using AARC.WebApi.Services.Saves;
 using AARC.WebApi.Utils;
@@ -18,7 +19,8 @@ namespace AARC.WebApi.Repos.Identities
         HttpUserIdProvider httpUserIdProvider,
         UserHistoryService userHistoryService,
         IMapper mapper,
-        NewestSavesCacheService newestSavesCache
+        NewestSavesCacheService newestSavesCache,
+        SaveBackupFileService saveBackupFileService
         ) : Repo<User>(context)
     {
         public IQueryable<User> Viewable
@@ -420,10 +422,20 @@ namespace AARC.WebApi.Repos.Identities
                 throw new RqEx("当前用户不是游客身份");
             if (!user.EmailBinded)
                 throw new RqEx("请先验证邮箱");
+            var qualifiedSaveIds = Context.Saves
+                .Where(s => s.OwnerUserId == userId && s.LineCount >= 5 && s.StaCount >= 40 && !s.Deleted)
+                .Select(s => s.Id)
+                .ToList();
+            if (qualifiedSaveIds.Count == 0)
+                throw new RqEx("需要至少一个5线路50站以上的存档");
+            var hasQualifiedSaveWithBackups = qualifiedSaveIds
+                .Any(id => saveBackupFileService.GetBackupList(id).Count >= 5);
+            if (!hasQualifiedSaveWithBackups)
+                throw new RqEx("你的达标存档中，至少需要一个拥有5个自动备份");
             var hasChangeTypeHistory = Context.UserHistories
                 .Any(x => x.TargetUserId == userId && x.UserHistoryType == UserHistoryType.ChangeType);
             if (hasChangeTypeHistory)
-                throw new RqEx("请联系管理员");
+                throw new RqEx("抱歉，你曾被封过号，请联系管理员");
             user.Type = UserType.Member;
             userHistoryService.RecordChangeType(userId, UserType.Member, $"自助转正：{user.Email}");
             base.Update(user, true);
