@@ -26,10 +26,10 @@ namespace AARC.WebApi.Controllers.Identities
     {
         [AllowAnonymous]
         [HttpGet]
-        public List<UserDto> Index(string? search, string? orderby)
+        public List<UserDto> Index(string? search, string? orderby, bool exact = false)
         {
             //orderby: active(默认) 或 save
-            var list = userRepo.IndexUser(search, orderby);
+            var list = userRepo.IndexUser(search, orderby, exact);
             return list;
         }
 

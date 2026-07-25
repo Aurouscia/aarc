@@ -28,9 +28,14 @@ const router = useRouter()
 
 const searchInit = router.currentRoute.value.query["search"] as string|undefined
 const searchStr = ref<string|undefined>(searchInit)
+const exactActive = ref(false)
+
+watch(()=>exactActive.value, (val)=>{
+    showPop(val ? '已启用精确匹配': '已关闭精确匹配', 'success')
+})
 
 async function loadList() {
-    list.value = await api.user.index(searchStr.value, orderby.value)
+    list.value = await api.user.index(searchStr.value, orderby.value, exactActive.value || undefined)
     await router.replace(userListRoute(searchStr.value))
 }
 
@@ -140,7 +145,8 @@ onMounted(async()=>{
     用户列表
     <div class="searchControl">
         <div>
-            <button v-show="searchStr" class="lite" @click="searchStr=undefined;loadList()">清空</button>
+            <button :class="exactActive ? 'lite confirm' : 'lite'" @click="exactActive = !exactActive; loadList()">精确</button>
+            <button v-show="searchStr" class="lite" @click="searchStr=undefined;loadList()" style="margin-left: 6px;">清空</button>
             <input v-model="searchStr" @blur="loadList" @keyup.enter="loadList" placeholder="搜索用户名称"/>
         </div>
         <select v-model="orderby" @change="loadList">

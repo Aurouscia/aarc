@@ -104,11 +104,13 @@ namespace AARC.WebApi.Repos.Identities
                 .Select(_ => chars[Random.Shared.Next(chars.Length)]).ToArray());
         }
 
-        public List<UserDto> IndexUser(string? search, string? orderby)
+        public List<UserDto> IndexUser(string? search, string? orderby, bool exact = false)
         {
             int takeCount = 50;
             var myId = httpUserInfoService.UserInfo.Value.Id;
-            var userQ = FilterByName(Viewable, search);
+            var userQ = exact && !string.IsNullOrWhiteSpace(search)
+                ? ExactMatchByName(Viewable, search)
+                : FilterByName(Viewable, search);
             var saveQ = base.Context.Saves.Existing().Where(x => x.StaCount > 0);
             var orderbySave = orderby == "save";
 
@@ -395,6 +397,17 @@ namespace AARC.WebApi.Repos.Identities
                 userQ = Context is AarcSqliteContext
                     ? userQ.Where(x => x.Name.ToLower().Contains(search.ToLower()))
                     : userQ.Where(x => x.Name.Contains(search));
+            }
+            return userQ;
+        }
+
+        private IQueryable<User> ExactMatchByName(IQueryable<User> userQ, string? search)
+        {
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                userQ = Context is AarcSqliteContext
+                    ? userQ.Where(x => x.Name.ToLower() == search.ToLower())
+                    : userQ.Where(x => x.Name == search);
             }
             return userQ;
         }
