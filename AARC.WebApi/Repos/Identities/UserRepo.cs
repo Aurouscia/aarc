@@ -85,13 +85,13 @@ namespace AARC.WebApi.Repos.Identities
                 ? preferredName[..maxBaseLength]
                 : preferredName;
 
-            if (!Existing.Any(x => x.Name == baseName))
+            if (!ExactMatchByNameCaseSensitive(Existing, baseName).Any())
                 return baseName;
 
             for (int i = 0; i < 20; i++)
             {
                 var candidate = $"{baseName}_{GenerateRandomSuffix(suffixLength)}";
-                if (!Existing.Any(x => x.Name == candidate))
+                if (!ExactMatchByNameCaseSensitive(Existing, candidate).Any())
                     return candidate;
             }
             throw new Exception("无法生成唯一用户名");
@@ -382,7 +382,7 @@ namespace AARC.WebApi.Repos.Identities
                 if (password is null || password.Length < 6 || password.Length > 20)
                     return "密码必须在6-20个字符";
             }
-            if (Existing.Any(x => x.Name == name && x.Id != id))
+            if (ExactMatchByNameCaseSensitive(Existing, name, id).Any())
                 return "该用户名已经被占用";
             if(intro is { } && intro.Length > User.introMaxLength)
                 return $"个人简介不能超过{User.introMaxLength}个字符";
@@ -410,6 +410,22 @@ namespace AARC.WebApi.Repos.Identities
                     : userQ.Where(x => x.Name == search);
             }
             return userQ;
+        }
+
+        /// <summary>
+        /// 大小写敏感地精确匹配用户名；先按数据库 collation 取候选名称，再在内存中过滤，避免不同数据库大小写行为不一致。
+        /// </summary>
+        private List<string> ExactMatchByNameCaseSensitive(IQueryable<User> userQ, string? search, int excludeId = 0)
+        {
+            if (string.IsNullOrWhiteSpace(search))
+                return [];
+
+            return userQ
+                .Where(x => x.Name == search && x.Id != excludeId)
+                .Select(x => x.Name)
+                .ToList()
+                .Where(n => n == search)
+                .ToList();
         }
 
         public IQueryable<User> FilterByEmailBinded(IQueryable<User> userQ)
