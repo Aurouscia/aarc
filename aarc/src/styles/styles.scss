@@ -79,11 +79,12 @@ h1.h1WithBtns{
     }
     div.searchControl{
         input{
-            width: 160px;
+            width: 130px;
         }
     }
     @media screen and (max-width:500px) {
         div.searchControl{
+            flex-grow: 1;
             flex-direction: column;
             align-items: flex-end;
         }   

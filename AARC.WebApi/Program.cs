@@ -45,6 +45,7 @@ try
         app.UseSwaggerUi();
     }
     app.UseConfiguredCors();
+    app.UseHttpsRedirectionByConfig();
     app.UseFileServer();
     app.UseAppendedStaticFiles(e);
     app.UseRouting();

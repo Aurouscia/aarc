@@ -2,12 +2,13 @@ import { Router } from "vue-router";
 import MySaves from "../MySaves.vue";
 import SaveWarns from "../SaveWarns.vue";
 import { addToRouter } from "@/app/router/addToRouter";
-import { mySavesName, saveDiffsName, saveToolsName, searchSaveName, saveFoldersName, saveWarnsName, userFavoritesName } from "./routesNames";
+import { mySavesName, saveDiffsName, saveToolsName, searchSaveName, saveFoldersName, saveWarnsName, userFavoritesName, recycleBinName } from "./routesNames";
 import SearchSave from "../SearchSave.vue";
 import SaveTools from "../SaveTools.vue";
 import SaveDiffs from "../SaveDiffs.vue";
 import SaveFolders from "../SaveFolders.vue";
 import UserFavorites from "../UserFavorites.vue";
+import RecycleBin from "../RecycleBin.vue";
 
 export function addSavesPages(r:Router){
     addToRouter(r, routes);
@@ -51,5 +52,10 @@ const routes = [
         component:UserFavorites,
         name:userFavoritesName,
         props:true
+    },
+    {
+        path:"/Saves/RecycleBin",
+        component:RecycleBin,
+        name:recycleBinName
     }
 ]

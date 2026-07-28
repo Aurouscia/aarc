@@ -1,6 +1,7 @@
-﻿using AARC.WebApi.Models.Db.Context;
+using AARC.WebApi.Models.Db.Context;
 using AARC.WebApi.Models.Db.Context.Specific;
 using AARC.WebApi.Models.DbModels.Enums;
+using AARC.WebApi.Models.DbModels.Files;
 using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Models.DbModels.Saves;
 using AARC.WebApi.Services.App.HttpAuthInfo;
@@ -146,6 +147,18 @@ namespace AARC.WebApi.Repos.Saves
                 res.RemoveAt(res.Count - 1);
             EnrichEditingBy(res);
             return new SaveListPage { Saves = res, HasMore = hasMore };
+        }
+
+        public List<SaveDto> GetMyDeletedSaves()
+        {
+            var uid = httpUserIdProvider.RequireUserId();
+            var res = All
+                .Where(x => x.OwnerUserId == uid && x.Deleted)
+                .OrderByDescending(x => x.LastActive)
+                .ProjectTo<SaveDto>(mapper.ConfigurationProvider)
+                .ToList();
+            EnrichEditingBy(res);
+            return res;
         }
 
         public List<SaveDto> GetByIds(List<int> ids)
@@ -344,6 +357,46 @@ namespace AARC.WebApi.Repos.Saves
                 .Select(x => x.Type)
                 .FirstOrDefault();
             newestSavesCache.Remove(id, ownerType == UserType.Tourist);
+        }
+
+        public void Restore(int id)
+        {
+            var uid = httpUserIdProvider.RequireUserId();
+            var updated = All
+                .Where(x => x.Id == id && x.OwnerUserId == uid && x.Deleted)
+                .ExecuteUpdate(spc => spc
+                    .SetProperty(x => x.Deleted, false)
+                    .SetProperty(x => x.LastActive, DateTime.Now));
+            if (updated == 0)
+                throw new RqEx("找不到指定存档或无权恢复");
+        }
+
+        public void PermanentRemove(int id)
+        {
+            var uid = httpUserIdProvider.RequireUserId();
+            var save = All
+                .FirstOrDefault(x => x.Id == id && x.OwnerUserId == uid && x.Deleted);
+            if (save is null)
+                throw new RqEx("找不到指定存档或无权删除");
+
+            Context.SaveFolderRelations
+                .Where(x => x.SaveId == id)
+                .ExecuteDelete();
+            Context.SaveDiffs
+                .Where(x => x.SaveId == id)
+                .ExecuteDelete();
+            Context.SaveComments
+                .Where(x => x.SaveId == id)
+                .ExecuteDelete();
+            Context.UserFavorites
+                .Where(x => x.Type == UserFavoriteType.Save && x.ObjectId == id)
+                .ExecuteDelete();
+            Context.AuthGrants
+                .Where(x => x.On == AuthGrantOn.Save && x.OnId == id)
+                .ExecuteDelete();
+
+            Context.Remove(save);
+            Context.SaveChanges();
         }
         
         /// <summary>

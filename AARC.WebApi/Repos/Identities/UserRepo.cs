@@ -3,6 +3,7 @@ using AARC.WebApi.Models.Db.Context.Specific;
 using AARC.WebApi.Models.DbModels.Enums;
 using AARC.WebApi.Models.DbModels.Identities;
 using AARC.WebApi.Services.App.HttpAuthInfo;
+using AARC.WebApi.Services.Files;
 using AARC.WebApi.Services.Identities;
 using AARC.WebApi.Services.Saves;
 using AARC.WebApi.Utils;
@@ -18,7 +19,8 @@ namespace AARC.WebApi.Repos.Identities
         HttpUserIdProvider httpUserIdProvider,
         UserHistoryService userHistoryService,
         IMapper mapper,
-        NewestSavesCacheService newestSavesCache
+        NewestSavesCacheService newestSavesCache,
+        SaveBackupFileService saveBackupFileService
         ) : Repo<User>(context)
     {
         public IQueryable<User> Viewable
@@ -83,13 +85,13 @@ namespace AARC.WebApi.Repos.Identities
                 ? preferredName[..maxBaseLength]
                 : preferredName;
 
-            if (!Existing.Any(x => x.Name == baseName))
+            if (!ExactMatchByNameCaseSensitive(Existing, baseName).Any())
                 return baseName;
 
             for (int i = 0; i < 20; i++)
             {
                 var candidate = $"{baseName}_{GenerateRandomSuffix(suffixLength)}";
-                if (!Existing.Any(x => x.Name == candidate))
+                if (!ExactMatchByNameCaseSensitive(Existing, candidate).Any())
                     return candidate;
             }
             throw new Exception("无法生成唯一用户名");
@@ -102,11 +104,13 @@ namespace AARC.WebApi.Repos.Identities
                 .Select(_ => chars[Random.Shared.Next(chars.Length)]).ToArray());
         }
 
-        public List<UserDto> IndexUser(string? search, string? orderby)
+        public List<UserDto> IndexUser(string? search, string? orderby, bool exact = false)
         {
             int takeCount = 50;
             var myId = httpUserInfoService.UserInfo.Value.Id;
-            var userQ = FilterByName(Viewable, search);
+            var userQ = exact && !string.IsNullOrWhiteSpace(search)
+                ? ExactMatchByName(Viewable, search)
+                : FilterByName(Viewable, search);
             var saveQ = base.Context.Saves.Existing().Where(x => x.StaCount > 0);
             var orderbySave = orderby == "save";
 
@@ -378,7 +382,7 @@ namespace AARC.WebApi.Repos.Identities
                 if (password is null || password.Length < 6 || password.Length > 20)
                     return "密码必须在6-20个字符";
             }
-            if (Existing.Any(x => x.Name == name && x.Id != id))
+            if (ExactMatchByNameCaseSensitive(Existing, name, id).Any())
                 return "该用户名已经被占用";
             if(intro is { } && intro.Length > User.introMaxLength)
                 return $"个人简介不能超过{User.introMaxLength}个字符";
@@ -395,6 +399,33 @@ namespace AARC.WebApi.Repos.Identities
                     : userQ.Where(x => x.Name.Contains(search));
             }
             return userQ;
+        }
+
+        private IQueryable<User> ExactMatchByName(IQueryable<User> userQ, string? search)
+        {
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                userQ = Context is AarcSqliteContext
+                    ? userQ.Where(x => x.Name.ToLower() == search.ToLower())
+                    : userQ.Where(x => x.Name == search);
+            }
+            return userQ;
+        }
+
+        /// <summary>
+        /// 大小写敏感地精确匹配用户名；先按数据库 collation 取候选名称，再在内存中过滤，避免不同数据库大小写行为不一致。
+        /// </summary>
+        private List<string> ExactMatchByNameCaseSensitive(IQueryable<User> userQ, string? search, int excludeId = 0)
+        {
+            if (string.IsNullOrWhiteSpace(search))
+                return [];
+
+            return userQ
+                .Where(x => x.Name == search && x.Id != excludeId)
+                .Select(x => x.Name)
+                .ToList()
+                .Where(n => n == search)
+                .ToList();
         }
 
         public IQueryable<User> FilterByEmailBinded(IQueryable<User> userQ)
@@ -420,10 +451,20 @@ namespace AARC.WebApi.Repos.Identities
                 throw new RqEx("当前用户不是游客身份");
             if (!user.EmailBinded)
                 throw new RqEx("请先验证邮箱");
+            var qualifiedSaveIds = Context.Saves
+                .Where(s => s.OwnerUserId == userId && s.LineCount >= 5 && s.StaCount >= 40 && !s.Deleted)
+                .Select(s => s.Id)
+                .ToList();
+            if (qualifiedSaveIds.Count == 0)
+                throw new RqEx("需要至少一个5线路50站以上的存档");
+            var hasQualifiedSaveWithBackups = qualifiedSaveIds
+                .Any(id => saveBackupFileService.GetBackupList(id).Count >= 5);
+            if (!hasQualifiedSaveWithBackups)
+                throw new RqEx("你的达标存档中，至少需要一个拥有5个自动备份");
             var hasChangeTypeHistory = Context.UserHistories
                 .Any(x => x.TargetUserId == userId && x.UserHistoryType == UserHistoryType.ChangeType);
             if (hasChangeTypeHistory)
-                throw new RqEx("请联系管理员");
+                throw new RqEx("抱歉，你曾被封过号，请联系管理员");
             user.Type = UserType.Member;
             userHistoryService.RecordChangeType(userId, UserType.Member, $"自助转正：{user.Email}");
             base.Update(user, true);
