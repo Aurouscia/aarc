@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
+import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
+import { canRegister } from './models/utils';
 import Notice from '@/components/common/Notice.vue';
 import Turnstile from '@/components/common/Turnstile.vue';
 
@@ -50,6 +53,10 @@ const buttonAllowClick = computed(()=>{
 
 const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
+const userInfoStore = useUserInfoStore()
+const { userInfo } = storeToRefs(userInfoStore)
+const registerAllowed = computed<boolean>(()=>
+    canRegister(userInfo.value?.id, userInfo.value?.type))
 
 const noticeRead = ref(false)
 const waitLong = ref(false)
@@ -79,6 +86,7 @@ onMounted(()=>{
 })
 
 onMounted(async()=>{
+    await userInfoStore.getIdentityInfo(true);
 })
 </script>
 
@@ -86,7 +94,10 @@ onMounted(async()=>{
     <div>
         <h1>注册</h1>
     </div>
-    <div>
+    <div v-if="!registerAllowed" class="registerClosed">
+        暂不开放注册
+    </div>
+    <div v-else>
         <Notice v-if="!noticeRead" :title="'注册须知'" :type="'info'">
             <p><b>1. 为了确保内容合规性，新账号为“游客”账号</b></p>
             <p>2. “游客”不会显示在用户列表中，“游客”的作品也无法公开展示，
@@ -147,6 +158,11 @@ table{
     background-color: transparent;
     font-size: large;
     color:gray
+}
+.registerClosed{
+    text-align: center;
+    color: #999;
+    margin-top: 50px;
 }
 td{
     background-color: transparent;

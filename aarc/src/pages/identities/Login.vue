@@ -6,7 +6,7 @@ import { guideInfo } from '@/app/guideInfo';
 import { useUserInfoStore } from '@/app/globalStores/userInfo';
 import { useApiStore } from '@/app/com/apiStore';
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
-import { userTypeReadable } from './models/utils';
+import { userTypeReadable, canRegister } from './models/utils';
 import { RouterLink } from 'vue-router';
 import { useIdentitiesRoutesJump } from './routes/routesJump';
 import { loginExpireHrsDefault, useAuthLocalConfigStore } from '@/app/localConfig/authLocalConfig';
@@ -47,6 +47,9 @@ const { userInfo } = storeToRefs(userInfoStore)
 const api = useApiStore()
 const { showPop } = useUniqueComponentsStore()
 const { registerRoute } = useIdentitiesRoutesJump()
+
+const showRegisterBtn = computed<boolean>(()=>
+    canRegister(userInfo.value?.id, userInfo.value?.type))
 
 const ssoConfig = ref<F3SsoAudienceOptions | undefined>()
 const ssoLoading = ref<boolean>(false)
@@ -136,7 +139,7 @@ onMounted(async()=>{
             </tr>
         </tbody></table>
         <div class="login">
-            <RouterLink class="register" :to="registerRoute()"><button class="minor">
+            <RouterLink v-if="showRegisterBtn" class="register" :to="registerRoute()"><button class="minor">
                注册
             </button></RouterLink>
             <button @click="Login" class="confirm">登录</button>
