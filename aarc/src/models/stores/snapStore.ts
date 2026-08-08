@@ -23,8 +23,10 @@ export const useSnapStore = defineStore('snap',()=>{
     const snapLines = ref<FormalRay[]>([])
     const snapGridIntv = ref<number>()
     const snappingNamePtId = ref<number>()
-    const snapStaNameTo = computed<Coord[]>(()=>{
-        const ptId = snappingNamePtId.value || -1
+    const snapStaNameTo = computed<Coord[]>(()=>
+        getStaNameSnapPoss(snappingNamePtId.value || -1))
+    //站名吸附目标位置（相对站心的偏移），8个方向各至少一个
+    function getStaNameSnapPoss(ptId:number):Coord[]{
         const distRatio = staClusterStore.getMaxSizePtWithinCluster(ptId, 'ptNameSnapSize')
         const snd = cs.config.snapOctaClingPtNameDist * distRatio;
         const sndh = snd * sqrt2half;
@@ -43,7 +45,7 @@ export const useSnapStore = defineStore('snap',()=>{
             );
         }
         return res;
-    })
+    }
     const snapNeighborExtendsOnlySameDir = ref<boolean>(false)
     const snapInterPtTargets = ref<{snapPoss:Coord[], snapToPts:ControlPoint[], matched?:Coord}>()
     function snap(pt:ControlPoint):Coord|undefined{
@@ -385,6 +387,7 @@ export const useSnapStore = defineStore('snap',()=>{
     const snapGridEnabled = ref(true)
     return {
         snap, snapName, snapNameStatus, snapGrid,
+        getStaNameSnapPoss,
         snapLines, snapGridIntv, snapNeighborExtendsOnlySameDir,
         snapInterPtEnabled, snapNeighborExtendsEnabled, snapGridEnabled,
         snapInterPtTargets
