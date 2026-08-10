@@ -60,6 +60,10 @@ function clickContainer(){
     pickers.value?.forEach(cp => cp?.close())
 }
 
+function showFakeLineInfo(){
+    window.alert('该线路已被设为伪线，其不会计入线路数量，其站点不会被搜索到')
+}
+
 type FocusLineMode = {
     flash: boolean
     childOpenDelay: number
@@ -197,6 +201,7 @@ onUnmounted(()=>{
                     :l="l"
                     :line-type-called="'线路'"
                     @close-sidebar="sidebar?.fold()"></LineItemBtns>
+                <div v-if="l.isFake" class="fakeLineMark" @click="showFakeLineInfo">--伪线--</div>
             </div>
             <div class="newLine" @click="createLine">
                 {{ isChildrenList ? '+新支线' : '+新线路'}}
@@ -216,6 +221,16 @@ onUnmounted(()=>{
 </template>
 
 <style scoped lang="scss">
+.fakeLineMark{
+    position: absolute;
+    left: 4px;
+    bottom: 0px;
+    font-size: 10px;
+    color: #aaa;
+    padding: 3px;
+    cursor: pointer;
+}
+
 .paletteEntry{
     display: flex;
     justify-content: center;
