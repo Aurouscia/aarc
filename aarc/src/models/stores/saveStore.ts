@@ -624,6 +624,11 @@ export const useSaveStore = defineStore('save', () => {
         }
         return false
     }
+    // 只属于伪线(isFake)的点（搜索、重名判断等场景统一将其排除）
+    function isPtOnlyOnFakeLines(ptId:number){
+        const lines = getLinesByPt(ptId)
+        return lines.length > 0 && lines.every(l => l.isFake)
+    }
     function getStaCount(){
         if(save.value)
             return saveStaCount(save.value)
@@ -682,7 +687,7 @@ export const useSaveStore = defineStore('save', () => {
         insertNewPtToLine, insertPtToLine, createNewLine, arrangeLinesOfType, ensureLinesOrdered,
         removePt, removePtFromLine, removeNoLinePoints, removePointLinkByPt, removeDanglingPointLinks, tryMergePt, isNamedPt,
         removeTextTag, moveEverything, setCvsSize,
-        isLineTypeWithoutSta, isPtNoSta,
+        isLineTypeWithoutSta, isPtNoSta, isPtOnlyOnFakeLines,
         getLineCount, getStaCount
     }
 })

@@ -58,7 +58,8 @@ export const useNameSearchStore = defineStore('nameSearch', ()=>{
         const dup = new Set<string>()
         for (const pt of saveStore.save?.points ?? []) {
             let n = pt.name?.trim()
-            if(n){
+            // 只属于伪线(isFake)的点不参与重名判断（与 NameEdit、NameSearch 口径一致）
+            if(n && !saveStore.isPtOnlyOnFakeLines(pt.id)){
                 if (seen.has(n))
                     dup.add(n)
                 else
@@ -68,7 +69,8 @@ export const useNameSearchStore = defineStore('nameSearch', ()=>{
         let found:string|undefined = undefined
         dup.forEach(dupName=>{
             if(found) return
-            const pts = saveStore.save?.points.filter(x => x.name && dupName == x.name?.trim())
+            const pts = saveStore.save?.points.filter(x =>
+                x.name && dupName == x.name?.trim() && !saveStore.isPtOnlyOnFakeLines(x.id))
             if(pts && pts.length > 1){
                 if(ptFarEnough(pts[0], pts[1])){
                     found = dupName

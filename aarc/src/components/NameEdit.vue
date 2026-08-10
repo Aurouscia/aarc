@@ -73,7 +73,12 @@ const sameNameStas = computed(()=>{
     if(!name || name.length > 30)
         return []
     let sameNameStas = saveStore.save?.points.filter(p => {
-        return p.name == name && p.id != targetPtId.value
+        if(p.name != name || p.id == targetPtId.value)
+            return false
+        // 排除只属于伪线(isFake)的点：伪线站点不参与重名判断
+        if(saveStore.isPtOnlyOnFakeLines(p.id))
+            return false
+        return true
     })
     return sameNameStas ?? []
 })
