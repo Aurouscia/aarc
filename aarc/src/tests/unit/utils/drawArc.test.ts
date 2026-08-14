@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext'
-import { drawArcByThreePoints, drawArcByTwoRays } from '@/utils/drawUtils/drawArc'
-import { FormalRay } from '@/models/coord'
+import { drawArcByThreePoints, drawArcByFormalRays, drawArcByFreeRays } from '@/utils/drawUtils/drawArc'
+import { FormalRay, FreeRay } from '@/models/coord'
 import { coordDist } from '@/utils/coordUtils/coordDist'
 import { coordDotProduct } from '@/utils/coordUtils/coordMath'
 
@@ -114,12 +114,12 @@ describe('drawArcByThreePoints', () => {
   })
 })
 
-describe('drawArcByTwoRays', () => {
+describe('drawArcByFormalRays', () => {
   it('显式传入 radius 时，应使用该半径而非几何计算半径', () => {
     const { ctx, calls } = createMockCtx()
     const rayA: FormalRay = { source: [-5, 0], way: [1, 0] }
     const rayB: FormalRay = { source: [0, 5], way: [0, 1] }
-    drawArcByTwoRays(ctx, rayA, rayB, 3)
+    drawArcByFormalRays(ctx, rayA, rayB, 3)
 
     expect(calls[0].type).toBe('arc')
     const [, , r] = calls[0].args
@@ -132,7 +132,7 @@ describe('drawArcByTwoRays', () => {
     const d = 5
     const rayA: FormalRay = { source: [-d, 0], way: [1, 0] }
     const rayB: FormalRay = { source: [-d / Math.SQRT2, d / Math.SQRT2], way: [-1, 1] }
-    drawArcByTwoRays(ctx, rayA, rayB)
+    drawArcByFormalRays(ctx, rayA, rayB)
 
     expect(calls[0].type).toBe('arc')
     const [cx, cy, r] = calls[0].args
@@ -142,13 +142,103 @@ describe('drawArcByTwoRays', () => {
   })
 })
 
+describe('drawArcByFreeRays - 用户指定用例', () => {
+  it('标准坐标系下 1/4 圆：ray1(1,0->0,1) 与 ray2(0,1->-1,0)', () => {
+    // 标准坐标系下这是圆心在原点、半径为 1 的逆时针 1/4 圆（从右侧到上侧）。
+    // 但 canvas 坐标系 y 轴向下，ctx.arc 的参数使用 canvas 角度约定：
+    // startAngle=0（右侧），endAngle=π/2（下侧），counterClockwise=false。
+    const { ctx, calls } = createMockCtx()
+    const rayA: FreeRay = { source: [1, 0], way: [0, 1] }
+    const rayB: FreeRay = { source: [0, 1], way: [-1, 0] }
+    drawArcByFreeRays(ctx, rayA, rayB)
+
+    expect(calls).toHaveLength(1)
+    expect(calls[0].type).toBe('arc')
+    const [cx, cy, r, startAngle, endAngle, counterClockwise] = calls[0].args
+    expect(cx).toBeCloseTo(0)
+    expect(cy).toBeCloseTo(0)
+    expect(r).toBeCloseTo(1)
+    expect(startAngle).toBeCloseTo(0)
+    expect(endAngle).toBeCloseTo(Math.PI / 2)
+    expect(counterClockwise).toBe(false)
+  })
+
+  it('30° 圆弧：ray1(1,0->0,1) 与 ray2(√3/2,1/2->-1/2,√3/2)', () => {
+    const { ctx, calls } = createMockCtx()
+    const rayA: FreeRay = { source: [1, 0], way: [0, 1] }
+    const rayB: FreeRay = { source: [Math.sqrt(3) / 2, 1 / 2], way: [-1 / 2, Math.sqrt(3) / 2] }
+    drawArcByFreeRays(ctx, rayA, rayB)
+
+    expect(calls).toHaveLength(1)
+    expect(calls[0].type).toBe('arc')
+    const [cx, cy, r, startAngle, endAngle, counterClockwise] = calls[0].args
+    expect(cx).toBeCloseTo(0)
+    expect(cy).toBeCloseTo(0)
+    expect(r).toBeCloseTo(1)
+    expect(startAngle).toBeCloseTo(0)
+    expect(endAngle).toBeCloseTo(Math.PI / 6)
+    expect(counterClockwise).toBe(false)
+  })
+
+  it('上述圆弧反向遍历：交换 ray1/ray2，圆心不变、角度互换、ccw 取反', () => {
+    const { ctx, calls } = createMockCtx()
+    const rayA: FreeRay = { source: [Math.sqrt(3) / 2, 1 / 2], way: [-1 / 2, Math.sqrt(3) / 2] }
+    const rayB: FreeRay = { source: [1, 0], way: [0, 1] }
+    drawArcByFreeRays(ctx, rayA, rayB)
+
+    expect(calls).toHaveLength(1)
+    expect(calls[0].type).toBe('arc')
+    const [cx, cy, r, startAngle, endAngle, counterClockwise] = calls[0].args
+    expect(cx).toBeCloseTo(0)
+    expect(cy).toBeCloseTo(0)
+    expect(r).toBeCloseTo(1)
+    expect(startAngle).toBeCloseTo(Math.PI / 6)
+    expect(endAngle).toBeCloseTo(0)
+    expect(counterClockwise).toBe(true)
+  })
+
+  it('150° 圆弧：ray1(1,0->0,1) 与 ray2(-√3/2,1/2->-1/2,-√3/2)', () => {
+    const { ctx, calls } = createMockCtx()
+    const rayA: FreeRay = { source: [1, 0], way: [0, 1] }
+    const rayB: FreeRay = { source: [-Math.sqrt(3) / 2, 1 / 2], way: [-1 / 2, -Math.sqrt(3) / 2] }
+    drawArcByFreeRays(ctx, rayA, rayB)
+
+    expect(calls).toHaveLength(1)
+    expect(calls[0].type).toBe('arc')
+    const [cx, cy, r, startAngle, endAngle, counterClockwise] = calls[0].args
+    expect(cx).toBeCloseTo(0)
+    expect(cy).toBeCloseTo(0)
+    expect(r).toBeCloseTo(1)
+    expect(startAngle).toBeCloseTo(0)
+    expect(endAngle).toBeCloseTo((5 * Math.PI) / 6)
+    expect(counterClockwise).toBe(false)
+  })
+
+  it('150° 圆弧反向遍历：交换 ray1/ray2，圆心不变、角度互换、ccw 取反', () => {
+    const { ctx, calls } = createMockCtx()
+    const rayA: FreeRay = { source: [-Math.sqrt(3) / 2, 1 / 2], way: [-1 / 2, -Math.sqrt(3) / 2] }
+    const rayB: FreeRay = { source: [1, 0], way: [0, 1] }
+    drawArcByFreeRays(ctx, rayA, rayB)
+
+    expect(calls).toHaveLength(1)
+    expect(calls[0].type).toBe('arc')
+    const [cx, cy, r, startAngle, endAngle, counterClockwise] = calls[0].args
+    expect(cx).toBeCloseTo(0)
+    expect(cy).toBeCloseTo(0)
+    expect(r).toBeCloseTo(1)
+    expect(startAngle).toBeCloseTo((5 * Math.PI) / 6)
+    expect(endAngle).toBeCloseTo(0)
+    expect(counterClockwise).toBe(true)
+  })
+})
+
 // ==================== 任意角度 TODO 测试 ====================
 // 自由点引入后，drawArc 需要支持非 45° 整数倍的转角。
-// 这些用例约束未来新增的实际射线版本（如 drawArcByActualRays）的行为。
+// 这些用例约束未来新增的浮点射线版本（如 drawArcByFreeRays）的行为。
 
 describe('drawArc 任意角度支持（todo）', () => {
   it.todo('120° 转角的圆心到两端点距离相等且等于半径', () => {
-    // 可使用 drawArcByActualRays 或等价的未来 API 测试
+    // 可使用 drawArcByFreeRays 或等价的未来 API 测试
   })
 
   it.todo('30° 转角的圆弧绘制方向（counterClockwise）正确', () => {})

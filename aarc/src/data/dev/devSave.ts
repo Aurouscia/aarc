@@ -110,7 +110,8 @@ export const devSave:Save = {
             sta: ControlPointSta.sta,
             name: '钢铁厂',
             nameS: 'GangTieChang',
-            nameP: [-12.727922058, 12.727922058]
+            nameP: [-12.727922058, 12.727922058],
+            free: true
         },
         {
             id: 13,
@@ -485,6 +486,9 @@ export const devSave:Save = {
             overwriteSameName: true
         }
     ],
-    config:{},
+    config:{
+        snapRayAngles: ['0', '45', '90', '135'],
+        snapRayAnglesForFree: ['4:3', '60']
+    },
     meta:{}
 }

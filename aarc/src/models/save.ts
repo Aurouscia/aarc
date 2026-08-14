@@ -41,6 +41,7 @@ export interface ControlPoint{
     anchorX?:SgnNumber
     anchorY?:SgnNumber
     noLeader?:boolean
+    free?:boolean
 }
 
 export enum ControlPointLinkType{

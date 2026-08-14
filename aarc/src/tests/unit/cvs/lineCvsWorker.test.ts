@@ -3,7 +3,7 @@ import { CvsBlock, CvsContext } from '@/models/cvs/common/cvsContext'
 import { linkPts } from '@/models/cvs/workers/lineCvsWorker'
 import { FormalPt } from '@/models/coord'
 import { Line } from '@/models/save'
-import { WayRel } from '@/utils/rayUtils/rayParallel'
+import { GetTurnRadiusOf } from '@/models/cvs/workers/lineCvsWorker'
 
 type MockCall = { type: string; args: number[] }
 
@@ -34,8 +34,8 @@ function fpts(positions: [number, number][]): FormalPt[] {
   return positions.map((pos, idx) => ({ pos, afterIdxEqv: idx }))
 }
 
-function fixedRadius(radius: number) {
-  return (_line: Line, _rel: WayRel) => radius
+function fixedRadius(radius: number): GetTurnRadiusOf {
+  return () => radius
 }
 
 function dummyLine(): Line {
@@ -116,5 +116,36 @@ describe('linkPts', () => {
     expect(calls.some(c => c.type === 'arc')).toBe(false)
     expect(calls[0]).toEqual({ type: 'moveTo', args: [0, 0] })
     expect(calls[calls.length - 1]).toEqual({ type: 'lineTo', args: [20, 0] })
+  })
+
+  it('自由点 60° 内角转角：使用浮点向量计算切点与圆弧', () => {
+    const { ctx, calls } = createMockCtx()
+    // A(0,0) -> B(10,0) -> C(7, 3√3)，B 为自由点
+    // 内角 60°，固定半径 r=1，切距 d = r / tan(30°) = √3
+    const r = 1
+    const d = Math.sqrt(3)
+    const formalPts: FormalPt[] = [
+      { pos: [0, 0], afterIdxEqv: 0 },
+      { pos: [10, 0], afterIdxEqv: 1, free: true },
+      { pos: [7, 3 * Math.sqrt(3)], afterIdxEqv: 2 },
+    ]
+    linkPts(ctx, formalPts, dummyLine(), fixedRadius(r))
+
+    expect(calls).toHaveLength(4)
+    expect(calls[0]).toEqual({ type: 'moveTo', args: [0, 0] })
+    expect(calls[1].type).toBe('lineTo')
+    expect(calls[3].type).toBe('lineTo')
+
+    // 验证自由模式切点：沿入射方向回退 d，沿出射方向前进 d
+    expect(calls[1].args[0]).toBeCloseTo(10 - d)
+    expect(calls[1].args[1]).toBeCloseTo(0)
+
+    // arc 几何：圆心应在 (10 - d, r) = (10 - √3, 1)，半径为 r
+    const arc = calls[2]
+    expect(arc.type).toBe('arc')
+    const [cx, cy, radius] = arc.args
+    expect(cx).toBeCloseTo(10 - d)
+    expect(cy).toBeCloseTo(r)
+    expect(radius).toBeCloseTo(r)
   })
 })

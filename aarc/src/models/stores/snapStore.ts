@@ -1,17 +1,21 @@
-import { collapseWay, Coord, FormalRay, SgnCoord } from "@/models/coord";
+import { Coord, FreeRay } from "@/models/coord";
 import { useSaveStore } from "./saveStore";
-import { ControlPoint, ControlPointDir } from "@/models/save";
+import { ControlPoint } from "@/models/save";
 import { defineStore, storeToRefs } from "pinia";
 import { computed, ref } from "vue";
-import { isZero, sgn } from "@/utils/sgn";
-import { rayIntersect } from "@/utils/rayUtils/rayIntersection";
-import { applyBias } from "@/utils/coordUtils/coordBias";
-import { coordDist, coordDistSqLessThan } from "@/utils/coordUtils/coordDist";
 import { useConfigStore } from "./configStore";
-import { numberCmpEpsilon, sqrt2half } from "@/utils/consts";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
-import { crossAddNums } from "@/utils/lang/crossAddNums";
 import { useEditorLocalConfigStore } from "@/app/localConfig/editorLocalConfig";
+import {
+    calcStaNameSnapCandidates,
+    snapGrid as snapGridCore,
+    snapInterPt as snapInterPtCore,
+    snapNameToCandidates,
+    snapNeighborExtends as snapNeighborExtendsCore,
+    getNameSnapStatus
+} from "@/utils/snapUtils/snapCore";
+import { useFreePtDirectionStore } from "./saveDerived/freePtDirectionStore";
+import { computeFreeNameSnapCandidates } from "@/utils/snapUtils/snapNameFree";
 
 export const useSnapStore = defineStore('snap',()=>{
     const cs = useConfigStore()
@@ -19,32 +23,29 @@ export const useSnapStore = defineStore('snap',()=>{
     const { getLinesDecidedPtSnapSizes } = saveStore
     const staClusterStore = useStaClusterStore()
     const editorLocalConfig = useEditorLocalConfigStore()
+    const freePtDirectionStore = useFreePtDirectionStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
-    const snapLines = ref<FormalRay[]>([])
+    const snapLines = ref<FreeRay[]>([])
     const snapGridIntv = ref<number>()
     const snappingNamePtId = ref<number>()
     const snapStaNameTo = computed<Coord[]>(()=>
         getStaNameSnapPoss(snappingNamePtId.value || -1))
-    //站名吸附目标位置（相对站心的偏移），8个方向各至少一个
+    //站名吸附目标位置（相对站心的偏移）；free 点仅吸附线路法向位置
     function getStaNameSnapPoss(ptId:number):Coord[]{
         const distRatio = staClusterStore.getMaxSizePtWithinCluster(ptId, 'ptNameSnapSize')
-        const snd = cs.config.snapOctaClingPtNameDist * distRatio;
-        const sndh = snd * sqrt2half;
-        const diagonal = editorLocalConfig.staNameSnapDiagonal;
-        const res: Coord[] = [
-            [snd,0],[-snd,0],[0,snd],[0,-snd],           // 正交 4 方向
-        ];
-        if (diagonal === 'inner' || diagonal === 'both') {
-            res.push(
-                [sndh,sndh],[sndh,-sndh],[-sndh,sndh],[-sndh,-sndh]  // 内侧对角 4 方向（距离 = snd）
-            );
+        const pt = saveStore.getPtById(ptId)
+        if (pt?.free) {
+            const dirs = freePtDirectionStore.getPtDirections(ptId)
+            if (dirs.length > 0) {
+                return computeFreeNameSnapCandidates(dirs, cs.config.snapOctaClingPtNameDist * distRatio)
+            }
+            //孤立/无方向 free 点：回退到标准候选
         }
-        if (diagonal === 'outer' || diagonal === 'both') {
-            res.push(
-                [snd,snd],[snd,-snd],[-snd,snd],[-snd,-snd]   // 外侧对角 4 方向（距离 = snd*√2）
-            );
-        }
-        return res;
+        return calcStaNameSnapCandidates(
+            cs.config.snapOctaClingPtNameDist,
+            distRatio,
+            editorLocalConfig.staNameSnapDiagonal
+        )
     }
     const snapNeighborExtendsOnlySameDir = ref<boolean>(false)
     const snapInterPtTargets = ref<{snapPoss:Coord[], snapToPts:ControlPoint[], matched?:Coord}>()
@@ -56,17 +57,17 @@ export const useSnapStore = defineStore('snap',()=>{
             return interPtRes
         }
         let neibRes:Coord|undefined = undefined
-        let freeAxis:SgnCoord|undefined = undefined
+        let freeWay:Coord|undefined = undefined
         if(snapNeighborExtendsEnabled.value){
             const neibExtend = snapNeighborExtends(pt)
             neibRes = neibExtend.snapRes
-            freeAxis = neibExtend.freeAxis
-            if(neibRes && (!freeAxis || !snapGridEnabled.value)){
+            freeWay = neibExtend.freeWay
+            if(neibRes && (!freeWay || !snapGridEnabled.value)){
                 return neibRes
             }
         }
         if(snapGridEnabled.value){
-            const gridRes = snapGrid(neibRes || pt.pos, freeAxis)
+            const gridRes = snapGrid(neibRes || pt.pos, freeWay)
             if(gridRes){
                 return gridRes
             }
@@ -77,181 +78,64 @@ export const useSnapStore = defineStore('snap',()=>{
             return;
         }
         snappingNamePtId.value = pt.id
-        const snapClingThrsSq = cs.snapOctaClingPtNameThrsSq
-        const snapRayThrs = cs.config.snapOctaRayPtNameThrs
-        let [x, y] = pt.nameP
-        const to = snapStaNameTo.value.find(t=>{
-            return coordDistSqLessThan(pt.nameP!, t, snapClingThrsSq)
-        })
-        if(to){
-            return {
-                to:[...to] as Coord,
-                type:'accu'
-            }
-        }
-
-        let snaped = false;
-        if(Math.abs(x) < snapRayThrs){
-            x = 0
-            snaped = true
-        }
-        if(Math.abs(y) < snapRayThrs){
-            y = 0
-            snaped = true
-        }
-        if(snaped)
-            return {
-                to: [x, y] as Coord,
-                type: 'vague'
-            }
+        return snapNameToCandidates(
+            pt,
+            snapStaNameTo.value,
+            cs.snapOctaClingPtNameThrsSq,
+            cs.config.snapOctaRayPtNameThrs,
+            getFreeNameSnapDirs(pt)
+        )
     }
     function snapNameStatus(pt:ControlPoint):{type:'vague'|'accu'}|undefined{
-        if(!pt.nameP)
-            return;
-        let [x, y] = pt.nameP
-        const epsSqr = numberCmpEpsilon ** 2
-        const to = snapStaNameTo.value.find(t=>{
-            return coordDistSqLessThan(pt.nameP!, t, epsSqr)
-        })
-        if(to){
-            return {type:'accu'}
-        }
-        if(Math.abs(x) < numberCmpEpsilon || Math.abs(y) < numberCmpEpsilon)
-            return {type: 'vague'}
+        return getNameSnapStatus(pt, snapStaNameTo.value, undefined, getFreeNameSnapDirs(pt))
     }
-    function snapNeighborExtends(pt:ControlPoint):{snapRes?:Coord, freeAxis?:SgnCoord}{
-        const pos = pt.pos
-        const dir = pt.dir
-        const neibs = saveStore.getNeighborByPt(pt.id)
-        const cands:{dist:number, snapTo:Coord, source:ControlPoint}[] = []
-        const tryCand = (dist:number, snapTo:Coord, source:ControlPoint)=>{
-            if(cands.length<2)
-            {
-                if(cands.length==0 || cands[0].dist<dist){
-                    cands.push({dist,snapTo,source})
-                    return true;
-                }else{
-                    cands[1] = cands[0]
-                    cands[0] = {dist,snapTo,source};
-                    return true
-                }
-            }
-            if(dist<cands[0].dist){
-                cands[1] = cands[0]
-                cands[0] = {dist,snapTo,source};
-                return true
-            }
-            else if(dist<cands[1].dist){
-                cands[1] = {dist,snapTo,source};
-                return true
-            }
-            return false
-        }
-
-        neibs.forEach(n=>{
-            if(snapNeighborExtendsOnlySameDir.value && dir !== n.dir)
-                return
-            const xDiff = n.pos[0] - pos[0]
-            const yDiff = n.pos[1] - pos[1]
-            if(true){//dir === ControlPointDir.vertical || n.dir === ControlPointDir.vertical){
-                const xDiffAbs = Math.abs(xDiff)
-                const yDiffAbs = Math.abs(yDiff)
-                const dist = Math.min(xDiffAbs, yDiffAbs)
-                if(dist<cs.config.snapOctaRayPtPtThrs){
-                    let snapTo:Coord = [...pos];
-                    if(tryCand(dist, snapTo, n)){
-                        if(xDiffAbs < yDiffAbs){
-                            snapTo[0] = n.pos[0]
-                        }else{
-                            snapTo[1] = n.pos[1]
-                        }
-                    }
-                }
-            }
-            if(true){//dir === ControlPointDir.incline || n.dir === ControlPointDir.incline){
-                const diffdiff = xDiff*yDiff>0 ? (yDiff-xDiff) : (yDiff+xDiff)
-                const dist = Math.abs(diffdiff) * sqrt2half
-                if(dist<cs.config.snapOctaRayPtPtThrs){
-                    let snapTo:Coord = [0,0];
-                    if(tryCand(dist, snapTo, n)){
-                        if(xDiff*yDiff>0){
-                            snapTo[0] = pos[0]-diffdiff/2;
-                            snapTo[1] = pos[1]+diffdiff/2
-                        }
-                        else{
-                            snapTo[0] = pos[0]+diffdiff/2;
-                            snapTo[1] = pos[1]+diffdiff/2
-                        }
-                    }
-                }
-            }
-        })
-        if(cands.length>0){
-            cands.forEach(c=>{
-                const xDiff = c.snapTo[0] - c.source.pos[0]
-                const yDiff = c.snapTo[1] - c.source.pos[1] 
-                snapLines.value.push({
-                    source: c.source.pos,
-                    way:[
-                        sgn(xDiff),
-                        sgn(yDiff)
-                    ]
-                })
-            })
-            const firstCandWay = snapLines.value[0].way
-            if(cands.length > 1){
-                const intersection = rayIntersect(snapLines.value[0], snapLines.value[1])
-                if(intersection)
-                    return {snapRes: intersection}
-            }
-            return {snapRes: cands[0].snapTo, freeAxis:firstCandWay}
-        }
-        return {}
+    //free 点站名 vague 吸附使用的线路方向集合；无方向时返回 undefined（回退轴线归零）
+    function getFreeNameSnapDirs(pt:ControlPoint):Coord[]|undefined{
+        if (!pt.free)
+            return undefined
+        const dirs = freePtDirectionStore.getPtDirections(pt.id)
+        return dirs.length > 0 ? dirs : undefined
+    }
+    function snapNeighborExtends(pt:ControlPoint):{snapRes?:Coord, freeWay?:Coord}{
+        const { snapRes, freeWay, snapLines: lines } = snapNeighborExtendsCore(
+            pt,
+            saveStore.getNeighborByPt(pt.id),
+            cs.config.snapOctaRayPtPtThrs,
+            snapNeighborExtendsOnlySameDir.value,
+            cs.config.snapRayAngles,
+            cs.config.snapRayAnglesForFree
+        )
+        snapLines.value.push(...lines)
+        return { snapRes, freeWay }
     }
     function snapInterPt(pt:ControlPoint, noBias:boolean):Coord|undefined{
         const ptSnapSizes = getLinesDecidedPtSnapSizes(pt.id) || [1]
         const ptSnapSizeLargest = Math.max(...ptSnapSizes)
         const snapDistLargest = ptSnapSizeLargest * cs.config.snapOctaClingPtPtDist
         const snapThrs = cs.config.snapOctaClingPtPtThrs;
-        snapInterPtTargets.value = {snapPoss:[], snapToPts:[]}
         const pts = saveStore.getPtsInRange(pt.pos, (snapDistLargest + snapThrs)*2, pt.id)
-        if(pts.length==0){
-            return undefined
-        }
-        let matched:Coord|undefined = undefined
-        let minDist = 10000000;
-        for(const opt of pts){
-            const biases:SgnCoord[] = [[0,0]]
-            if(!noBias){
-                if(pt.dir == ControlPointDir.incline || opt.dir == ControlPointDir.incline){
-                    biases.push([-1,-1],[-1,1],[1,-1],[1,1])
-                }
-                if(pt.dir == ControlPointDir.vertical || opt.dir == ControlPointDir.vertical){
-                    biases.push([0,-1],[0,1],[1,0],[-1,0])
-                }
-            }
-            const optSnapSizes = getLinesDecidedPtSnapSizes(opt.id) || [1]
-            const sizesAdded = crossAddNums(ptSnapSizes, optSnapSizes).sort()
-            const snapDists = sizesAdded.map(x=>x/2*cs.config.snapOctaClingPtPtDist)
-            snapInterPtTargets.value?.snapToPts.push(opt)
-            snapDists.forEach(snapDist=>{
-                biases.forEach(b=>{
-                    const biased = applyBias(opt.pos, b, snapDist)
-                    snapInterPtTargets.value?.snapPoss.push(biased) //记录这个可吸附点
-                    const dist = coordDist(pt.pos, biased)
-                    if(dist<snapThrs && dist<minDist){
-                        matched = biased;
-                        minDist = dist
-                    }
-                })
-            })
-        }
-        if(matched){
-            snapInterPtTargets.value.matched = matched
-        }
+        //free=true的同线邻点（上一个/下一个点）不提供吸附点
+        const freeNeighborIds = new Set(
+            saveStore.getNeighborByPt(pt.id).filter(n=>n.free).map(n=>n.id))
+        const ptsFiltered = freeNeighborIds.size>0
+            ? pts.filter(p=>!freeNeighborIds.has(p.id))
+            : pts
+        const getPtDirectionInfo = (id: number) => freePtDirectionStore.getPtDirectionInfo(id)
+        const { matched, targets } = snapInterPtCore(
+            pt,
+            ptsFiltered,
+            {
+                snapDistBase: cs.config.snapOctaClingPtPtDist,
+                snapThrs
+            },
+            getLinesDecidedPtSnapSizes,
+            noBias,
+            getPtDirectionInfo
+        )
+        snapInterPtTargets.value = { ...targets, matched }
         return matched
     }
-    function snapGrid(ptPos:Coord, freeAxis?:SgnCoord, clearSnapLines?:boolean, ensureSnap?:boolean):Coord|undefined{
+    function snapGrid(ptPos:Coord, freeWay?:Coord, clearSnapLines?:boolean, ensureSnap?:boolean):Coord|undefined{
         if(clearSnapLines)
             snapLines.value = []
         if(!snapGridEnabled.value)
@@ -259,127 +143,19 @@ export const useSnapStore = defineStore('snap',()=>{
         const intv = snapGridIntv.value
         if(!intv)
             return;
-        let xDiff = 0;//与足够近的竖线（如果有）的x之差
-        let yDiff = 0;//与足够近的横线（如果有）的y之差
-        let xMatched = false;//是否距离竖线足够近
-        let yMatched = false;//是否距离横线足够近
-        const freeWay = collapseWay(freeAxis)
-
-        const a = Math.abs
-        const thrs = ensureSnap ? 1000000 : cs.config.snapGridThrs
-
-        //寻找是否有足够近的竖线，如果自由度只有上下就不找
-        if(freeWay !== 'vert'){
-            let cursor = intv;
-            while(cursor < cvsWidth.value){
-                const xDiffHere = ptPos[0] - cursor
-                const xDiffHereAbs = a(xDiffHere)
-                if(xDiffHereAbs < thrs){
-                    xMatched = true
-                    if(xDiff && xDiffHereAbs > a(xDiff)){
-                        break
-                    } else {
-                        xDiff = xDiffHere
-                    }
-                }
-                cursor += intv
-            }
+        const res = snapGridCore(
+            ptPos,
+            intv,
+            cvsWidth.value,
+            cvsHeight.value,
+            freeWay,
+            cs.config.snapGridThrs,
+            ensureSnap
+        )
+        if(res){
+            snapLines.value.push(...res.snapLines)
+            return res.pos
         }
-        //寻找是否有足够近的横线，如果自由度只有左右就不找
-        if(freeWay !== 'hori'){
-            let cursor = intv;
-            while(cursor < cvsHeight.value){
-                const yDiffHere = ptPos[1] - cursor
-                const yDiffHereAbs = a(yDiffHere)
-                if(yDiffHereAbs < thrs){
-                    yMatched = true
-                    if(yDiff && yDiffHereAbs > a(yDiff)){    
-                        break
-                    } else {
-                        yDiff = yDiffHere
-                    }
-                }
-                cursor += intv
-            }
-        }
-        const pos = [...ptPos] as Coord
-        let snapX = false
-        let snapY = false
-        if(freeWay === 'vert'){
-            pos[1] -= yDiff;
-            snapY = yMatched
-        }else if(freeWay === 'hori'){
-            pos[0] -= xDiff;
-            snapX = xMatched
-        }else if(freeWay === 'fall' || freeWay === 'rise'){
-            let diff = 0;
-            if(xMatched){
-                if(!yMatched){
-                    //有足够近竖线，但没有足够近横线
-                    diff = xDiff
-                    snapX = true
-                }
-                else{
-                    //横竖都有足够近的
-                    const diffSame = freeWay === 'fall' ? (isZero(xDiff - yDiff)):(isZero(xDiff + yDiff))
-                    if(diffSame){
-                        //正好横、竖、延长线都能匹配
-                        snapX = true
-                        snapY = true
-                        diff = yDiff
-                    }else{
-                        //没有那么巧
-                        const xDiffSmaller = Math.abs(xDiff) < Math.abs(yDiff)
-                        if(xDiffSmaller){
-                            diff = xDiff
-                            snapX = true
-                        }else{
-                            diff = yDiff
-                            snapY = true
-                        }
-                    }
-                }
-            }
-            else if(yMatched){
-                //有足够近横线，但没有足够近竖线
-                diff = yDiff
-                snapY = true
-            }
-            //都没有（什么都不做）
-
-            //应用坐标差，修正位置
-            if(freeWay === 'fall'){
-                pos[0] -= diff;
-                pos[1] -= diff;
-            }else{
-                if(snapY){
-                    pos[0] += diff
-                    pos[1] -= diff
-                }else{
-                    pos[0] -= diff
-                    pos[1] += diff
-                }
-            }
-        }else{
-            pos[0] -= xDiff;
-            pos[1] -= yDiff;
-            snapX = xMatched
-            snapY = yMatched
-        }
-        //画吸附线
-        if(snapX){
-            snapLines.value.push(
-                {source:[...pos], way:[0, -1]},
-                {source:[...pos], way:[0, 1]}
-            )
-        }
-        if(snapY){
-            snapLines.value.push(
-                {source:[...pos], way:[1, 0]},
-                {source:[...pos], way:[-1, 0]}
-            )
-        }
-        return pos
     }
 
     const snapInterPtEnabled = ref(true)

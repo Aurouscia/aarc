@@ -2,19 +2,21 @@ import { ControlPoint } from "@/models/save";
 import { defineStore } from "pinia";
 import { useSaveStore } from "../saveStore";
 import { useConfigStore } from "../configStore";
-
-import { computed, ref } from "vue";
+import { useFreePtDirectionStore } from "./freePtDirectionStore";
 import { numberCmpEpsilon } from "@/utils/consts";
+import { computed, ref } from "vue";
 import { Coord } from '@/models/coord';
 import {
     buildNeighbors,
     cleanNeighborsForDeletedPt,
     getClusterMaxSizePure,
+    getPtSnapCandidatesAndReachPure,
     getRectOfClusterPure,
     getStaClusterByIdPure,
     isPtSinglePure,
     makeClustersFromNeighborsPure,
     Neighbors,
+    PtSnapCandidatesInfo,
     resolveStaNamePure,
     tryTransferStaNameWithinClusterPure,
     updateNeighborsForMovedPt
@@ -23,9 +25,18 @@ import {
 export const useStaClusterStore = defineStore('staCluster', ()=>{
     const saveStore = useSaveStore()
     const cs = useConfigStore()
+    const freePtDirectionStore = useFreePtDirectionStore()
     saveStore.deletedPoint = cleanClustersFromDeletedPt
     
     const configClingingDist = cs.config.snapOctaClingPtPtDist
+
+    const getPtSnapCandidatesAndReach = (pt: ControlPoint): PtSnapCandidatesInfo =>
+        getPtSnapCandidatesAndReachPure(
+            pt,
+            id => saveStore.getLinesDecidedPtSnapSize(id),
+            id => freePtDirectionStore.getPtDirectionInfo(id),
+            configClingingDist
+        )
 
     const staClusters = ref<ControlPoint[][]>()
     const staBelongToCluster = computed<Record<number, ControlPoint[]|undefined>>(()=>{
@@ -60,7 +71,8 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             pts,
             configClingingDist,
             id => saveStore.getLinesDecidedPtSnapSize(id),
-            numberCmpEpsilon
+            numberCmpEpsilon,
+            getPtSnapCandidatesAndReach
         )
     }
     function makeClustersFromNeighbors(){
@@ -77,7 +89,8 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
             saveStore.save?.points || [],
             configClingingDist,
             id => saveStore.getLinesDecidedPtSnapSize(id),
-            numberCmpEpsilon
+            numberCmpEpsilon,
+            getPtSnapCandidatesAndReach
         )
         makeClustersFromNeighbors()
     }
@@ -132,6 +145,9 @@ export const useStaClusterStore = defineStore('staCluster', ()=>{
     }
 
     function isPtSingle(ptId: number) {
+        const pt = saveStore.getPtById(ptId)
+        if (!pt)
+            return false
         return isPtSinglePure(ptId, getStaClusters() || [])
     }
     return {

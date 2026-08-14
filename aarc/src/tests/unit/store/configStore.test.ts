@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createTestPinia } from '../../helpers/piniaTestHelper'
-import { useConfigStore } from '@/models/stores/configStore'
+import { useConfigStore, turn45Ratio } from '@/models/stores/configStore'
 import { LineType } from '@/models/save'
 
 describe('configStore - getTurnRadiusOf', () => {
@@ -84,5 +84,29 @@ describe('configStore - getTurnRadiusOf', () => {
     const cs = useConfigStore()
     const line = { id: 1, pts: [], name: '', nameSub: '', color: '', type: LineType.common, width: 1 }
     expect(cs.getTurnRadiusOf(line, '135', 'outer')).toBeGreaterThanOrEqual(0)
+  })
+
+  it('非 45°/135° 的任意角度（以弧度传入）半径与 90° 保持一致', () => {
+    const cs = useConfigStore()
+    const line = { id: 1, pts: [], name: '', nameSub: '', color: '', type: LineType.common, width: 1 }
+    const r90 = cs.getTurnRadiusOf(line, '90', 'middle')
+    expect(cs.getTurnRadiusOf(line, Math.PI / 3, 'middle')).toBeCloseTo(r90)
+    expect(cs.getTurnRadiusOf(line, (2 * Math.PI) / 3, 'middle')).toBeCloseTo(r90)
+  })
+
+  it('45° 和 135°（弧度传入）仍保持原有缩放行为', () => {
+    const cs = useConfigStore()
+    const line = { id: 1, pts: [], name: '', nameSub: '', color: '', type: LineType.common, width: 1 }
+    const r90 = cs.getTurnRadiusOf(line, '90', 'middle')
+    expect(cs.getTurnRadiusOf(line, Math.PI / 4, 'middle')).toBeCloseTo(r90 / turn45Ratio)
+    expect(cs.getTurnRadiusOf(line, (3 * Math.PI) / 4, 'middle')).toBeCloseTo(r90 * turn45Ratio)
+  })
+
+  it('WayRel 45° 和 135° 仍保持原有缩放行为', () => {
+    const cs = useConfigStore()
+    const line = { id: 1, pts: [], name: '', nameSub: '', color: '', type: LineType.common, width: 1 }
+    const r90 = cs.getTurnRadiusOf(line, '90', 'middle')
+    expect(cs.getTurnRadiusOf(line, '45', 'middle')).toBeCloseTo(r90 / turn45Ratio)
+    expect(cs.getTurnRadiusOf(line, '135', 'middle')).toBeCloseTo(r90 * turn45Ratio)
   })
 })

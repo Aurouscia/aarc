@@ -7,6 +7,7 @@ import { eventClientCoord } from "@/utils/eventUtils/eventClientCoord";
 import { OpsBtn, useOpsStore } from "./opsStore";
 import { ColorPreset, ControlPoint, ControlPointDir, ControlPointSta, Line, LineType, TextTag } from "../save";
 import { useSnapStore } from "./snapStore";
+import { useConfigStore } from "./configStore";
 import { coordAdd, coordAvg, coordSub } from "@/utils/coordUtils/coordMath";
 import { useNameEditStore } from "./nameEditStore";
 import { useNameSearchStore } from "./nameSearchStore";
@@ -34,6 +35,8 @@ export const useEnvStore = defineStore('env', ()=>{
     const lineStateStore = useLineStateStore()
     const { cvsWidth, cvsHeight } = storeToRefs(saveStore)
     const opsStore = useOpsStore();
+    const configStore = useConfigStore()
+    const { snapRayAnglesForFreeEnabled } = storeToRefs(configStore)
     const activePt = ref<ControlPoint>()
     const movingPoint = ref<boolean>(false)
     const movedPoint = ref<boolean>(false)
@@ -147,7 +150,8 @@ export const useEnvStore = defineStore('env', ()=>{
 
         const isRightBtnOnly = clickType === 'right' 
         const isRightBtnAndCtrl = clickType === 'ctrlAndRight'
-        const isRightBtn = isRightBtnOnly || isRightBtnAndCtrl
+        const isRightBtnAndAlt = clickType === 'altAndRight'
+        const isRightBtn = isRightBtnOnly || isRightBtnAndCtrl || isRightBtnAndAlt
 
         snapStore.snapInterPtTargets = undefined
         //根据当前状态判断是否需要重新渲染主画布
@@ -288,6 +292,10 @@ export const useEnvStore = defineStore('env', ()=>{
                         pt.sta = ControlPointSta.plain
                     else
                         pt.sta = ControlPointSta.sta
+                    movedPoint.value = true
+                }else if(isRightBtnAndAlt){
+                    //右键+alt点击切换控制点free
+                    pt.free = !pt.free
                     movedPoint.value = true
                 }else{
                     if(!opsStore.clientPos || activePtChanged){
@@ -636,6 +644,19 @@ export const useEnvStore = defineStore('env', ()=>{
                 },
                 text:'设置',
                 textSub:'打开面板'
+            })
+        }
+        if(snapRayAnglesForFreeEnabled.value){
+            firstCol.push({
+                cb: ()=>{
+                    if(pt){
+                        pt.free = !pt.free
+                        movedPoint.value = true
+                        setOpsForPt()
+                    }
+                },
+                text: '自由',
+                textSub: pt?.free ? '已自由' : '非自由'
             })
         }
         const relatedLinks = saveStore.getPointLinksByPt(pt.id)
