@@ -465,6 +465,14 @@ describe('snapNeighborExtends', () => {
     const res = snapNeighborExtends(pt, [neighbor], 10, false, ['0'], ['90'])
     expect(res.snapRes).toEqual([0, 1])
   })
+
+  it('free 点但 snapRayAnglesForFree 为空时 fallback 到 snapRayAngles', () => {
+    const pt = makePt(1, [2, 1], ControlPointDir.vertical, undefined, true)
+    const neighbor = makePt(2, [0, 0])
+    // snapRayAnglesForFree 为空，应使用 snapRayAngles 的 0°
+    const res = snapNeighborExtends(pt, [neighbor], 10, false, ['0'], [])
+    expect(res.snapRes).toEqual([2, 0])
+  })
 })
 
 describe('snapInterPt', () => {

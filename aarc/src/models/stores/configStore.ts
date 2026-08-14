@@ -67,7 +67,7 @@ export const configDefault:Config = {
     snapOctaRayPtNameThrs: 6,
     snapGridThrs: 6,
     snapRayAngles: ['0', '45', '90', '135'],
-    snapRayAnglesForFree: ['0', '45', '90', '135'],
+    snapRayAnglesForFree: [],
 
     colorPresetArea: '#cccccc',
     colorPresetWater: '#c3e5eb',
@@ -155,6 +155,8 @@ export const useConfigStore = defineStore('config', ()=>{
         (config.value.clickLineThrs * sqrt2) ** 2)
     const snapOctaClingPtNameThrsSq = computed<number>(()=>
         config.value.snapOctaClingPtNameThrs ** 2)
+    const snapRayAnglesForFreeEnabled = computed<boolean>(()=>
+        config.value.snapRayAnglesForFree.length > 0)
     
     function getPresetColor(presetType:ColorPreset){
         if(presetType == ColorPreset.water)
@@ -201,7 +203,7 @@ export const useConfigStore = defineStore('config', ()=>{
         config, readConfigFromSave, writeConfigToSave,
         getConfigForExporting, importConfig,
         clickPtThrsSq, clickLineThrsSq, clickLineThrs_sqrt2_sq, 
-        snapOctaClingPtNameThrsSq,
+        snapOctaClingPtNameThrsSq, snapRayAnglesForFreeEnabled,
         getPresetColor, getTurnRadiusOf
     }
 })

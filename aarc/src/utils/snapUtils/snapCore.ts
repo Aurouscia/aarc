@@ -321,7 +321,7 @@ export function snapNeighborExtends(
     const cands: { dist: number, snapTo: Coord, source: ControlPoint, angleDeg: number }[] = []
 
     function resolveAngles(sourcePt: ControlPoint): number[] {
-        const raw = (sourcePt.free || pt.free) && snapRayAnglesForFree
+        const raw = (sourcePt.free || pt.free) && snapRayAnglesForFree && snapRayAnglesForFree.length > 0
             ? snapRayAnglesForFree
             : snapRayAngles
         return raw

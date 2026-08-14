@@ -16,6 +16,7 @@ import FontConfig from './configs/FontConfig.vue';
 import PatternsConfig from './configs/PatternsConfig.vue';
 import LineWidthMappedConfig from './configs/LineWidthMappedConfig.vue';
 import EtcConfig from './configs/EtcConfig.vue';
+import FreeSegmentConfig from './configs/FreeSegmentConfig.vue';
 import ColorsConfig from './configs/ColorsConfig.vue';
 import DataSourcesConfig from './configs/DataSourcesConfig.vue';
 
@@ -57,6 +58,8 @@ defineExpose({
 <SaveConfigReuse></SaveConfigReuse>
 
 <FaqAsConfig></FaqAsConfig>
+
+<FreeSegmentConfig></FreeSegmentConfig>
 
 <EtcConfig></EtcConfig>
 
