@@ -11,6 +11,7 @@ import {
 } from '@/utils/snapUtils/snapCore'
 import { computeFreeSnapCandidates } from '@/utils/snapUtils/snapInterPtFree'
 import { computePtDirectionInfo, PtDirectionInfo } from '@/utils/ptUtils/ptDirection'
+import { sqrt2half } from '@/utils/consts'
 
 function makePt(
   id: number,
@@ -125,6 +126,69 @@ describe('getNameSnapStatus', () => {
   it('nameP 不在候选点也不在坐标轴上时返回 undefined', () => {
     const pt = makePt(1, [0, 0], ControlPointDir.vertical, [3, 4])
     expect(getNameSnapStatus(pt, [], 1e-6)).toBeUndefined()
+  })
+})
+
+describe('snapNameToCandidates（freeDirs 分支）', () => {
+  it('nameP 贴近法向直线时投影并返回 vague', () => {
+    // u=[1,0]，法向直线为 y 轴；nameP=[0.2, 3] 距 y 轴 0.2 < 阈值
+    const pt = makePt(1, [0, 0], ControlPointDir.vertical, [0.2, 3], true)
+    const res = snapNameToCandidates(pt, [], 1, 1, [[1, 0]])
+    expect(res).toBeDefined()
+    expect(res!.type).toBe('vague')
+    expect(res!.to[0]).toBeCloseTo(0)
+    expect(res!.to[1]).toBeCloseTo(3)
+  })
+
+  it('多条法向时取距离最小者', () => {
+    // u=[1,0] 距离 1，u=[0,1] 距离 0.2；应投影到 x 轴
+    const pt = makePt(1, [0, 0], ControlPointDir.vertical, [1, 0.2], true)
+    const res = snapNameToCandidates(pt, [], 1, 1, [[1, 0], [0, 1]])
+    expect(res!.type).toBe('vague')
+    expect(res!.to[0]).toBeCloseTo(1)
+    expect(res!.to[1]).toBeCloseTo(0)
+  })
+
+  it('远离所有法向直线时返回 undefined', () => {
+    const pt = makePt(1, [0, 0], ControlPointDir.vertical, [3, 3], true)
+    const res = snapNameToCandidates(pt, [], 1, 1, [[1, 0], [0, 1]])
+    expect(res).toBeUndefined()
+  })
+
+  it('贴近候选点时 accu 优先于 vague', () => {
+    const pt = makePt(1, [0, 0], ControlPointDir.vertical, [0.2, 3], true)
+    const res = snapNameToCandidates(pt, [[0.2, 3]], 1, 1, [[1, 0]])
+    expect(res).toEqual({ to: [0.2, 3], type: 'accu' })
+  })
+
+  it('freeDirs 为空数组时回退到坐标轴归零逻辑', () => {
+    const pt = makePt(1, [0, 0], ControlPointDir.vertical, [2, 7], true)
+    const res = snapNameToCandidates(pt, [], 1, 6, [])
+    expect(res).toEqual({ to: [0, 7], type: 'vague' })
+  })
+})
+
+describe('getNameSnapStatus（freeDirs 分支）', () => {
+  it('nameP 在法向直线上时返回 vague', () => {
+    const pt = makePt(1, [0, 0], ControlPointDir.vertical, [0, 5], true)
+    expect(getNameSnapStatus(pt, [], 1e-6, [[1, 0]])).toEqual({ type: 'vague' })
+  })
+
+  it('nameP 在候选点上时返回 accu', () => {
+    const pt = makePt(1, [0, 0], ControlPointDir.vertical, [0, 2], true)
+    expect(getNameSnapStatus(pt, [[0, 2]], 1e-6, [[1, 0]])).toEqual({ type: 'accu' })
+  })
+
+  it('nameP 不在法向直线上也不在坐标轴上时返回 undefined', () => {
+    // [3, 4] 不在 u=[1,0] 的法向直线上；注意它在非 free 规则下也不算 vague（x、y 均非 0）
+    const pt = makePt(1, [0, 0], ControlPointDir.vertical, [3, 4], true)
+    expect(getNameSnapStatus(pt, [], 1e-6, [[1, 0]])).toBeUndefined()
+  })
+
+  it('nameP 在坐标轴上但不在法向直线上时不算 vague', () => {
+    // u 为 45° 方向，法向直线为 y=-x；[0, 5] 在 y 轴上但不在 y=-x 上
+    const pt = makePt(1, [0, 0], ControlPointDir.vertical, [0, 5], true)
+    expect(getNameSnapStatus(pt, [], 1e-6, [[sqrt2half, sqrt2half]])).toBeUndefined()
   })
 })
 

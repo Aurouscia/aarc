@@ -181,10 +181,10 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
                 }
             ]
             if(pt.free){
-                //free点绘制两个分别倾斜22.5°/67.5°的十字，22.5°的为空心十字，仅画外侧一半
+                //free点绘制两个十字，其中一个为空心十字，仅画外侧一部分
                 //背景层与实体层各自统一绘制，避免一个十字的实体覆盖另一个十字的背景
                 repetitions.forEach(r=>{
-                    drawCross(ctx, { pos, angleDeg: 0, armLength: markSize, hollowGap: markSize*0.8, repetitions: [r] })
+                    drawCross(ctx, { pos, angleDeg: 0, armLength: markSize, hollowGap: markSize*0.85, repetitions: [r] })
                     drawCross(ctx, { pos, angleDeg: 45, armLength: markSize, repetitions: [r] })
                 })
             }else{

@@ -15,6 +15,7 @@ import {
     getNameSnapStatus
 } from "@/utils/snapUtils/snapCore";
 import { useFreePtDirectionStore } from "./saveDerived/freePtDirectionStore";
+import { computeFreeNameSnapCandidates } from "@/utils/snapUtils/snapNameFree";
 
 export const useSnapStore = defineStore('snap',()=>{
     const cs = useConfigStore()
@@ -29,9 +30,17 @@ export const useSnapStore = defineStore('snap',()=>{
     const snappingNamePtId = ref<number>()
     const snapStaNameTo = computed<Coord[]>(()=>
         getStaNameSnapPoss(snappingNamePtId.value || -1))
-    //站名吸附目标位置（相对站心的偏移），8个方向各至少一个
+    //站名吸附目标位置（相对站心的偏移）；free 点仅吸附线路法向位置
     function getStaNameSnapPoss(ptId:number):Coord[]{
         const distRatio = staClusterStore.getMaxSizePtWithinCluster(ptId, 'ptNameSnapSize')
+        const pt = saveStore.getPtById(ptId)
+        if (pt?.free) {
+            const dirs = freePtDirectionStore.getPtDirections(ptId)
+            if (dirs.length > 0) {
+                return computeFreeNameSnapCandidates(dirs, cs.config.snapOctaClingPtNameDist * distRatio)
+            }
+            //孤立/无方向 free 点：回退到标准候选
+        }
         return calcStaNameSnapCandidates(
             cs.config.snapOctaClingPtNameDist,
             distRatio,
@@ -73,11 +82,19 @@ export const useSnapStore = defineStore('snap',()=>{
             pt,
             snapStaNameTo.value,
             cs.snapOctaClingPtNameThrsSq,
-            cs.config.snapOctaRayPtNameThrs
+            cs.config.snapOctaRayPtNameThrs,
+            getFreeNameSnapDirs(pt)
         )
     }
     function snapNameStatus(pt:ControlPoint):{type:'vague'|'accu'}|undefined{
-        return getNameSnapStatus(pt, snapStaNameTo.value)
+        return getNameSnapStatus(pt, snapStaNameTo.value, undefined, getFreeNameSnapDirs(pt))
+    }
+    //free 点站名 vague 吸附使用的线路方向集合；无方向时返回 undefined（回退轴线归零）
+    function getFreeNameSnapDirs(pt:ControlPoint):Coord[]|undefined{
+        if (!pt.free)
+            return undefined
+        const dirs = freePtDirectionStore.getPtDirections(pt.id)
+        return dirs.length > 0 ? dirs : undefined
     }
     function snapNeighborExtends(pt:ControlPoint):{snapRes?:Coord, freeWay?:Coord}{
         const { snapRes, freeWay, snapLines: lines } = snapNeighborExtendsCore(

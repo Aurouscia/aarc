@@ -8,6 +8,7 @@ import { crossAddNums } from "@/utils/lang/crossAddNums";
 import { numberCmpEpsilon, sqrt2half } from "@/utils/consts";
 import { freeRayIntersect } from "@/utils/rayUtils/rayIntersection";
 import { computeFreeSnapCandidates, PtDirectionInfo } from "./snapInterPtFree";
+import { projectToNearestNormalLine } from "./snapNameFree";
 
 /** 站名吸附的候选方向配置 */
 export type StaNameDiagonalMode = 'inner' | 'outer' | 'both'
@@ -48,12 +49,17 @@ export interface SnapNameResult {
 /**
  * 对单个控制点的 nameP 进行吸附判断。
  * 对应原 snapStore 中 snapName 的核心计算。
+ *
+ * @param freeDirs free 点的线路方向集合（PtDirectionInfo.all）。
+ * 传入非空数组时，vague 吸附改为投影到最近的法向直线（可沿法向滑动）；
+ * 未传入或为空时，保持原有的坐标轴归零逻辑。
  */
 export function snapNameToCandidates(
     pt: ControlPoint,
     candidates: Coord[],
     snapClingThrsSq: number,
-    snapRayThrs: number
+    snapRayThrs: number,
+    freeDirs?: Coord[]
 ): SnapNameResult | undefined {
     if (!pt.nameP) {
         return;
@@ -66,6 +72,17 @@ export function snapNameToCandidates(
             to: [...to] as Coord,
             type: 'accu'
         };
+    }
+
+    if (freeDirs && freeDirs.length > 0) {
+        const proj = projectToNearestNormalLine(pt.nameP, freeDirs)
+        if (proj && proj.distAbs < snapRayThrs) {
+            return {
+                to: proj.proj,
+                type: 'vague'
+            };
+        }
+        return undefined;
     }
 
     let [x, y] = pt.nameP;
@@ -90,11 +107,14 @@ export function snapNameToCandidates(
 /**
  * 判断控制点 nameP 当前处于何种吸附状态（不修改值）。
  * 对应原 snapStore 中 snapNameStatus 的核心计算。
+ *
+ * @param freeDirs free 点的线路方向集合，语义同 snapNameToCandidates。
  */
 export function getNameSnapStatus(
     pt: ControlPoint,
     candidates: Coord[],
-    epsSqr: number = numberCmpEpsilon ** 2
+    epsSqr: number = numberCmpEpsilon ** 2,
+    freeDirs?: Coord[]
 ): { type: 'vague' | 'accu' } | undefined {
     if (!pt.nameP)
         return;
@@ -104,6 +124,12 @@ export function getNameSnapStatus(
     })
     if (to) {
         return { type: 'accu' };
+    }
+    if (freeDirs && freeDirs.length > 0) {
+        const proj = projectToNearestNormalLine(pt.nameP, freeDirs)
+        if (proj && proj.distAbs < numberCmpEpsilon)
+            return { type: 'vague' };
+        return undefined;
     }
     if (Math.abs(x) < numberCmpEpsilon || Math.abs(y) < numberCmpEpsilon)
         return { type: 'vague' };
