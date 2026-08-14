@@ -8,7 +8,7 @@ const { lineFob, staFob, staNameFob } = storeToRefs(configStore)
 </script>
 
 <template>
-<ConfigSection :title="'性能优化（新）'">
+<ConfigSection :title="'性能优化'">
     <table><tbody>
         <tr>
             <td class="explain">

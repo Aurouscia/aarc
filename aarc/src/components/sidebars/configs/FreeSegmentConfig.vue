@@ -26,7 +26,7 @@ function applySnapRayAnglesForFree() {
 </script>
 
 <template>
-<ConfigSection :title="'自由区间方向'">
+<ConfigSection :title="'自由区间方向（新）'">
     <table><tbody>
         <tr v-if="!snapRayAnglesForFreeEnabled">
             <td>

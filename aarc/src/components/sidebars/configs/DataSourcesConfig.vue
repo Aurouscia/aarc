@@ -177,7 +177,7 @@ async function loadAll() {
 </script>
 
 <template>
-<ConfigSection :title="'数据源（测试功能）'">
+<ConfigSection :title="'数据源'">
 <div class="dataSources">
     <div class="smallNote" style="text-align: center;">
         添加返回 JSON 数组的 URL，可一键导入线路样式、图标或纹理

@@ -27,7 +27,7 @@ onMounted(()=>{
 </script>
 
 <template>
-<ConfigSection :title="'线宽对应参数（新）'">
+<ConfigSection :title="'线宽对应参数'">
 <div class="lineWidthMappedOuter">
     <table class="fullWidth lineWidthMapped">
         <tbody>
