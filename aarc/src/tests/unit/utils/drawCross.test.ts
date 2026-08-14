@@ -140,6 +140,74 @@ describe('drawCross - 任意角度 angleDeg', () => {
   })
 })
 
+describe('drawCross - 空心与绘制长度', () => {
+  it('hollowGap>0 时画四笔，四条臂仅绘制外侧部分', () => {
+    const { ctx, calls } = createMockCtx()
+    drawCross(ctx, { pos: [10, 20], angleDeg: 0, armLength: 10, hollowGap: 4, repetitions: singleRep })
+
+    const arms = extractArms(calls)
+    expect(arms).toHaveLength(4)
+    //臂 A 两侧：从 4 画到 10
+    expectArm(arms[0], [14, 20], [20, 20])
+    expectArm(arms[1], [6, 20], [0, 20])
+    //臂 B 两侧
+    expectArm(arms[2], [10, 24], [10, 30])
+    expectArm(arms[3], [10, 16], [10, 10])
+  })
+
+  it('drawLength 控制绘制部分长度：从 hollowGap 画到 hollowGap+drawLength', () => {
+    const { ctx, calls } = createMockCtx()
+    drawCross(ctx, { pos: [0, 0], angleDeg: 0, armLength: 10, hollowGap: 4, drawLength: 3, repetitions: singleRep })
+
+    const arms = extractArms(calls)
+    expect(arms).toHaveLength(4)
+    expectArm(arms[0], [4, 0], [7, 0])
+    expectArm(arms[1], [-4, 0], [-7, 0])
+    expectArm(arms[2], [0, 4], [0, 7])
+    expectArm(arms[3], [0, -4], [0, -7])
+  })
+
+  it('drawLength 单独使用（无 hollowGap）：仍为两笔，端点距离中心为 drawLength', () => {
+    const { ctx, calls } = createMockCtx()
+    drawCross(ctx, { pos: [10, 20], angleDeg: 0, armLength: 10, drawLength: 6, repetitions: singleRep })
+
+    const arms = extractArms(calls)
+    expect(arms).toHaveLength(2)
+    expectArm(arms[0], [4, 20], [16, 20])
+    expectArm(arms[1], [10, 14], [10, 26])
+  })
+
+  it('空心十字与 angleDeg 组合：臂方向正确且起止距离正确', () => {
+    const { ctx, calls } = createMockCtx()
+    const cos = Math.sqrt(3) / 2
+    const sin = 1 / 2
+    drawCross(ctx, { pos: [0, 0], angleDeg: 30, armLength: 10, hollowGap: 2, repetitions: singleRep })
+
+    const arms = extractArms(calls)
+    expect(arms).toHaveLength(4)
+    //臂 A 正侧：从 2*(cos,sin) 画到 10*(cos,sin)
+    expectArm(arms[0], [2 * cos, 2 * sin], [10 * cos, 10 * sin])
+    //臂 A 负侧
+    expectArm(arms[1], [-2 * cos, -2 * sin], [-10 * cos, -10 * sin])
+  })
+
+  it('空心模式下每个 repetition 仍只 stroke 一次（四笔在同一 beginPath 内）', () => {
+    const { ctx, calls } = createMockCtx()
+    drawCross(ctx, {
+      pos: [0, 0], angleDeg: 0, armLength: 10, hollowGap: 4,
+      repetitions: [
+        { armWidth: 4, color: '#fff' },
+        { armWidth: 2, color: '#000' },
+      ]
+    })
+
+    const strokes = calls.filter(c => c.type === 'stroke')
+    expect(strokes).toHaveLength(2)
+    expect(strokes[0].lineWidth).toBe(4)
+    expect(strokes[1].lineWidth).toBe(2)
+  })
+})
+
 describe('drawCross - repetitions', () => {
   it('每个 repetition 独立 stroke 一次，线宽与颜色按序生效', () => {
     const { ctx, calls } = createMockCtx()

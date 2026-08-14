@@ -171,20 +171,25 @@ export const usePointCvsWorker = defineStore('pointCvsWorker', ()=>{
                 markWidth *= 1.6
                 markColor = '#000'
             }
-            drawCross(ctx, {
-                pos,
-                dir,
-                armLength: markSize,
-                repetitions: [
-                    {
-                        armWidth: markWidth*2,
-                        color: cs.config.bgColor
-                    },{
-                        armWidth: markWidth,
-                        color: markColor
-                    }
-                ]
-            })
+            const repetitions = [
+                {
+                    armWidth: markWidth*2,
+                    color: cs.config.bgColor
+                },{
+                    armWidth: markWidth,
+                    color: markColor
+                }
+            ]
+            if(pt.free){
+                //free点绘制两个分别倾斜22.5°/67.5°的十字，22.5°的为空心十字，仅画外侧一半
+                //背景层与实体层各自统一绘制，避免一个十字的实体覆盖另一个十字的背景
+                repetitions.forEach(r=>{
+                    drawCross(ctx, { pos, angleDeg: 0, armLength: markSize, hollowGap: markSize*0.8, repetitions: [r] })
+                    drawCross(ctx, { pos, angleDeg: 45, armLength: markSize, repetitions: [r] })
+                })
+            }else{
+                drawCross(ctx, { pos, dir, armLength: markSize, repetitions })
+            }
         }
         if(staType === ControlPointSta.sta){
             const arcRadius = cs.config.ptStaSize * sizeRatio
