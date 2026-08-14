@@ -286,17 +286,17 @@ function normalizeAngleDeg(angleDeg: number): number {
     return ((angleDeg % 180) + 180) % 180
 }
 
-/** 解析角度配置字符串，支持 "30" 或 "2:3" / "2：3" 比例写法，返回角度（度） */
+/** 解析角度配置字符串，支持 "30" 或 "3:2" / "3：2" 比例写法（第一个数字为横坐标 x，第二个为纵坐标 y；允许负数），返回角度（度） */
 export function parseSnapRayAngle(s: string): number | undefined {
     const trimmed = s.trim()
     if (!trimmed) return undefined
 
-    // 比例写法：2:3 或 2：3，表示 arctan(2/3)
-    const ratioMatch = trimmed.match(/^(\d+(?:\.\d+)?)\s*[:：]\s*(\d+(?:\.\d+)?)$/)
+    // 比例写法：x:y 或 x：y，表示 atan2(y, x)；如 1:1 表示 45°，1:-1 表示 -45°（与 135° 同线）
+    const ratioMatch = trimmed.match(/^(-?\d+(?:\.\d+)?)\s*[:：]\s*(-?\d+(?:\.\d+)?)$/)
     if (ratioMatch) {
-        const a = parseFloat(ratioMatch[1])
-        const b = parseFloat(ratioMatch[2])
-        return Math.atan2(a, b) * 180 / Math.PI
+        const x = parseFloat(ratioMatch[1])
+        const y = parseFloat(ratioMatch[2])
+        return Math.atan2(y, x) * 180 / Math.PI
     }
 
     // 包含冒号但不是有效比例格式，返回 undefined
@@ -314,15 +314,15 @@ export function parseSnapRayAngle(s: string): number | undefined {
     return undefined
 }
 
-/** 获取角度的精确 cos/sin；对 0/45/90/135 返回精确值避免浮点误差 */
+/** 获取角度的精确 cos/sin；对 0/45/90/135 返回精确值避免浮点误差。y 轴取反：45° 表示 x+、y- 方向（极坐标系直觉） */
 function getAngleCosSin(angleDeg: number): [number, number] {
     const a = normalizeAngleDeg(angleDeg)
     if (a === 0) return [1, 0]
-    if (a === 45) return [sqrt2half, sqrt2half]
-    if (a === 90) return [0, 1]
-    if (a === 135) return [-sqrt2half, sqrt2half]
+    if (a === 45) return [sqrt2half, -sqrt2half]
+    if (a === 90) return [0, -1]
+    if (a === 135) return [-sqrt2half, -sqrt2half]
     const rad = a * Math.PI / 180
-    return [Math.cos(rad), Math.sin(rad)]
+    return [Math.cos(rad), -Math.sin(rad)]
 }
 
 

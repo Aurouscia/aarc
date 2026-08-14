@@ -39,8 +39,8 @@ function applySnapRayAnglesForFree() {
         <template v-else>
             <tr>
                 <td>
-                    <textarea v-model="snapRayAnglesForFreeText" rows="4" style="width: 120px;"/><br/>
-                    <button class="minor" @click="applySnapRayAnglesForFree">应用</button>
+                    <textarea v-model="snapRayAnglesForFreeText" rows="4" style="width: 120px;"
+                        @blur="applySnapRayAnglesForFree"/><br/>
                     <button class="minor" @click="config.snapRayAnglesForFree = []">禁用</button>
                 </td>
             </tr>
@@ -50,7 +50,8 @@ function applySnapRayAnglesForFree() {
                         一行一个角度（度），自动取模 180。<br/>
                         例如：0、45、90、135<br/>
                         配置 30 表示 30° 和 210° 方向<br/>
-                        清空并应用可禁用自由方向，继续使用普通延长线吸附角度。
+                        失去焦点时自动应用；清空可禁用自由方向，<br/>
+                        继续使用普通延长线吸附角度。
                     </div>
                 </td>
             </tr>

@@ -381,7 +381,13 @@ export const useSaveStore = defineStore('save', () => {
                 afterIdx = -1
             else if(afterIdx==='tail')
                 afterIdx = line.pts.length
-            line.pts.splice(afterIdx+1, 0, id)
+            // 插入位置两端任意一方是free点时，新点也是free点
+            const insertPos = Math.min(afterIdx+1, line.pts.length)
+            const beforePt = insertPos>0 ? getPtById(line.pts[insertPos-1]) : undefined
+            const afterPt = insertPos<line.pts.length ? getPtById(line.pts[insertPos]) : undefined
+            if(beforePt?.free || afterPt?.free)
+                newPt.free = true
+            line.pts.splice(insertPos, 0, id)
             return id;
         }
     }

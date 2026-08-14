@@ -257,18 +257,18 @@ describe('parseSnapRayAngle', () => {
     expect(parseSnapRayAngle('135')).toBe(135)
   })
 
-  it('解析比例写法 2:3 为 arctan(2/3)', () => {
-    const expected = Math.atan2(2, 3) * 180 / Math.PI
+  it('解析比例写法 2:3 为 atan2(3,2)（x:y）', () => {
+    const expected = Math.atan2(3, 2) * 180 / Math.PI
     expect(parseSnapRayAngle('2:3')).toBeCloseTo(expected)
   })
 
   it('解析中文冒号比例写法 2：3', () => {
-    const expected = Math.atan2(2, 3) * 180 / Math.PI
+    const expected = Math.atan2(3, 2) * 180 / Math.PI
     expect(parseSnapRayAngle('2：3')).toBeCloseTo(expected)
   })
 
   it('解析带空格的比例写法', () => {
-    const expected = Math.atan2(2, 3) * 180 / Math.PI
+    const expected = Math.atan2(3, 2) * 180 / Math.PI
     expect(parseSnapRayAngle(' 2 : 3 ')).toBeCloseTo(expected)
   })
 
@@ -279,8 +279,14 @@ describe('parseSnapRayAngle', () => {
     expect(parseSnapRayAngle('2:3:4')).toBeUndefined()
   })
 
-  it('比例中除数为 0 时返回 90°', () => {
-    expect(parseSnapRayAngle('3:0')).toBeCloseTo(90)
+  it('比例中纵坐标为 0 时返回 0°（水平方向）', () => {
+    expect(parseSnapRayAngle('3:0')).toBeCloseTo(0)
+  })
+
+  it('比例写法允许负数', () => {
+    expect(parseSnapRayAngle('1:-1')).toBeCloseTo(-45)
+    expect(parseSnapRayAngle('-1:-1')).toBeCloseTo(-135)
+    expect(parseSnapRayAngle('-1:0')).toBeCloseTo(180)
   })
 })
 
@@ -330,7 +336,7 @@ describe('snapNeighborExtends', () => {
     const pt = makePt(1, [0, 0], ControlPointDir.incline)
     const neighbor = makePt(2, [6, 4], ControlPointDir.incline)
     const res = snapNeighborExtends(pt, [neighbor], 2, false, defaultAngles)
-    // 45° 投影到 y=-x 直线上
+    // 135° 直线（斜率 1）过 (6,4)，(0,0) 投影到该直线上
     expect(res.snapRes![0]).toBeCloseTo(1)
     expect(res.snapRes![1]).toBeCloseTo(-1)
   })
@@ -339,44 +345,44 @@ describe('snapNeighborExtends', () => {
     const pt = makePt(1, [1, 0])
     const neighbor = makePt(2, [0, 0])
     const res = snapNeighborExtends(pt, [neighbor], 10, false, ['30'])
-    // 点 (1,0) 在 30° 直线 y=tan(30°)x 上的投影
+    // 点 (1,0) 在 30° 直线 y=-tan(30°)x 上的投影
     expect(res.snapRes![0]).toBeCloseTo(0.75)
-    expect(res.snapRes![1]).toBeCloseTo(0.433, 2)
+    expect(res.snapRes![1]).toBeCloseTo(-0.433, 2)
   })
 
   it('60° 延长线吸附到正确位置', () => {
     const pt = makePt(1, [0, 1])
     const neighbor = makePt(2, [0, 0])
     const res = snapNeighborExtends(pt, [neighbor], 10, false, ['60'])
-    // 点 (0,1) 在 60° 直线 y=√3x 上的投影
-    expect(res.snapRes![0]).toBeCloseTo(0.433, 2)
+    // 点 (0,1) 在 60° 直线 y=-√3x 上的投影
+    expect(res.snapRes![0]).toBeCloseTo(-0.433, 2)
     expect(res.snapRes![1]).toBeCloseTo(0.75)
   })
 
-  it('比例写法 2:3 表示 arctan(2/3)', () => {
+  it('比例写法 2:3 表示 atan2(3,2)（x:y）', () => {
     const pt = makePt(1, [1, 0])
     const neighbor = makePt(2, [0, 0])
     const res = snapNeighborExtends(pt, [neighbor], 10, false, ['2:3'])
-    // arctan(2/3) ≈ 33.69°，点 (1,0) 在该直线上的投影
-    const angle = Math.atan2(2, 3)
-    const cos = Math.cos(angle)
-    const sin = Math.sin(angle)
-    // dSigned = (-1)*sin - 0*cos = -sin
-    // snapTo = [1 + (-sin)*sin, 0 - (-sin)*cos] = [1 - sin², sin*cos]
-    expect(res.snapRes![0]).toBeCloseTo(1 - sin * sin)
-    expect(res.snapRes![1]).toBeCloseTo(sin * cos)
-  })
-
-  it('比例写法 3:2 表示 arctan(3/2)', () => {
-    const pt = makePt(1, [0, 1])
-    const neighbor = makePt(2, [0, 0])
-    const res = snapNeighborExtends(pt, [neighbor], 10, false, ['3:2'])
+    // atan2(3,2) ≈ 56.31°，点 (1,0) 在该直线（y 取反）上的投影
     const angle = Math.atan2(3, 2)
     const cos = Math.cos(angle)
     const sin = Math.sin(angle)
-    // dSigned = 0*sin - (-1)*cos = cos
-    // snapTo = [0 + cos*sin, 1 - cos*cos]
-    expect(res.snapRes![0]).toBeCloseTo(cos * sin)
+    // dSigned = (-1)*(-sin) - 0*cos = sin
+    // snapTo = [1 + sin*(-sin), 0 - sin*cos] = [1 - sin², -sin*cos]
+    expect(res.snapRes![0]).toBeCloseTo(1 - sin * sin)
+    expect(res.snapRes![1]).toBeCloseTo(-sin * cos)
+  })
+
+  it('比例写法 3:2 表示 atan2(2,3)（x:y）', () => {
+    const pt = makePt(1, [0, 1])
+    const neighbor = makePt(2, [0, 0])
+    const res = snapNeighborExtends(pt, [neighbor], 10, false, ['3:2'])
+    const angle = Math.atan2(2, 3)
+    const cos = Math.cos(angle)
+    const sin = Math.sin(angle)
+    // dSigned = 0*(-sin) - (-1)*cos = cos
+    // snapTo = [0 + cos*(-sin), 1 - cos*cos]
+    expect(res.snapRes![0]).toBeCloseTo(-cos * sin)
     expect(res.snapRes![1]).toBeCloseTo(1 - cos * cos)
   })
 
@@ -399,32 +405,32 @@ describe('snapNeighborExtends', () => {
     const sin = Math.sin(angle)
     // 最近的 30° 射线上的投影
     expect(res.snapRes![0]).toBeCloseTo(1 - sin * sin)
-    expect(res.snapRes![1]).toBeCloseTo(sin * cos)
+    expect(res.snapRes![1]).toBeCloseTo(-sin * cos)
     expect(res.snapRes![0]).not.toBeCloseTo(0)
     expect(res.snapLines).toHaveLength(1)
   })
 
   it('交点距离 pt 超过 2*thrs 时放弃求交', () => {
     const pt = makePt(1, [0, 0])
-    const n1 = makePt(2, [10, 2])
-    const n2 = makePt(3, [5, 2.5])
-    // 最近射线为 n1 的 7° 射线；与 n2 的 0° 射线交于 (10+0.5/tan7°, 2.5)≈(14.1, 2.5)，
+    const n1 = makePt(2, [10, -2])
+    const n2 = makePt(3, [5, -2.5])
+    // 最近射线为 n1 的 7° 射线；与 n2 的 0° 射线交于 (10+0.5/tan7°, -2.5)≈(14.1, -2.5)，
     // 距 pt 约 14.3 > 2*thrs=6，应放弃求交，退化为 n1 的 7° 射线上的投影
     const res = snapNeighborExtends(pt, [n1, n2], 3, false, ['0', '7'])
     const angle = 7 * Math.PI / 180
     const cos = Math.cos(angle)
     const sin = Math.sin(angle)
-    const dSigned = 10 * sin - 2 * cos
-    expect(res.snapRes![0]).toBeCloseTo(dSigned * sin)
+    const dSigned = -10 * sin + 2 * cos
+    expect(res.snapRes![0]).toBeCloseTo(-dSigned * sin)
     expect(res.snapRes![1]).toBeCloseTo(-dSigned * cos)
     expect(res.snapLines).toHaveLength(1)
   })
 
   it('交点距离 pt 不超过 2*thrs 时即使夹角很小也求交', () => {
     const pt = makePt(1, [0, 0])
-    const n1 = makePt(2, [10, 1])
-    const n2 = makePt(3, [0.1, 0.5])
-    // 最近射线为 n1 的 5° 射线；与 n2 的 0° 射线（y=0.5）夹角仅 5°，
+    const n1 = makePt(2, [10, -1])
+    const n2 = makePt(3, [0.1, -0.5])
+    // 最近射线为 n1 的 5° 射线；与 n2 的 0° 射线（y=-0.5）夹角仅 5°，
     // 但交点 (10-0.5/tan5°*cos5°*.....) 距 pt 约 4.3 <= 2*thrs=6，应求交
     const res = snapNeighborExtends(pt, [n1, n2], 3, false, ['0', '5'])
     const angle = 5 * Math.PI / 180
@@ -432,33 +438,33 @@ describe('snapNeighborExtends', () => {
     const sin = Math.sin(angle)
     const t = (0.5 - 1) / sin
     expect(res.snapRes![0]).toBeCloseTo(10 + t * cos)
-    expect(res.snapRes![1]).toBeCloseTo(0.5)
+    expect(res.snapRes![1]).toBeCloseTo(-0.5)
     expect(res.snapLines).toHaveLength(2)
   })
 
   it('不同发射源且夹角足够大时仍然求交', () => {
     const pt = makePt(1, [0, 0])
-    const n1 = makePt(2, [12, 3]) // 0° 射线 y=3
-    const n2 = makePt(3, [3, 5]) // 30° 射线过 (3,5)
+    const n1 = makePt(2, [12, -3]) // 0° 射线 y=-3
+    const n2 = makePt(3, [3, -5]) // 30° 射线过 (3,-5)
     const res = snapNeighborExtends(pt, [n1, n2], 4, false, ['0', '30'])
-    // 交点：y=3 与 y-5=tan30°(x-3)
-    const expectedX = 3 + (3 - 5) / Math.tan(30 * Math.PI / 180)
+    // 交点：y=-3 与 y+5=-tan30°(x-3)
+    const expectedX = 3 - 2 / Math.tan(30 * Math.PI / 180)
     expect(res.snapRes![0]).toBeCloseTo(expectedX)
-    expect(res.snapRes![1]).toBeCloseTo(3)
+    expect(res.snapRes![1]).toBeCloseTo(-3)
     expect(res.snapLines).toHaveLength(2)
   })
 
-  it('吸附点在源点反方向侧时，射线 way 朝向吸附点（240° 侧吸附）', () => {
-    // pt 位于源点 (0,0) 的 240° 方向侧，即 60° 直线的反向延长线上
-    const pt = makePt(1, [-1, -1.8])
+  it('吸附点在源点反方向侧时，射线 way 朝向吸附点（反向延长线吸附）', () => {
+    // pt 位于源点 (0,0) 的 60° 直线（y=-√3x）的反向延长线上
+    const pt = makePt(1, [-1, 1.8])
     const neighbor = makePt(2, [0, 0])
     const res = snapNeighborExtends(pt, [neighbor], 10, false, ['60'])
     expect(res.snapRes).toBeDefined()
     expect(res.snapLines).toHaveLength(1)
     const [wx, wy] = res.snapLines[0].way
-    // way 应取 60° 的反方向，朝向吸附点一侧
+    // way 应取 60° 方向 (0.5, -√3/2) 的反方向，朝向吸附点一侧
     expect(wx).toBeCloseTo(-0.5)
-    expect(wy).toBeCloseTo(-Math.sqrt(3) / 2)
+    expect(wy).toBeCloseTo(Math.sqrt(3) / 2)
     // way 与 (snapRes - source) 同向
     const dot = res.snapRes![0] * wx + res.snapRes![1] * wy
     expect(dot).toBeGreaterThan(0)
@@ -487,24 +493,24 @@ describe('snapNeighborExtends', () => {
     const res = snapNeighborExtends(pt, [neighbor], 10, false, ['abc', '30', ''])
     // 'abc' 和 '' 被过滤，只保留 30°
     expect(res.snapRes![0]).toBeCloseTo(0.75)
-    expect(res.snapRes![1]).toBeCloseTo(0.433, 2)
+    expect(res.snapRes![1]).toBeCloseTo(-0.433, 2)
   })
 
-  it('45° 时 freeWay 为 45° 单位向量', () => {
+  it('45° 时 freeWay 为 45° 单位向量（y 取反）', () => {
     const pt = makePt(1, [0, 0], ControlPointDir.incline)
-    const neighbor = makePt(2, [6, 4], ControlPointDir.incline)
+    const neighbor = makePt(2, [6, -4], ControlPointDir.incline)
     const res = snapNeighborExtends(pt, [neighbor], 2, false, ['45'])
     expect(res.freeWay![0]).toBeCloseTo(Math.sqrt(2) / 2)
-    expect(res.freeWay![1]).toBeCloseTo(Math.sqrt(2) / 2)
+    expect(res.freeWay![1]).toBeCloseTo(-Math.sqrt(2) / 2)
   })
 
-  it('任意角度时 freeWay 为对应单位向量', () => {
+  it('任意角度时 freeWay 为对应单位向量（y 取反）', () => {
     const pt = makePt(1, [1, 0])
     const neighbor = makePt(2, [0, 0])
     const res = snapNeighborExtends(pt, [neighbor], 10, false, ['30'])
     const angle = 30 * Math.PI / 180
     expect(res.freeWay![0]).toBeCloseTo(Math.cos(angle))
-    expect(res.freeWay![1]).toBeCloseTo(Math.sin(angle))
+    expect(res.freeWay![1]).toBeCloseTo(-Math.sin(angle))
   })
 
   it('非 free 点间使用 snapRayAngles', () => {
