@@ -27,15 +27,38 @@ export const useSnapStore = defineStore('snap',()=>{
     const snapLines = ref<FreeRay[]>([])
     const snapGridIntv = ref<number>()
     const snappingNamePtId = ref<number>()
-    const snapStaNameTo = computed<Coord[]>(()=>{
-        const ptId = snappingNamePtId.value || -1
+    const snapStaNameTo = computed<Coord[]>(()=>
+        getStaNameSnapPoss(snappingNamePtId.value || -1))
+    //站名吸附目标位置（相对站心的偏移），8个方向各至少一个
+    function getStaNameSnapPoss(ptId:number):Coord[]{
         const distRatio = staClusterStore.getMaxSizePtWithinCluster(ptId, 'ptNameSnapSize')
+<<<<<<< HEAD
         return calcStaNameSnapCandidates(
             cs.config.snapOctaClingPtNameDist,
             distRatio,
             editorLocalConfig.staNameSnapDiagonal
         )
     })
+=======
+        const snd = cs.config.snapOctaClingPtNameDist * distRatio;
+        const sndh = snd * sqrt2half;
+        const diagonal = editorLocalConfig.staNameSnapDiagonal;
+        const res: Coord[] = [
+            [snd,0],[-snd,0],[0,snd],[0,-snd],           // 正交 4 方向
+        ];
+        if (diagonal === 'inner' || diagonal === 'both') {
+            res.push(
+                [sndh,sndh],[sndh,-sndh],[-sndh,sndh],[-sndh,-sndh]  // 内侧对角 4 方向（距离 = snd）
+            );
+        }
+        if (diagonal === 'outer' || diagonal === 'both') {
+            res.push(
+                [snd,snd],[snd,-snd],[-snd,snd],[-snd,-snd]   // 外侧对角 4 方向（距离 = snd*√2）
+            );
+        }
+        return res;
+    }
+>>>>>>> master
     const snapNeighborExtendsOnlySameDir = ref<boolean>(false)
     const snapInterPtTargets = ref<{snapPoss:Coord[], snapToPts:ControlPoint[], matched?:Coord}>()
     function snap(pt:ControlPoint):Coord|undefined{
@@ -138,6 +161,7 @@ export const useSnapStore = defineStore('snap',()=>{
     const snapGridEnabled = ref(true)
     return {
         snap, snapName, snapNameStatus, snapGrid,
+        getStaNameSnapPoss,
         snapLines, snapGridIntv, snapNeighborExtendsOnlySameDir,
         snapInterPtEnabled, snapNeighborExtendsEnabled, snapGridEnabled,
         snapInterPtTargets

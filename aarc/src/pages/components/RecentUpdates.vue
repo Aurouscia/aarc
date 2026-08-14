@@ -71,6 +71,11 @@ const daysAgo = computed(()=>{
             return Math.floor(days)
     }
 })
+// 是否在 9 天以内（daysAgo 为 undefined 表示日期无效或为未来时间，视为近期）
+const withinNineDays = computed(()=>{
+    const days = daysAgo.value
+    return days === undefined || days <= 9
+})
 const agoDisplay = computed(()=>{
     const days = daysAgo.value
     if(days === undefined)
@@ -87,7 +92,7 @@ onMounted(async() => {
 
 <template>
   <!-- 查看更新按钮 -->
-  <div v-if="hasNewUpdate" class="view-update-btn" @click="scrollToView">
+  <div v-if="hasNewUpdate && withinNineDays" class="view-update-btn" @click="scrollToView">
     查看更新{{ agoDisplay }}
   </div>
   <div ref="componentRef" class="recent-updates" v-if="!isError">

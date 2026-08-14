@@ -417,7 +417,7 @@ const showFileFormatPrompt = ref(false)
                 <p><b class="fileFormatName">PNG</b>文件较大，但兼容性好且无损</p>
                 <p><b class="fileFormatName">WEBP</b>（最推荐）文件较小且可以设置画质，但老设备可能无法查看</p>
                 <p><b class="fileFormatName">JPG</b>不建议使用，视觉效果较差，且不支持透明度</p>
-                <p><b class="fileFormatName">SVG</b>矢量格式，可无限缩放，或在 InkScape、illustrator 等工具进一步编辑</p>
+                <p><b class="fileFormatName">SVG</b>矢量格式，可无限缩放，或在 InkScape 等工具进一步编辑</p>
                 <p class="smallNoteVital" style="margin-top: 10px;">目前导出的svg文件内若含有图片，则只能联网查看，图片无法访问将导致其位置变为空白</p>
             </Prompt>
             <Prompt v-if="showApngExportNotice" @close="showApngExportNotice=false" :bg-click-close="true">

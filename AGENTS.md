@@ -24,6 +24,8 @@ dotnet build AARC.WebApi/AARC.WebApi.csproj -o temp-build
 rm -rf temp-build
 ```
 
+如果发生了 api 变动：需要运行`gen-ts-client.ps1`或`gen-ts-client.sh`，以重新生成ts客户端代码
+
 ## 改动前端代码后
 
 对 vue、ts、json 文件进行任何改动后，运行 `pnpm type-check` 确保没有类型问题

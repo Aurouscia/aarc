@@ -2,19 +2,19 @@ import { defineStore, storeToRefs } from "pinia";
 import { ref } from "vue";
 import { useSaveStore } from "./saveStore";
 import { useEnvStore } from "./envStore";
-import { useConfigStore } from "./configStore";
+import { useSnapStore } from "./snapStore";
 import { useStaClusterStore } from "./saveDerived/staClusterStore";
-import { Coord } from "../coord";
+import { Coord, SgnCoord } from "../coord";
+import { sgnCoord, isSameCoord } from "@/utils/sgn";
 import { useUniqueComponentsStore } from '@/app/globalStores/uniqueComponents';
 import {useFormalizedLineStore} from "./saveDerived/formalizedLineStore.ts";
 import { ControlPoint } from "../save.ts";
-import { sqrt2 } from "@/utils/consts.ts";
 import { coordRound } from "@/utils/coordUtils/coordRound.ts";
 
 export const useNameEditStore = defineStore('nameEdit', ()=>{
-    const cs = useConfigStore()
     const saveStore = useSaveStore()
     const envStore = useEnvStore()
+    const snapStore = useSnapStore()
     const formalizedLineStore = useFormalizedLineStore()
     const staClusterStore = useStaClusterStore()
     const { disposedStaNameOf } = storeToRefs(saveStore)
@@ -122,8 +122,8 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
         showPop(`重置了${allSinglePos.length}个站名位置`, 'success')
         envStore.rerender()
     }
-    const recommendedNamePosDir0 = [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]
-    const recommendedNamePosDir1 = [[1, 1], [1, -1], [-1, 1], [-1, -1], [0, 1], [0, -1], [1, 0], [-1, 0]]
+    const recommendedNamePosDir0:SgnCoord[] = [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]
+    const recommendedNamePosDir1:SgnCoord[] = [[1, 1], [1, -1], [-1, 1], [-1, -1], [0, 1], [0, -1], [1, 0], [-1, 0]]
     function getAdjacentPtsPos(ptId: number) {
         const pt = saveStore.getPtById(ptId)
         if (!pt) {
@@ -148,8 +148,10 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
     //用 pt  dir决定用哪个组
     function optimizedNamePosUnrounded(ptId: number): Coord {
         const pt = saveStore.getPtById(ptId)
-        const ptSize = staClusterStore.getMaxSizePtWithinCluster(ptId, 'ptSize')
-        const dist = cs.config.snapOctaClingPtNameDist * ptSize
+        //与拖动站名时的吸附（snapStore.snapName）使用完全一致的目标位置
+        const snapPoss = snapStore.getStaNameSnapPoss(ptId)
+        const snapPosOfDir = (dir:SgnCoord) =>
+            snapPoss.find(p => isSameCoord(sgnCoord(p), dir))
         //自动选择不遮挡线路的位置
         if (pt) {
             //得到相邻点和这个站的相对位置
@@ -159,18 +161,16 @@ export const useNameEditStore = defineStore('nameEdit', ()=>{
                 //有斜线就得用斜坐标点位
                 const thisPos = isDir1 ? recommendedNamePosDir1[i] : recommendedNamePosDir0[i];
                 if (!adjacentPtsPos.find(pos => pos[0] == thisPos[0] && pos[1] == thisPos[1])) {
-                    //没有重复，就用这个位置
-                    if (thisPos[0] * thisPos[1] != 0) {
-                        //斜边特征
-                        return [thisPos[0] * dist / sqrt2, thisPos[1] * dist / sqrt2]
-                    }
-                    return [thisPos[0] * dist, thisPos[1] * dist]
+                    //没有重复，就用这个位置（方向不变，距离取吸附目标位）
+                    const snapPos = snapPosOfDir(thisPos)
+                    if (snapPos)
+                        return [...snapPos] as Coord
                 }
             }
-            return [0, dist]
+            return [...(snapPosOfDir([0, 1]) || [0, 0])] as Coord
         }
         else {
-            return [0, dist]
+            return [...(snapPosOfDir([0, 1]) || [0, 0])] as Coord
         }
     }
     //#endregion

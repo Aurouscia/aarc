@@ -21,6 +21,7 @@ namespace AARC.WebApi.Controllers.Identities
         TurnstileVerifyService turnstileVerifyService,
         EmailService emailService,
         HttpUserIdProvider httpUserIdProvider,
+        HttpUserInfoService httpUserInfoService,
         IConfiguration configuration
         ) : Controller
     {
@@ -68,6 +69,15 @@ namespace AARC.WebApi.Controllers.Identities
             var registerEnabled = configuration.GetValue<bool?>("Register:Enabled") ?? true;
             if (!registerEnabled)
                 throw new RqEx("本站点不允许注册");
+            var requireUserType = configuration.GetValue<UserType?>("Register:RequireUserType") ?? UserType.Tourist;
+            if (requireUserType > UserType.Tourist)
+            {
+                var currentUserInfo = httpUserInfoService.UserInfo.Value;
+                if (currentUserInfo.Id <= 0)
+                    throw new RqEx("本站点注册需要登录，请登录后重试");
+                if (currentUserInfo.Type < requireUserType)
+                    throw new RqEx("当前账号权限不足，无法注册新用户");
+            }
             await turnstileVerifyService.Verify(turnstileToken);
             var success = userRepo.CreateUser(userName, password, out var errmsg);
             if (!success)

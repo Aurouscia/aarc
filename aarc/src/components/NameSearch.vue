@@ -165,6 +165,7 @@ onMounted(()=>{
           </div>
         </div>
         <div v-if="results.length > 5" class="resItemCount">提示：PC端可使用键盘上下Enter键导航</div>
+        <div v-if="results.length == 0" class="resItemCount">提示：伪线站点不计入搜索结果</div>
       </div>
     </div>
   </div>
@@ -188,7 +189,7 @@ onMounted(()=>{
     box-shadow: 0px 4px 12px rgba(0,0,0,0.4);
     border: 1px solid #e6e6e6;
     .noRes{
-      color:#888;
+      color:#666;
       padding: 12px;
       font-size: 14px;
     }
@@ -248,7 +249,7 @@ onMounted(()=>{
     }
     .resItemCount{
       text-align: center;
-      color: #999;
+      color: #aaa;
       font-size: 12px;
       padding: 4px 0px;
       border-top: 1px solid #f3f3f3;
