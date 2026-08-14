@@ -101,6 +101,11 @@ function onKicked(){
     releasePreventLeaving()
     router.replace({name:kickedName})
 }
+async function handleSaveAndKick(){
+    if(await saveData(false)){
+        onKicked()
+    }
+}
 
 async function load() {
     if(!isNaN(saveIdNum.value)){
@@ -218,10 +223,10 @@ const preventLeaveStore = usePreventLeavingUnsavedStore()
 const { preventLeaving, releasePreventLeaving } = preventLeaveStore
 const { showUnsavedWarning, preventLeavingDisabled } = storeToRefs(preventLeaveStore)
 let lastSavedTime = 0
-async function saveData(mustBackup:boolean){
+async function saveData(mustBackup:boolean):Promise<boolean>{
     if(lastSavedTime + 1000 > Date.now()){
         console.warn('保存过于频繁（1秒内），已忽略本次保存请求')
-        return
+        return false
     }
     lastSavedTime = Date.now()
     configStore.writeConfigToSave()
@@ -231,7 +236,7 @@ async function saveData(mustBackup:boolean){
             console.log(saveCopy)
         }
         showPop('此处不能保存', 'failed')
-        return
+        return false
     }
     const staCount = saveStore.getStaCount()
     const lineCount = saveStore.getLineCount()
@@ -278,7 +283,9 @@ async function saveData(mustBackup:boolean){
         //重新初始化心跳定时器周期，因为“保存”本身会触发一次心跳续约
         endHeartbeat()
         startHeartbeat()
+        return true
     }
+    return false
 }
 
 const notLogin = ref<boolean>()
@@ -405,14 +412,14 @@ onBeforeUnmount(()=>{
     <Cvs v-if="loadComplete"></Cvs>
     <Menu v-if="loadComplete" @save-data="saveData"></Menu>
     <UnsavedLeavingWarning v-if="showUnsavedWarning" :release="releasePreventLeaving"
-        :save="()=>saveData(false)" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
+        :save="async()=>{ await saveData(false) }" @ok="showUnsavedWarning=false"></UnsavedLeavingWarning>
     <HiddenLongWarnPrompt v-if="showHiddenLongWarn" @ok="showHiddenLongWarn=false"></HiddenLongWarnPrompt>
     <WarnRulePrompts :save-status="saveStatus"></WarnRulePrompts>
     <SavingDisabledWarning></SavingDisabledWarning>
     <div class="cache-preventer"><input :id="cachePreventerInputId"/></div>
     <DontUseWeirdBrowser></DontUseWeirdBrowser>
     <div v-if="loadComplete && !isNaN(saveIdNum)" class="chatRoomWrap">
-        <ChatRoom ref="chatRoom" :saveId="saveIdNum" :enabled="chatEnabled" :isOwner="chatCanEnable" :viewOnly="viewOnly" @enable="enableChat" @disable="disableChat" @kicked="onKicked" />
+        <ChatRoom ref="chatRoom" :saveId="saveIdNum" :enabled="chatEnabled" :isOwner="chatCanEnable" :viewOnly="viewOnly" @enable="enableChat" @disable="disableChat" @kicked="onKicked" @save="handleSaveAndKick" />
     </div>
     <UserFileFavorites ref="userFileFavorites" />
 </template>
