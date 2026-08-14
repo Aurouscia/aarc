@@ -150,7 +150,8 @@ export const useEnvStore = defineStore('env', ()=>{
 
         const isRightBtnOnly = clickType === 'right' 
         const isRightBtnAndCtrl = clickType === 'ctrlAndRight'
-        const isRightBtn = isRightBtnOnly || isRightBtnAndCtrl
+        const isRightBtnAndAlt = clickType === 'altAndRight'
+        const isRightBtn = isRightBtnOnly || isRightBtnAndCtrl || isRightBtnAndAlt
 
         snapStore.snapInterPtTargets = undefined
         //根据当前状态判断是否需要重新渲染主画布
@@ -291,6 +292,10 @@ export const useEnvStore = defineStore('env', ()=>{
                         pt.sta = ControlPointSta.plain
                     else
                         pt.sta = ControlPointSta.sta
+                    movedPoint.value = true
+                }else if(isRightBtnAndAlt){
+                    //右键+alt点击切换控制点free
+                    pt.free = !pt.free
                     movedPoint.value = true
                 }else{
                     if(!opsStore.clientPos || activePtChanged){

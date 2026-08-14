@@ -5,7 +5,7 @@ import { eventClientCoord } from "./eventClientCoord"
 let downCoord:Coord = [-1000, -1000]
 let downTime:number
 const moveThrs = 100
-export type PureClickType = 'right'|'ctrlAndRight'
+export type PureClickType = 'right'|'ctrlAndRight'|'altAndRight'
 export function listenPureClick(ele:HTMLElement, callBack:((clientCord:Coord, clickType?:PureClickType)=>void)){
     ele.addEventListener('mousedown', e => downHandler(e))
     ele.addEventListener('mouseup', e => upHandler(e, callBack))
@@ -28,7 +28,9 @@ function upHandler(e:MouseEvent|TouchEvent, callBack:((c:Coord, clickType?:PureC
         if(e instanceof MouseEvent){
             if(e.button === 2){
                 clickType = 'right'
-                if(e.ctrlKey || e.metaKey)
+                if(e.altKey)
+                    clickType = 'altAndRight'
+                else if(e.ctrlKey || e.metaKey)
                     clickType = 'ctrlAndRight'
             }
         }
