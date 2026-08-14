@@ -97,10 +97,16 @@ export const useSnapStore = defineStore('snap',()=>{
         const snapDistLargest = ptSnapSizeLargest * cs.config.snapOctaClingPtPtDist
         const snapThrs = cs.config.snapOctaClingPtPtThrs;
         const pts = saveStore.getPtsInRange(pt.pos, (snapDistLargest + snapThrs)*2, pt.id)
+        //free=true的同线邻点（上一个/下一个点）不提供吸附点
+        const freeNeighborIds = new Set(
+            saveStore.getNeighborByPt(pt.id).filter(n=>n.free).map(n=>n.id))
+        const ptsFiltered = freeNeighborIds.size>0
+            ? pts.filter(p=>!freeNeighborIds.has(p.id))
+            : pts
         const getPtDirectionInfo = (id: number) => freePtDirectionStore.getPtDirectionInfo(id)
         const { matched, targets } = snapInterPtCore(
             pt,
-            pts,
+            ptsFiltered,
             {
                 snapDistBase: cs.config.snapOctaClingPtPtDist,
                 snapThrs
