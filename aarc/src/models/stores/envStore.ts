@@ -647,6 +647,7 @@ export const useEnvStore = defineStore('env', ()=>{
                     if(pt){
                         pt.free = !pt.free
                         movedPoint.value = true
+                        setOpsForPt()
                     }
                 },
                 text: '自由',
