@@ -92,8 +92,9 @@ async function upgradeToMember() {
                 <div class="rule">4. 拥有一个满足如下条件的存档：<br/>
                     　- 线路数不少于 5<br/>
                     　- 站点数不少于 40<br/>
-                    　- 有至少 5 个自动备份<br/>
-                    （正常情况下，上述条件很容易在使用几次后自然满足，无需特殊操作👍）
+                    　- 有至少 5 个自动备份
+                    <div class="rule-smaller">（正常情况下，上述条件很容易在使用几次后自然满足，无需特殊操作👍）<br/>
+                    （自动备份会在每次保存时自动生成，两次生成之间的间隔大于20分钟，即第一次备份后20分钟内多次保存不会生成）</div>
                 </div>
                 <div class="rule">
                     没有邮箱？请试试使用<a href="https://mail.qq.com">QQ邮箱</a>，每个QQ号自带QQ邮箱😀
@@ -186,6 +187,10 @@ h1 {
     a {
         color: cornflowerblue;
         text-decoration: underline;
+    }
+    .rule-smaller{
+        font-size: 14px;
+        color: #666;
     }
 }
 

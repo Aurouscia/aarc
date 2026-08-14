@@ -456,11 +456,13 @@ namespace AARC.WebApi.Repos.Identities
                 .Select(s => s.Id)
                 .ToList();
             if (qualifiedSaveIds.Count == 0)
-                throw new RqEx("需要至少一个5线路50站以上的存档");
-            var hasQualifiedSaveWithBackups = qualifiedSaveIds
-                .Any(id => saveBackupFileService.GetBackupList(id).Count >= 5);
-            if (!hasQualifiedSaveWithBackups)
-                throw new RqEx("你的达标存档中，至少需要一个拥有5个自动备份");
+                throw new RqEx("需要至少一个5线路40站以上的存档");
+            var maxBackupCount = qualifiedSaveIds
+                .Select(id => saveBackupFileService.GetBackupList(id).Count)
+                .DefaultIfEmpty(0)
+                .Max();
+            if (maxBackupCount < 5)
+                throw new RqEx($"存档备份数不足\n当前仅{maxBackupCount}个，需5个");
             var hasChangeTypeHistory = Context.UserHistories
                 .Any(x => x.TargetUserId == userId && x.UserHistoryType == UserHistoryType.ChangeType);
             if (hasChangeTypeHistory)
