@@ -86,7 +86,9 @@ public class SaveDiffService(
                 new KeyedArrayConfig(["dataSources"], false)
             ],
             LongArrayConfigs = [
-                new LongArrayConfig(["pointLinks"], PtLinkEqMark)
+                new LongArrayConfig(["pointLinks"], PtLinkEqMark),
+                new LongArrayConfig(["config", "snapRayAngles"], x => x.ToString()),
+                new LongArrayConfig(["config", "snapRayAnglesForFree"], x => x.ToString()),
             ]
         };
 
